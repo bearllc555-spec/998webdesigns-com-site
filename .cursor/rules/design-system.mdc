@@ -1,0 +1,54 @@
+---
+description: 998 Web Designs visual language - canonical brand tokens for 998webdesigns-com-site
+globs: ["**/*.css", "**/*.html"]
+---
+
+# 998 Web Designs design system (998webdesigns-com-site repo)
+
+This rule encodes the canonical brand tokens for **998webdesigns.com** - a standalone Bear LLC product brand for $998 flat-fee custom websites. By design, the page does NOT reference SlatePress (positioning split: SlatePress is the marketing-system tier, 998 is the entry-level one-off site tier). Visually the two brands stay close enough to feel familial without sharing copy.
+
+The source of truth for these tokens is the `:root` block at the top of `index.html`. If they ever drift, this rule should be updated to match - the live file wins.
+
+## Canonical tokens
+
+```css
+:root{
+  --bg:#FFFFFF;             /* page canvas - pure white */
+  --ink:#0A0A0A;            /* primary text, near-black */
+  --ink-soft:#3A3D42;       /* secondary text */
+  --slate:#6B6A73;          /* tertiary text */
+  --rule:#E5E7EB;           /* default 1px borders */
+  --blue:#2563EB;           /* PRIMARY brand blue - logo "/" + primary CTAs */
+  --blue-deep:#1D4ED8;      /* hover state */
+  --blue-soft:#EFF3FF;      /* tinted backgrounds, badges */
+}
+```
+
+## Type stack
+
+**Inter only.** Single sans-serif throughout.
+
+```css
+font-family: 'Inter', -apple-system, system-ui, sans-serif;
+```
+
+## Cardinal rules for 998webdesigns-com-site
+
+- **Pure white canvas (`--bg #FFFFFF`).** Mercury-clean - the brand identity is "single page, single price, single CTA." Don't add gradient backgrounds, hero imagery, or dark-mode sections.
+- **Brand blue (`--blue` #2563EB) is the one accent.** Same blue as the SlatePress family (Bear LLC house color). Logo `/`, primary CTAs (currently the `mailto:` to `hello@998webdesigns.com`), focus rings.
+- **Zero SlatePress mention.** This is positioning discipline, not just visual. Don't add SlatePress logos, copy, or cross-links in the page UI. (Internal docs / repo READMEs can reference the parent Bear LLC structure - just not the live page.)
+- **No new hex codes.** Stick to the 8-token set. Adding decoration will dilute the "$998, one site, one price" message.
+- **No gradient buttons, no carousels, no Lorem ipsum, no emoji in production UI.**
+- **One offer, one price.** $998 flat. If the offer evolves (form-capture replacement of mailto, Stripe checkout button, schema.org JSON-LD blocks), see `whats-next.md` items 8-12 in the workspace root for the queued upgrades.
+
+## Pricing
+
+$998 one-time flat-fee. Distinct from SlatePress Foundation pricing - no cross-repo pricing-sync rule applies. The $998 number appears in the brand name, the headline, the CTA copy, and the offer spec at `outputs/998webdesigns-form-capture-spec.md`. If pricing ever moves, all four touchpoints update together (and the domain rebrand becomes a hard problem).
+
+## When designing or reviewing UI in this repo
+
+Defer to the `premium-web-designer` Claude skill. When it fires:
+1. Ask "What are we designing today?"
+2. On the answer "998webdesigns.com" or any edit in this repo, load the tokens above.
+3. Apply universal taste principles on top.
+4. Produce code that references the brand's variable names (`--blue`, `--ink`, `--bg`) directly - never invent token names.
