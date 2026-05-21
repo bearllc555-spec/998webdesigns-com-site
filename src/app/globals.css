@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ============================================================
+   998webdesigns design tokens — primitive → semantic
+   ============================================================ */
+
+:root {
+  /* Primitive — palette */
+  --c-white: #ffffff;
+  --c-ink-900: #0a0a0a;
+  --c-ink-800: #18181b;
+  --c-ink-700: #27272a;
+  --c-ink-500: #52525b;
+  --c-ink-400: #71717a;
+  --c-ink-300: #a1a1aa;
+  --c-rule: #e4e4e7;
+  --c-rule-soft: #f4f4f5;
+  --c-blue: #2563eb;
+  --c-blue-deep: #1d4ed8;
+  --c-blue-soft: #eff3ff;
+  --c-emerald: #16a34a;
+  --c-emerald-soft: #ecfdf5;
+  --c-warn: #b45309;
+  --c-warn-soft: #fef3c7;
+
+  /* Semantic */
+  --bg: var(--c-white);
+  --ink: var(--c-ink-900);
+  --ink-soft: var(--c-ink-500);
+  --slate: var(--c-ink-400);
+  --rule: var(--c-rule);
+  --rule-soft: var(--c-rule-soft);
+  --accent: var(--c-blue);
+  --accent-deep: var(--c-blue-deep);
+  --accent-soft: var(--c-blue-soft);
+  --success: var(--c-emerald);
+  --success-soft: var(--c-emerald-soft);
+  --warn: var(--c-warn);
+  --warn-soft: var(--c-warn-soft);
+
+  /* Type scale (8pt rhythm) */
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-30: 1.875rem;
+  --fs-36: 2.25rem;
+  --fs-48: 3rem;
+  --fs-60: 3.75rem;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-pill: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(10, 10, 10, 0.04);
+  --shadow-md: 0 1px 2px rgba(10, 10, 10, 0.04), 0 6px 18px rgba(10, 10, 10, 0.06);
+  --shadow-lg: 0 8px 20px rgba(10, 10, 10, 0.06), 0 30px 60px rgba(10, 10, 10, 0.08);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-slate: var(--slate);
+  --color-rule: var(--rule);
+  --color-rule-soft: var(--rule-soft);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
+  --font-display: var(--font-geist), -apple-system, system-ui, sans-serif;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+* { -webkit-font-smoothing: antialiased; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.005em;
+  line-height: 1.55;
+}
+
+/* All headings use Geist (single typeface, single variable). Wrapped in @layer base
+   so any future per-element utility override wins via Tailwind's cascade order. */
+@layer base {
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+}
+
+/* Body copy max-width helper */
+.prose-cap { max-width: 62ch; }
+
+/* Reduced motion — respect user setting */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus ring — WCAG AA */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

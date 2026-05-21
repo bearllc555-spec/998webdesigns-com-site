@@ -1,17 +1,21 @@
-# GitHub Actions: deploy to Cloudflare Pages on every push.
+# GitHub Actions: build the Next.js app, then deploy the static export to Cloudflare Pages.
 #
-# Required repo secrets (set under Settings -> Secrets and variables -> Actions):
+# Required repo secrets (Settings -> Secrets and variables -> Actions):
 #   CLOUDFLARE_API_TOKEN  - scoped to Account -> Cloudflare Pages -> Edit
-#   CLOUDFLARE_ACCOUNT_ID - e0f6f68f26f8a26a75eaa793385019ef (Bearllc555@gmail.com Account)
+#   CLOUDFLARE_ACCOUNT_ID - e0f6f68f26f8a26a75eaa793385019ef
 #
-# Pages project name: 998webdesigns-com (must exist; create via dashboard if first deploy).
-# Production custom domain: 998webdesigns.com
+# Supabase NEXT_PUBLIC_* values are inlined below because the anon key is designed for
+# public exposure (Supabase RLS enforces what it can do). If you rotate the project,
+# update the env block here.
 #
-# Branch previews: this workflow fires on EVERY branch (branches: ['**']) and omits the
-# --branch flag, so wrangler-action defaults to GITHUB_REF. Result: feature branches deploy
-# to <branch>.998webdesigns-com.pages.dev preview URLs; main deploys to production.
+# Pages project name: 998webdesigns-com (existing — production custom domain 998webdesigns.com).
+#
+# Branch previews: every branch deploys to <branch-slug>.998webdesigns-com.pages.dev.
+# main deploys to production. Wrangler picks the branch from GITHUB_REF automatically.
+#
+# ASCII-only commit messages — CF Pages deployments API rejects non-ASCII.
 
-name: Deploy to Cloudflare Pages
+name: Build + deploy Next.js to Cloudflare Pages
 
 on:
   push:
@@ -26,8 +30,25 @@ jobs:
       deployments: write
     steps:
       - uses: actions/checkout@v4
-      - uses: cloudflare/wrangler-action@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://jxthwtflrzudepxysgje.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_41Gfbec-Z_tIQuPfloJjxg_3-VR1MQ
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=998webdesigns-com
+          command: pages deploy ./out --project-name=998webdesigns-com

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Client website placeholder">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F4F4F5"/>
+      <stop offset="1" stop-color="#E4E4E7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#g)"/>
+  <rect x="80" y="80" width="1040" height="56" rx="8" fill="#fff"/>
+  <circle cx="118" cy="108" r="6" fill="#FCA5A5"/>
+  <circle cx="142" cy="108" r="6" fill="#FCD34D"/>
+  <circle cx="166" cy="108" r="6" fill="#86EFAC"/>
+  <rect x="200" y="92" width="600" height="32" rx="6" fill="#F4F4F5"/>
+  <rect x="80" y="200" width="540" height="68" rx="10" fill="#18181B"/>
+  <rect x="80" y="296" width="780" height="20" rx="6" fill="#D4D4D8"/>
+  <rect x="80" y="332" width="640" height="20" rx="6" fill="#D4D4D8"/>
+  <rect x="80" y="400" width="220" height="56" rx="28" fill="#2563EB"/>
+  <rect x="80" y="540" width="320" height="240" rx="14" fill="#fff" stroke="#E4E4E7" stroke-width="2"/>
+  <rect x="440" y="540" width="320" height="240" rx="14" fill="#fff" stroke="#E4E4E7" stroke-width="2"/>
+  <rect x="800" y="540" width="320" height="240" rx="14" fill="#fff" stroke="#E4E4E7" stroke-width="2"/>
+  <text x="600" y="864" font-family="Inter, system-ui, sans-serif" font-size="22" fill="#A1A1AA" text-anchor="middle" font-weight="500">handcrafted website preview</text>
+</svg>

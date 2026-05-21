@@ -1,28 +1,38 @@
-# 998webdesigns.com — Project Handoff
+# 998webdesigns-com-app — Project Handoff
 
-This file is read at the start of every session that touches 998webdesigns.com. It captures every system, credential reference, file path, and architectural decision so a fresh Claude session (or Anthony, or a future operator) has full context without re-deriving anything. Lives at the repo root so it travels with the codebase.
-
----
-
-## Status (as of 2026-05-12)
-
-**LIVE** at https://998webdesigns.com/ and https://www.998webdesigns.com/. SSL active on both. Apex + www attached to Cloudflare Pages project `998webdesigns-com`.
-
-**Brand:** standalone Bear LLC product brand for **$998 custom websites**. Mercury-clean splash. **NO Slatepress reference anywhere.** Footer attribution is `a bear llc digital property` only. This is intentional positioning — 998webdesigns sells against the "$998 once" anchor without dragging Slatepress's velvet-rope or vertical-brand framing into the conversation.
-
-**Site content (current splash):**
-- H1: *"a real website for your business."*
-- Lead: $998 once messaging
-- Primary CTA: `mailto:hello@998webdesigns.com`
-- "What's included" list with 5 checkmarks
-- Footer: "a bear llc digital property"
-- Mercury aesthetic: white background, Inter font, blue (`#2563EB`) accent, lowercase H1, `v0X` version label next to brand mark
+Read at the start of every session that touches this repo. Captures stack, env, file layout, deploy flow, and what's wired vs deferred so a fresh session has full context.
 
 ---
 
-## Offer spec — see `./offer.md`
+## Status (v0.1 — initial scaffold, 2026-05-21)
 
-The product offer mechanics (pricing tiers, page-count rules, changes policy, blog inclusion, upsell roadmap, all open product questions) are documented in `offer.md` next to this file. Drafted 2026-05-13 from a vision-chat session. Read it alongside this CLAUDE.md — they're siblings, not duplicates: CLAUDE.md is the operational/infra handoff, `offer.md` is the product spec. Either file is incomplete on its own.
+**Local-only, not deployed yet.** Scaffolded as the replacement for the static `998webdesigns.com` Cloudflare Pages splash (repo `bearllc555-spec/998webdesigns-com-site`). When this app is reviewed and ready, DNS flips from CF Pages to Vercel and the static repo gets archived.
+
+Pricing copy in `src/components/Pricing.tsx` is taken verbatim from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
+
+---
+
+## What ships in v0.1
+
+- Home page (`/`) — Hero with portfolio carousel, value props strip, How it works (4 steps), Pricing, FAQ accordion, 4-step embedded lead form, Footer.
+- `/thanks` — post-submit timeline + auto-deliver clause stated up front.
+- `/api/leads` — POST handler that validates, drops honeypot, attempts to persist to `wd_leads` Supabase table (logs + carries on if table is missing).
+- Brand tokens locked in `src/app/globals.css` (primitive → semantic). Inter (body) + Fraunces (display) font pairing.
+- Portfolio data layer at `src/data/portfolio.ts` — add a client = add one row.
+- FAQ data at `src/data/faq.ts`.
+- Placeholder SVG at `public/portfolio/placeholder.svg` — every entry points at this until real screenshots ship.
+
+## What's deferred to next session
+
+- **Stripe Invoicing** — `$499 deposit` invoice on submit, balance invoice on approval, `$98/mo` subscription, lifetime-upgrade flow, webhook handler at `/api/stripe/webhook`. Restricted API keys + signed webhook required.
+- **SendGrid** — confirmation email to lead with deposit invoice link + delivery-flow recap.
+- **Slack** — incoming-webhook ping to internal channel on every new lead.
+- **Supabase `wd_leads` table** — needs to be created in the existing Supabase project (`jxthwtflrzudepxysgje`). Schema sketch in this doc, below.
+- **shadcn/ui init** — for polished dialog/toast/table components (plain Tailwind controls suffice for v0.1).
+- **`/portfolio`**, **`/pricing`**, **`/start`**, **`/legal/terms`**, **`/legal/privacy`** standalone pages.
+- **Real rate-limit** via middleware (currently just a honeypot field + Supabase IP capture).
+- **Security review + Lighthouse pass** before DNS cutover.
+- **Vercel project + deploy wiring**.
 
 ---
 
@@ -30,189 +40,149 @@ The product offer mechanics (pricing tiers, page-count rules, changes policy, bl
 
 | Surface | URL |
 |---|---|
-| Live site | https://998webdesigns.com/ |
-| www mirror | https://www.998webdesigns.com/ |
-| CF Pages preview | https://998webdesigns-com.pages.dev/ |
-| Source repo (public) | https://github.com/bearllc555-spec/998webdesigns-com-site |
-| GitHub Actions | https://github.com/bearllc555-spec/998webdesigns-com-site/actions |
-| CF Pages project | https://dash.cloudflare.com/e0f6f68f26f8a26a75eaa793385019ef/pages/view/998webdesigns-com |
-| CF DNS records | https://dash.cloudflare.com/e0f6f68f26f8a26a75eaa793385019ef/998webdesigns.com/dns/records |
+| Repo (private) | https://github.com/bearllc555-spec/998webdesigns-com-app |
+| Vercel project | (to be created next session) |
+| Live splash being replaced | https://998webdesigns.com/ |
+| Old repo (legacy CF Pages static) | https://github.com/bearllc555-spec/998webdesigns-com-site |
+| Supabase project | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
 
 ---
 
-## Domain & DNS
+## Stack
 
-- **Domain:** `998webdesigns.com`
-- **Registrar:** Hostinger (transfer to Cloudflare Registrar eligible after ICANN 60-day lock + Hostinger 30-day cooling-off)
-- **Nameservers (at Hostinger):** Cloudflare-assigned pair — confirm on the CF zone overview before re-pointing. Existing established zones use `aiden.ns.cloudflare.com` + `piper.ns.cloudflare.com`; newer zones may have been assigned `hunts` / `suzanne`. **Always verify the exact pair on the zone's "Update your nameservers to activate Cloudflare" screen BEFORE setting Hostinger NS records** — wrong pair causes silent SERVFAIL "lame delegation" for days.
-- **Cloudflare zone:** ZoneID `56f3ac75a0c268a2cbef7d5eadf2d8ba`, Free plan, Active.
+- **Next.js 16** (App Router, TypeScript, src/ layout, Tailwind CSS v4, no Turbopack)
+- **Tailwind v4** with inline `@theme` (no `tailwind.config.ts` — config lives in `globals.css`)
+- **Supabase** — Postgres + Auth + Storage (Free tier, shared with editor-v2)
+- **Vercel** — deploy target, Hobby plan (next session)
+- **Stripe** — Invoicing for deposit + balance + lifetime; Subscription for monthly hosting (next session)
+- **SendGrid** — transactional email (next session)
+- **Slack incoming-webhook** — internal lead alerts (next session)
 
-**DNS records (Cloudflare):**
-
-| Type | Name | Content | Proxy | Purpose |
-|---|---|---|---|---|
-| CNAME | `@` (apex) | `998webdesigns-com.pages.dev` | Proxied (orange) | Apex → CF Pages |
-| CNAME | `www` | `998webdesigns-com.pages.dev` | Proxied (orange) | www → CF Pages |
-
-No mail records yet. If `hello@998webdesigns.com` ever needs to be a real mailbox (vs. just the `mailto:` CTA target with delivery handled elsewhere), add the same Google Workspace domain-alias pattern documented in slatepress/CLAUDE.md (MX + SPF + DKIM + DMARC + Workspace verification TXT).
-
----
-
-## Cloudflare account
-
-- **Account ID:** `e0f6f68f26f8a26a75eaa793385019ef`
-- **Account email:** `bearllc555@gmail.com`
-- **Pages project:** `998webdesigns-com`
-- **Custom domains attached:** `998webdesigns.com` (apex) + `www.998webdesigns.com`
-- **SSL:** Active on both
-- **Deploy mechanism:** **git-wired auto-deploy** via `cloudflare/wrangler-action@v3` on push to `main`. Direct Upload zip-drag is not used for this site.
-
----
-
-## GitHub repo
-
-- **URL:** https://github.com/bearllc555-spec/998webdesigns-com-site
-- **Visibility:** public
-- **Default branch:** `main`
-- **Owner:** `bearllc555-spec` (org)
-
-**Auto-deploy workflow** at `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to Cloudflare Pages
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=998webdesigns-com
-```
-
-**Required repo secrets (already set):**
-
-- `CLOUDFLARE_API_TOKEN` — token name `plumbingslatepress-com-site-github-actions` (reused across all bearllc555-spec Pages projects; scope: Account → Cloudflare Pages → Edit, Account Resources: All accounts). Stored locally at `slatepress/.local/cf-pages-token.txt`.
-- `CLOUDFLARE_ACCOUNT_ID` — `e0f6f68f26f8a26a75eaa793385019ef`
-
-**PAT used for git push:**
-
-- `slatepress-demos-deploy` — broader-scope PAT, all repos under `bearllc555-spec`. Stored at `slatepress/.local/slatepress-demos-deploy-pat.txt`.
-- **Limitation:** PAT does NOT include `Workflow write` scope. Cannot push or modify `.github/workflows/*` files. Workflow file edits go through the **GitHub web UI** (one-time concern; the workflow file is stable).
-
----
-
-## Local workspace layout
-
-The repo is cloned locally at:
+## File layout
 
 ```
-C:\Users\thede\OneDrive\Documents\Claude\slatepress\repos\998webdesigns-com-site\
-├── CLAUDE.md            ← this file (project context)
-├── README.md            ← public repo overview
-├── index.html           ← the single splash page (Mercury-clean, ~XXX lines)
-├── favicon.svg          ← blue-slash favicon
-└── .github/
-    └── workflows/
-        └── deploy.yml   ← auto-deploy on push to main
+src/
+├── app/
+│   ├── api/leads/route.ts      # POST /api/leads — validates + inserts to wd_leads
+│   ├── globals.css              # design tokens, Tailwind v4 @theme
+│   ├── layout.tsx               # root layout, font wiring
+│   ├── page.tsx                 # home — composes section components
+│   └── thanks/page.tsx          # post-submit timeline + auto-deliver clause
+├── components/
+│   ├── Nav.tsx
+│   ├── Hero.tsx                 # composes Carousel
+│   ├── Carousel.tsx             # client — autoplay, arrow nav, pause-on-hover
+│   ├── ValueProps.tsx
+│   ├── HowItWorks.tsx
+│   ├── Pricing.tsx              # PRICING COPY IS THE PRODUCT — do not edit without approval
+│   ├── FAQ.tsx                  # client — accordion
+│   ├── LeadForm.tsx             # client — 4-step form, honeypot, validation
+│   └── Footer.tsx
+├── data/
+│   ├── portfolio.ts             # PortfolioItem[] — one row per client site
+│   └── faq.ts                   # FAQItem[]
+└── lib/
+    └── supabase.ts              # supabaseAdmin() (server) + supabasePublic (anon)
+public/
+└── portfolio/placeholder.svg     # used for every carousel slot until real .jpg ships
 ```
 
-Cursor reads from this path directly. `CLONE-REPOS.cmd` at the slatepress workspace root will re-clone if the folder is ever missing.
+---
+
+## Env vars (.env.local — gitignored)
+
+| Key | Source | Used by |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | `<workspace>/.local/supabase-project-url.txt` | client + server |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `<workspace>/.local/supabase-publishable-key.txt` | client + server |
+| `SUPABASE_SERVICE_ROLE_KEY` | `<workspace>/.local/supabase-secret-key.txt` | server only |
+| `STRIPE_SECRET_KEY` | TBD next session — Stripe dashboard, restricted key | `/api/leads`, `/api/stripe/webhook` |
+| `STRIPE_WEBHOOK_SECRET` | TBD next session | `/api/stripe/webhook` |
+| `SENDGRID_API_KEY` | `<workspace>/.local/sendgrid-api-key.txt` | `/api/leads` |
+| `SLACK_WEBHOOK_URL` | TBD next session — Slack admin | `/api/leads` |
+| `LEAD_NOTIFY_EMAIL` | constant `hello@998webdesigns.com` | `/api/leads` |
+
+Production env vars get set in Vercel → Project Settings → Environment Variables.
 
 ---
 
-## How to edit and ship a change
+## Adding a new portfolio thumbnail
 
-There are two workflows. **Cursor is the default for any code work as of 2026-05-11.**
-
-### Path A — Cursor (default, code work)
-
-This is the cockpit Anthony uses for code. ~90-second feedback loop, no widget toolchain to fail.
-
-1. **Open Cursor.** Project root: `C:\Users\thede\OneDrive\Documents\Claude\slatepress\repos\998webdesigns-com-site\`
-2. **Pull latest from origin first** (especially after a Cowork session that may have committed): `git pull origin main`
-3. **Make the edit.** Cursor's Claude integration handles file edits directly — no widget layer.
-4. **Bump the `v0X` version label** in `index.html` (the tiny slate-light text next to the brand mark). One bump per commit. This is the deploy-propagation tell.
-5. **Branch first.** Never push directly to `main`. Create a feature branch like `polish/h1-tweak` or `fix/footer-copy`, push it, and let Cloudflare Pages auto-deploy a preview to `<branch-slug>.998webdesigns-com.pages.dev`. Review the preview, then merge to `main` to ship to production.
-6. **Commit message: ASCII-only.** No em-dashes (`—`), no curly quotes (`'`/`"`), no Unicode sparkles. Cloudflare Pages deployments API rejects non-ASCII commit messages with `[code: 8000111] Invalid commit message UTF-8`. Use straight hyphens and quotes.
-7. **One commit per change.** Never push two commits within ~10 seconds. CF Pages dedups/drops the second one. The `v0X` label makes this observable — if the live site doesn't show your bumped version after ~60s, you got dropped.
-8. **Push.** Git Credential Manager handles auth (one-time browser OAuth on first push). PAT is not embedded in the remote URL.
-9. **Verify on the preview URL,** then merge the PR on GitHub. Auto-deploy fires on the merge commit; live site updates in ~30-60s.
-
-### Path B — Cowork bash sandbox + /tmp (fallback when Cursor isn't open and the change is small)
-
-Mirror of the webhosting197 pattern. Useful for one-line copy fixes when Anthony is on his phone, or when the bash sandbox is healthy.
-
-1. Clone (or refresh) the repo into `/tmp/998-work/` in the bash sandbox — **NOT** inside the OneDrive mount, because OneDrive Files-On-Demand corrupts `.git/` index files.
-2. Edit the file in `/tmp/998-work/`, bump `v0X`, single `git add/commit/push` from there.
-3. Sync the changed file back into OneDrive `repos/998webdesigns-com-site/` so file tools see the latest on next session: `cat /tmp/998-work/index.html > $ROOT/repos/998webdesigns-com-site/index.html`.
-4. Same ASCII-commit-message + branch-first + one-commit-per-change rules apply.
-
-### What NOT to do
-
-- Don't edit files in OneDrive `repos/998webdesigns-com-site/` and then `git push` from a `/tmp/998-work/` checkout that's out of sync with what Cursor has been editing. Pick one cockpit per change.
-- Don't bypass branch previews. Never push directly to `main`.
-- Don't bake the PAT into the remote URL on the long-lived `repos/` clone. `CLEANUP-REMOTES.cmd` strips PATs if one slipped in.
-- Don't use the GitHub upload UI for files >2KB. Drag-drop works for small files but the Chrome MCP can't drive it (browser security on `<input type="file">`); larger files use `git push` or web-UI drag-drop in Anthony's actual browser.
+1. Save the screenshot as `public/portfolio/<slug>.jpg` (4:3 aspect ratio, ~1200x900 source preferred).
+2. Add one entry to the `portfolio` array in `src/data/portfolio.ts`:
+   ```ts
+   {
+     slug: "your-slug",
+     name: "Client Name",
+     industry: "One of the industries shown elsewhere",
+     url: "https://their-live-site.com",
+     thumbnail: "/portfolio/your-slug.jpg",
+   }
+   ```
+3. Commit. The carousel and `/portfolio` page (when built) both render from this array.
 
 ---
 
-## Brand & design rules (locked)
+## Supabase `wd_leads` table — schema sketch
 
-These are non-negotiable for 998webdesigns:
+To be created in the existing Supabase project next session. Suggested schema:
 
-1. **Zero Slatepress mention.** Not in copy, not in meta tags, not in JSON-LD, not in source comments. The whole brand premise is that this is a clean Bear LLC product, not a Slatepress vertical.
-2. **Footer attribution is `a bear llc digital property` only.** No "another SlatePress company" line. No company-architecture explanation.
-3. **Mercury-clean visual system:** white background (`#FFFFFF`), Inter font, ink-black text, blue (`#2563EB`) accent, lowercase H1, thin ink-black borders on cards/inputs, pulsing emerald dot for any scarcity or "live" indicators.
-4. **`v0X` version label next to brand mark.** Tiny slate-light text adjacent to `998webdesigns`. Bumps every commit. Diagnoses CF Pages propagation at a glance.
-5. **`mailto:hello@998webdesigns.com` is the primary CTA target.** No form-capture, no Formspree, no SendGrid OTP. Anthony's inbox is the funnel for now.
-6. **$998 once is the price anchor.** Not "$998/mo", not "starting at $998". Flat one-time fee. Same pain-removal framing as webhosting197 ("one less bill to worry about. for life.") — different surface, same psychology.
-7. **Brand mark color treatment:** if a future polish pass adds a colored accent to the brand mark, follow the slatepress portfolio pattern — blue-slash + ink-black text. Don't invent a new convention.
+```sql
+create table wd_leads (
+  id uuid primary key default gen_random_uuid(),
+  submitted_at timestamptz not null default now(),
+  email text not null,
+  business_name text not null,
+  full_name text not null,
+  ip text,
+  payload jsonb not null,
+  status text not null default 'new',
+    -- 'new' | 'deposit_sent' | 'deposit_paid' | 'designing' | 'awaiting_approval' | 'delivered' | 'closed'
+  stripe_customer_id text,
+  stripe_deposit_invoice_id text,
+  stripe_balance_invoice_id text,
+  notes text
+);
+```
+
+RLS: deny all to anon. Service-role inserts/reads only.
 
 ---
 
-## Operational rules (inherit from slatepress)
+## How to ship a change
 
-These apply equally to 998webdesigns and are documented exhaustively in `slatepress/CLAUDE.md`:
+```
+cd repos/998webdesigns-com-app
+git checkout -b feat/<branch-name>
+# ... edit ...
+npm run dev            # local preview on :3000
+npm run build          # confirm prod build still passes
+git add . && git commit -m "<ascii-only msg>"
+git push -u origin feat/<branch-name>
+# open PR, review preview deploy, merge to main
+```
 
-- **Branch previews mandatory** — every change ships to a feature branch first.
-- **Code work in Cursor, non-code work in Cowork.**
-- **One commit per change**, never two within ~10s.
-- **ASCII-only commit messages** for any repo wired to `cloudflare/wrangler-action@v3`.
-- **`.local/` is sacred** — gitignored everywhere, holds all secrets, never committed.
-- **OneDrive Files-On-Demand truncation gotcha** — never `cp -r` from OneDrive paths in bash; either use `/tmp/` workspaces or use the file tools (`Read`/`Edit`/`Write`) which resolve OneDrive correctly.
-- **Pre-stage tabs FIRST, ask second.** If asking Anthony to do anything in the browser (CF dashboard, GitHub UI, DNS records), navigate Chrome to the exact page first — don't make him hunt.
+Rules:
+- **Never push directly to `main`.** Branch first, merge after preview review (Vercel auto-deploys preview URLs for every push).
+- **ASCII-only commit messages.** (Same Cloudflare deployments-API gotcha applies if/when CF Pages ever sees this repo.)
+- **One commit per change.**
+- **Pricing copy** in `Pricing.tsx` is the product. Don't change wording without explicit approval.
 
 ---
 
 ## Recovery / cold restart
 
-If everything went sideways:
+If `repos/998webdesigns-com-app/` is missing:
+```bash
+cd C:\Users\thede\OneDrive\Documents\Claude\slatepress\repos
+git clone https://github.com/bearllc555-spec/998webdesigns-com-app
+cd 998webdesigns-com-app
+npm install
+# Recreate .env.local from <workspace>/.local/ files (see Env vars section above)
+npm run dev
+```
 
-1. **Domain still resolves?** Check https://998webdesigns.com/. If 5xx: check CF Pages dashboard. If DNS broken: check the DNS records section above and re-create the two CNAMEs.
-2. **Repo gone locally?** `CLONE-REPOS.cmd` at slatepress workspace root re-clones it. Or manually: `git clone https://github.com/bearllc555-spec/998webdesigns-com-site repos/998webdesigns-com-site`.
-3. **CF Pages project deleted?** Re-create at https://dash.cloudflare.com/e0f6f68f26f8a26a75eaa793385019ef/pages/new — name `998webdesigns-com`, connect GitHub repo `bearllc555-spec/998webdesigns-com-site`, branch `main`, build command empty, output dir `.`. Then re-attach `998webdesigns.com` and `www.998webdesigns.com` as custom domains.
-4. **Workflow secrets wiped?** Re-add `CLOUDFLARE_API_TOKEN` (from `slatepress/.local/cf-pages-token.txt`) and `CLOUDFLARE_ACCOUNT_ID` (`e0f6f68f26f8a26a75eaa793385019ef`) at https://github.com/bearllc555-spec/998webdesigns-com-site/settings/secrets/actions.
-5. **PAT rotated?** Run `UPDATE-PAT-AND-CLEAN.cmd` at the slatepress workspace root.
-
----
-
-## What's deferred / open
-
-- **Real `hello@998webdesigns.com` mailbox.** Currently the mailto: relies on whatever client Anthony's prospects use; replies land wherever the recipient address is configured to deliver. If volume picks up, add 998webdesigns.com as a Google Workspace domain alias under the slatepress.co tenant (same pattern as plumbingslatepress.com — see slatepress/CLAUDE.md "Wired & working" section).
-- **Form-capture vs. mailto.** No form yet. If conversion needs measurement, add a Formspree form (use a NEW Formspree form, not the shared `xykonjqq` or `xjgjwobq` — keep this brand's intake clean).
-- **Offer copy validation.** $998 once needs market signal. Once 5-10 inquiries land, lock the page or A/B test a price point.
-- **Branch preview verification.** Confirmed-working pattern on `slatepress-site` 2026-05-11; presumed default-on for `998webdesigns-com` Pages project. Verify on first feature-branch push — should auto-deploy to `<branch>.998webdesigns-com.pages.dev` within ~30s.
-- **Schema.org JSON-LD + 1200×630 og:image.** webhosting197.com has both (unlocks rich link previews on FB/LinkedIn/Twitter + Google knowledge panel). 998webdesigns doesn't yet. Quick polish win when traffic picks up.
+If env vars are missing: read from `<workspace>/.local/` per the table above.
 
 ---
 
@@ -220,6 +190,4 @@ If everything went sideways:
 
 | Date | Event |
 |---|---|
-| 2026-05-12 | Repo created (`bearllc555-spec/998webdesigns-com-site`), Mercury-clean splash shipped, CF Pages project `998webdesigns-com` provisioned via API, custom domains apex + www attached, DNS CNAMEs created via PowerShell+CF API, SSL active. End-to-end live. |
-| 2026-05-12 | `PUSH-998WEBDESIGNS.cmd` and `SET-998-DNS.cmd/.ps1` one-shot scripts deleted from slatepress workspace root after the project went live (transient setup; not utilities). |
-| 2026-05-12 | This handoff doc written and committed to repo root as `CLAUDE.md`. |
+| 2026-05-21 | v0.1 scaffold. Next.js 15 + Tailwind v4 + Supabase wired. Home, /thanks, /api/leads stub built. Pricing copy from locked brief. Stripe/SendGrid/Slack deferred to v0.2. |
