@@ -20,11 +20,11 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/serenity-spa.jpg",
   },
   {
-    slug: "field-books-cpa",
-    name: "Field Books CPA",
-    industry: "Professional services",
-    url: "https://startbootstrap.com/previews/business-frontpage",
-    thumbnail: "/portfolio/business-front.jpg",
+    slug: "yogacentric-studio",
+    name: "YogaCentric",
+    industry: "Yoga studio",
+    url: "https://998webdesigns-templates.vercel.app/templates/yogacentric-studio",
+    thumbnail: "/portfolio/yogacentric-studio.jpg",
   },
   {
     slug: "north-branch-roofing",
