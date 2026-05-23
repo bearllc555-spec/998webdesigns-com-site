@@ -52,11 +52,11 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/luxury-real-estate.jpg?v=20",
   },
   {
-    slug: "three-hills-cafe",
-    name: "Three Hills Cafe",
-    industry: "Restaurants & cafes",
-    url: "https://templatemo.com/templates/templatemo_590_topic_listing/",
-    thumbnail: "/portfolio/topic-listing.jpg",
+    slug: "luxury-car-rental",
+    name: "Luxury Car Rental",
+    industry: "Car rental",
+    url: "#",
+    thumbnail: "/portfolio/luxury-car-rental.jpg?v=21",
   },
   {
     slug: "broadway-outdoor",
