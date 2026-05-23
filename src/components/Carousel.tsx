@@ -8,23 +8,59 @@ const AUTOPLAY_MS = 5000;
 // How long the scroll-reveal animation takes from top -> bottom of the screenshot.
 const HOVER_REVEAL_S = 6;
 
+function ThumbReveal({ item }: { item: PortfolioItem }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [shiftPx, setShiftPx] = useState(0);
+
+  const measureShift = useCallback((img: HTMLImageElement) => {
+    const container = viewportRef.current;
+    if (!container) return;
+    const delta = img.offsetHeight - container.offsetHeight;
+    setShiftPx(delta > 0 ? delta : 0);
+  }, []);
+
+  useEffect(() => {
+    const container = viewportRef.current;
+    if (!container) return;
+
+    const img = container.querySelector("img");
+    if (!img) return;
+
+    if (img.complete) measureShift(img);
+
+    const ro = new ResizeObserver(() => {
+      if (img.complete) measureShift(img);
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [measureShift, item.thumbnail]);
+
+  return (
+    <div
+      ref={viewportRef}
+      className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={item.thumbnail}
+        alt={`${item.name} — ${item.industry}`}
+        loading="eager"
+        decoding="async"
+        onLoad={(e) => measureShift(e.currentTarget)}
+        className="thumb-img absolute left-0 top-0 w-full max-w-none"
+        style={{
+          ["--thumb-shift" as string]: `${shiftPx}px`,
+          transition: `transform ${HOVER_REVEAL_S}s linear`,
+        }}
+      />
+    </div>
+  );
+}
+
 function PortfolioCard({ item }: { item: PortfolioItem }) {
   const inner = (
     <>
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.thumbnail}
-          alt={`${item.name} — ${item.industry}`}
-          loading="lazy"
-          decoding="async"
-          className="thumb-img absolute inset-0 h-full w-full object-cover"
-          style={{
-            objectPosition: "top center",
-            transition: `object-position ${HOVER_REVEAL_S}s linear`,
-          }}
-        />
-      </div>
+      <ThumbReveal item={item} />
       <div className="flex items-baseline justify-between gap-3 px-4 py-3">
         <span className="truncate font-display text-base font-medium text-ink">
           {item.name}
@@ -192,13 +228,11 @@ export function Carousel() {
         </div>
       </div>
 
-      {/* Hover-reveal: on group-hover, slide object-position from top to bottom.
-          Respects prefers-reduced-motion via the global rule in globals.css. */}
       <style>{`
-        .group:hover .thumb-img { object-position: bottom center !important; }
+        .group:hover .thumb-img { transform: translateY(calc(-1 * var(--thumb-shift, 0px))); }
         @media (prefers-reduced-motion: reduce) {
           .thumb-img { transition: none !important; }
-          .group:hover .thumb-img { object-position: top center !important; }
+          .group:hover .thumb-img { transform: none !important; }
         }
       `}</style>
     </div>
