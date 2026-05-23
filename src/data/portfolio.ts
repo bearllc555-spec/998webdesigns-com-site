@@ -35,7 +35,7 @@ export const portfolio: PortfolioItem[] = [
     name: "Stayli",
     industry: "Travel & stays",
     url: "https://stayli.framer.website/",
-    thumbnail: "/portfolio/stayli.jpg?v=16",
+    thumbnail: "/portfolio/stayli.jpg?v=17",
   },
   {
     slug: "north-branch-roofing",
