@@ -17,7 +17,7 @@ export const portfolio: PortfolioItem[] = [
     name: "Serenity Spa",
     industry: "Spa & wellness",
     url: "https://serenity-spa.998webdesigns.com",
-    thumbnail: "/portfolio/serenity-spa.jpg",
+    thumbnail: "/portfolio/serenity-spa-velvet.jpg",
   },
   {
     slug: "yogacentric-studio",
