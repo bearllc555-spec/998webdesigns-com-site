@@ -2,11 +2,62 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { portfolio } from "@/data/portfolio";
+import { portfolio, type PortfolioItem } from "@/data/portfolio";
 
 const AUTOPLAY_MS = 5000;
 // How long the scroll-reveal animation takes from top -> bottom of the screenshot.
 const HOVER_REVEAL_S = 6;
+
+function PortfolioCard({ item }: { item: PortfolioItem }) {
+  const inner = (
+    <>
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.thumbnail}
+          alt={`${item.name} — ${item.industry}`}
+          loading="lazy"
+          decoding="async"
+          className="thumb-img absolute inset-0 h-full w-full object-cover"
+          style={{
+            objectPosition: "top center",
+            transition: `object-position ${HOVER_REVEAL_S}s linear`,
+          }}
+        />
+      </div>
+      <div className="flex items-baseline justify-between gap-3 px-4 py-3">
+        <span className="truncate font-display text-base font-medium text-ink">
+          {item.name}
+        </span>
+        <span className="shrink-0 text-xs uppercase tracking-wider text-slate">
+          {item.industry}
+        </span>
+      </div>
+    </>
+  );
+
+  if (item.live) {
+    return (
+      <Link
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group block overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      className="group block cursor-default overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm"
+      aria-label={`${item.name} preview — hover to scroll screenshot`}
+    >
+      {inner}
+    </div>
+  );
+}
 
 export function Carousel() {
   const trackRef = useRef<HTMLUListElement>(null);
@@ -113,35 +164,7 @@ export function Carousel() {
             key={p.slug}
             className="snap-start shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
           >
-            <Link
-              href={p.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.thumbnail}
-                  alt={`${p.name} — ${p.industry}`}
-                  loading="lazy"
-                  decoding="async"
-                  className="thumb-img absolute inset-0 h-full w-full object-cover"
-                  style={{
-                    objectPosition: "top center",
-                    transition: `object-position ${HOVER_REVEAL_S}s linear`,
-                  }}
-                />
-              </div>
-              <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-                <span className="truncate font-display text-base font-medium text-ink">
-                  {p.name}
-                </span>
-                <span className="shrink-0 text-xs uppercase tracking-wider text-slate">
-                  {p.industry}
-                </span>
-              </div>
-            </Link>
+            <PortfolioCard item={p} />
           </li>
         ))}
       </ul>

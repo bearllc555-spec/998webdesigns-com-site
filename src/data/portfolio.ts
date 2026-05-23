@@ -9,6 +9,8 @@ export type PortfolioItem = {
   industry: string;
   url: string;
   thumbnail: string;
+  /** When true, thumbnail opens url in a new tab. Preview-only entries are hover-scroll only. */
+  live?: boolean;
 };
 
 export const portfolio: PortfolioItem[] = [
@@ -18,6 +20,7 @@ export const portfolio: PortfolioItem[] = [
     industry: "Spa & wellness",
     url: "https://serenity-spa.998webdesigns.com",
     thumbnail: "/portfolio/serenity-spa-velvet.jpg",
+    live: true,
   },
   {
     slug: "yogacentric-studio",
@@ -25,6 +28,7 @@ export const portfolio: PortfolioItem[] = [
     industry: "Yoga studio",
     url: "https://998webdesigns-templates.vercel.app/templates/yogacentric-studio",
     thumbnail: "/portfolio/yogacentric-studio.jpg",
+    live: true,
   },
   {
     slug: "north-branch-roofing",
