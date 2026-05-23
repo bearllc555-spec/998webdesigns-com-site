@@ -45,11 +45,11 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/innovative-legal-strategies.jpg?v=19",
   },
   {
-    slug: "hayes-and-co-studio",
-    name: "Hayes & Co Studio",
-    industry: "Creative & photography",
-    url: "https://html5up.net/uploads/demos/strata/",
-    thumbnail: "/portfolio/strata.jpg",
+    slug: "luxury-real-estate",
+    name: "Luxury Real Estate",
+    industry: "Real estate",
+    url: "#",
+    thumbnail: "/portfolio/luxury-real-estate.jpg?v=20",
   },
   {
     slug: "three-hills-cafe",
