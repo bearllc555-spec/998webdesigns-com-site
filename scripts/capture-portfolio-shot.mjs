@@ -1,6 +1,8 @@
 /**
  * Full-page portfolio capture for carousel hover-reveal.
  * Usage: node scripts/capture-portfolio-shot.mjs <url> <output-path>
+ *
+ * Scrolls the page first so lazy-loaded images (Framer, etc.) render before capture.
  */
 import { chromium } from "playwright";
 import path from "node:path";
@@ -13,20 +15,46 @@ if (!url || !outputPath) {
   process.exit(1);
 }
 
+async function preloadLazyContent(page) {
+  await page.evaluate(async () => {
+    const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+    const step = Math.max(400, Math.floor(window.innerHeight * 0.75));
+    let y = 0;
+    const maxY = () =>
+      Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      ) - window.innerHeight;
+
+    while (y <= maxY()) {
+      window.scrollTo(0, y);
+      await delay(200);
+      y += step;
+    }
+
+    window.scrollTo(0, 0);
+    await delay(400);
+  });
+}
+
 const browser = await chromium.launch();
 const page = await browser.newPage({
   viewport: { width: 1200, height: 900 },
   deviceScaleFactor: 1,
 });
 
-await page.goto(url, { waitUntil: "networkidle", timeout: 90_000 });
-await page.waitForTimeout(2500);
+await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
+await page.waitForLoadState("networkidle", { timeout: 60_000 }).catch(() => {});
+await page.waitForTimeout(1500);
+await preloadLazyContent(page);
+await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => {});
+await page.waitForTimeout(2000);
 
 await page.screenshot({
   path: outputPath,
   fullPage: true,
   type: "jpeg",
-  quality: 85,
+  quality: 92,
 });
 
 const size = await page.evaluate(() => ({
