@@ -11,16 +11,68 @@ const HOVER_REVEAL_S = 6;
 export function Carousel() {
   const trackRef = useRef<HTMLUListElement>(null);
   const [paused, setPaused] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const scrollByCard = useCallback((direction: 1 | -1) => {
+  const syncActiveFromScroll = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
-    const card = track.querySelector<HTMLLIElement>("li");
-    if (!card) return;
-    const gap = parseFloat(getComputedStyle(track).columnGap || "0");
-    const step = card.offsetWidth + gap;
-    track.scrollBy({ left: step * direction, behavior: "smooth" });
+
+    const cards = Array.from(track.querySelectorAll<HTMLLIElement>("li"));
+    if (!cards.length) return;
+
+    const center = track.scrollLeft + track.clientWidth / 2;
+    let closest = 0;
+    let minDist = Infinity;
+
+    cards.forEach((card, index) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const distance = Math.abs(cardCenter - center);
+      if (distance < minDist) {
+        minDist = distance;
+        closest = index;
+      }
+    });
+
+    setActiveIndex(closest);
   }, []);
+
+  const scrollToIndex = useCallback((index: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const card = track.querySelectorAll<HTMLLIElement>("li")[index];
+    if (!card) return;
+
+    card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    setActiveIndex(index);
+  }, []);
+
+  const scrollByCard = useCallback(
+    (direction: 1 | -1) => {
+      const atEnd = activeIndex >= portfolio.length - 1;
+      if (direction === 1 && atEnd) {
+        scrollToIndex(0);
+        return;
+      }
+      if (direction === -1 && activeIndex <= 0) {
+        scrollToIndex(portfolio.length - 1);
+        return;
+      }
+      scrollToIndex(activeIndex + direction);
+    },
+    [activeIndex, scrollToIndex]
+  );
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const onScroll = () => syncActiveFromScroll();
+    track.addEventListener("scroll", onScroll, { passive: true });
+    syncActiveFromScroll();
+
+    return () => track.removeEventListener("scroll", onScroll);
+  }, [syncActiveFromScroll]);
 
   // Autoplay — pause on hover/focus, respect reduced motion.
   useEffect(() => {
@@ -31,15 +83,7 @@ export function Carousel() {
     if (paused) return;
 
     const id = window.setInterval(() => {
-      const track = trackRef.current;
-      if (!track) return;
-      const atEnd =
-        track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-      if (atEnd) {
-        track.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        scrollByCard(1);
-      }
+      scrollByCard(1);
     }, AUTOPLAY_MS);
 
     return () => window.clearInterval(id);
@@ -53,38 +97,15 @@ export function Carousel() {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-5 pb-4 md:px-8">
+      <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
           Recent work &middot; hover any thumbnail to scroll through the page
         </p>
-        <div className="hidden items-center gap-2 md:flex">
-          <button
-            type="button"
-            onClick={() => scrollByCard(-1)}
-            aria-label="Previous"
-            className="rounded-full border border-rule bg-bg p-2 text-ink-soft transition hover:border-ink hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollByCard(1)}
-            aria-label="Next"
-            className="rounded-full border border-rule bg-bg p-2 text-ink-soft transition hover:border-ink hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
-        </div>
       </div>
 
       <ul
         ref={trackRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 md:gap-5 md:px-8"
-        style={{ scrollbarWidth: "thin" }}
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-8 [&::-webkit-scrollbar]:hidden"
         aria-label="Recent client websites"
       >
         {portfolio.map((p) => (
@@ -124,6 +145,29 @@ export function Carousel() {
           </li>
         ))}
       </ul>
+
+      <div className="mt-4 flex justify-center">
+        <div className="inline-flex items-center gap-2" role="tablist" aria-label="Portfolio slides">
+          {portfolio.map((p, index) => {
+            const isActive = index === activeIndex;
+            return (
+              <button
+                key={p.slug}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-label={`Show ${p.name}`}
+                onClick={() => scrollToIndex(index)}
+                className={`h-2 rounded-full border-0 p-0 transition-[width,transform,background-color] duration-200 hover:scale-110 ${
+                  isActive
+                    ? "w-[22px] rounded bg-accent"
+                    : "w-2 bg-rule"
+                }`}
+              />
+            );
+          })}
+        </div>
+      </div>
 
       {/* Hover-reveal: on group-hover, slide object-position from top to bottom.
           Respects prefers-reduced-motion via the global rule in globals.css. */}
