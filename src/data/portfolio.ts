@@ -38,11 +38,11 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/stayli.jpg?v=18",
   },
   {
-    slug: "north-branch-roofing",
-    name: "North Branch Roofing",
-    industry: "Trades",
-    url: "https://templatemo.com/templates/templatemo_578_first_portfolio/",
-    thumbnail: "/portfolio/first-portfolio.jpg",
+    slug: "innovative-legal-strategies",
+    name: "Innovative Legal Strategies",
+    industry: "Law firm",
+    url: "#",
+    thumbnail: "/portfolio/innovative-legal-strategies.jpg?v=19",
   },
   {
     slug: "hayes-and-co-studio",
