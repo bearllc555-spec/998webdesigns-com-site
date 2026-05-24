@@ -24,7 +24,7 @@ export const portfolio: PortfolioItem[] = [
   },
   {
     slug: "yogacentric-studio",
-    name: "YogaCentric",
+    name: "Yoga Center",
     industry: "Yoga studio",
     url: "https://998webdesigns-templates.vercel.app/templates/yogacentric-studio",
     thumbnail: "/portfolio/yogacentric-studio.jpg",
@@ -32,7 +32,7 @@ export const portfolio: PortfolioItem[] = [
   },
   {
     slug: "stayli",
-    name: "Stayli",
+    name: "Vacation Rentals",
     industry: "Travel & stays",
     url: "https://stayli.framer.website/",
     thumbnail: "/portfolio/stayli.jpg?v=18",
