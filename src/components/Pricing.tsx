@@ -85,8 +85,8 @@ export function Pricing() {
               </div>
               <div className="hidden h-12 w-px bg-rule md:block" />
               <div>
-                <p className="font-display text-4xl font-medium tracking-tight">
-                  $10 <span className="text-xl text-ink-soft">/ edit · $50 minimum</span>
+                <p className="font-display text-5xl font-medium tracking-tight">
+                  $10 <span className="text-2xl text-ink-soft">/ edit · $50 minimum</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   After month one, submit edits via form. $10 deducted per edit from a $50 minimum
