@@ -8,6 +8,22 @@ const AUTOPLAY_MS = 5000;
 // How long the scroll-reveal animation takes from top -> bottom of the screenshot.
 const HOVER_REVEAL_S = 6;
 
+function ChevronLeft() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
+function ChevronRight() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true">
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 function ThumbReveal({ item }: { item: PortfolioItem }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [shiftPx, setShiftPx] = useState(0);
@@ -123,31 +139,27 @@ export function Carousel() {
     setActiveIndex(closest);
   }, []);
 
-  const scrollToIndex = useCallback((index: number) => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    const card = track.querySelectorAll<HTMLLIElement>("li")[index];
-    if (!card) return;
-
-    card.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-    setActiveIndex(index);
-  }, []);
-
   const scrollByCard = useCallback(
     (direction: 1 | -1) => {
-      const atEnd = activeIndex >= portfolio.length - 1;
-      if (direction === 1 && atEnd) {
-        scrollToIndex(0);
-        return;
-      }
-      if (direction === -1 && activeIndex <= 0) {
-        scrollToIndex(portfolio.length - 1);
-        return;
-      }
-      scrollToIndex(activeIndex + direction);
+      setActiveIndex((current) => {
+        const atEnd = current >= portfolio.length - 1;
+        const atStart = current <= 0;
+        const next =
+          direction === 1
+            ? atEnd
+              ? 0
+              : current + 1
+            : atStart
+              ? portfolio.length - 1
+              : current - 1;
+
+        const track = trackRef.current;
+        const card = track?.querySelectorAll<HTMLLIElement>("li")[next];
+        card?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+        return next;
+      });
     },
-    [activeIndex, scrollToIndex]
+    []
   );
 
   useEffect(() => {
@@ -161,7 +173,7 @@ export function Carousel() {
     return () => track.removeEventListener("scroll", onScroll);
   }, [syncActiveFromScroll]);
 
-  // Autoplay — pause on hover/focus, respect reduced motion.
+  // Autoplay on page load — pause while hovering thumbnails, respect reduced motion.
   useEffect(() => {
     const prefersReducedMotion =
       typeof window !== "undefined" &&
@@ -177,13 +189,7 @@ export function Carousel() {
   }, [paused, scrollByCard]);
 
   return (
-    <div
-      className="relative pb-14 md:pb-20"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
-    >
+    <div className="relative pb-14 md:pb-20">
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
           Recent work &middot; hover any thumbnail to scroll through the page
@@ -194,6 +200,10 @@ export function Carousel() {
         ref={trackRef}
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-8 [&::-webkit-scrollbar]:hidden"
         aria-label="Recent client websites"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
       >
         {portfolio.map((p) => (
           <li
@@ -205,28 +215,28 @@ export function Carousel() {
         ))}
       </ul>
 
-      <div className="mt-4 flex justify-center">
-        <div className="inline-flex items-center gap-2" role="tablist" aria-label="Portfolio slides">
-          {portfolio.map((p, index) => {
-            const isActive = index === activeIndex;
-            return (
-              <button
-                key={p.slug}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-label={`Show ${p.name}`}
-                onClick={() => scrollToIndex(index)}
-                className={`h-2 rounded-full border-0 p-0 transition-[width,transform,background-color] duration-200 hover:scale-110 ${
-                  isActive
-                    ? "w-[22px] rounded bg-accent"
-                    : "w-2 bg-rule"
-                }`}
-              />
-            );
-          })}
-        </div>
+      <div className="mt-4 flex justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => scrollByCard(-1)}
+          aria-label="Previous project"
+          className="rounded-full border border-rule bg-bg p-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+        >
+          <ChevronLeft />
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollByCard(1)}
+          aria-label="Next project"
+          className="rounded-full border border-rule bg-bg p-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+        >
+          <ChevronRight />
+        </button>
       </div>
+
+      <p className="sr-only" aria-live="polite">
+        Showing {portfolio[activeIndex]?.name ?? "project"} ({activeIndex + 1} of {portfolio.length})
+      </p>
 
       <style>{`
         .group:hover .thumb-img { transform: translateY(calc(-1 * var(--thumb-shift, 0px))); }
