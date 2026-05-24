@@ -2,7 +2,7 @@
 // Add a new client = add one entry here. Drop the thumbnail under public/portfolio/<slug>.jpg.
 // Use real screenshots — full-page captures, ~1200px wide. The Carousel reveals the rest of the
 // page on hover (the "scroll-reveal" pattern).
-// Order: live demos first, then template demos, samples, references.
+// Order: live demos first, then design concepts, samples, references.
 
 export type PortfolioItem = {
   slug: string;
@@ -39,7 +39,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "yogacentric-studio",
     name: "Yoga Center",
     industry: "Yoga studio",
-    tag: "Template demo",
+    tag: "Design concept",
     url: "https://998webdesigns-templates.vercel.app/templates/yogacentric-studio",
     thumbnail: "/portfolio/yogacentric-studio.jpg",
     live: true,

@@ -39,7 +39,7 @@ export default function TermsPage() {
               <h2 className="font-display text-xl font-medium text-ink">Ownership</h2>
               <p className="mt-3">
                 You own your content and the custom design we create for you. We retain rights to
-                our tools, templates, and process. If you leave, we provide a reasonable export of
+                our tools, design systems, and process. If you leave, we provide a reasonable export of
                 your site files.
               </p>
             </section>

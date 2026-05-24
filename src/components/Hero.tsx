@@ -17,7 +17,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          Small businesses that want a real designer, not a template wizard. $998 covers the design
+          Small businesses that want a real designer, not a DIY page builder. $998 covers the design
           &mdash; hosting is separate after a free first month.
         </p>
 

@@ -12,7 +12,7 @@ const steps = [
   {
     n: "03",
     title: "Design in 5–7 days",
-    body: "Handcrafted, not templated. A real designer working on your site by hand.",
+    body: "Handcrafted for your business. A real designer working on your site by hand.",
   },
   {
     n: "04",

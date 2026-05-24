@@ -3,7 +3,7 @@ export type FAQItem = { q: string; a: string };
 export const faq: FAQItem[] = [
   {
     q: "What's actually included for $998?",
-    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, a contact form, basic SEO setup (meta tags, speed, mobile), and a blog section you can post to. We help with domain setup. Designed in 5–7 business days from the moment your deposit clears.",
+    a: "A handcrafted custom site, custom-designed for your business, of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, a contact form, basic SEO setup (meta tags, speed, mobile), and a blog section you can post to. We help with domain setup. Designed in 5–7 business days from the moment your deposit clears.",
   },
   {
     q: "What does hosting cost after the first month?",
