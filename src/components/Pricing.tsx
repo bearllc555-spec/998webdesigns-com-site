@@ -49,8 +49,8 @@ export function Pricing() {
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Hosting Option A
             </p>
-            <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $98 <span className="text-xl text-ink-soft">/ month</span>
+            <p className="mt-2 font-display text-5xl font-medium tracking-tight">
+              $98 <span className="text-2xl text-ink-soft">/ month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Cancel anytime. Upgrade to lifetime hosting whenever you want for $998.
@@ -61,8 +61,8 @@ export function Pricing() {
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Hosting Option B
             </p>
-            <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $998 <span className="text-xl text-ink-soft">/ one-time</span>
+            <p className="mt-2 font-display text-5xl font-medium tracking-tight">
+              $998 <span className="text-2xl text-ink-soft">/ one-time</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Pay once. We host your site forever. Never billed again.
@@ -76,8 +76,8 @@ export function Pricing() {
             </p>
             <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-baseline md:gap-10">
               <div>
-                <p className="font-display text-4xl font-medium tracking-tight">
-                  Free <span className="text-xl text-ink-soft">/ first month</span>
+                <p className="font-display text-5xl font-medium tracking-tight">
+                  Free <span className="text-2xl text-ink-soft">/ first month</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   While we get your site dialed in.
