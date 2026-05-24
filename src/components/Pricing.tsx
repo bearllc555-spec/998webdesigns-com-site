@@ -59,7 +59,7 @@ export function Pricing() {
 
           <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
-              Lifetime hosting
+              Option B Lifetime hosting
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
               $998 <span className="text-xl text-ink-soft">one-time</span>
