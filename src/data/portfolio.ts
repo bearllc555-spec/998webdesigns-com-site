@@ -59,11 +59,12 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/luxury-car-rental.jpg?v=21",
   },
   {
-    slug: "broadway-outdoor",
-    name: "Broadway Outdoor Co.",
-    industry: "Boutique retail",
-    url: "https://html5up.net/uploads/demos/highlights/",
-    thumbnail: "/portfolio/highlights.jpg",
+    slug: "borst-landscape-design",
+    name: "Borst Landscape & Design",
+    industry: "Landscape design",
+    url: "https://998webdesigns-templates.vercel.app/templates/borst-landscape-design",
+    thumbnail: "/portfolio/borst-landscape-design.jpg",
+    live: true,
   },
 ];
 
