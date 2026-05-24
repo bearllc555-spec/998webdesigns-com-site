@@ -4,9 +4,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { portfolio, type PortfolioItem } from "@/data/portfolio";
 
-const AUTOPLAY_MS = 5000;
-// How long the scroll-reveal animation takes from top -> bottom of the screenshot.
+const UNIQUE_COUNT = portfolio.length;
+const MARQUEE_ITEMS = [...portfolio, ...portfolio];
+// ~24px/sec at 60fps — slow continuous loop
+const SCROLL_SPEED = 0.4;
 const HOVER_REVEAL_S = 6;
+const CARD_CLASS =
+  "shrink-0 w-[min(78vw,360px)] sm:w-[min(46vw,360px)] md:w-[min(32vw,380px)] lg:w-[360px]";
 
 function ChevronLeft() {
   return (
@@ -112,18 +116,41 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
 }
 
 export function Carousel() {
+  const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
+  const posRef = useRef(0);
+  const startPosRef = useRef(0);
+  const wrapDeltaRef = useRef(0);
+  const resumeAtRef = useRef(0);
+  const reducedMotionRef = useRef(false);
+
   const [paused, setPaused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const syncActiveFromScroll = useCallback(() => {
+  const recalc = useCallback(() => {
+    const viewport = viewportRef.current;
     const track = trackRef.current;
-    if (!track) return;
+    if (!viewport || !track) return;
 
-    const cards = Array.from(track.querySelectorAll<HTMLLIElement>("li"));
+    const cards = track.querySelectorAll<HTMLLIElement>("li");
+    if (cards.length < UNIQUE_COUNT * 2) return;
+
+    startPosRef.current = cards[0].offsetLeft;
+    wrapDeltaRef.current = cards[UNIQUE_COUNT].offsetLeft - cards[0].offsetLeft;
+  }, []);
+
+  const syncActiveIndex = useCallback(() => {
+    const track = trackRef.current;
+    const viewport = viewportRef.current;
+    if (!track || !viewport) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLLIElement>("li")).slice(
+      0,
+      UNIQUE_COUNT
+    );
     if (!cards.length) return;
 
-    const center = track.scrollLeft + track.clientWidth / 2;
+    const center = posRef.current + viewport.clientWidth / 2;
     let closest = 0;
     let minDist = Infinity;
 
@@ -141,52 +168,76 @@ export function Carousel() {
 
   const scrollByCard = useCallback(
     (direction: 1 | -1) => {
-      setActiveIndex((current) => {
-        const atEnd = current >= portfolio.length - 1;
-        const atStart = current <= 0;
-        const next =
-          direction === 1
-            ? atEnd
-              ? 0
-              : current + 1
-            : atStart
-              ? portfolio.length - 1
-              : current - 1;
+      const viewport = viewportRef.current;
+      const track = trackRef.current;
+      if (!viewport || !track) return;
 
-        const track = trackRef.current;
-        const card = track?.querySelectorAll<HTMLLIElement>("li")[next];
-        card?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-        return next;
-      });
+      const card = track.querySelector<HTMLLIElement>("li");
+      if (!card) return;
+
+      const gap = parseFloat(getComputedStyle(track).columnGap || "0");
+      const step = card.offsetWidth + gap;
+
+      posRef.current += step * direction;
+      viewport.scrollTo({ left: Math.round(posRef.current), behavior: "smooth" });
+      syncActiveIndex();
+      resumeAtRef.current = Date.now() + 2000;
     },
-    []
+    [syncActiveIndex]
   );
 
   useEffect(() => {
+    const viewport = viewportRef.current;
     const track = trackRef.current;
-    if (!track) return;
+    if (!viewport || !track) return;
 
-    const onScroll = () => syncActiveFromScroll();
-    track.addEventListener("scroll", onScroll, { passive: true });
-    syncActiveFromScroll();
+    reducedMotionRef.current = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
 
-    return () => track.removeEventListener("scroll", onScroll);
-  }, [syncActiveFromScroll]);
+    let raf = 0;
 
-  // Autoplay on page load — pause while hovering thumbnails, respect reduced motion.
-  useEffect(() => {
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-    if (paused) return;
+    const init = () => {
+      recalc();
+      posRef.current = startPosRef.current;
+      viewport.scrollLeft = Math.round(posRef.current);
+      syncActiveIndex();
+    };
 
-    const id = window.setInterval(() => {
-      scrollByCard(1);
-    }, AUTOPLAY_MS);
+    const tick = () => {
+      const now = Date.now();
+      if (
+        !reducedMotionRef.current &&
+        !paused &&
+        now >= resumeAtRef.current &&
+        wrapDeltaRef.current > 0
+      ) {
+        posRef.current += SCROLL_SPEED;
+        if (posRef.current >= startPosRef.current + wrapDeltaRef.current) {
+          posRef.current -= wrapDeltaRef.current;
+        }
+        viewport.scrollLeft = Math.round(posRef.current);
+        syncActiveIndex();
+      }
+      raf = requestAnimationFrame(tick);
+    };
 
-    return () => window.clearInterval(id);
-  }, [paused, scrollByCard]);
+    init();
+    raf = requestAnimationFrame(tick);
+
+    const onResize = () => {
+      recalc();
+    };
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("load", init);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("load", init);
+    };
+  }, [paused, recalc, syncActiveIndex]);
 
   return (
     <div className="relative pb-14 md:pb-20">
@@ -196,24 +247,23 @@ export function Carousel() {
         </p>
       </div>
 
-      <ul
-        ref={trackRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] md:gap-5 md:px-8 [&::-webkit-scrollbar]:hidden"
+      <div
+        ref={viewportRef}
+        className="overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         aria-label="Recent client websites"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
         onBlur={() => setPaused(false)}
       >
-        {portfolio.map((p) => (
-          <li
-            key={p.slug}
-            className="snap-start shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
-          >
-            <PortfolioCard item={p} />
-          </li>
-        ))}
-      </ul>
+        <ul ref={trackRef} className="flex w-max gap-4 px-5 md:gap-5 md:px-8">
+          {MARQUEE_ITEMS.map((p, index) => (
+            <li key={`${p.slug}-${index}`} className={CARD_CLASS}>
+              <PortfolioCard item={p} />
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="mt-4 flex justify-center gap-3">
         <button
@@ -235,7 +285,8 @@ export function Carousel() {
       </div>
 
       <p className="sr-only" aria-live="polite">
-        Showing {portfolio[activeIndex]?.name ?? "project"} ({activeIndex + 1} of {portfolio.length})
+        Showing {portfolio[activeIndex]?.name ?? "project"} ({activeIndex + 1} of{" "}
+        {portfolio.length})
       </p>
 
       <style>{`
