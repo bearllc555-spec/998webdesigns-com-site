@@ -37,12 +37,20 @@ export function HowItWorks() {
         <ol className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-rule bg-rule md:grid-cols-4">
           {steps.map((s) => (
             <li key={s.n} className="bg-bg p-7">
-              <span className="font-display text-3xl font-medium text-accent">
-                {s.n}
-              </span>
-              <h3 className="mt-4 font-display text-lg font-medium">
-                {s.title}
-              </h3>
+              {s.n === "01" ? (
+                <h3 className="font-display text-3xl font-medium leading-tight">
+                  <span className="text-accent">{s.n}</span> {s.title}
+                </h3>
+              ) : (
+                <>
+                  <span className="font-display text-3xl font-medium text-accent">
+                    {s.n}
+                  </span>
+                  <h3 className="mt-4 font-display text-lg font-medium">
+                    {s.title}
+                  </h3>
+                </>
+              )}
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                 {s.body}
               </p>
