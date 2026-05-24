@@ -28,6 +28,23 @@ function ChevronRight() {
   );
 }
 
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+      <rect x="6" y="5" width="4" height="14" rx="1" />
+      <rect x="14" y="5" width="4" height="14" rx="1" />
+    </svg>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+      <path d="M8 5.5v13l10-6.5-10-6.5Z" />
+    </svg>
+  );
+}
+
 function ThumbReveal({ item }: { item: PortfolioItem }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [shiftPx, setShiftPx] = useState(0);
@@ -123,8 +140,10 @@ export function Carousel() {
   const wrapDeltaRef = useRef(0);
   const resumeAtRef = useRef(0);
   const reducedMotionRef = useRef(false);
+  const userPausedRef = useRef(false);
+  const hoverPausedRef = useRef(false);
 
-  const [paused, setPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const recalc = useCallback(() => {
@@ -142,7 +161,7 @@ export function Carousel() {
   const syncActiveIndex = useCallback(() => {
     const track = trackRef.current;
     const viewport = viewportRef.current;
-    if (!track || !viewport) return;
+    if (!track || !viewport || wrapDeltaRef.current <= 0) return;
 
     const cards = Array.from(track.querySelectorAll<HTMLLIElement>("li")).slice(
       0,
@@ -150,7 +169,10 @@ export function Carousel() {
     );
     if (!cards.length) return;
 
-    const center = posRef.current + viewport.clientWidth / 2;
+    const loopPos =
+      startPosRef.current +
+      ((posRef.current - startPosRef.current) % wrapDeltaRef.current);
+    const center = loopPos + viewport.clientWidth / 2;
     let closest = 0;
     let minDist = Infinity;
 
@@ -186,6 +208,12 @@ export function Carousel() {
     [syncActiveIndex]
   );
 
+  const togglePause = useCallback(() => {
+    userPausedRef.current = !userPausedRef.current;
+    setUserPaused(userPausedRef.current);
+    resumeAtRef.current = Date.now() + 800;
+  }, []);
+
   useEffect(() => {
     const viewport = viewportRef.current;
     const track = trackRef.current;
@@ -206,9 +234,12 @@ export function Carousel() {
 
     const tick = () => {
       const now = Date.now();
+      const autoplaySuspended =
+        userPausedRef.current || hoverPausedRef.current;
+
       if (
         !reducedMotionRef.current &&
-        !paused &&
+        !autoplaySuspended &&
         now >= resumeAtRef.current &&
         wrapDeltaRef.current > 0
       ) {
@@ -237,7 +268,7 @@ export function Carousel() {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("load", init);
     };
-  }, [paused, recalc, syncActiveIndex]);
+  }, [recalc, syncActiveIndex]);
 
   return (
     <div className="relative pb-14 md:pb-20">
@@ -251,10 +282,12 @@ export function Carousel() {
         ref={viewportRef}
         className="overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         aria-label="Recent client websites"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
+        onMouseEnter={() => {
+          hoverPausedRef.current = true;
+        }}
+        onMouseLeave={() => {
+          hoverPausedRef.current = false;
+        }}
       >
         <ul ref={trackRef} className="flex w-max gap-4 px-5 md:gap-5 md:px-8">
           {MARQUEE_ITEMS.map((p, index) => (
@@ -265,7 +298,7 @@ export function Carousel() {
         </ul>
       </div>
 
-      <div className="mt-4 flex justify-center gap-3">
+      <div className="mt-4 flex items-center justify-center gap-3">
         <button
           type="button"
           onClick={() => scrollByCard(-1)}
@@ -273,6 +306,15 @@ export function Carousel() {
           className="rounded-full border border-rule bg-bg p-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
         >
           <ChevronLeft />
+        </button>
+        <button
+          type="button"
+          onClick={togglePause}
+          aria-label={userPaused ? "Resume carousel" : "Pause carousel"}
+          aria-pressed={userPaused}
+          className="rounded-full border border-rule bg-bg p-2.5 text-ink-soft transition hover:border-ink hover:text-ink"
+        >
+          {userPaused ? <PlayIcon /> : <PauseIcon />}
         </button>
         <button
           type="button"
