@@ -40,7 +40,7 @@ export function Pricing() {
               $0 <span className="text-2xl text-ink-soft">free</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
-              First month hosting free with any design.
+              First month hosting free with handcrafted custom site.
             </p>
           </article>
 
