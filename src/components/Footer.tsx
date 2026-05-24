@@ -24,9 +24,9 @@ export function Footer() {
         </div>
 
         <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <a href="#pricing" className="transition hover:text-ink">Pricing</a>
-          <a href="#how" className="transition hover:text-ink">How it works</a>
-          <a href="#faq" className="transition hover:text-ink">FAQ</a>
+          <Link href="/#pricing" className="transition hover:text-ink">Pricing</Link>
+          <Link href="/#how" className="transition hover:text-ink">How it works</Link>
+          <Link href="/#faq" className="transition hover:text-ink">FAQ</Link>
           <Link href="/legal/terms" className="transition hover:text-ink">Terms</Link>
           <Link href="/legal/privacy" className="transition hover:text-ink">Privacy</Link>
           <a href="mailto:hello@998webdesigns.com" className="transition hover:text-ink">

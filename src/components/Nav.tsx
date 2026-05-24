@@ -22,19 +22,19 @@ export function Nav() {
         </Link>
 
         <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-          <a href="#work" className="transition hover:text-ink">Our work</a>
-          <a href="#how" className="transition hover:text-ink">How it works</a>
-          <a href="#pricing" className="transition hover:text-ink">Pricing</a>
-          <a href="#faq" className="transition hover:text-ink">FAQ</a>
+          <Link href="/#work" className="transition hover:text-ink">Our work</Link>
+          <Link href="/#how" className="transition hover:text-ink">How it works</Link>
+          <Link href="/#pricing" className="transition hover:text-ink">Pricing</Link>
+          <Link href="/#faq" className="transition hover:text-ink">FAQ</Link>
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="#start"
+          <Link
+            href="/#start"
             className="inline-flex items-center justify-center rounded-full bg-ink px-4 py-2 text-sm font-medium text-bg transition hover:bg-ink-soft"
           >
             Get a preview
-          </a>
+          </Link>
         </div>
       </nav>
     </header>
