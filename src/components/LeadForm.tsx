@@ -380,11 +380,11 @@ export function LeadForm() {
               <Field label="Hosting choice">
                 <p className="mb-3 text-sm leading-relaxed text-ink-soft">
                   First month of hosting is $0 with every site. Starting month two: $98/month or
-                  $998 lifetime — or decide later.
+                  $1,799 lifetime — or decide later.
                 </p>
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
-                    ["lifetime", "Lifetime $998"],
+                    ["lifetime", "Lifetime $1,799"],
                     ["monthly", "Month-to-month $98"],
                     ["later", "Decide later"],
                   ] as const).map(([val, label]) => (

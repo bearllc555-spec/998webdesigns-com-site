@@ -56,7 +56,7 @@ export function Pricing() {
               $98 <span className="text-2xl text-ink-soft">/ month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Cancel anytime. Upgrade to lifetime hosting whenever you want for $998.
+              Cancel anytime. Upgrade to lifetime hosting whenever you want for $1,799.
             </p>
           </article>
 
@@ -65,7 +65,7 @@ export function Pricing() {
               Lifetime hosting
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $998 <span className="text-2xl text-ink-soft">/ one-time</span>
+              $1,799 <span className="text-2xl text-ink-soft">/ one-time</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Pay once. We host your site forever. Never billed again for hosting.
@@ -105,7 +105,7 @@ export function Pricing() {
               Upgrading hosting
             </p>
             <p className="mt-3 text-base leading-relaxed text-ink">
-              Start month-to-month, switch to lifetime hosting whenever you want for $998. Past
+              Start month-to-month, switch to lifetime hosting whenever you want for $1,799. Past
               monthly payments don&rsquo;t apply toward the lifetime price &mdash; we say this up
               front so it&rsquo;s never a surprise.
             </p>
