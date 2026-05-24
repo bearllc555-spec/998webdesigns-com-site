@@ -47,18 +47,6 @@ export function Pricing() {
           {/* Hosting choice */}
           <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
-              Lifetime hosting
-            </p>
-            <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $998 <span className="text-xl text-ink-soft">one-time</span>
-            </p>
-            <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Pay once. We host your site forever. Never billed again.
-            </p>
-          </article>
-
-          <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Month-to-month lease
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
@@ -66,6 +54,18 @@ export function Pricing() {
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Cancel anytime. Upgrade to lifetime hosting whenever you want for $998.
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wider text-slate">
+              Lifetime hosting
+            </p>
+            <p className="mt-2 font-display text-4xl font-medium tracking-tight">
+              $998 <span className="text-xl text-ink-soft">one-time</span>
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-ink-soft">
+              Pay once. We host your site forever. Never billed again.
             </p>
           </article>
 
