@@ -47,7 +47,7 @@ export function Pricing() {
           {/* Hosting choice */}
           <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
-              Month-to-month lease
+              Hosting Option A Month-to-month lease
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
               $98 <span className="text-xl text-ink-soft">/ month</span>
