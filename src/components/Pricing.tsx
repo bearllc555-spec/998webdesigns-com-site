@@ -62,7 +62,7 @@ export function Pricing() {
               Hosting Option B
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $998 <span className="text-xl text-ink-soft">one-time</span>
+              $998 <span className="text-xl text-ink-soft">/ one-time</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Pay once. We host your site forever. Never billed again.
@@ -76,8 +76,8 @@ export function Pricing() {
             </p>
             <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-baseline md:gap-10">
               <div>
-                <p className="font-display text-3xl font-medium tracking-tight">
-                  Free for the first month
+                <p className="font-display text-4xl font-medium tracking-tight">
+                  Free <span className="text-xl text-ink-soft">/ first month</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   While we get your site dialed in.
@@ -85,8 +85,8 @@ export function Pricing() {
               </div>
               <div className="hidden h-12 w-px bg-rule md:block" />
               <div>
-                <p className="font-display text-3xl font-medium tracking-tight">
-                  $10 each &middot; $50 minimum
+                <p className="font-display text-4xl font-medium tracking-tight">
+                  $10 <span className="text-xl text-ink-soft">/ edit · $50 minimum</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   After month one, submit edits via form. $10 deducted per edit from a $50 minimum
