@@ -378,6 +378,10 @@ export function LeadForm() {
               </Field>
 
               <Field label="Hosting choice">
+                <p className="mb-3 text-sm leading-relaxed text-ink-soft">
+                  First month of hosting is $0 with every site. Starting month two: $98/month or
+                  $998 lifetime — or decide later.
+                </p>
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
                     ["lifetime", "Lifetime $998"],

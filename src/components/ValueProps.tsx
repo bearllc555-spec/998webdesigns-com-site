@@ -1,7 +1,7 @@
 const props = [
   {
-    title: "Handcrafted by world-class designers",
-    body: "No templates. No AI slop. A real designer working on your site, by hand, like a craftsperson.",
+    title: "Designed by experienced designers",
+    body: "No templates. No AI slop. A real designer working on your site by hand, like a craftsperson.",
   },
   {
     title: "Delivered in 5–7 business days",
@@ -23,12 +23,8 @@ export function ValueProps() {
               key={p.title}
               className="rounded-2xl border border-rule bg-bg p-7 shadow-sm"
             >
-              <h3 className="font-display text-xl font-medium leading-snug">
-                {p.title}
-              </h3>
-              <p className="mt-3 text-base leading-relaxed text-ink-soft">
-                {p.body}
-              </p>
+              <h3 className="font-display text-xl font-medium leading-snug">{p.title}</h3>
+              <p className="mt-3 text-base leading-relaxed text-ink-soft">{p.body}</p>
             </article>
           ))}
         </div>

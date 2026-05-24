@@ -26,7 +26,7 @@ export function Hero() {
             href="#start"
             className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-base font-medium text-bg shadow-sm transition hover:bg-ink-soft"
           >
-            Get my free design preview
+            Start your site brief
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
@@ -39,8 +39,10 @@ export function Hero() {
           </a>
         </div>
 
-        <p className="mt-5 text-sm text-slate">
-          5&ndash;7 business days from deposit. Yours to keep, forever.
+        <p className="mt-5 max-w-xl text-sm leading-relaxed text-slate">
+          Submit the brief — we reply with next steps and your $499 deposit invoice. No charge until
+          you pay the invoice. The site design is yours to keep; hosting is separate after a free
+          first month.
         </p>
       </div>
 

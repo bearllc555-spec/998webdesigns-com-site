@@ -103,7 +103,7 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
           {item.name}
         </span>
         <span className="shrink-0 text-xs uppercase tracking-wider text-slate">
-          {item.industry}
+          {item.tag}
         </span>
       </div>
     </>

@@ -7,6 +7,8 @@ export type PortfolioItem = {
   slug: string;
   name: string;
   industry: string;
+  /** Shown on carousel cards — clarifies live demos vs samples. */
+  tag: string;
   url: string;
   thumbnail: string;
   /** When true, thumbnail opens url in a new tab. Preview-only entries are hover-scroll only. */
@@ -18,6 +20,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "serenity-spa",
     name: "Serenity Spa",
     industry: "Spa & wellness",
+    tag: "Live demo",
     url: "https://serenity-spa.998webdesigns.com",
     thumbnail: "/portfolio/serenity-spa-velvet.jpg",
     live: true,
@@ -26,6 +29,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "yogacentric-studio",
     name: "Yoga Center",
     industry: "Yoga studio",
+    tag: "Template demo",
     url: "https://998webdesigns-templates.vercel.app/templates/yogacentric-studio",
     thumbnail: "/portfolio/yogacentric-studio.jpg",
     live: true,
@@ -34,6 +38,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "stayli",
     name: "Vacation Rentals",
     industry: "Travel & stays",
+    tag: "Design reference",
     url: "https://stayli.framer.website/",
     thumbnail: "/portfolio/stayli.jpg?v=18",
   },
@@ -41,6 +46,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "innovative-legal-strategies",
     name: "Innovative Legal Strategies",
     industry: "Law firm",
+    tag: "Sample design",
     url: "#",
     thumbnail: "/portfolio/innovative-legal-strategies.jpg?v=19",
   },
@@ -48,6 +54,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "luxury-real-estate",
     name: "Luxury Real Estate",
     industry: "Real estate",
+    tag: "Sample design",
     url: "#",
     thumbnail: "/portfolio/luxury-real-estate.jpg?v=20",
   },
@@ -55,6 +62,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "luxury-car-rental",
     name: "Luxury Car Rental",
     industry: "Car rental",
+    tag: "Sample design",
     url: "#",
     thumbnail: "/portfolio/luxury-car-rental.jpg?v=21",
   },
@@ -62,6 +70,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "borst-landscape-design",
     name: "Borst Landscape & Design",
     industry: "Landscape design",
+    tag: "Live demo",
     url: "https://998webdesigns-templates.vercel.app/templates/borst-landscape-design",
     thumbnail: "/portfolio/borst-landscape-design.jpg",
     live: true,

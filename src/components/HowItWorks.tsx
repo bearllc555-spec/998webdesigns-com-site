@@ -7,17 +7,17 @@ const steps = [
   {
     n: "02",
     title: "Pay the $499 deposit",
-    body: "An invoice is sent the moment you submit. The clock starts the second it clears.",
+    body: "An invoice is sent the moment you submit. The design clock starts the second it clears — half of the $998 total.",
   },
   {
     n: "03",
-    title: "We design in 5–7 business days",
+    title: "Design in 5–7 days",
     body: "Handcrafted, not templated. A real designer working on your site by hand.",
   },
   {
     n: "04",
     title: "Approve and go live",
-    body: "You approve the draft, pay the balance, we host it. Live the same day.",
+    body: "You approve the draft, pay the $499 balance, and we host it. Live the same day.",
   },
 ];
 
@@ -40,9 +40,7 @@ export function HowItWorks() {
               <h3 className="font-display text-3xl font-medium leading-tight">
                 <span className="text-accent">{s.n}</span> {s.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                {s.body}
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">{s.body}</p>
             </li>
           ))}
         </ol>

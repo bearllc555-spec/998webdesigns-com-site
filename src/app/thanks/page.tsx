@@ -43,7 +43,7 @@ export default function Thanks() {
             <Step
               n="04"
               title="Go live + balance due"
-              body="Approve the design, we pay the balance ($499) invoice, and we host the site. Same-day launch."
+              body="Approve the design, you pay the $499 balance invoice, and we host the site. Same-day launch."
             />
           </ol>
 

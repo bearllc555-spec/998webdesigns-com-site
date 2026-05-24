@@ -3,7 +3,7 @@ export type FAQItem = { q: string; a: string };
 export const faq: FAQItem[] = [
   {
     q: "What's actually included for $998?",
-    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 5–7 business days from the moment your deposit clears.",
+    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, a contact form, basic SEO setup (meta tags, speed, mobile), and a blog section you can post to. We help with domain setup. Designed in 5–7 business days from the moment your deposit clears.",
   },
   {
     q: "How is this so much cheaper than an agency?",
@@ -15,11 +15,11 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Where is my site hosted? Is it fast and secure?",
-    a: "On edge cloud hosting — the same enterprise-grade infrastructure that powers Stripe, OpenAI, Shopify, DoorDash, and Discord. In plain English: your site loads fast for visitors anywhere in the world (it's served from the data center closest to them), HTTPS encryption is automatic and renewed for free for the life of the site, and the site scales itself if you get a sudden rush — a local news mention, a viral post, a holiday surge. Bot floods and DDoS attacks get filtered before they hit your site, pages cache at the edge for snappy repeat visits, and there are no servers to maintain or IT person to call. We handle every piece of it.",
+    a: "On enterprise edge hosting — the same class of infrastructure used by major global brands. Your site loads fast worldwide, HTTPS is automatic, and we handle maintenance. No servers for you to manage.",
   },
   {
     q: "What if I want to leave?",
-    a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us forever — and you can migrate it elsewhere whenever you want; we'll hand over the files.",
+    a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us — and you can migrate it elsewhere whenever you want; we'll hand over the files.",
   },
   {
     q: "What's the edit policy after month one?",
