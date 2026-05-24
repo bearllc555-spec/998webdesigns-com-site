@@ -6,6 +6,18 @@ export const faq: FAQItem[] = [
     a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, a contact form, basic SEO setup (meta tags, speed, mobile), and a blog section you can post to. We help with domain setup. Designed in 5–7 business days from the moment your deposit clears.",
   },
   {
+    q: "What does hosting cost after the first month?",
+    a: "First month of hosting is $0 with every site. Starting month two, you choose: $98/month (cancel anytime) or $1,799 one-time for lifetime hosting. You can decide when you submit the brief or wait until launch.",
+  },
+  {
+    q: "What's the difference between month-to-month and lifetime hosting?",
+    a: "Month-to-month ($98/mo) is pay-as-you-go — cancel anytime. Lifetime ($1,799 once) means we host your site forever with no recurring hosting bill. Lifetime also includes one standard domain registered in your name for 10 years. Past monthly payments don't apply toward the lifetime price.",
+  },
+  {
+    q: "Do I have to host with you?",
+    a: "No. The $998 is for custom site design — you own the files. Most clients host with us because it's simple, but you can take the site elsewhere. Month-to-month hosting can be cancelled anytime; we'll hand over a clean export.",
+  },
+  {
     q: "How is this so much cheaper than an agency?",
     a: "We keep scope tight on purpose. We do one thing — design and host a great-looking, fast small-business website — and we do it without account managers, retainers, or a slide deck full of jargon. The $998 covers exactly what's listed; anything beyond it is priced clearly upfront.",
   },

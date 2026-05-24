@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 
 export const metadata = {
   title: "Privacy policy | 998 web designs",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 export default function PrivacyPage() {

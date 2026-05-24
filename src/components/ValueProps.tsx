@@ -1,7 +1,7 @@
 const props = [
   {
     title: "Designed by experienced designers",
-    body: "No templates. No AI slop. A real designer working on your site by hand, like a craftsperson.",
+    body: "Custom-designed for your business — not a DIY page builder. A real designer working on your site by hand, like a craftsperson.",
   },
   {
     title: "Delivered in 5–7 business days",

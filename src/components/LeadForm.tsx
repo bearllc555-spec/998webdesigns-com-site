@@ -113,9 +113,14 @@ export function LeadForm() {
         payload,
         submitted_at: new Date().toISOString(),
       });
-      // If the table doesn't exist yet (v0.1), the insert errors but we still redirect to /thanks
-      // so the user sees the success state. Log for diagnostic.
-      if (error) console.warn("[leads] supabase insert failed:", error.message, payload);
+      if (error) {
+        console.warn("[leads] supabase insert failed:", error.message, payload);
+        setSubmitError(
+          "We couldn't save your brief. Please try again, or email hello@998webdesigns.com and we'll pick it up manually."
+        );
+        setSubmitting(false);
+        return;
+      }
       router.push("/thanks");
     } catch (err) {
       setSubmitError(

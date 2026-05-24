@@ -15,19 +15,34 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "998 web designs — handcrafted websites for small businesses. $998 once.",
+  title: "998 web designs — custom site design for $998",
   description:
-    "A handcrafted custom website for small businesses. $998 once. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
+    "Handcrafted custom site design for small businesses — $998 flat. Delivered in 5–7 business days. First month hosting free; $98/mo or $1,799 lifetime after that.",
   metadataBase: new URL("https://998webdesigns.com"),
   openGraph: {
-    title: "998 web designs — handcrafted websites for small businesses",
+    title: "998 web designs — custom site design for $998",
     description:
-      "A handcrafted custom website for $998. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
+      "Handcrafted custom site design for $998. Delivered in 5–7 business days. Hosting separate after a free first month.",
     url: "https://998webdesigns.com",
     siteName: "998 web designs",
     type: "website",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "998 web designs — custom site design for $998",
+      },
+    ],
   },
-  robots: { index: false, follow: false }, // flip when ready to launch publicly
+  twitter: {
+    card: "summary_large_image",
+    title: "998 web designs — custom site design for $998",
+    description:
+      "Handcrafted custom site design for $998. Delivered in 5–7 business days.",
+    images: ["/og.png"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

@@ -19,7 +19,7 @@ export function Footer() {
             </span>
           </Link>
           <p className="mt-2 text-sm text-slate">
-            A handcrafted website for $998. A Bear LLC digital property.
+            Custom site design for $998. Hosting from $98/mo. A Bear LLC digital property.
           </p>
         </div>
 

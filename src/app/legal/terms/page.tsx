@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 
 export const metadata = {
   title: "Terms of service | 998 web designs",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 export default function TermsPage() {
@@ -57,9 +57,19 @@ export default function TermsPage() {
             <section>
               <h2 className="font-display text-xl font-medium text-ink">Hosting &amp; cancellation</h2>
               <p className="mt-3">
-                Month-to-month hosting may be cancelled anytime. Lifetime hosting is a one-time fee
-                for ongoing hosting. Past monthly payments do not apply toward lifetime hosting
-                conversion.
+                First month of hosting is included at no charge. Starting month two: month-to-month
+                hosting is $98/month (cancel anytime) or lifetime hosting is $1,799 one-time. Lifetime
+                hosting includes one standard domain registered in your name for 10 years. Past monthly
+                payments do not apply toward lifetime hosting conversion.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="font-display text-xl font-medium text-ink">Edits</h2>
+              <p className="mt-3">
+                Edits are free for the first month after launch. After that, edits are $10 each,
+                submitted via form, with a $50 minimum account top-up. Current edit pricing is listed
+                on our pricing page at the time you engage us.
               </p>
             </section>
 

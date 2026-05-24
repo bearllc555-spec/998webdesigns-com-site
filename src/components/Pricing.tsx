@@ -68,8 +68,9 @@ export function Pricing() {
               $1,799 <span className="text-2xl text-ink-soft">/ one-time</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Pay once. We host your site forever. Never billed again for hosting. Includes Domain
-              Registration for 10 years.
+              Pay once. We host your site forever &mdash; never billed again for hosting. Includes
+              one standard domain (.com, .net, etc.) registered in your name for 10 years;
+              renewals after that are yours to manage. Edits after month one are billed separately.
             </p>
           </article>
 

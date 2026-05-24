@@ -2,6 +2,7 @@
 // Add a new client = add one entry here. Drop the thumbnail under public/portfolio/<slug>.jpg.
 // Use real screenshots — full-page captures, ~1200px wide. The Carousel reveals the rest of the
 // page on hover (the "scroll-reveal" pattern).
+// Order: live demos first, then template demos, samples, references.
 
 export type PortfolioItem = {
   slug: string;
@@ -26,6 +27,15 @@ export const portfolio: PortfolioItem[] = [
     live: true,
   },
   {
+    slug: "borst-landscape-design",
+    name: "Borst Landscape & Design",
+    industry: "Landscape design",
+    tag: "Live demo",
+    url: "https://998webdesigns-templates.vercel.app/templates/borst-landscape-design",
+    thumbnail: "/portfolio/borst-landscape-design.jpg",
+    live: true,
+  },
+  {
     slug: "yogacentric-studio",
     name: "Yoga Center",
     industry: "Yoga studio",
@@ -33,14 +43,6 @@ export const portfolio: PortfolioItem[] = [
     url: "https://998webdesigns-templates.vercel.app/templates/yogacentric-studio",
     thumbnail: "/portfolio/yogacentric-studio.jpg",
     live: true,
-  },
-  {
-    slug: "stayli",
-    name: "Vacation Rentals",
-    industry: "Travel & stays",
-    tag: "Design reference",
-    url: "https://stayli.framer.website/",
-    thumbnail: "/portfolio/stayli.jpg?v=18",
   },
   {
     slug: "innovative-legal-strategies",
@@ -67,13 +69,12 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/luxury-car-rental.jpg?v=21",
   },
   {
-    slug: "borst-landscape-design",
-    name: "Borst Landscape & Design",
-    industry: "Landscape design",
-    tag: "Live demo",
-    url: "https://998webdesigns-templates.vercel.app/templates/borst-landscape-design",
-    thumbnail: "/portfolio/borst-landscape-design.jpg",
-    live: true,
+    slug: "stayli",
+    name: "Vacation Rentals",
+    industry: "Travel & stays",
+    tag: "Design reference",
+    url: "https://stayli.framer.website/",
+    thumbnail: "/portfolio/stayli.jpg?v=18",
   },
 ];
 

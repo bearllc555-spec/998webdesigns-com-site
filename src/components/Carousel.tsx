@@ -274,7 +274,7 @@ export function Carousel() {
     <div className="relative pb-14 md:pb-20">
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
-          Recent work &middot; hover any thumbnail to scroll through the page
+          Demos &amp; sample designs &middot; hover any thumbnail to scroll through the page
         </p>
       </div>
 
