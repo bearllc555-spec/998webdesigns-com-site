@@ -34,10 +34,10 @@ export function Pricing() {
 
           <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm md:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
-              Design fee
+              Hosting
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $998 <span className="text-2xl text-ink-soft">once</span>
+              $0 <span className="text-2xl text-ink-soft">free</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
               A handcrafted custom site, designed around your business. Delivered in 5&ndash;7
