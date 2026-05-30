@@ -332,7 +332,7 @@ export function LeadForm() {
                 <CheckGroup options={ACTIONS} value={form.visitorActions} onToggle={(v) => toggle("visitorActions", v)} />
               </Field>
 
-              <Field label="Pages you need">
+              <Field label="Pages/Sections you need">
                 <CheckGroup options={PAGES} value={form.pages} onToggle={(v) => toggle("pages", v)} />
                 <input
                   type="text"
