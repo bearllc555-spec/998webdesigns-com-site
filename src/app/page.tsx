@@ -1,6 +1,15 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 export default function Home() {
+  // Safe hydration track for client-side attributes like dates
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased scroll-smooth">
       
@@ -56,7 +65,7 @@ export default function Home() {
           </p>
 
           {/* Visual Showcase Input (No functional client-side search logic) */}
-          <div id="directory" className="max-w-2xl mx-auto bg-white p-2 rounded-2xl border border-slate-200 shadow-xl shadow-slate-100/50 flex flex-col sm:flex-row gap-2">
+          <div id="directory" className="max-w-2xl mx-auto bg-white p-2 rounded-2xl border border-slate-200 shadow-xl shadow-slate-100/50 flex flex-col sm:sm:flex-row gap-2">
             <div className="flex-1 flex items-center px-4 gap-2">
               <span className="text-slate-400 text-lg">🔍</span>
               <input 
@@ -190,7 +199,9 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-8 text-xs font-medium">
             <a href="#home" className="hover:text-white transition-colors">Back to Top</a>
             <span className="text-slate-700">|</span>
-            <span className="text-slate-500">© {new Date().getFullYear()} 998webdesigns.com. All rights reserved.</span>
+            <span className="text-slate-500">
+              © {mounted ? new Date().getFullYear() : '2026'} 998webdesigns.com. All rights reserved.
+            </span>
           </div>
         </div>
       </footer>
