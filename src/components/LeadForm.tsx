@@ -363,7 +363,7 @@ export function LeadForm() {
                   rows={3}
                   value={form.inspirationUrls}
                   onChange={(e) => set("inspirationUrls", e.target.value)}
-                  placeholder={"https://...\nhttps://...\nhttps://..."}
+                  placeholder={"www.\nwww.\nwww."}
                   className={inputCls()}
                 />
               </Field>
