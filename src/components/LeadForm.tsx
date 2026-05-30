@@ -275,7 +275,7 @@ export function LeadForm() {
                   type="url"
                   value={form.existingUrl}
                   onChange={(e) => set("existingUrl", e.target.value)}
-                  placeholder="https://"
+                  placeholder="www.yourwebsite.com"
                   className={inputCls()}
                 />
               </Field>
