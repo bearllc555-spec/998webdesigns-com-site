@@ -35,12 +35,23 @@ export function HowItWorks() {
         </div>
 
         <ol className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-rule bg-rule md:grid-cols-4">
-          {steps.map((s) => (
+          {steps.map((s, i) => (
             <li key={s.n} className="bg-bg p-7">
               <h3 className="font-display text-3xl font-medium leading-tight">
                 <span className="text-accent">{s.n}</span> {s.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-soft">{s.body}</p>
+              {i === 0 && (
+                <a
+                  href="#start"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-bg shadow-sm transition hover:bg-ink-soft"
+                >
+                  Get Started
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              )}
             </li>
           ))}
         </ol>
