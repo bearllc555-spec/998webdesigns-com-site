@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabasePublic } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 type ContactPref = "email" | "phone" | "text";
 type Redesign = "new" | "redesign";
@@ -103,10 +103,18 @@ export function LeadForm() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        setSubmitError(
+          "Connection to our database is not available. Please email hello@998webdesigns.com with your details."
+        );
+        setSubmitting(false);
+        return;
+      }
       // Static-export build: write directly to Supabase from the browser.
       // The publishable (anon) key is designed for this. Insert is the only allowed op via RLS.
       const { website: _hp, ...payload } = form;
-      const { error } = await supabasePublic.from("wd_leads").insert({
+      const { error } = await supabase.from("wd_leads").insert({
         email: payload.email,
         business_name: payload.businessName,
         full_name: payload.fullName,
