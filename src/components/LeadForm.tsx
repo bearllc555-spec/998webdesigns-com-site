@@ -98,6 +98,8 @@ export function LeadForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Only allow submission from step 3 (the final step)
+    if (step !== 3) return;
     if (!validateStep()) return;
     if (form.website) return; // honeypot tripped — silently no-op
     setSubmitting(true);
