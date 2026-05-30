@@ -79,11 +79,104 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-4">
-              Our Services
+              {/* 3. CORE SERVICES & FEATURED WORK SHOWCASE */}
+      <section id="stories" className="py-24 bg-slate-900 text-white border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-6">
+          
+          {/* Section Header */}
+          <div className="max-w-3xl mx-auto text-center mb-20">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 mb-4">
+              ✨ Featured Deployments
+            </span>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-6">
+              Engineered for High-Conversion Local Growth
             </h2>
-            <p className="text-slate-600">
-              Customized digital assets built to scale your regional traffic and capture localized market share seamlessly.
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+              Explore our live framework structures optimized for regional search visibility, automated client onboarding, and seamless lead management.
             </p>
+          </div>
+
+          {/* 3-Column Visual Layout Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            
+            {/* Project 1: Home Services (Plumbing/HVAC) */}
+            <div className="bg-slate-800/50 border border-slate-800 rounded-2xl p-8 flex flex-col justify-between hover:border-slate-700 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">Home Services Framework</span>
+                  <span className="text-xs font-medium bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">Live Deployment</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">
+                  Plumbing & HVAC Suite
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                  A high-speed, localized framework built to capture urgent service dispatch leads and route them instantly to field operators.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800">
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">⚡ Vercel Edge</span>
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">📈 Programmatic SEO</span>
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">📥 Lead Router</span>
+                </div>
+              </div>
+              <div className="mt-8 pt-4">
+                <span className="text-sm font-semibold text-indigo-400 group-hover:text-indigo-300 inline-flex items-center gap-1.5 transition-colors">
+                  View Architecture Layout →
+                </span>
+              </div>
+            </div>
+
+            {/* Project 2: Premium Aesthetics (Spa/Wellness) */}
+            <div className="bg-slate-800/50 border border-slate-800 rounded-2xl p-8 flex flex-col justify-between hover:border-slate-700 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-xs font-bold uppercase tracking-wider text-violet-400">Luxury Wellness Framework</span>
+                  <span className="text-xs font-medium bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">Live Deployment</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-violet-400 transition-colors">
+                  Serenity Spa Platform
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                  A premium, aesthetic-first interface featuring an intent-driven booking module and interactive palette preview tools.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800">
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">🎨 Premium UX</span>
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">📅 Intent Booking</span>
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">⚡ Next.js Caching</span>
+                </div>
+              </div>
+              <div className="mt-8 pt-4">
+                <span className="text-sm font-semibold text-violet-400 group-hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
+                  View Architecture Layout →
+                </span>
+              </div>
+            </div>
+
+            {/* Project 3: B2B Specialty (Digital Assets) */}
+            <div className="bg-slate-800/50 border border-slate-800 rounded-2xl p-8 flex flex-col justify-between hover:border-slate-700 transition-all group">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Media & Content Framework</span>
+                  <span className="text-xs font-medium bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full">Live Deployment</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors">
+                  ReelPhone System
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                  Optimized digital layout architectures engineered for rapid content parsing, high-density graphics rendering, and scannable visual structures.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-800">
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">📱 High-Density UI</span>
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">📊 Asset Engine</span>
+                  <span className="text-xs bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md">🔍 Strict Guardrails</span>
+                </div>
+              </div>
+              <div className="mt-8 pt-4">
+                <span className="text-sm font-semibold text-emerald-400 group-hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors">
+                  View Architecture Layout →
+                </span>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
