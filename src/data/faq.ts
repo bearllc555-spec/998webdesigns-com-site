@@ -11,7 +11,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What's the difference between month-to-month and lifetime hosting?",
-    a: "Month-to-month ($98/mo) is pay-as-you-go — cancel anytime. Lifetime ($1,799 once) means we host your site forever with no recurring hosting bill. Lifetime also includes one standard domain registered in your name for 10 years. Past monthly payments don't apply toward the lifetime price.",
+    a: "Month-to-month ($98/mo) is pay-as-you-go — cancel anytime. Lifetime ($1,799 once) means we host your site forever with no recurring hosting bill. Lifetime also includes one standard domain registered (com, net, org) in your name for 10 years. Past monthly payments don't apply toward the lifetime price.",
   },
   {
     q: "Do I have to host with you?",
