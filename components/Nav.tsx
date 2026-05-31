@@ -31,7 +31,7 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <a
             href="#start"
-            className="inline-flex items-center justify-center rounded-full bg-ink px-4 py-2 text-sm font-medium text-bg transition hover:bg-ink-soft"
+            className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-bg transition hover:bg-accent-deep"
           >
             Get Started
           </a>

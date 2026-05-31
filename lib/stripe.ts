@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 
 let stripeInstance: Stripe | null = null
 
-export const stripe = new Proxy({} as Stripe, {
+export const stripe = new Proxy({} as unknown as Stripe, {
   get(_, prop) {
     if (!stripeInstance) {
       if (!process.env.STRIPE_SECRET_KEY) {
@@ -12,6 +12,6 @@ export const stripe = new Proxy({} as Stripe, {
       }
       stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY)
     }
-    return (stripeInstance as Record<string, unknown>)[prop as string]
+    return (stripeInstance as unknown as Record<string, unknown>)[prop as string]
   }
 })

@@ -24,7 +24,7 @@ export function Hero() {
         <div className="mt-9 flex flex-wrap items-center gap-3">
           <a
             href="#start"
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-base font-medium text-bg shadow-sm transition hover:bg-ink-soft"
+            className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-base font-medium text-bg shadow-sm transition hover:bg-accent-deep"
           >
             Get started with a new design
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-4 w-4">

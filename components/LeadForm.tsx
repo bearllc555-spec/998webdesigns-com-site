@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type ContactPref = "email" | "phone" | "text";
+type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
 
 type PaymentOption = "deposit" | "full";
@@ -39,7 +39,7 @@ type FormState = {
 };
 
 const initial: FormState = {
-  fullName: "", businessName: "", email: "", phone: "", contactPref: "email",
+  fullName: "", businessName: "", email: "", phone: "", contactPref: "",
   industry: "", yearsInBusiness: "", existingUrl: "", whatYouDo: "", whoYouServe: "",
   projectType: "", visitorActions: [], pages: [], pagesOther: "", brandAssets: [],
   inspirationUrls: "", avoidances: "",
@@ -79,6 +79,7 @@ export function LeadForm() {
       if (!form.email.trim()) e.email = "Email, please.";
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
         e.email = "That doesn't look like an email.";
+      if (!form.contactPref) e.contactPref = "Please select one.";
     }
     if (step === 1) {
       if (!form.industry.trim()) e.industry = "Tell us your industry.";
@@ -219,15 +220,15 @@ export function LeadForm() {
                   className={inputCls()}
                 />
               </Field>
-              <Field label="Best way to reach you (select one)" className="md:col-span-2">
+              <Field label="Best way to reach you (select one)" className="md:col-span-2" error={errors.contactPref}>
                 <div className="flex gap-2">
                   {(["email", "phone", "text"] as const).map((opt) => (
                     <label
                       key={opt}
                       className={`flex-1 cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium capitalize transition ${
                         form.contactPref === opt
-                          ? "border-ink bg-ink text-bg"
-                          : "border-rule bg-bg text-ink-soft hover:border-ink-soft"
+                          ? "border-accent bg-accent text-bg"
+                          : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                       }`}
                     >
                       <input
@@ -306,8 +307,8 @@ export function LeadForm() {
                       key={val}
                       className={`flex-1 cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium transition ${
                         form.projectType === val
-                          ? "border-ink bg-ink text-bg"
-                          : "border-rule bg-bg text-ink-soft hover:border-ink-soft"
+                          ? "border-accent bg-accent text-bg"
+                          : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                       }`}
                     >
                       <input
@@ -374,8 +375,8 @@ export function LeadForm() {
                   <label
                     className={`cursor-pointer rounded-xl border px-4 py-4 transition ${
                       form.paymentOption === "deposit"
-                        ? "border-ink bg-ink text-bg"
-                        : "border-rule bg-bg text-ink-soft hover:border-ink-soft"
+                        ? "border-accent bg-accent text-bg"
+                        : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                     }`}
                   >
                     <input
@@ -394,8 +395,8 @@ export function LeadForm() {
                   <label
                     className={`cursor-pointer rounded-xl border px-4 py-4 transition ${
                       form.paymentOption === "full"
-                        ? "border-ink bg-ink text-bg"
-                        : "border-rule bg-bg text-ink-soft hover:border-ink-soft"
+                        ? "border-accent bg-accent text-bg"
+                        : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                     }`}
                   >
                     <input
@@ -434,8 +435,8 @@ export function LeadForm() {
                       key={val}
                       className={`cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium transition ${
                         form.hostingChoice === val
-                          ? "border-ink bg-ink text-bg"
-                          : "border-rule bg-bg text-ink-soft hover:border-ink-soft"
+                          ? "border-accent bg-accent text-bg"
+                          : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                       }`}
                     >
                       <input
@@ -483,10 +484,10 @@ export function LeadForm() {
             </button>
 
             {step < 3 ? (
-              <button
+                <button
                 type="button"
                 onClick={next}
-                className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-bg transition hover:bg-ink-soft"
+                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-deep"
               >
                 Continue &rarr;
               </button>
@@ -553,8 +554,8 @@ function CheckGroup({
             aria-pressed={on}
             className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
               on
-                ? "border-ink bg-ink text-bg"
-                : "border-rule bg-bg text-ink-soft hover:border-ink-soft"
+                ? "border-accent bg-accent text-bg"
+                : "border-rule bg-bg text-ink-soft hover:border-accent/50"
             }`}
           >
             {opt}
