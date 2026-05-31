@@ -427,7 +427,7 @@ export function LeadForm() {
               <Field label="Hosting choice">
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
-                    ["lifetime", "Lifetime $998"],
+                    ["lifetime", "Ten Year $998"],
                     ["monthly", "Month-to-month $98"],
                     ["later", "Decide later"],
                   ] as const).map(([val, label]) => (

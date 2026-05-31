@@ -35,13 +35,13 @@ export function Pricing() {
           {/* Hosting choice */}
           <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
-              Lifetime hosting
+              Ten years of hosting
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $998 <span className="text-xl text-ink-soft">one-time</span>
+              $998 <span className="text-xl text-ink-soft">one-time-ten-years</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Pay once. We host your site forever. Never billed again.
+              Pay once. We host your site for ten years, including domain registration (com, net, org). No monthly bills.
             </p>
           </article>
 
@@ -92,8 +92,8 @@ export function Pricing() {
               Upgrading hosting
             </p>
             <p className="mt-3 text-base leading-relaxed text-ink">
-              Start month-to-month, switch to lifetime hosting whenever you want for $998. Past
-              monthly payments don&rsquo;t apply toward the lifetime price &mdash; we say this up
+              Start month-to-month, switch to ten year hosting whenever you want for $998. Past
+              monthly payments don&rsquo;t apply toward the ten year price &mdash; we say this up
               front so it&rsquo;s never a surprise.
             </p>
           </aside>
