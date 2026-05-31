@@ -22,7 +22,7 @@ export function Nav() {
         </Link>
 
         <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-          <a href="#work" className="transition hover:text-ink">Our work</a>
+          <a href="#work" className="transition hover:text-ink">Recent Work</a>
           <a href="#how" className="transition hover:text-ink">How it works</a>
           <a href="#pricing" className="transition hover:text-ink">Pricing</a>
           <a href="#faq" className="transition hover:text-ink">FAQ</a>

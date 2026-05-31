@@ -44,7 +44,7 @@ export function Hero() {
         </p>
       </div>
 
-      <div id="work">
+      <div id="work" className="scroll-mt-16">
         <Carousel />
       </div>
     </section>
