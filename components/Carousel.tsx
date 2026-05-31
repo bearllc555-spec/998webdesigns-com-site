@@ -55,7 +55,7 @@ export function Carousel() {
     >
       <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
-          Recent work &middot; hover any thumbnail to scroll through the page
+          <span className="text-accent">Recent work</span> &middot; hover any thumbnail to scroll through the page
         </p>
         <div className="hidden items-center gap-2 md:flex">
           <button
