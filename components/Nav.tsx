@@ -22,10 +22,10 @@ export function Nav() {
         </Link>
 
         <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-          <a href="#work" className="transition hover:text-ink">Recent Work</a>
-          <a href="#how" className="transition hover:text-ink">How it works</a>
-          <a href="#pricing" className="transition hover:text-ink">Pricing</a>
-          <a href="#faq" className="transition hover:text-ink">FAQ</a>
+          <a href="#work" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Recent Work</a>
+          <a href="#how" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">How it works</a>
+          <a href="#pricing" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Pricing</a>
+          <a href="#faq" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">FAQ</a>
         </div>
 
         <div className="flex items-center gap-2">
