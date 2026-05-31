@@ -83,7 +83,7 @@ export function Carousel() {
 
       <ul
         ref={trackRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-5 pb-4 md:gap-5 md:px-8"
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pl-0 pr-5 pb-4 mt-4 md:gap-5 md:pr-8 md:mt-6"
         style={{ scrollbarWidth: "thin" }}
         aria-label="Recent client websites"
       >
