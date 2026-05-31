@@ -425,7 +425,7 @@ export function LeadForm() {
                 />
               </Field>
 
-              <Field label="Hosting choice">
+              <Field label="Hosting Choice. First Month Free">
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
                     ["lifetime", "Ten Year $998"],
