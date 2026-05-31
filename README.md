@@ -1,22 +1,33 @@
-# 998webdesigns-com-app
+# v0-998webdesigns-com-app
 
-Next.js marketing + lead-capture app for **998webdesigns.com**. Replaces the static Cloudflare Pages splash with a Vercel-hosted Next.js app.
+This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
 
-The full handoff (stack, env vars, deploy flow, pricing-copy lock, adding portfolio entries, Supabase schema sketch) lives in [`CLAUDE.md`](./CLAUDE.md) at the repo root. Read that first.
+## Built with v0
 
-## Quick start
+This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+
+[Continue working on v0 →](https://v0.app/chat/projects/prj_H1cY5WCHUlj9QYeGPZ9nGjJBUSq9)
+
+## Getting Started
+
+First, run the development server:
 
 ```bash
-npm install
-# .env.local is gitignored — recreate from workspace .local/ secrets per CLAUDE.md
-npm run dev    # http://localhost:3000
-npm run build  # production build
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
 ```
 
-## Stack
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Next.js 16 (App Router, TS, Tailwind v4, Turbopack) + Supabase + (v0.2) Stripe Invoicing + SendGrid + Slack. Deployed to Vercel.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## License
+## Learn More
 
-Private — Bear LLC. Not for redistribution.
+To learn more, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
