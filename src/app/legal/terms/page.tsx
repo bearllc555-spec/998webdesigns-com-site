@@ -68,7 +68,7 @@ export default function TermsPage() {
               <h2 className="font-display text-xl font-medium text-ink">Edits</h2>
               <p className="mt-3">
                 Edits are free for the first month after launch. After that, edits are $10 each,
-                submitted via form, with a $50 minimum account top-up. Current edit pricing is listed
+                submitted via form, with a $40 minimum account top-up. Current edit pricing is listed
                 on our pricing page at the time you engage us.
               </p>
             </section>

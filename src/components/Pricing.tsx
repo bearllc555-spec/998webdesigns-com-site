@@ -93,7 +93,7 @@ export function Pricing() {
                   $10 <span className="text-2xl text-ink-soft">/ edit</span>
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  After month one, submit edits via form. $50 minimum top-up on your account; $10
+                  After month one, submit edits via form. $40 minimum top-up on your account; $10
                   deducted per edit.
                 </p>
               </div>

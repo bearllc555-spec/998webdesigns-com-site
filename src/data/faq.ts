@@ -35,7 +35,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What's the edit policy after month one?",
-    a: "Edits are free for the first month while we get everything dialed in. After that, submit edits via form for $10 each, with a $50 minimum top-up on your account. You see the balance, you see each deduction. No mystery line items.",
+    a: "Edits are free for the first month while we get everything dialed in. After that, submit edits via form for $10 each, with a $40 minimum top-up on your account. You see the balance, you see each deduction. No mystery line items.",
   },
   {
     q: "Do you do logos, copywriting, or SEO?",
