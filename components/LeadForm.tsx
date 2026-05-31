@@ -93,7 +93,8 @@ export function LeadForm() {
     return Object.keys(e).length === 0;
   };
 
-  const next = () => {
+  const next = (e?: React.MouseEvent) => {
+    e?.preventDefault();
     if (!validateStep()) return;
     setStep((s) => Math.min(s + 1, 3));
   };
@@ -486,7 +487,7 @@ export function LeadForm() {
             {step < 3 ? (
                 <button
                 type="button"
-                onClick={next}
+                onClick={(e) => next(e)}
                 className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-deep"
               >
                 Continue &rarr;
