@@ -24,12 +24,12 @@ export function Footer() {
         </div>
 
         <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <a href="#pricing" className="transition hover:text-ink">Pricing</a>
-          <a href="#how" className="transition hover:text-ink">How it works</a>
-          <a href="#faq" className="transition hover:text-ink">FAQ</a>
-          <Link href="/legal/terms" className="transition hover:text-ink">Terms</Link>
-          <Link href="/legal/privacy" className="transition hover:text-ink">Privacy</Link>
-          <a href="mailto:hello@998webdesigns.com" className="transition hover:text-ink">
+          <a href="#pricing" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Pricing</a>
+          <a href="#how" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">How it works</a>
+          <a href="#faq" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">FAQ</a>
+          <Link href="/legal/terms" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Terms</Link>
+          <Link href="/legal/privacy" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Privacy</Link>
+          <a href="mailto:hello@998webdesigns.com" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">
             hello@998webdesigns.com
           </a>
         </nav>
