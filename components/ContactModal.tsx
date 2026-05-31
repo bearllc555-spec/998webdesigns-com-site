@@ -74,7 +74,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-md">
+      <DialogContent className="w-full max-w-md bg-white">
         <DialogHeader>
           <DialogTitle>Get in touch</DialogTitle>
         </DialogHeader>
