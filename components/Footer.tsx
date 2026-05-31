@@ -29,7 +29,7 @@ export function Footer() {
           <a href="#faq" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">FAQ</a>
           <Link href="/legal/terms" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Terms</Link>
           <Link href="/legal/privacy" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Privacy</Link>
-          <a href="mailto:hello@998webdesigns.com" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">
+          <a href="mailto:hello@998webdesigns.com" className="transition hover:text-ink">
             hello@998webdesigns.com
           </a>
         </nav>
