@@ -5,6 +5,7 @@ export const runtime = "nodejs";
 type ContactPayload = {
   name?: string;
   email?: string;
+  businessName?: string;
   message?: string;
   website?: string; // honeypot
 };
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
           <h2>New Contact Form Submission</h2>
           <p><strong>Name:</strong> ${escapeHtml(name)}</p>
           <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          ${body.businessName ? `<p><strong>Business Name:</strong> ${escapeHtml(body.businessName)}</p>` : ""}
           <p><strong>Message:</strong></p>
           <p style="white-space: pre-wrap; background-color: #f5f5f5; padding: 12px; border-radius: 4px;">
             ${escapeHtml(message)}

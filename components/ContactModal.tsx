@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 type ContactFormState = {
   name: string;
   email: string;
+  businessName: string;
   message: string;
   website: string; // honeypot
 };
@@ -20,6 +21,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const [form, setForm] = useState<ContactFormState>({
     name: "",
     email: "",
+    businessName: "",
     message: "",
     website: "",
   });
@@ -63,7 +65,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
       toast.success("Thanks! We'll get back to you soon.");
 
       // Reset form and close modal
-      setForm({ name: "", email: "", message: "", website: "" });
+      setForm({ name: "", email: "", businessName: "", message: "", website: "" });
       onOpenChange(false);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong");
@@ -110,6 +112,20 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               disabled={submitting}
             />
             {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="contact-business" className="block text-sm font-medium text-ink mb-1">
+              Business name <span className="text-slate">(optional)</span>
+            </label>
+            <input
+              id="contact-business"
+              type="text"
+              value={form.businessName}
+              onChange={(e) => set("businessName", e.target.value)}
+              className="w-full px-3 py-2 border border-rule rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+              disabled={submitting}
+            />
           </div>
 
           <div>
