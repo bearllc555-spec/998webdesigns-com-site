@@ -108,7 +108,7 @@ export function TermsContent() {
               </button>
               {" "}or email{" "}
               <Image
-                src="/email-address.jpg"
+                src="/email-address.png"
                 alt="email address: hello@998webdesigns.com"
                 width={210}
                 height={44}

@@ -100,7 +100,7 @@ export function PrivacyContent() {
               </button>
               {" "}or email us at{" "}
               <Image
-                src="/email-address.jpg"
+                src="/email-address.png"
                 alt="email address: hello@998webdesigns.com"
                 width={210}
                 height={44}
