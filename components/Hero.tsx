@@ -38,8 +38,8 @@ export function Hero() {
         </div>
 
         <div className="mt-12 max-w-3xl">
-          <p className="text-sm font-medium uppercase tracking-wide text-ink-soft">
-            High‑value add‑ons like this:
+          <p className="text-sm font-medium uppercase tracking-wide text-blue-600">
+            High‑value add‑ons
           </p>
           <p className="mt-3 text-base leading-relaxed text-ink">
             Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
