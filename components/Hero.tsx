@@ -16,7 +16,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          Strategy, design, and automation in one affordable package, delivered fast for local service businesses.
+          Strategy, design, blogging, hyper‑local SEO, and automation in one affordable package, delivered fast for local service businesses.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -40,6 +40,15 @@ export function Hero() {
         <p className="mt-5 text-sm text-slate">
           5&ndash;7 business days from deposit. Yours to keep, forever.
         </p>
+
+        <div className="mt-12 max-w-3xl">
+          <p className="text-sm font-medium uppercase tracking-wide text-ink-soft">
+            High‑value add‑ons like this:
+          </p>
+          <p className="mt-3 text-base leading-relaxed text-ink">
+            Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
+          </p>
+        </div>
       </div>
 
       <div id="work" className="scroll-mt-16">
