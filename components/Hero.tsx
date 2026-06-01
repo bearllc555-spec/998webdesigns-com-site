@@ -16,7 +16,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          Strategy, design, and automation in one affordable package, delivered fast for local service businesses.
+          Strategy, design, blogging, hyper‑local SEO, and automation in one affordable package, delivered fast for local service businesses.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -29,20 +29,53 @@ export function Hero() {
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </a>
-          <a
-            href="#work"
-            className="inline-flex items-center gap-2 rounded-full border border-rule bg-bg px-6 py-3 text-base font-medium text-ink transition hover:border-ink-soft"
-          >
-            See our work
-          </a>
         </div>
-
-        <p className="mt-5 text-sm text-slate">
-          5&ndash;7 business days from deposit. Yours to keep, forever.
-        </p>
       </div>
 
-      <div id="work" className="scroll-mt-16">
+      <div id="addons" className="border-t border-rule">
+        <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+            High‑value add‑ons
+          </p>
+          <div className="max-w-2xl">
+            <p className="mt-4 text-base leading-relaxed text-ink">
+              Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
+            </p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Email & SMS</h3>
+              <p className="mt-2 text-sm text-ink-soft">Customer nurturing campaigns that keep your clients coming back.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Blogging</h3>
+              <p className="mt-2 text-sm text-ink-soft">Content that attracts organic traffic and keeps customers engaged.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">SEO</h3>
+              <p className="mt-2 text-sm text-ink-soft">Hyper‑local optimization to help customers find you in search results.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Google</h3>
+              <p className="mt-2 text-sm text-ink-soft">Google Business Profile optimization and review management tools.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Calendar</h3>
+              <p className="mt-2 text-sm text-ink-soft">Integrated booking calendar to streamline customer appointments.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="work" className="scroll-mt-16 border-t border-rule">
+        <div className="mx-auto max-w-6xl px-5 pt-6 pb-3 md:px-8 md:pt-8 md:pb-4">
+          <div className="max-w-2xl">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+              Recent work
+            </p>
+          </div>
+        </div>
         <Carousel />
       </div>
     </section>

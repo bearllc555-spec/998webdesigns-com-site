@@ -77,7 +77,7 @@ export function Carousel() {
           </button>
         </div>
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
-          <span className="text-accent">Recent work</span> &middot; hover any thumbnail to scroll through the page
+          Hover any thumbnail to scroll through the page
         </p>
         <div className="hidden items-center gap-2 md:flex">
           <button

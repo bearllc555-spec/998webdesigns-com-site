@@ -8,11 +8,11 @@ export function FAQ() {
 
   return (
     <section id="faq" className="border-b border-rule">
-      <div className="mx-auto max-w-3xl px-5 py-16 md:px-8 md:py-24">
-        <div className="max-w-2xl">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-            FAQ
-          </p>
+      <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+          FAQ
+        </p>
+        <div className="mx-auto max-w-2xl text-center">
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
             Plain answers to fair questions.
           </h2>
