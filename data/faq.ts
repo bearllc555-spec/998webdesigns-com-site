@@ -19,7 +19,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What if I want to leave?",
-    a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us forever — and you can migrate it elsewhere whenever you want; we'll hand over the files.",
+    a: "Month-to-month hosting: cancel anytime. Ten year hosting: your site stays hosted with us for ten years— and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
   },
   {
     q: "What's the edit policy after month three?",
