@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import type { Metadata } from "next";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { ContactModal } from "@/components/ContactModal";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — 998 web designs",
@@ -9,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
+  const [contactOpen, setContactOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-bg">
       <Nav />
@@ -94,7 +100,14 @@ export default function PrivacyPage() {
               6. Contact Us
             </h2>
             <p className="text-ink-soft">
-              If you have questions or comments about this Privacy Policy, please contact us at:
+              If you have questions or comments about this Privacy Policy, please{" "}
+              <button
+                onClick={() => setContactOpen(true)}
+                className="text-accent underline hover:text-accent-deep transition"
+              >
+                get in touch with us
+              </button>
+              {" "}or contact us at:
             </p>
             <p className="mt-4 text-ink-soft">
               <strong>998 web designs</strong>
@@ -117,6 +130,7 @@ export default function PrivacyPage() {
         </div>
       </main>
       <Footer />
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </div>
   );
 }

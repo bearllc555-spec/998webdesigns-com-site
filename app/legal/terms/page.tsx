@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import type { Metadata } from "next";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { ContactModal } from "@/components/ContactModal";
 
 export const metadata: Metadata = {
   title: "Terms of Service — 998 web designs",
@@ -9,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
+  const [contactOpen, setContactOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-bg">
       <Nav />
@@ -102,7 +108,14 @@ export default function TermsPage() {
               9. Contact Information
             </h2>
             <p className="text-ink-soft">
-              If you have any questions about these Terms of Service, please contact us at{" "}
+              If you have any questions about these Terms of Service, please{" "}
+              <button
+                onClick={() => setContactOpen(true)}
+                className="text-accent underline hover:text-accent-deep transition"
+              >
+                get in touch with us
+              </button>
+              {" "}or email{" "}
               <a href="mailto:hello@998webdesigns.com" className="text-accent underline hover:text-accent-deep">
                 hello@998webdesigns.com
               </a>
@@ -111,6 +124,7 @@ export default function TermsPage() {
         </div>
       </main>
       <Footer />
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </div>
   );
 }
