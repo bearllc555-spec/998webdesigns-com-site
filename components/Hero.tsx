@@ -10,9 +10,9 @@ export function Hero() {
         </p>
 
         <h1 className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl">
-          We don&apos;t just build sites.
+          we don&apos;t just build sites.
           <br />
-          We build <span className="text-accent">systems</span> that bring you{" "}
+          we build <span className="text-accent">systems</span> that bring you{" "}
           <span className="text-accent">more</span> business.
         </h1>
 
