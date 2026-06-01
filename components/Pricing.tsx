@@ -9,7 +9,7 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-            $998. Once.
+            $998. once
           </h2>
           <p className="mt-5 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $998 design fee. The pricing below is the whole list — no
