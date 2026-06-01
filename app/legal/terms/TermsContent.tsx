@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ContactModal } from "@/components/ContactModal";
 
 export function TermsContent() {
@@ -106,9 +107,13 @@ export function TermsContent() {
                 get in touch with us
               </button>
               {" "}or email{" "}
-              <span className="text-accent">
-                {"hello@998webdesigns.com"}
-              </span>
+              <Image
+                src="/email-address.jpg"
+                alt="email address: hello@998webdesigns.com"
+                width={280}
+                height={60}
+                className="inline-block align-middle"
+              />
             </p>
           </section>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ContactModal } from "@/components/ContactModal";
 
 export function PrivacyContent() {
@@ -97,10 +98,14 @@ export function PrivacyContent() {
               >
                 get in touch with us
               </button>
-              {" "}or email us at:{" "}
-              <span className="text-accent">
-                {"hello@998webdesigns.com"}
-              </span>
+              {" "}or email us at{" "}
+              <Image
+                src="/email-address.jpg"
+                alt="email address: hello@998webdesigns.com"
+                width={280}
+                height={60}
+                className="inline-block align-middle"
+              />
             </p>
           </section>
 
