@@ -30,12 +30,14 @@ export function Hero() {
             </svg>
           </a>
         </div>
+      </div>
 
-        <div id="addons" className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
-          <div className="max-w-2xl">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-              High‑value add‑ons
-            </p>
+      <div id="addons" className="border-t border-rule">
+        <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+            High‑value add‑ons
+          </p>
+          <div className="mx-auto max-w-2xl">
             <p className="mt-4 text-base leading-relaxed text-ink">
               Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
             </p>
