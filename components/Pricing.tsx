@@ -38,7 +38,7 @@ export function Pricing() {
               Ten years of hosting
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $998 <span className="text-xl text-ink-soft">one-time-ten-years</span>
+              $998 <span className="text-xl text-ink-soft">/one-time-ten-years</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Pay once. We host your site for ten years, including domain registration (com, net, org). No monthly bills.
