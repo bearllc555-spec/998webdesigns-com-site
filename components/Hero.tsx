@@ -31,7 +31,7 @@ export function Hero() {
           </a>
         </div>
 
-        <div className="mt-12 max-w-3xl">
+        <div id="addons" className="mt-20 max-w-3xl scroll-mt-16">
           <p className="text-sm font-medium uppercase tracking-wide text-blue-600">
             High‑value add‑ons
           </p>
