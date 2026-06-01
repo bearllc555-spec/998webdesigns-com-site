@@ -37,10 +37,6 @@ export function Hero() {
           </a>
         </div>
 
-        <p className="mt-5 text-sm text-slate">
-          5&ndash;7 business days from deposit. Yours to keep, forever.
-        </p>
-
         <div className="mt-12 max-w-3xl">
           <p className="text-sm font-medium uppercase tracking-wide text-ink-soft">
             High‑value add‑ons like this:
