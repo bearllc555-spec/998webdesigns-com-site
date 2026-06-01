@@ -496,7 +496,7 @@ export function LeadForm() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg shadow-sm transition hover:bg-accent-deep disabled:opacity-60"
+                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-deep disabled:opacity-60"
               >
                 {submitting ? "Redirecting to payment..." : form.paymentOption === "full" ? "Continue to pay $998" : "Continue to pay $499 deposit"}
               </button>

@@ -148,23 +148,24 @@ body {
     border-color: color-mix(in srgb, var(--accent) 32%, var(--rule));
   }
 
-  /* Subtle gray glow under buttons on hover — buttons + pill CTAs site-wide */
-  button:not(:disabled),
-  a.rounded-full {
-    transition:
-      box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 0.25s ease,
-      border-color 0.25s ease,
-      color 0.25s ease,
-      opacity 0.25s ease;
-  }
+}
 
-  button:not(:disabled):hover,
-  a.rounded-full:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-btn-glow);
-  }
+/* Button glow — unlayered so hover shadow beats Tailwind utilities (e.g. shadow-sm) */
+button:not(:disabled),
+a.rounded-full {
+  transition:
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+button:not(:disabled):hover,
+a.rounded-full:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-btn-glow);
 }
 
 /* Nav link hover underline */
