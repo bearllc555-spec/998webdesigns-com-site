@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
 
 export const runtime = "nodejs";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 type ContactPayload = {
   name?: string;
@@ -47,6 +44,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Lazy-load Resend only when needed
+    const { Resend } = await import("resend");
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
     // Send email via Resend
     const { error } = await resend.emails.send({
       from: "website@998webdesigns.com",
