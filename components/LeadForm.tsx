@@ -168,7 +168,7 @@ export function LeadForm() {
 
         <form
           onSubmit={submit}
-          className="card-lift mt-10 rounded-2xl border border-rule bg-bg p-6 shadow-sm md:p-8"
+          className="mt-10 rounded-2xl border border-rule bg-bg p-6 shadow-sm md:p-8"
           noValidate
         >
           {/* Honeypot — hidden from real users */}
