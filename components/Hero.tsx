@@ -43,7 +43,11 @@ export function Hero() {
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Email & SMS</h3>
+              <p className="mt-2 text-sm text-ink-soft">Customer nurturing campaigns that keep your clients coming back.</p>
+            </div>
             <div className="rounded-xl border border-rule bg-bg p-6">
               <h3 className="font-display text-lg font-medium text-ink">Blogging</h3>
               <p className="mt-2 text-sm text-ink-soft">Content that attracts organic traffic and keeps customers engaged.</p>
