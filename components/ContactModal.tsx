@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import confetti from "canvas-confetti";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type ContactFormState = {
@@ -28,6 +29,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const set = <K extends keyof ContactFormState>(k: K, v: ContactFormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -75,11 +77,27 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
     if (!val) setTimeout(() => setSubmitted(false), 300);
   };
 
+  useEffect(() => {
+    if (!submitted || !canvasRef.current) return;
+    const myConfetti = confetti.create(canvasRef.current, { resize: true, useWorker: false });
+    const colors = ["#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe", "#ffffff"];
+    myConfetti({
+      particleCount: 120,
+      spread: 80,
+      startVelocity: 30,
+      origin: { x: 0.5, y: 0.6 },
+      colors,
+      ticks: 200,
+    });
+    return () => myConfetti.reset();
+  }, [submitted]);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="w-full max-w-md bg-white">
         {submitted ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-10 text-center">
+          <div className="relative flex flex-col items-center justify-center gap-4 py-10 text-center overflow-hidden">
+            <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
               <svg className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
