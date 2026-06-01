@@ -29,12 +29,6 @@ export function Hero() {
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </a>
-          <a
-            href="#work"
-            className="inline-flex items-center gap-2 rounded-full border border-rule bg-bg px-6 py-3 text-base font-medium text-ink transition hover:border-ink-soft"
-          >
-            See our work
-          </a>
         </div>
 
         <div className="mt-12 max-w-3xl">
