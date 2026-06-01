@@ -146,6 +146,21 @@ body {
     border-color: color-mix(in srgb, var(--accent) 32%, var(--rule));
   }
 
+  /* Subtle shadow on hover — buttons + pill CTAs (links) site-wide */
+  button:not(:disabled),
+  a.rounded-full {
+    transition:
+      box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease,
+      opacity 0.25s ease;
+  }
+
+  button:not(:disabled):hover,
+  a.rounded-full:hover {
+    box-shadow: var(--shadow-md);
+  }
 }
 
 /* Nav link hover underline */
