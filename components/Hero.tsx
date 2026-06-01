@@ -12,7 +12,8 @@ export function Hero() {
         <h1 className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl">
           We don&apos;t just build sites.
           <br />
-          We build <span className="text-accent">systems</span> that bring you more business.
+          We build <span className="text-accent">systems</span> that bring you{" "}
+          <span className="text-accent">more</span> business.
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
