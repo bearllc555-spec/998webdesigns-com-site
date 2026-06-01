@@ -31,16 +31,31 @@ export function Footer() {
           </div>
 
           <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <Link href="/#addons" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Add‑ons</Link>
-            <Link href="/#work" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Recent Work</Link>
-            <Link href="/#how" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">How it works</Link>
-            <Link href="/#pricing" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Pricing</Link>
-            <Link href="/#faq" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">FAQ</Link>
-            <Link href="/legal/terms" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Terms</Link>
-            <Link href="/legal/privacy" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Privacy</Link>
+            <Link href="/#addons" className="nav-link transition hover:text-ink">
+              Add‑ons
+            </Link>
+            <Link href="/#work" className="nav-link transition hover:text-ink">
+              Recent Work
+            </Link>
+            <Link href="/#how" className="nav-link transition hover:text-ink">
+              How it works
+            </Link>
+            <Link href="/#pricing" className="nav-link transition hover:text-ink">
+              Pricing
+            </Link>
+            <Link href="/#faq" className="nav-link transition hover:text-ink">
+              FAQ
+            </Link>
+            <Link href="/legal/terms" className="nav-link transition hover:text-ink">
+              Terms
+            </Link>
+            <Link href="/legal/privacy" className="nav-link transition hover:text-ink">
+              Privacy
+            </Link>
             <button
+              type="button"
               onClick={() => setContactOpen(true)}
-              className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full"
+              className="nav-link transition hover:text-ink"
             >
               Contact
             </button>
