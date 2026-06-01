@@ -42,6 +42,25 @@ export function Hero() {
               Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
             </p>
           </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Blogging</h3>
+              <p className="mt-2 text-sm text-ink-soft">Content that attracts organic traffic and keeps customers engaged.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">SEO</h3>
+              <p className="mt-2 text-sm text-ink-soft">Hyper‑local optimization to help customers find you in search results.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Google</h3>
+              <p className="mt-2 text-sm text-ink-soft">Google Business Profile optimization and review management tools.</p>
+            </div>
+            <div className="rounded-xl border border-rule bg-bg p-6">
+              <h3 className="font-display text-lg font-medium text-ink">Calendar</h3>
+              <p className="mt-2 text-sm text-ink-soft">Integrated booking calendar to streamline customer appointments.</p>
+            </div>
+          </div>
         </div>
       </div>
 
