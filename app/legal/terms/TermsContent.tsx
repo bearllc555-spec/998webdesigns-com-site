@@ -106,9 +106,9 @@ export function TermsContent() {
                 get in touch with us
               </button>
               {" "}or email{" "}
-              <a href="mailto:hello@998webdesigns.com" className="text-accent underline hover:text-accent-deep">
-                hello@998webdesigns.com
-              </a>
+              <span className="text-accent">
+                {"hello@998webdesigns.com"}
+              </span>
             </p>
           </section>
         </div>
