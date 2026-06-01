@@ -31,13 +31,15 @@ export function Hero() {
           </a>
         </div>
 
-        <div id="addons" className="mt-20 max-w-3xl scroll-mt-16">
-          <p className="text-sm font-medium uppercase tracking-wide text-blue-600">
-            High‑value add‑ons
-          </p>
-          <p className="mt-3 text-base leading-relaxed text-ink">
-            Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
-          </p>
+        <div id="addons" className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-wide text-blue-600">
+              High‑value add‑ons
+            </p>
+            <p className="mt-3 text-base leading-relaxed text-ink">
+              Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
+            </p>
+          </div>
         </div>
       </div>
 
