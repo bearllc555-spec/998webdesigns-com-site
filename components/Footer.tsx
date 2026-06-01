@@ -26,7 +26,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-2 text-sm text-slate">
-              A handcrafted website for $998. A Bear LLC digital property.
+              A handcrafted website for $998.
             </p>
           </div>
 
