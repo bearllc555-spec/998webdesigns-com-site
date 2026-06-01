@@ -93,8 +93,8 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   }, [submitted]);
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-full max-w-md bg-white">
+    <Dialog open={open} onOpenChange={submitted ? () => {} : handleClose}>
+      <DialogContent className="w-full max-w-md bg-white" showCloseButton={!submitted}>
         {submitted ? (
           <div className="relative flex flex-col items-center justify-center gap-4 py-10 text-center overflow-hidden">
             <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
