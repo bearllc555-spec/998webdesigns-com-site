@@ -29,11 +29,11 @@ export function Nav() {
           </Link>
 
           <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-            <a href="#addons" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">Add‑ons</a>
-            <a href="#work" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">Recent Work</a>
-            <a href="#how" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">How it works</a>
-            <a href="#pricing" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">Pricing</a>
-            <a href="#faq" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">FAQ</a>
+            <a href="#addons" className="nav-link transition hover:text-ink">Add‑ons</a>
+            <a href="#work" className="nav-link transition hover:text-ink">Recent Work</a>
+            <a href="#how" className="nav-link transition hover:text-ink">How it works</a>
+            <a href="#pricing" className="nav-link transition hover:text-ink">Pricing</a>
+            <a href="#faq" className="nav-link transition hover:text-ink">FAQ</a>
           </div>
 
           <div className="flex items-center gap-2">
