@@ -37,6 +37,9 @@
   --success-soft: var(--c-emerald-soft);
   --warn: var(--c-warn);
   --warn-soft: var(--c-warn-soft);
+  --on-accent: #ffffff;
+  --surface-contrast: var(--c-ink-900);
+  --on-surface-contrast: var(--c-white);
 
   /* Type scale (8pt rhythm) */
   --fs-12: 0.75rem;
@@ -65,6 +68,32 @@
   --shadow-btn-glow: 0 2px 4px rgba(10, 10, 10, 0.05), 0 10px 22px rgba(113, 113, 122, 0.18);
 }
 
+/* Cool charcoal dark mode — not pure black */
+.dark {
+  --bg: #151a23;
+  --ink: #e8ecf4;
+  --ink-soft: #9aa3b2;
+  --slate: #6b7589;
+  --rule: #2a3142;
+  --rule-soft: #1e2432;
+  --accent: #3b82f6;
+  --accent-deep: #60a5fa;
+  --accent-soft: #1a2744;
+  --success: #4ade80;
+  --success-soft: #142a1f;
+  --warn: #fbbf24;
+  --warn-soft: #2a2418;
+  --on-accent: #ffffff;
+  --surface-contrast: #e8ecf4;
+  --on-surface-contrast: #151a23;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 24px 48px rgba(15, 23, 42, 0.35);
+  --shadow-btn-glow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 12px 28px rgba(59, 130, 246, 0.22);
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-ink: var(--ink);
@@ -79,6 +108,9 @@
   --color-success-soft: var(--success-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
+  --color-on-accent: var(--on-accent);
+  --color-surface-contrast: var(--surface-contrast);
+  --color-on-surface-contrast: var(--on-surface-contrast);
   --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-display: var(--font-geist), -apple-system, system-ui, sans-serif;
 }
@@ -89,7 +121,14 @@
 
 * { -webkit-font-smoothing: antialiased; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
 
 body {
   background: var(--bg);
@@ -98,6 +137,16 @@ body {
   font-feature-settings: "ss01", "cv11";
   letter-spacing: -0.005em;
   line-height: 1.55;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+
+.dark body {
+  background:
+    radial-gradient(ellipse 130% 90% at 50% -30%, rgba(59, 130, 246, 0.14), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(99, 102, 241, 0.06), transparent 45%),
+    var(--bg);
 }
 
 /* All headings use Geist (single typeface, single variable). Wrapped in @layer base
@@ -178,7 +227,7 @@ a.rounded-full:hover {
 }
 
 .nav-link:hover {
-  text-decoration-color: var(--c-blue);
+  text-decoration-color: var(--accent);
 }
 
 /* Focus ring — WCAG AA */

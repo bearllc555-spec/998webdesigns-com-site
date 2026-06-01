@@ -228,7 +228,7 @@ export function LeadForm() {
                       key={opt}
                       className={`flex-1 cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium capitalize transition ${
                         form.contactPref === opt
-                          ? "border-accent bg-accent text-bg"
+                          ? "border-accent bg-accent text-on-accent"
                           : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                       }`}
                     >
@@ -308,7 +308,7 @@ export function LeadForm() {
                       key={val}
                       className={`flex-1 cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium transition ${
                         form.projectType === val
-                          ? "border-accent bg-accent text-bg"
+                          ? "border-accent bg-accent text-on-accent"
                           : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                       }`}
                     >
@@ -376,7 +376,7 @@ export function LeadForm() {
                   <label
                     className={`cursor-pointer rounded-xl border px-4 py-4 transition ${
                       form.paymentOption === "deposit"
-                        ? "border-accent bg-accent text-bg"
+                        ? "border-accent bg-accent text-on-accent"
                         : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                     }`}
                   >
@@ -389,14 +389,14 @@ export function LeadForm() {
                       className="sr-only"
                     />
                     <span className="block text-sm font-medium">$499 Deposit</span>
-                    <span className={`block text-xs mt-1 ${form.paymentOption === "deposit" ? "text-bg/70" : "text-slate"}`}>
+                    <span className={`block text-xs mt-1 ${form.paymentOption === "deposit" ? "text-on-accent/70" : "text-slate"}`}>
                       $499 balance held on your card for 7 days
                     </span>
                   </label>
                   <label
                     className={`cursor-pointer rounded-xl border px-4 py-4 transition ${
                       form.paymentOption === "full"
-                        ? "border-accent bg-accent text-bg"
+                        ? "border-accent bg-accent text-on-accent"
                         : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                     }`}
                   >
@@ -409,7 +409,7 @@ export function LeadForm() {
                       className="sr-only"
                     />
                     <span className="block text-sm font-medium">$998 Pay in Full</span>
-                    <span className={`block text-xs mt-1 ${form.paymentOption === "full" ? "text-bg/70" : "text-slate"}`}>
+                    <span className={`block text-xs mt-1 ${form.paymentOption === "full" ? "text-on-accent/70" : "text-slate"}`}>
                       No balance due — you&apos;re all set
                     </span>
                   </label>
@@ -436,7 +436,7 @@ export function LeadForm() {
                       key={val}
                       className={`cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium transition ${
                         form.hostingChoice === val
-                          ? "border-accent bg-accent text-bg"
+                          ? "border-accent bg-accent text-on-accent"
                           : "border-rule bg-bg text-ink-soft hover:border-accent/50"
                       }`}
                     >
@@ -488,7 +488,7 @@ export function LeadForm() {
                 <button
                 type="button"
                 onClick={(e) => next(e)}
-                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-deep"
+                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
               >
                 Continue &rarr;
               </button>
@@ -496,7 +496,7 @@ export function LeadForm() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition hover:bg-accent-deep disabled:opacity-60"
+                className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
               >
                 {submitting ? "Redirecting to payment..." : form.paymentOption === "full" ? "Continue to pay $998" : "Continue to pay $499 deposit"}
               </button>
@@ -555,7 +555,7 @@ function CheckGroup({
             aria-pressed={on}
             className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
               on
-                ? "border-accent bg-accent text-bg"
+                ? "border-accent bg-accent text-on-accent"
                 : "border-rule bg-bg text-ink-soft hover:border-accent/50"
             }`}
           >

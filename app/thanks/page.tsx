@@ -88,7 +88,7 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
             </Link>
             <a
               href="mailto:hello@998webdesigns.com"
-              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-medium text-bg transition hover:bg-ink-soft"
+              className="inline-flex items-center gap-2 rounded-full bg-surface-contrast px-5 py-3 text-sm font-medium text-on-surface-contrast transition hover:opacity-90"
             >
               Email us
             </a>

@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { SITE_VERSION } from "@/lib/version";
 import { ContactModal } from "./ContactModal";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Nav() {
   const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-rule bg-bg/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-rule bg-bg/80 backdrop-blur transition-colors duration-300">
         <nav
           aria-label="Primary"
           className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 md:px-8"
@@ -47,15 +48,17 @@ export function Nav() {
           </div>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button
+              type="button"
               onClick={() => setContactOpen(true)}
-              className="inline-flex items-center justify-center rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink transition hover:bg-bg-soft"
+              className="inline-flex items-center justify-center rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink transition hover:bg-rule-soft"
             >
               Contact
             </button>
             <Link
               href="/#start"
-              className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-bg transition hover:bg-accent-deep"
+              className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
             >
               Get Started
             </Link>

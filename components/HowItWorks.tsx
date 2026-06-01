@@ -53,7 +53,7 @@ export function HowItWorks() {
               {"cta" in s && s.cta && (
                 <a
                   href="#start"
-                  className="mt-4 inline-block rounded-full bg-accent px-5 py-2 text-sm font-medium text-bg transition hover:opacity-90"
+                  className="mt-4 inline-block rounded-full bg-accent px-5 py-2 text-sm font-medium text-on-accent transition hover:opacity-90"
                 >
                   Get Started
                 </a>
