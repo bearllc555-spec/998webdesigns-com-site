@@ -37,7 +37,7 @@ export function Hero() {
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
             High‑value add‑ons
           </p>
-          <div className="mx-auto max-w-2xl">
+          <div className="max-w-2xl">
             <p className="mt-4 text-base leading-relaxed text-ink">
               Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
             </p>
