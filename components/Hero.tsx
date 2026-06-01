@@ -10,15 +10,13 @@ export function Hero() {
         </p>
 
         <h1 className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl">
-          A handcrafted website
+          We don&apos;t just build sites.
           <br />
-          for <span className="text-accent">$998.</span>{" "}
-          Delivered in <span style={{ color: "#d97757" }}>5&ndash;7</span> business days.
+          We build <span className="text-accent">systems</span> that bring you more business.
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          Small businesses who want a real designer, not a template wizard. One fixed price. No
-          agencies. No retainers. No surprises.
+          Strategy, design, and automation in one affordable package, delivered fast for local service businesses.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">

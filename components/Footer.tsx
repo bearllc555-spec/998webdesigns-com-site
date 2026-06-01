@@ -26,7 +26,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-2 text-sm text-slate">
-              A handcrafted website for $998. A Bear LLC digital property.
+              A handcrafted website for $998.
             </p>
           </div>
 
@@ -45,7 +45,7 @@ export function Footer() {
           </nav>
         </div>
         <p className="border-t border-rule px-5 py-5 text-center text-xs text-slate md:px-8">
-          &copy; 2026 998 web designs &middot; a bear llc digital property
+          &copy; 2026 998webdesigns.com &middot; A Bear LLC digital property
         </p>
       </footer>
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
