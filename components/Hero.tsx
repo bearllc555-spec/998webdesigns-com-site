@@ -45,9 +45,11 @@ export function Hero() {
 
       <div id="work" className="scroll-mt-16 border-t border-rule">
         <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
-          <p className="text-sm font-medium uppercase tracking-wide text-blue-600">
-            Recent work
-          </p>
+          <div className="max-w-2xl">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+              Recent work
+            </p>
+          </div>
         </div>
         <Carousel />
       </div>
