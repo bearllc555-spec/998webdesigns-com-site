@@ -31,7 +31,7 @@ export function HowItWorks() {
             How it works
           </p>
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-            Four steps. No surprises in between.
+            four steps. no surprises in between.
           </h2>
         </div>
 
