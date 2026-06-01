@@ -29,11 +29,11 @@ export function Nav() {
           </Link>
 
           <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-            <a href="#addons" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Add‑ons</a>
-            <a href="#work" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Recent Work</a>
-            <a href="#how" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">How it works</a>
-            <a href="#pricing" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Pricing</a>
-            <a href="#faq" className="relative transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">FAQ</a>
+            <a href="#addons" className="nav-link transition hover:text-ink">Add‑ons</a>
+            <a href="#work" className="nav-link transition hover:text-ink">Recent Work</a>
+            <a href="#how" className="nav-link transition hover:text-ink">How it works</a>
+            <a href="#pricing" className="nav-link transition hover:text-ink">Pricing</a>
+            <a href="#faq" className="nav-link transition hover:text-ink">FAQ</a>
           </div>
 
           <div className="flex items-center gap-2">
