@@ -102,8 +102,8 @@ export function PrivacyContent() {
               <Image
                 src="/email-address.jpg"
                 alt="email address: hello@998webdesigns.com"
-                width={180}
-                height={38}
+                width={210}
+                height={44}
                 className="inline-block align-middle"
               />
             </p>
