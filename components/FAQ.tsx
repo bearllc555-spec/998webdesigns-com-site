@@ -14,7 +14,7 @@ export function FAQ() {
         </p>
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-            Plain answers to fair questions.
+            plain answers to fair questions.
           </h2>
         </div>
 

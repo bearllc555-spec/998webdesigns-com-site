@@ -22,8 +22,8 @@ export const faq: FAQItem[] = [
     a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us forever — and you can migrate it elsewhere whenever you want; we'll hand over the files.",
   },
   {
-    q: "What's the edit policy after month one?",
-    a: "Edits are free for the first month while we get everything dialed in. After that, submit edits via form for $10 each, with a $50 minimum top-up on your account. You see the balance, you see each deduction. No mystery line items.",
+    q: "What's the edit policy after month three?",
+    a: "Edits are free for the first three months while we get everything dialed in. After that, submit edits via form for $10 each, with a $50 minimum top-up on your account. You see the balance, you see each deduction. No mystery line items.",
   },
   {
     q: "Do you do logos, copywriting, or SEO?",

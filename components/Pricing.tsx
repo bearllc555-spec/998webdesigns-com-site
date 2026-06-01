@@ -9,7 +9,7 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-            $998 once
+            $998 /once
           </h2>
           <p className="mt-5 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $998 design fee. The pricing below is the whole list — no
@@ -50,7 +50,7 @@ export function Pricing() {
               Month-to-month lease
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $98 <span className="text-xl text-ink-soft">/ month</span>
+              $98 <span className="text-xl text-ink-soft">/month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Cancel anytime. Upgrade to lifetime hosting whenever you want for $998.
@@ -65,7 +65,7 @@ export function Pricing() {
             <div className="mt-2 flex flex-col gap-4 md:flex-row md:items-baseline md:gap-10">
               <div>
                 <p className="font-display text-3xl font-medium tracking-tight">
-                  Free for the first month
+                  free for the first three months
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
                   While we get your site dialed in.
@@ -77,7 +77,7 @@ export function Pricing() {
                   $10 each &middot; $50 minimum
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  After month one, submit edits via form. $10 deducted per edit from a $50 minimum
+                  After month three, submit edits via form. $10 deducted per edit from a $50 minimum
                   top-up on your account.
                 </p>
               </div>

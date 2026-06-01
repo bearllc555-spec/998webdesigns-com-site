@@ -136,7 +136,7 @@ export function LeadForm() {
             Start your site
           </p>
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-            Tell us about your business.
+            tell us about your business.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-ink-soft">
             Detailed by design. The better the brief, the better the site. Four short steps.
