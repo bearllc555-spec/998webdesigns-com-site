@@ -9,18 +9,16 @@ export function FAQ() {
   return (
     <section id="faq" className="border-b border-rule">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-          <div className="max-w-xs">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-              FAQ
-            </p>
-            <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-              Plain answers to fair questions.
-            </h2>
-          </div>
+        <div className="max-w-2xl">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+            FAQ
+          </p>
+          <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
+            Plain answers to fair questions.
+          </h2>
+        </div>
 
-          <div className="md:col-span-2">
-            <ul className="divide-y divide-rule rounded-2xl border border-rule bg-bg">
+        <ul className="mt-12 divide-y divide-rule rounded-2xl border border-rule bg-bg">
           {faq.map((item, i) => {
             const isOpen = open === i;
             return (
@@ -51,9 +49,7 @@ export function FAQ() {
               </li>
             );
           })}
-            </ul>
-          </div>
-        </div>
+        </ul>
       </div>
     </section>
   );
