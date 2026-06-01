@@ -18,7 +18,7 @@ export function FAQ() {
           </h2>
         </div>
 
-        <ul className="mt-12 divide-y divide-rule rounded-2xl border border-rule bg-bg">
+        <ul className="card-lift mt-12 divide-y divide-rule rounded-2xl border border-rule bg-bg shadow-sm">
           {faq.map((item, i) => {
             const isOpen = open === i;
             return (

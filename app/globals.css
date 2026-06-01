@@ -131,6 +131,23 @@ body {
   }
 }
 
+/* Card hover — lift, shadow, accent border (not used on carousel) */
+@layer components {
+  .card-lift {
+    transition:
+      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.28s ease;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: color-mix(in srgb, var(--accent) 32%, var(--rule));
+  }
+
+}
+
 /* Nav link hover underline */
 .nav-link {
   text-decoration: underline;

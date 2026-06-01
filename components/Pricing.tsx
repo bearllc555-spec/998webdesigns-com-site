@@ -16,7 +16,7 @@ export function Pricing() {
 
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {/* Design */}
-          <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm md:col-span-2">
+          <article className="card-lift rounded-2xl border border-rule bg-bg p-8 shadow-sm md:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Design fee
             </p>
@@ -30,7 +30,7 @@ export function Pricing() {
           </article>
 
           {/* Hosting choice */}
-          <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
+          <article className="card-lift rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Ten years of hosting
             </p>
@@ -42,7 +42,7 @@ export function Pricing() {
             </p>
           </article>
 
-          <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm">
+          <article className="card-lift rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Month-to-month lease
             </p>
@@ -55,7 +55,7 @@ export function Pricing() {
           </article>
 
           {/* Edits */}
-          <article className="rounded-2xl border border-rule bg-bg p-8 shadow-sm md:col-span-2">
+          <article className="card-lift rounded-2xl border border-rule bg-bg p-8 shadow-sm md:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               Edits
             </p>
@@ -84,7 +84,7 @@ export function Pricing() {
 
         {/* Upgrade + what-we-don't-do */}
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <aside className="rounded-2xl border border-accent-soft bg-accent-soft p-7">
+          <aside className="card-lift rounded-2xl border border-accent-soft bg-accent-soft p-7">
             <p className="text-xs font-medium uppercase tracking-wider text-accent">
               Upgrading hosting
             </p>
@@ -95,7 +95,7 @@ export function Pricing() {
             </p>
           </aside>
 
-          <aside className="rounded-2xl border border-rule bg-bg p-7">
+          <aside className="card-lift rounded-2xl border border-rule bg-bg p-7">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
               What we don&rsquo;t do
             </p>

@@ -21,7 +21,7 @@ export function ValueProps() {
           {props.map((p) => (
             <article
               key={p.title}
-              className="rounded-2xl border border-rule bg-bg p-7 shadow-sm"
+              className="card-lift rounded-2xl border border-rule bg-bg p-7 shadow-sm"
             >
               <h3 className="font-display text-xl font-medium leading-snug">
                 {p.title}

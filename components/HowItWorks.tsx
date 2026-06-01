@@ -35,9 +35,12 @@ export function HowItWorks() {
           </h2>
         </div>
 
-        <ol className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-rule bg-rule md:grid-cols-4">
+        <ol className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
-            <li key={s.n} className="bg-bg p-7">
+            <li
+              key={s.n}
+              className="card-lift rounded-2xl border border-rule bg-bg p-7 shadow-sm"
+            >
               <span className="font-display text-3xl font-medium text-accent">
                 {s.n}
               </span>
