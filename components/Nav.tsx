@@ -29,11 +29,21 @@ export function Nav() {
           </Link>
 
           <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-            <a href="#addons" className="nav-link transition hover:text-ink">Add‑ons</a>
-            <a href="#work" className="nav-link transition hover:text-ink">Recent Work</a>
-            <a href="#how" className="nav-link transition hover:text-ink">How it works</a>
-            <a href="#pricing" className="nav-link transition hover:text-ink">Pricing</a>
-            <a href="#faq" className="nav-link transition hover:text-ink">FAQ</a>
+            <Link href="/#addons" className="nav-link transition hover:text-ink">
+              Add‑ons
+            </Link>
+            <Link href="/#work" className="nav-link transition hover:text-ink">
+              Recent Work
+            </Link>
+            <Link href="/#how" className="nav-link transition hover:text-ink">
+              How it works
+            </Link>
+            <Link href="/#pricing" className="nav-link transition hover:text-ink">
+              Pricing
+            </Link>
+            <Link href="/#faq" className="nav-link transition hover:text-ink">
+              FAQ
+            </Link>
           </div>
 
           <div className="flex items-center gap-2">
@@ -43,12 +53,12 @@ export function Nav() {
             >
               Contact
             </button>
-            <a
-              href="#start"
+            <Link
+              href="/#start"
               className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-bg transition hover:bg-accent-deep"
             >
               Get Started
-            </a>
+            </Link>
           </div>
         </nav>
       </header>
