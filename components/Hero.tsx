@@ -13,7 +13,7 @@ export function Hero() {
           A handcrafted website
           <br />
           for <span className="text-accent">$998.</span>{" "}
-          <span className="text-ink-soft">Delivered in 5&ndash;7 business days.</span>
+          Delivered in <span className="text-orange-600">5&ndash;7</span> business days.
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
