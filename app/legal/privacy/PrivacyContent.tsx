@@ -97,12 +97,7 @@ export function PrivacyContent() {
               >
                 get in touch with us
               </button>
-              {" "}or contact us at:
-            </p>
-            <p className="mt-4 text-ink-soft">
-              <strong>998 web designs</strong>
-              <br />
-              Email:{" "}
+              {" "}or email us at:{" "}
               <a href="mailto:hello@998webdesigns.com" className="text-accent underline hover:text-accent-deep">
                 hello@998webdesigns.com
               </a>
