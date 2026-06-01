@@ -24,7 +24,7 @@ export function Pricing() {
               Design fee
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $998 <span className="text-2xl text-ink-soft">once</span>
+              $998 <span className="text-2xl text-ink-soft">/once</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
               A handcrafted custom site, designed around your business. Delivered in 5&ndash;7
