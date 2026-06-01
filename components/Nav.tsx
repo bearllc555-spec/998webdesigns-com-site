@@ -29,11 +29,11 @@ export function Nav() {
           </Link>
 
           <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
-            <a href="#addons" className="relative pb-0.5 transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-[width] after:duration-200 hover:after:w-full">Add‑ons</a>
-            <a href="#work" className="relative pb-0.5 transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-[width] after:duration-200 hover:after:w-full">Recent Work</a>
-            <a href="#how" className="relative pb-0.5 transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-[width] after:duration-200 hover:after:w-full">How it works</a>
-            <a href="#pricing" className="relative pb-0.5 transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-[width] after:duration-200 hover:after:w-full">Pricing</a>
-            <a href="#faq" className="relative pb-0.5 transition hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-500 after:transition-[width] after:duration-200 hover:after:w-full">FAQ</a>
+            <a href="#addons" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">Add‑ons</a>
+            <a href="#work" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">Recent Work</a>
+            <a href="#how" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">How it works</a>
+            <a href="#pricing" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">Pricing</a>
+            <a href="#faq" className="transition hover:text-ink hover:underline hover:decoration-blue-500 hover:underline-offset-4">FAQ</a>
           </div>
 
           <div className="flex items-center gap-2">
