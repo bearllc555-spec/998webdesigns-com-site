@@ -44,7 +44,7 @@ export function Hero() {
       </div>
 
       <div id="work" className="scroll-mt-16 border-t border-rule">
-        <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-12">
           <div className="max-w-2xl">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
               Recent work
