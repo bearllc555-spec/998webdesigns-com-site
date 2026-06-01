@@ -110,8 +110,8 @@ export function TermsContent() {
               <Image
                 src="/email-address.jpg"
                 alt="email address: hello@998webdesigns.com"
-                width={280}
-                height={60}
+                width={160}
+                height={34}
                 className="inline-block align-middle"
               />
             </p>
