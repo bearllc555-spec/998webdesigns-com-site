@@ -63,3 +63,7 @@ On each completed checkout, Resend emails `hello@998webdesigns.com` (`lib/intern
 - `http://localhost:*` in local dev
 
 Any other `Origin` header falls back to `https://998webdesigns.com`.
+
+## SEO (sitemap / robots)
+
+Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are excluded from the sitemap and blocked in `robots.txt`. Bump `SITEMAP_LAST_MODIFIED` in that file when home or legal pages change materially.

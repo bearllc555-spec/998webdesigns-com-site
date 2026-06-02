@@ -1,33 +1,36 @@
-# v0-998webdesigns-com-app
+# 998webdesigns-com-site
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Marketing site and lead funnel for [998 web designs](https://998webdesigns.com) — Next.js 16, Stripe Checkout, Resend, Supabase.
 
-## Built with v0
+| | |
+|---|---|
+| **Production** | https://998webdesigns.com |
+| **Vercel project** | `998webdesigns-com-site` (push `main` to deploy) |
+| **Handoff / architecture** | [`CLAUDE.md`](./CLAUDE.md) |
+| **Deploy & Stripe go-live** | [`DEPLOYMENT.md`](./DEPLOYMENT.md) |
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
-
-[Continue working on v0 →](https://v0.app/chat/projects/prj_H1cY5WCHUlj9QYeGPZ9nGjJBUSq9)
-
-## Getting Started
-
-First, run the development server:
+## Local dev
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local   # then fill from workspace .local/ (see CLAUDE.md)
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-## Learn More
+```bash
+pnpm dev      # development server
+pnpm build    # production build
+pnpm start    # serve production build
+```
 
-To learn more, take a look at the following resources:
+## What not to edit without approval
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+- Pricing copy in `components/Pricing.tsx` (locked product language).
+
+## Version label
+
+Bump `SITE_VERSION` in `lib/version.ts` on every deploy-visible change (shown in nav/footer).

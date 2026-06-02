@@ -38,8 +38,6 @@
   --warn: var(--c-warn);
   --warn-soft: var(--c-warn-soft);
   --on-accent: #ffffff;
-  --surface-contrast: var(--c-ink-900);
-  --on-surface-contrast: var(--c-white);
 
   /* Type scale (8pt rhythm) */
   --fs-12: 0.75rem;
@@ -84,8 +82,6 @@
   --warn: #fbbf24;
   --warn-soft: #2a2418;
   --on-accent: #ffffff;
-  --surface-contrast: #e8ecf4;
-  --on-surface-contrast: #151a23;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 24px 48px rgba(15, 23, 42, 0.35);
@@ -109,8 +105,6 @@
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-on-accent: var(--on-accent);
-  --color-surface-contrast: var(--surface-contrast);
-  --color-on-surface-contrast: var(--on-surface-contrast);
   --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-display: var(--font-geist), -apple-system, system-ui, sans-serif;
 }
