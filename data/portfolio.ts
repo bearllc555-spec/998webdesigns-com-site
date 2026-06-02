@@ -19,6 +19,13 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/serenity-spa.jpg",
   },
   {
+    slug: "tuscano-excavating",
+    name: "Frank Tuscano Excavation",
+    industry: "Excavation & site work",
+    url: "https://tuscano-excavating.pages.dev/",
+    thumbnail: "/portfolio/tuscano-excavating.jpg",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
