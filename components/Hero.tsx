@@ -1,5 +1,6 @@
 import { Carousel } from "./Carousel";
 import { AddonsSection } from "./AddonsSection";
+import { HeroHeadline } from "./HeroHeadline";
 
 export function Hero() {
   return (
@@ -10,15 +11,7 @@ export function Hero() {
           Now building growth systems for local businesses
         </p>
 
-        <h1
-          className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl"
-          aria-label="We don't sell websites. We build growth systems."
-        >
-          <span className="block">we don&apos;t sell websites.</span>
-          <span className="block">
-            we build <span className="text-accent">growth systems.</span>
-          </span>
-        </h1>
+        <HeroHeadline className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl" />
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
           The site is step one. Stack on SEO, chatbot, email automation, and content — each module
