@@ -74,7 +74,7 @@ export function Hero() {
               <p className="mt-2 text-sm text-ink-soft">Customer nurturing campaigns that keep your clients coming back.</p>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
-              <h3 className="font-display text-lg font-medium text-ink">Blogging</h3>
+              <h3 className="font-display text-lg font-medium text-ink">Blogging strategies</h3>
               <p className="mt-2 text-sm text-ink-soft">Content that attracts organic traffic and keeps customers engaged.</p>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
