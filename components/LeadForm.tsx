@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSelectedAddons } from "@/lib/addons";
+import {
+  GROWTH_PACK_ID,
+  getSelectedAddons,
+  hasGrowthPack,
+  isAddonVisuallySelected,
+  isGrowthPackMember,
+} from "@/lib/addons";
 
 type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
@@ -93,11 +99,26 @@ export function LeadForm() {
 
   const toggleAddon = (value: string) => {
     setForm((f) => {
-      const has = f.addons.includes(value);
-      return {
-        ...f,
-        addons: has ? f.addons.filter((x) => x !== value) : [...f.addons, value],
-      };
+      let addons = f.addons;
+
+      if (value === GROWTH_PACK_ID) {
+        if (addons.includes(GROWTH_PACK_ID)) {
+          addons = addons.filter((x) => x !== GROWTH_PACK_ID);
+        } else {
+          addons = [
+            ...addons.filter((x) => !isGrowthPackMember(x)),
+            GROWTH_PACK_ID,
+          ];
+        }
+      } else if (isGrowthPackMember(value) && hasGrowthPack(addons)) {
+        addons = addons.filter((x) => x !== GROWTH_PACK_ID);
+      } else if (addons.includes(value)) {
+        addons = addons.filter((x) => x !== value);
+      } else {
+        addons = [...addons.filter((x) => x !== GROWTH_PACK_ID), value];
+      }
+
+      return { ...f, addons };
     });
   };
 
@@ -414,8 +435,8 @@ export function LeadForm() {
                   <input
                     type="checkbox"
                     id="addon-growth-pack"
-                    checked={form.addons.includes("growth-pack")}
-                    onChange={() => toggleAddon("growth-pack")}
+                    checked={form.addons.includes(GROWTH_PACK_ID)}
+                    onChange={() => toggleAddon(GROWTH_PACK_ID)}
                     className="mt-1 accent-[#2563eb]"
                   />
                   <label htmlFor="addon-growth-pack" className="cursor-pointer">
@@ -439,7 +460,7 @@ export function LeadForm() {
                     <input
                       type="checkbox"
                       id={addon.id}
-                      checked={form.addons.includes(addon.value)}
+                      checked={isAddonVisuallySelected(addon.value, form.addons)}
                       onChange={() => toggleAddon(addon.value)}
                       className="mt-1 accent-[#2563eb]"
                     />

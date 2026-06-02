@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSelectedAddons, toggleAddon } from "@/lib/addons";
+import {
+  GROWTH_PACK_ID,
+  getSelectedAddons,
+  hasGrowthPack,
+  isAddonVisuallySelected,
+  isGrowthPackMember,
+  toggleAddon,
+} from "@/lib/addons";
 
 const ADDONS = [
   {
@@ -101,10 +108,12 @@ const ADDONS = [
 function AddonCardCta({
   value,
   selected,
+  viaGrowthPack,
   onToggle,
 }: {
   value: string;
   selected: boolean;
+  viaGrowthPack: boolean;
   onToggle: (value: string) => void;
 }) {
   if (!selected) {
@@ -123,17 +132,17 @@ function AddonCardCta({
     <div className="mt-4 flex flex-col gap-1">
       <button
         type="button"
-        onClick={() => onToggle(value)}
+        onClick={() => onToggle(viaGrowthPack ? GROWTH_PACK_ID : value)}
         className="inline-flex items-center gap-1 text-sm font-medium text-green-600"
       >
         <span>✓</span> Added
       </button>
       <button
         type="button"
-        onClick={() => onToggle(value)}
+        onClick={() => onToggle(viaGrowthPack ? GROWTH_PACK_ID : value)}
         className="text-left text-xs text-ink-soft hover:text-red-500"
       >
-        Remove
+        {viaGrowthPack ? "Remove growth package" : "Remove"}
       </button>
     </div>
   );
@@ -160,8 +169,13 @@ export function AddonsSection() {
     setSelectedAddons(updated);
   }
 
-  const isSelected = (value: string) => selectedAddons.includes(value);
-  const growthSelected = isSelected("growth-pack");
+  const growthSelected = hasGrowthPack(selectedAddons);
+  const isSelected = (value: string) =>
+    isAddonVisuallySelected(value, selectedAddons);
+  const isViaGrowthPack = (value: string) =>
+    growthSelected &&
+    isGrowthPackMember(value) &&
+    !selectedAddons.includes(value);
 
   return (
     <div id="addons" className="border-t border-rule">
@@ -221,6 +235,7 @@ export function AddonsSection() {
                 <AddonCardCta
                   value={addon.value}
                   selected={selected}
+                  viaGrowthPack={isViaGrowthPack(addon.value)}
                   onToggle={handleToggle}
                 />
               </div>
@@ -303,7 +318,7 @@ export function AddonsSection() {
           {!growthSelected ? (
             <button
               type="button"
-              onClick={() => handleToggle("growth-pack")}
+              onClick={() => handleToggle(GROWTH_PACK_ID)}
               className="mt-6 inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-accent hover:bg-white/90"
             >
               Get the Growth Pack →
@@ -312,17 +327,17 @@ export function AddonsSection() {
             <div className="mt-6 flex flex-col items-start gap-1">
               <button
                 type="button"
-                onClick={() => handleToggle("growth-pack")}
+                onClick={() => handleToggle(GROWTH_PACK_ID)}
                 className="inline-flex items-center rounded-full bg-green-500 px-6 py-3 text-sm font-semibold text-white hover:bg-green-600"
               >
                 Growth Pack Added ✓
               </button>
               <button
                 type="button"
-                onClick={() => handleToggle("growth-pack")}
+                onClick={() => handleToggle(GROWTH_PACK_ID)}
                 className="text-xs text-ink-soft hover:text-red-500"
               >
-                Remove
+                Remove growth package
               </button>
             </div>
           )}
