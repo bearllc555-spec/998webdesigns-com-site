@@ -62,15 +62,22 @@ export function toggleAddon(value: string): string[] {
     return persist(updated);
   }
 
+  if (current.includes(value)) {
+    return persist(current.filter((v) => v !== value));
+  }
+
   if (isGrowthPackMember(value) && hasGrowthPack(current)) {
     return persist(current.filter((v) => v !== GROWTH_PACK_ID));
   }
 
-  const updated = current.includes(value)
-    ? current.filter((v) => v !== value)
-    : [...current.filter((v) => v !== GROWTH_PACK_ID), value];
+  if (isGrowthPackMember(value)) {
+    return persist([
+      ...current.filter((v) => v !== GROWTH_PACK_ID),
+      value,
+    ]);
+  }
 
-  return persist(updated);
+  return persist([...current, value]);
 }
 
 export function clearAddons(): void {

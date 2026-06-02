@@ -115,12 +115,17 @@ export function LeadForm() {
             GROWTH_PACK_ID,
           ];
         }
-      } else if (isGrowthPackMember(value) && hasGrowthPack(addons)) {
-        addons = addons.filter((x) => x !== GROWTH_PACK_ID);
       } else if (addons.includes(value)) {
         addons = addons.filter((x) => x !== value);
+      } else if (isGrowthPackMember(value) && hasGrowthPack(addons)) {
+        addons = addons.filter((x) => x !== GROWTH_PACK_ID);
+      } else if (isGrowthPackMember(value)) {
+        addons = [
+          ...addons.filter((x) => x !== GROWTH_PACK_ID),
+          value,
+        ];
       } else {
-        addons = [...addons.filter((x) => x !== GROWTH_PACK_ID), value];
+        addons = [...addons, value];
       }
 
       return { ...f, addons };
