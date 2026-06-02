@@ -1,43 +1,29 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {
+  API_RATE_LIMITS,
+  clientIp,
+  rateLimitResponse,
+} from "@/lib/api-rate-limit";
 import { checkRateLimit, pruneRateLimitStore } from "@/lib/rate-limit";
 
-const LIMITS: Record<string, { limit: number; windowMs: number }> = {
-  "/api/leads": { limit: 5, windowMs: 60_000 },
-  "/api/contact": { limit: 10, windowMs: 60_000 },
-};
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
+/** Fast in-memory gate at the edge; API routes also enforce via Supabase when configured. */
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  if (req.method !== "POST" || !(path in LIMITS)) {
+  if (req.method !== "POST" || !(path in API_RATE_LIMITS)) {
     return NextResponse.next();
   }
 
   pruneRateLimitStore();
 
-  const config = LIMITS[path];
+  const config = API_RATE_LIMITS[path as keyof typeof API_RATE_LIMITS];
   const key = `${path}:${clientIp(req)}`;
   const { allowed, retryAfterSec } = checkRateLimit(key, config);
 
   if (!allowed) {
-    return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(retryAfterSec ?? 60),
-        },
-      }
-    );
+    const body = rateLimitResponse(retryAfterSec);
+    return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
   }
 
   return NextResponse.next();

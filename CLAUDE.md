@@ -6,7 +6,7 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production — 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com (project **`998webdesigns-com-site`** — not `998webdesigns-com-app`; domain is on `-com-site`). GitHub `bearllc555-spec/998webdesigns-com-site`. Replaced the legacy Cloudflare Pages static splash. Site version label in nav/footer (`lib/version.ts`, currently v25.x).
+**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`** only. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v25.x).
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
 
@@ -24,7 +24,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Stripe go-live** — `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
 - OG image — `app/opengraph-image.tsx`.
-- Rate limiting — `proxy.ts` on `/api/leads` (5/min/IP) and `/api/contact` (10/min/IP).
+- Rate limiting — `proxy.ts` (in-memory) + Supabase `api_rate_limits` on API routes when tables exist (`lib/api-rate-limit.ts`).
 - Analytics — `@vercel/analytics` in root layout.
 
 ---
@@ -37,7 +37,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Balance capture on approval** — auth hold created in webhook; capture flow not productized in admin.
 - **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
 - **SendGrid** — not used; transactional email is **Resend**.
-- **Supabase `wd_leads`** — schema below; create in project `jxthwtflrzudepxysgje` if not already live.
+- **Supabase tables** — run `supabase/schema.sql` once if `wd_leads` / `api_rate_limits` are missing.
 - **Lighthouse / security review** — manual pass still recommended.
 - **Lawyer review** — Terms/Privacy are operator-drafted.
 
@@ -49,7 +49,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 |---|---|
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
-| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` only (`-com-app` deleted) |
+| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` |
 | Supabase | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
 
 ---
@@ -111,24 +111,9 @@ Set the same keys in Vercel → Project Settings → Environment Variables.
 
 ---
 
-## Supabase `wd_leads` table — schema sketch
+## Supabase schema
 
-```sql
-create table wd_leads (
-  id uuid primary key default gen_random_uuid(),
-  submitted_at timestamptz not null default now(),
-  email text not null,
-  business_name text not null,
-  full_name text not null,
-  ip text,
-  payload jsonb not null,
-  status text not null default 'new',
-  stripe_customer_id text,
-  notes text
-);
-```
-
-RLS: deny all to anon. Service-role inserts/reads only.
+Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run in Supabase SQL editor for project `jxthwtflrzudepxysgje`. Service-role API routes bypass RLS.
 
 ---
 

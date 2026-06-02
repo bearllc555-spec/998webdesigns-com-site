@@ -7,8 +7,8 @@ const steps = [
   },
   {
     n: "02",
-    title: "Pay the $499 deposit",
-    body: "You pay the $499 deposit through secure Stripe checkout. The clock starts the second it clears.",
+    title: "Pay through Stripe",
+    body: "On the last form step, choose a $499 deposit or $998 pay-in-full. Secure Stripe checkout — the design clock starts when payment clears.",
   },
   {
     n: "03",
@@ -18,7 +18,7 @@ const steps = [
   {
     n: "04",
     title: "Approve and go live",
-    body: "You approve the draft, pay the balance, we host it. Live the same day.",
+    body: "You approve the draft and we launch the same day. Paid a deposit? We capture the $499 balance from your card on approval. Paid in full? You are already settled.",
   },
 ];
 

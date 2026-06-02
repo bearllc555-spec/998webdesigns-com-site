@@ -27,7 +27,7 @@ export type ValidatedLead = {
   paymentOption: PaymentOption;
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { isValidEmail } from "@/lib/validate-email";
 
 function str(v: unknown): string | null {
   return typeof v === "string" ? v.trim() : null;
@@ -55,7 +55,7 @@ export function validateLeadPayload(
   if (!fullName) return { ok: false, error: "Missing required field: fullName" };
   if (!businessName) return { ok: false, error: "Missing required field: businessName" };
   if (!email) return { ok: false, error: "Missing required field: email" };
-  if (!EMAIL_RE.test(email)) return { ok: false, error: "Invalid email address" };
+  if (!isValidEmail(email)) return { ok: false, error: "Invalid email address" };
   if (!contactPref || !["email", "phone", "text"].includes(contactPref)) {
     return { ok: false, error: "Missing or invalid contactPref" };
   }

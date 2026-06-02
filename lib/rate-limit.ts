@@ -1,6 +1,6 @@
 /**
- * In-memory sliding window rate limiter for Edge middleware.
- * Per-isolate only (not global across Vercel regions). Still blocks burst abuse.
+ * In-memory sliding window rate limiter (edge proxy + fallback).
+ * API routes prefer Supabase-backed limits in lib/rate-limit-supabase.ts when configured.
  */
 
 type Bucket = { count: number; resetAt: number };

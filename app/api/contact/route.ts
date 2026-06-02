@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { isValidEmail } from "@/lib/validate-email";
 
 export const runtime = "nodejs";
 
@@ -11,6 +13,12 @@ type ContactPayload = {
 };
 
 export async function POST(req: NextRequest) {
+  const rate = await enforceApiRateLimit(req, "/api/contact");
+  if (!rate.allowed) {
+    const body = rateLimitResponse(rate.retryAfterSec);
+    return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
+  }
+
   let body: ContactPayload;
   try {
     body = await req.json();
@@ -23,33 +31,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // Validate required fields
-  const { name, email, message } = body;
-  if (!name || typeof name !== "string" || name.trim().length === 0) {
-    return NextResponse.json(
-      { error: "Name is required" },
-      { status: 400 }
-    );
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const message = typeof body.message === "string" ? body.message.trim() : "";
+  const businessName =
+    typeof body.businessName === "string" ? body.businessName.trim() : "";
+
+  if (!name) {
+    return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
-  if (!email || typeof email !== "string" || email.trim().length === 0) {
-    return NextResponse.json(
-      { error: "Email is required" },
-      { status: 400 }
-    );
+  if (!email) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
-  if (!message || typeof message !== "string" || message.trim().length === 0) {
-    return NextResponse.json(
-      { error: "Message is required" },
-      { status: 400 }
-    );
+  if (!isValidEmail(email)) {
+    return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+  }
+  if (!message) {
+    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    console.error("[contact] RESEND_API_KEY not configured");
+    return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
   }
 
   try {
-    // Lazy-load Resend only when needed
     const { Resend } = await import("resend");
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    // Send email via Resend
     const { error } = await resend.emails.send({
       from: "website@998webdesigns.com",
       to: "hello@998webdesigns.com",
@@ -59,7 +68,7 @@ export async function POST(req: NextRequest) {
           <h2>New Contact Form Submission</h2>
           <p><strong>Name:</strong> ${escapeHtml(name)}</p>
           <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          ${body.businessName ? `<p><strong>Business Name:</strong> ${escapeHtml(body.businessName)}</p>` : ""}
+          ${businessName ? `<p><strong>Business Name:</strong> ${escapeHtml(businessName)}</p>` : ""}
           <p><strong>Message:</strong></p>
           <p style="white-space: pre-wrap; background-color: #f5f5f5; padding: 12px; border-radius: 4px;">
             ${escapeHtml(message)}
@@ -70,19 +79,13 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("[contact] Resend error:", error);
-      return NextResponse.json(
-        { error: "Failed to send email" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[contact] Unexpected error:", err);
-    return NextResponse.json(
-      { error: "Failed to process contact form" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to process contact form" }, { status: 500 });
   }
 }
 

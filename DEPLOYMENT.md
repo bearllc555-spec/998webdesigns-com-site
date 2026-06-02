@@ -8,7 +8,7 @@
 | **Production URL** | https://998webdesigns.com |
 | **GitHub** | `bearllc555-spec/998webdesigns-com-site` — push `main` auto-deploys |
 
-Do not use `998webdesigns-com-app` (deleted). Link the repo with:
+Link the repo with:
 
 ```bash
 npx vercel link --project 998webdesigns-com-site
@@ -54,16 +54,24 @@ Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`).
 
 On each completed checkout, Resend emails `hello@998webdesigns.com` (`lib/internal-lead-email.ts`). Uses the same `RESEND_API_KEY` as the contact form.
 
-## Checkout return URLs (audit item 6)
-
-`/api/leads` only allows these origins for Stripe `success_url` / `cancel_url`:
-
-- `https://998webdesigns.com`, `https://www.998webdesigns.com`
-- `*.vercel.app` on Preview deployments
-- `http://localhost:*` in local dev
-
-Any other `Origin` header falls back to `https://998webdesigns.com`.
-
 ## SEO (sitemap / robots)
 
 Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are excluded from the sitemap and blocked in `robots.txt`. Bump `SITEMAP_LAST_MODIFIED` in that file when home or legal pages change materially.
+
+## Supabase tables
+
+Run **`supabase/schema.sql`** once in the Supabase SQL editor if not already applied:
+
+- **`wd_leads`** — lead form rows from `/api/leads`
+- **`api_rate_limits`** — shared rate limits across Vercel instances (5/min leads, 10/min contact per IP)
+
+If tables are missing, leads still reach Stripe; Vercel logs will say `wd_leads table missing` or `api_rate_limits table missing`.
+
+## Rate limiting
+
+1. **Edge** (`proxy.ts`) — in-memory burst protection per isolate.
+2. **API routes** — Postgres counters in `api_rate_limits` when Supabase is configured (global across regions).
+
+## Checkout return URLs
+
+`/api/leads` uses `lib/checkout-origin.ts` (audit item 6) — allowlisted origins only; no open redirect via `Origin`.

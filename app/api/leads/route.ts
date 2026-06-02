@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { DEPOSIT_PRODUCT, FULL_PRODUCT } from "@/lib/products";
 import { sendLeadCheckoutEmail } from "@/lib/lead-email";
 import { validateLeadPayload } from "@/lib/validate-lead";
 import { checkoutOrigin } from "@/lib/checkout-origin";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
+import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { insertWdLead } from "@/lib/leads-db";
 
 export const runtime = "nodejs";
 
 type LeadPayload = Record<string, unknown> & { website?: string };
 
 export async function POST(req: NextRequest) {
+  const rate = await enforceApiRateLimit(req, "/api/leads");
+  if (!rate.allowed) {
+    const body = rateLimitResponse(rate.retryAfterSec);
+    return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
+  }
+
   let body: LeadPayload;
   try {
     body = await req.json();
@@ -39,29 +46,18 @@ export async function POST(req: NextRequest) {
 
   const payload = { ...lead, submittedAt };
 
-  // Try to persist lead to Supabase
-  const supa = supabaseAdmin();
-  if (!supa) {
-    console.warn("[leads] Supabase not configured, skipping database insert");
+  const dbResult = await insertWdLead({
+    payload,
+    email: lead.email,
+    business_name: lead.businessName,
+    full_name: lead.fullName,
+    submitted_at: submittedAt,
+    ip,
+  });
+
+  if (!dbResult.ok) {
+    console.warn(`[leads] wd_leads persist skipped (${dbResult.reason}):`, dbResult.detail);
     console.info("[leads] payload preserved:", JSON.stringify(payload));
-  } else {
-    try {
-      const { error } = await supa.from("wd_leads").insert({
-        payload,
-        email: lead.email,
-        business_name: lead.businessName,
-        full_name: lead.fullName,
-        submitted_at: submittedAt,
-        ip,
-      });
-      if (error) {
-        console.warn("[leads] supabase insert failed:", error.message);
-        console.info("[leads] payload preserved:", JSON.stringify(payload));
-      }
-    } catch (err) {
-      console.warn("[leads] supabase client error:", err);
-      console.info("[leads] payload preserved:", JSON.stringify(payload));
-    }
   }
 
   // Create Stripe Checkout session
