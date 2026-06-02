@@ -60,7 +60,7 @@ export function Hero() {
               </ul>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
-              <h3 className="font-display text-lg font-medium text-ink">Social media</h3>
+              <h3 className="font-display text-lg font-medium text-ink">Social media strategies</h3>
               <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
                 <li>Post photos, product clips, and service videos to your accounts</li>
                 <li>Image carousels, Stories, Reels, and short‑form clips</li>
