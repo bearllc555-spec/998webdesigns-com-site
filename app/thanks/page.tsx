@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { ThanksActions } from "@/components/ThanksActions";
 import { stripe } from "@/lib/stripe";
 
 export const metadata = {
@@ -22,12 +22,30 @@ export default async function Thanks({
   }
 
   let isPaidInFull = false;
+  let contactPrefill = {
+    name: "",
+    email: "",
+    businessName: "",
+    message: "I just completed checkout and have a question:\n\n",
+  };
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== "paid") {
       redirect("/#start");
     }
     isPaidInFull = session.metadata?.paymentType === "full";
+    contactPrefill = {
+      name: session.metadata?.fullName ?? "",
+      email:
+        session.customer_details?.email ??
+        session.metadata?.email ??
+        session.customer_email ??
+        "",
+      businessName: session.metadata?.businessName ?? "",
+      message: isPaidInFull
+        ? "I just paid in full and have a question:\n\n"
+        : "I just paid my deposit and have a question:\n\n",
+    };
   } catch {
     redirect("/#start");
   }
@@ -106,20 +124,7 @@ export default async function Thanks({
             </p>
           </aside>
 
-          <div className="mt-12 flex flex-wrap items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-rule bg-bg px-5 py-3 text-sm font-medium text-ink transition hover:border-ink-soft"
-            >
-              &larr; Back to home
-            </Link>
-            <a
-              href="mailto:hello@998webdesigns.com?subject=Deposit%20paid%20-%20question"
-              className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-medium text-on-accent shadow-sm transition hover:bg-accent-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              Email hello@998webdesigns.com
-            </a>
-          </div>
+          <ThanksActions prefill={contactPrefill} />
         </div>
       </main>
       <Footer />

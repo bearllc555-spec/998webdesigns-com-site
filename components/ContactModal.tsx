@@ -12,19 +12,35 @@ type ContactFormState = {
   website: string;
 };
 
+export type ContactPrefill = {
+  name?: string;
+  email?: string;
+  businessName?: string;
+  message?: string;
+};
+
 type ContactModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  prefill?: ContactPrefill;
+  title?: string;
 };
 
-export function ContactModal({ open, onOpenChange }: ContactModalProps) {
-  const [form, setForm] = useState<ContactFormState>({
-    name: "",
-    email: "",
-    businessName: "",
-    message: "",
-    website: "",
-  });
+const emptyForm = (): ContactFormState => ({
+  name: "",
+  email: "",
+  businessName: "",
+  message: "",
+  website: "",
+});
+
+export function ContactModal({
+  open,
+  onOpenChange,
+  prefill,
+  title = "Get in touch",
+}: ContactModalProps) {
+  const [form, setForm] = useState<ContactFormState>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof ContactFormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -63,7 +79,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
         throw new Error(data.error || "Failed to send message");
       }
 
-      setForm({ name: "", email: "", businessName: "", message: "", website: "" });
+      setForm(emptyForm());
       setSubmitted(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong");
@@ -74,8 +90,26 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
   const handleClose = (val: boolean) => {
     onOpenChange(val);
-    if (!val) setTimeout(() => setSubmitted(false), 300);
+    if (!val) {
+      setTimeout(() => {
+        setSubmitted(false);
+        setForm(emptyForm());
+      }, 300);
+    }
   };
+
+  useEffect(() => {
+    if (!open) return;
+    setForm({
+      ...emptyForm(),
+      name: prefill?.name?.trim() ?? "",
+      email: prefill?.email?.trim() ?? "",
+      businessName: prefill?.businessName?.trim() ?? "",
+      message: prefill?.message?.trim() ?? "",
+    });
+    setErrors({});
+    setSubmitError(null);
+  }, [open, prefill?.name, prefill?.email, prefill?.businessName, prefill?.message]);
 
   useEffect(() => {
     if (!submitted || !canvasRef.current) return;
@@ -117,7 +151,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Get in touch</DialogTitle>
+              <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
             <form onSubmit={submit} className="space-y-4">
               <input type="hidden" value={form.website} onChange={(e) => set("website", e.target.value)} />
