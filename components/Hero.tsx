@@ -86,7 +86,7 @@ export function Hero() {
               <p className="mt-2 text-sm text-ink-soft">Google Business Profile optimization and review management tools.</p>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
-              <h3 className="font-display text-lg font-medium text-ink">Calendar</h3>
+              <h3 className="font-display text-lg font-medium text-ink">Booking calendar</h3>
               <p className="mt-2 text-sm text-ink-soft">Integrated booking calendar to streamline customer appointments.</p>
             </div>
           </div>
