@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { onHomeLogoClick } from "@/lib/home-link";
 import { SITE_VERSION } from "@/lib/version";
 import { ContactModal } from "./ContactModal";
 
 export function Footer() {
+  const pathname = usePathname();
   const [contactOpen, setContactOpen] = useState(false);
 
   return (
@@ -15,6 +18,7 @@ export function Footer() {
           <div>
             <Link
               href="/"
+              onClick={(e) => onHomeLogoClick(e, pathname)}
               aria-label={`998 webdesigns home, ${SITE_VERSION}`}
               className="flex items-baseline gap-2 text-base font-semibold tracking-tight"
             >

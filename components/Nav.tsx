@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { onHomeLogoClick } from "@/lib/home-link";
 import { SITE_VERSION } from "@/lib/version";
 import { ContactModal } from "./ContactModal";
 import { ThemeToggle } from "./ThemeToggle";
@@ -15,6 +17,7 @@ const NAV_LINKS = [
 ] as const;
 
 export function Nav() {
+  const pathname = usePathname();
   const [contactOpen, setContactOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -42,6 +45,7 @@ export function Nav() {
         >
           <Link
             href="/"
+            onClick={(e) => onHomeLogoClick(e, pathname)}
             aria-label={`998 webdesigns home, ${SITE_VERSION}`}
             className="flex items-baseline gap-2 text-lg font-semibold tracking-tight"
           >
