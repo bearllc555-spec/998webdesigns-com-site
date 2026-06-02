@@ -9,7 +9,7 @@ export function Pricing() {
             Pricing
           </p>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
-            Every site starts at a flat $998 design fee. The pricing below is the whole list — no
+            Every site starts at a flat $1,998 design fee. The pricing below is the whole list — no
             tiers, no add-ons we don't tell you about, no &ldquo;starting at.&rdquo;
           </p>
         </div>
@@ -21,7 +21,7 @@ export function Pricing() {
               Design fee
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $998 <span className="text-2xl text-ink-soft">— paid in full to start</span>
+              $1,998 <span className="text-2xl text-ink-soft">— paid in full to start</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
               A handcrafted custom site, designed around your business. Delivered in 5&ndash;7
@@ -39,7 +39,7 @@ export function Pricing() {
               Ten years of hosting
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $998 <span className="text-xl text-ink-soft">/one-time-ten-years</span>
+              $1,349 <span className="text-xl text-ink-soft">/one-time-ten-years</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Pay once. We host your site for ten years, including domain registration (com, net, org). No monthly bills.
@@ -51,10 +51,10 @@ export function Pricing() {
               Month-to-month lease
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $98 <span className="text-xl text-ink-soft">/month</span>
+              $198 <span className="text-xl text-ink-soft">/month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Cancel anytime. Upgrade to ten-year hosting whenever you want for $998.
+              Cancel anytime. Upgrade to ten-year hosting whenever you want for $1,349.
             </p>
           </article>
 
@@ -93,7 +93,7 @@ export function Pricing() {
               Upgrading hosting
             </p>
             <p className="mt-3 text-base leading-relaxed text-ink">
-              Start month-to-month, switch to ten year hosting whenever you want for $998. Past
+              Start month-to-month, switch to ten year hosting whenever you want for $1,349. Past
               monthly payments don&rsquo;t apply toward the ten year price &mdash; we say this up
               front so it&rsquo;s never a surprise.
             </p>

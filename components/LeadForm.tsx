@@ -500,7 +500,7 @@ export function LeadForm() {
             <div className="grid gap-5">
               <Field label="Payment">
                 <div className="rounded-xl border border-accent bg-accent px-4 py-4 text-on-accent">
-                  <span className="block text-sm font-medium">$998 — paid in full to start</span>
+                  <span className="block text-sm font-medium">$1,998 — paid in full to start</span>
                   <span className="mt-1 block text-xs text-on-accent/70">
                     Full payment before your project enters the queue
                   </span>
@@ -519,8 +519,8 @@ export function LeadForm() {
               <Field label="Hosting preference (select one)" required error={errors.hostingChoice}>
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
-                    ["ten_year", "Ten Year $998"],
-                    ["monthly", "Month-to-month $98"],
+                    ["ten_year", "Ten Year $1,349"],
+                    ["monthly", "Month-to-month $198"],
                     ["later", "Decide later"],
                   ] as const).map(([val, label]) => (
                     <label
@@ -589,7 +589,7 @@ export function LeadForm() {
                 disabled={submitting}
                 className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
               >
-                {submitting ? "Redirecting to payment..." : "Continue to pay $998"}
+                {submitting ? "Redirecting to payment..." : "Continue to pay $1,998"}
               </button>
             )}
           </div>

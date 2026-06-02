@@ -83,7 +83,7 @@ export function validateLeadPayload(
   if (paymentOption && paymentOption !== "full") {
     return {
       ok: false,
-      error: "Invalid paymentOption — $998 must be paid in full upfront",
+      error: "Invalid paymentOption — $1,998 must be paid in full upfront",
     };
   }
 

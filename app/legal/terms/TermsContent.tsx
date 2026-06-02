@@ -32,8 +32,8 @@ export function TermsContent() {
               2. What you are buying
             </h2>
             <p className="text-ink-soft">
-              The core offer is a handcrafted custom website for a flat $998 design fee, delivered
-              in 5&ndash;7 business days after your payment clears. Add-on timelines begin when all
+              The core offer is a handcrafted custom website for a flat $1,998 design fee, delivered
+              in 7 business days after your payment clears. Add-on timelines begin when all
               required client materials are received. Add-ons are typically delivered within 1–3
               business days of site delivery. Full-stack builds (three or more add-ons) are delivered
               within 14 business days. Scope, pricing, hosting options, and edit policy are described
@@ -42,12 +42,12 @@ export function TermsContent() {
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
-                <strong>Design fee:</strong> $998 paid in full at checkout before your project
+                <strong>Design fee:</strong> $1,998 paid in full at checkout before your project
                 enters the queue.
               </li>
               <li>
-                <strong>Hosting:</strong> You choose ten-year hosting ($998 one-time), month-to-month
-                ($98/month), or decide later. Terms for switching between options are stated in
+                <strong>Hosting:</strong> You choose ten-year hosting ($1,349 one-time), month-to-month
+                ($198/month), or decide later. Terms for switching between options are stated in
                 pricing on the site.
               </li>
               <li>
@@ -79,7 +79,7 @@ export function TermsContent() {
               Your project is considered complete if we do not receive feedback or revision requests
               within 14 days of delivering a draft. Completed designs are held on file for 90 days
               — if you return within that window, we&apos;ll pick up where we left off under the
-              standard edit terms. After 90 days, a re-engagement fee of $249 applies to reopen the
+              standard edit terms. After 90 days, a re-engagement fee of $349 applies to reopen the
               project.
             </p>
           </section>

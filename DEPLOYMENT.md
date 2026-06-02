@@ -59,7 +59,7 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
 
 - URL: `https://998webdesigns.com/api/stripe/webhook`
 - Event: `checkout.session.completed` (required)
-- All new checkouts are **$998 pay-in-full** (plus optional ten-year hosting). No deposit or balance-hold flow.
+- All new checkouts are **$1,998 pay-in-full** (plus optional ten-year hosting). No deposit or balance-hold flow.
 
 **Legacy:** Old deposit checkouts in Stripe still complete the webhook and sync as `paid_in_full`. Any open balance holds from before this change must be captured or released in the [Stripe Dashboard](https://dashboard.stripe.com) manually.
 
@@ -76,9 +76,9 @@ Uses `RESEND_API_KEY`.
 
 Stripe Checkout charges:
 
-- Design: **$998 pay-in-full** (required)
-- **Ten-year hosting:** +$998 when lead selects ten-year hosting on the form
-- **Month-to-month hosting:** not in Checkout yet ($98/mo billed after launch — metadata + emails only)
+- Design: **$1,998 pay-in-full** (required)
+- **Ten-year hosting:** +$1,349 when lead selects ten-year hosting on the form
+- **Month-to-month hosting:** not in Checkout yet ($198/mo billed after launch — metadata + emails only)
 
 ## SEO (sitemap / robots)
 

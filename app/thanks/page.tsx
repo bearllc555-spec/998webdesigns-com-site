@@ -97,7 +97,7 @@ export default async function Thanks({
             <p className="mt-3 text-base leading-relaxed text-ink">
               If we send a design draft and don&rsquo;t hear back within 14 days, we&apos;ll mark
               the project complete and deliver the best version we have. Your files are held for 90
-              days — come back in that window under normal edit terms. After 90 days, a $249
+              days — come back in that window under normal edit terms. After 90 days, a $349
               re-engagement fee applies to reopen. We say this here so it&apos;s never a surprise
               later.
             </p>

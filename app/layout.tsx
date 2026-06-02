@@ -19,14 +19,14 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "998 web designs — handcrafted websites for small businesses. $998 once.",
+  title: "998 web designs — handcrafted websites for small businesses. $1,998 once.",
   description:
-    "A handcrafted custom website for small businesses. $998 once. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
+    "A handcrafted custom website for small businesses. $1,998 once. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
   metadataBase: new URL("https://998webdesigns.com"),
   openGraph: {
     title: "998 web designs — handcrafted websites for small businesses",
     description:
-      "A handcrafted custom website for $998. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
+      "A handcrafted custom website for $1,998. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
     url: "https://998webdesigns.com",
     siteName: "998 web designs",
     type: "website",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "998 web designs — handcrafted websites for small businesses",
     description:
-      "A handcrafted custom website for $998. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
+      "A handcrafted custom website for $1,998. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
     images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },

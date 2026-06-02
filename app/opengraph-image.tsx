@@ -40,7 +40,7 @@ export default function Image() {
             maxWidth: 900,
           }}
         >
-          Handcrafted websites for small businesses. $998 once. Delivered in 5–7
+          Handcrafted websites for small businesses. $1,998 once. Delivered in 5–7
           business days.
         </div>
       </div>

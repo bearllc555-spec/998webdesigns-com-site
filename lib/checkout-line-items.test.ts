@@ -34,12 +34,12 @@ describe("buildCheckoutLineItems", () => {
   it("charges full design fee when hosting is later", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "later" }));
     expect(items).toHaveLength(1);
-    expect(items[0].price_data?.unit_amount).toBe(99800);
+    expect(items[0].price_data?.unit_amount).toBe(199800);
   });
 
   it("adds ten-year hosting line item", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }));
     expect(items).toHaveLength(2);
-    expect(items[1].price_data?.unit_amount).toBe(99800);
+    expect(items[1].price_data?.unit_amount).toBe(134900);
   });
 });
