@@ -19,7 +19,9 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
 - `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout (`customer_creation: always`), Resend checkout-link email, webhook balance auth hold on deposit.
 - `/api/contact` — POST: honeypot, Resend to hello@998webdesigns.com.
-- `/api/stripe/webhook` — signed webhook; $499 balance authorization hold after deposit checkout.
+- `/api/stripe/webhook` — signed webhook; $499 balance auth hold on deposit; Resend alert to `hello@` on every completed checkout.
+- **Checkout origins** — `lib/checkout-origin.ts` allowlist (no open redirect via `Origin`).
+- **Stripe go-live** — `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
 - OG image — `app/opengraph-image.tsx`.
 - Rate limiting — `proxy.ts` on `/api/leads` (5/min/IP) and `/api/contact` (10/min/IP).
@@ -29,8 +31,8 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 
 ## Deferred / backlog
 
-- **Portfolio carousel** — mix of Serenity Spa + template demo URLs until more 998 mockups ship (`data/portfolio.ts`).
-- **Slack** — internal ping on new lead (env `SLACK_WEBHOOK_URL` not wired).
+- **Portfolio carousel** — Serenity Spa is live-linked; other slots use placeholder art until real mockups + URLs ship (`data/portfolio.ts`).
+- **Slack** — optional; payment alerts already email `hello@` via Resend on webhook.
 - **$98/mo hosting subscription** — Stripe Subscription not built.
 - **Balance capture on approval** — auth hold created in webhook; capture flow not productized in admin.
 - **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
@@ -47,7 +49,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 |---|---|
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
-| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` (custom domain here; `-com-app` is a separate project) |
+| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` only (`-com-app` deleted) |
 | Supabase | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
 
 ---

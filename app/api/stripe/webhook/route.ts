@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { BALANCE_AMOUNT_CENTS } from "@/lib/products";
+import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
+import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -18,6 +20,7 @@ function stripeId(value: unknown): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  warnIfProductionStripeTestMode("webhook");
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
@@ -43,6 +46,12 @@ export async function POST(req: NextRequest) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const paymentType = session.metadata?.paymentType;
+
+    try {
+      await sendInternalPaymentEmail(session);
+    } catch (err) {
+      console.error("[webhook] Internal payment alert failed:", err);
+    }
 
     if (paymentType === "deposit" && session.payment_intent) {
       try {

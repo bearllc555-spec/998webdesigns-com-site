@@ -1,13 +1,12 @@
-// Portfolio carousel + /portfolio page data.
-// Add a new client = add one entry here. Drop the thumbnail under public/portfolio/<slug>.jpg.
-// Use real screenshots — full-page captures, ~1200px wide. The Carousel reveals the rest of the
-// page on hover (the "scroll-reveal" pattern).
+// Portfolio carousel data.
+// Add a client: drop public/portfolio/<slug>.jpg (~1200x900) and set url when the site is live.
 
 export type PortfolioItem = {
   slug: string;
   name: string;
   industry: string;
-  url: string;
+  /** Live client URL only — do not link to third-party template demos. */
+  url?: string;
   thumbnail: string;
 };
 
@@ -23,36 +22,31 @@ export const portfolio: PortfolioItem[] = [
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
-    url: "https://startbootstrap.com/previews/business-frontpage",
-    thumbnail: "/portfolio/business-front.jpg",
+    thumbnail: "/portfolio/placeholder.svg",
   },
   {
     slug: "north-branch-roofing",
     name: "North Branch Roofing",
     industry: "Trades",
-    url: "https://templatemo.com/templates/templatemo_578_first_portfolio/",
-    thumbnail: "/portfolio/first-portfolio.jpg",
+    thumbnail: "/portfolio/placeholder.svg",
   },
   {
     slug: "hayes-and-co-studio",
     name: "Hayes & Co Studio",
     industry: "Creative & photography",
-    url: "https://html5up.net/uploads/demos/strata/",
-    thumbnail: "/portfolio/strata.jpg",
+    thumbnail: "/portfolio/placeholder.svg",
   },
   {
     slug: "three-hills-cafe",
     name: "Three Hills Cafe",
     industry: "Restaurants & cafes",
-    url: "https://templatemo.com/templates/templatemo_590_topic_listing/",
-    thumbnail: "/portfolio/topic-listing.jpg",
+    thumbnail: "/portfolio/placeholder.svg",
   },
   {
     slug: "broadway-outdoor",
     name: "Broadway Outdoor Co.",
     industry: "Boutique retail",
-    url: "https://html5up.net/uploads/demos/highlights/",
-    thumbnail: "/portfolio/highlights.jpg",
+    thumbnail: "/portfolio/placeholder.svg",
   },
 ];
 

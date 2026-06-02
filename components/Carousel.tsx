@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { portfolio } from "@/data/portfolio";
+import { portfolio, type PortfolioItem } from "@/data/portfolio";
 
 const AUTOPLAY_MS = 5000;
 // How long the scroll-reveal animation takes from top -> bottom of the screenshot.
@@ -91,35 +91,7 @@ export function Carousel() {
             key={p.slug}
             className="snap-start shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
           >
-            <Link
-              href={p.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.thumbnail}
-                  alt={`${p.name} — ${p.industry}`}
-                  loading="lazy"
-                  decoding="async"
-                  className="thumb-img absolute inset-0 h-full w-full object-cover"
-                  style={{
-                    objectPosition: "top center",
-                    transition: `object-position ${HOVER_REVEAL_S}s linear`,
-                  }}
-                />
-              </div>
-              <div className="flex items-baseline justify-between gap-3 px-4 py-3">
-                <span className="truncate font-display text-base font-medium text-ink">
-                  {p.name}
-                </span>
-                <span className="shrink-0 text-xs uppercase tracking-wider text-slate">
-                  {p.industry}
-                </span>
-              </div>
-            </Link>
+            <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
           </li>
         ))}
       </ul>
@@ -133,6 +105,68 @@ export function Carousel() {
           .group:hover .thumb-img { object-position: top center !important; }
         }
       `}</style>
+    </div>
+  );
+}
+
+function PortfolioCard({
+  item,
+  revealSeconds,
+}: {
+  item: PortfolioItem;
+  revealSeconds: number;
+}) {
+  const cardClass =
+    "group block overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm transition hover:-translate-y-0.5 hover:shadow-md";
+
+  const inner = (
+    <>
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.thumbnail}
+          alt={`${item.name} — ${item.industry}`}
+          loading="lazy"
+          decoding="async"
+          className="thumb-img absolute inset-0 h-full w-full object-cover"
+          style={{
+            objectPosition: "top center",
+            transition: `object-position ${revealSeconds}s linear`,
+          }}
+        />
+        {!item.url && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-bg/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-ink-soft backdrop-blur">
+            Preview coming soon
+          </span>
+        )}
+      </div>
+      <div className="flex items-baseline justify-between gap-3 px-4 py-3">
+        <span className="truncate font-display text-base font-medium text-ink">
+          {item.name}
+        </span>
+        <span className="shrink-0 text-xs uppercase tracking-wider text-slate">
+          {item.industry}
+        </span>
+      </div>
+    </>
+  );
+
+  if (item.url) {
+    return (
+      <Link
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cardClass}
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={`${cardClass} cursor-default`} aria-label={`${item.name} preview`}>
+      {inner}
     </div>
   );
 }

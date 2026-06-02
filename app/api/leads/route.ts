@@ -4,6 +4,8 @@ import { stripe } from "@/lib/stripe";
 import { DEPOSIT_PRODUCT, FULL_PRODUCT } from "@/lib/products";
 import { sendLeadCheckoutEmail } from "@/lib/lead-email";
 import { validateLeadPayload } from "@/lib/validate-lead";
+import { checkoutOrigin } from "@/lib/checkout-origin";
+import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 
 export const runtime = "nodejs";
 
@@ -64,7 +66,8 @@ export async function POST(req: NextRequest) {
 
   // Create Stripe Checkout session
   try {
-    const origin = req.headers.get("origin") || "https://998webdesigns.com";
+    warnIfProductionStripeTestMode("leads");
+    const origin = checkoutOrigin(req);
     const payFull = lead.paymentOption === "full";
     const product = payFull ? FULL_PRODUCT : DEPOSIT_PRODUCT;
 
