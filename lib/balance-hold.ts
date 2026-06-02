@@ -23,9 +23,30 @@ const REUSABLE_HOLD_STATUSES = new Set([
 /**
  * Reuse an existing balance hold from wd_leads when webhook retries.
  */
+/** Stripe Search — catches holds created before wd_leads was updated. */
+async function searchHoldByDepositSession(
+  depositSessionId: string
+): Promise<string | null> {
+  try {
+    const result = await stripe.paymentIntents.search({
+      query: `metadata['depositSessionId']:'${depositSessionId}' AND metadata['type']:'balance_hold'`,
+      limit: 3,
+    });
+    for (const intent of result.data) {
+      if (REUSABLE_HOLD_STATUSES.has(intent.status)) return intent.id;
+    }
+  } catch (err) {
+    console.warn("[webhook] PaymentIntent search skipped:", err);
+  }
+  return null;
+}
+
 async function existingHoldForDepositSession(
   depositSessionId: string
 ): Promise<string | null> {
+  const fromStripe = await searchHoldByDepositSession(depositSessionId);
+  if (fromStripe) return fromStripe;
+
   const lead = await findWdLeadForCapture({ depositSessionId });
   const holdId = lead?.stripe_balance_invoice_id;
   if (!holdId) return null;

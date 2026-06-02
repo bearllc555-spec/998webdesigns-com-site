@@ -1,7 +1,9 @@
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
+import { checkSupabaseHealth, type SupabaseHealth } from "@/lib/supabase-health";
 
 export type ProductionConfigStatus = {
   vercelEnv: string;
+  supabase: SupabaseHealth;
   stripe: {
     mode: StripeKeyMode;
     keyPresent: boolean;
@@ -20,9 +22,10 @@ export type ProductionConfigStatus = {
  * Snapshot of production-critical env wiring (no secret values returned).
  * Call from GET /api/admin/env-status with BALANCE_CAPTURE_SECRET.
  */
-export function getProductionConfigStatus(): ProductionConfigStatus {
+export async function getProductionConfigStatus(): Promise<ProductionConfigStatus> {
   const warnings: string[] = [];
   const vercelEnv = process.env.VERCEL_ENV ?? "local";
+  const supabase = await checkSupabaseHealth();
   const mode = stripeKeyMode();
   const keyPresent = mode !== "missing";
   const webhookSecretPresent = Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim());
@@ -52,12 +55,15 @@ export function getProductionConfigStatus(): ProductionConfigStatus {
   if (!process.env.RESEND_API_KEY?.trim()) {
     warnings.push("RESEND_API_KEY missing — contact and lead emails will fail.");
   }
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
-  ) {
+  if (!supabase.configured) {
     warnings.push(
       "Supabase service role not configured — wd_leads and distributed rate limits degraded."
+    );
+  } else if (!supabase.wdLeadsTable) {
+    warnings.push("wd_leads table missing — run supabase/schema.sql in Supabase SQL editor.");
+  } else if (!supabase.apiRateLimitsTable) {
+    warnings.push(
+      "api_rate_limits table missing — run supabase/schema.sql for global rate limits."
     );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
@@ -65,10 +71,8 @@ export function getProductionConfigStatus(): ProductionConfigStatus {
   }
 
   const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
-  const supabaseConfigured = Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
-  );
+  const supabaseConfigured =
+    supabase.configured && supabase.wdLeadsTable && supabase.apiRateLimitsTable;
   const balanceCaptureConfigured = Boolean(process.env.BALANCE_CAPTURE_SECRET?.trim());
 
   const readyForLiveCharges =
@@ -79,6 +83,7 @@ export function getProductionConfigStatus(): ProductionConfigStatus {
 
   return {
     vercelEnv,
+    supabase,
     stripe: {
       mode,
       keyPresent,

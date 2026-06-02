@@ -25,7 +25,7 @@ export async function checkRateLimitSupabase(
   try {
     return await checkWithClient(supa, key, config);
   } catch (err) {
-    console.warn("[rate-limit] Supabase check failed, using in-memory fallback:", err);
+    console.error("[rate-limit] Supabase check failed — using in-memory fallback:", err);
     return { allowed: true, usedDatabase: false };
   }
 }

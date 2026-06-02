@@ -23,5 +23,13 @@ export const PRODUCTS: Product[] = [
 export const DEPOSIT_PRODUCT = PRODUCTS.find(p => p.id === 'website-deposit')!
 export const FULL_PRODUCT = PRODUCTS.find(p => p.id === 'website-full')!
 
+/** Billed in Checkout when lead selects ten-year hosting (pricing page: $998 one-time). */
+export const HOSTING_TEN_YEAR_PRODUCT: Product = {
+  id: 'hosting-ten-year',
+  name: 'Ten Years of Hosting',
+  description: 'One-time hosting for ten years, including domain (com, net, org).',
+  priceInCents: 99800,
+}
+
 // Balance amount for authorization hold (in cents)
 export const BALANCE_AMOUNT_CENTS = 49900 // $499.00

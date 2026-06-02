@@ -1,3 +1,4 @@
+import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "./validate-lead";
 
 function escapeHtml(text: string): string {
@@ -36,7 +37,9 @@ export async function sendLeadCheckoutEmail(
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <p>Hi ${escapeHtml(lead.fullName)},</p>
         <p>Thanks for submitting your project brief for <strong>${escapeHtml(lead.businessName)}</strong>. We received everything.</p>
-        <p><strong>Next step:</strong> complete your ${payLabel} through our secure Stripe checkout:</p>
+        <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
+        <p><strong>Next step:</strong> complete your ${payLabel} through our secure Stripe checkout${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}:</p>
+        ${lead.hostingChoice === "monthly" ? `<p style="font-size: 14px; color: #52525b;">Month-to-month hosting ($98/mo) is set up after your site launches — it is not charged in this checkout.</p>` : ""}
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Continue to payment</a>
         </p>

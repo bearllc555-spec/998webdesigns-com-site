@@ -6,7 +6,7 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production — 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`** only. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v25.x).
+**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`** only. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v27.x).
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
 

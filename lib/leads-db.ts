@@ -81,6 +81,22 @@ export async function updateLatestWdLeadByEmail(
   return updateWdLead(data.id, patch);
 }
 
+export async function countWdLeadsByEmail(email: string): Promise<number> {
+  const supa = supabaseAdmin();
+  if (!supa) return 0;
+
+  const { count, error } = await supa
+    .from("wd_leads")
+    .select("id", { count: "exact", head: true })
+    .eq("email", email);
+
+  if (error) {
+    console.warn("[leads] wd_leads count by email failed:", error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
 export async function findWdLeadForCapture(params: {
   email?: string;
   depositSessionId?: string;

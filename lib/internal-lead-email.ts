@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "@/lib/validate-lead";
 import { stripeKeyMode } from "@/lib/stripe-env";
 
@@ -52,7 +53,7 @@ export async function sendInternalLeadSubmittedEmail(
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
         <p><strong>Business:</strong> ${escapeHtml(lead.businessName)}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
-        <p><strong>Hosting:</strong> ${escapeHtml(lead.hostingChoice)}</p>
+        <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Checkout link:</strong> <a href="${escapeHtml(checkoutUrl)}">Open Stripe Checkout</a></p>
         <p><strong>Stripe session:</strong> <a href="${dash}/checkout/sessions/${checkoutSessionId}">${escapeHtml(checkoutSessionId)}</a></p>
         <p style="font-size: 14px; color: #52525b;">You will get a second email when they pay. If they abandon, follow up manually.</p>
@@ -61,7 +62,44 @@ export async function sendInternalLeadSubmittedEmail(
   });
 
   if (error) {
-    console.warn("[leads] Internal new-lead alert failed:", error);
+    console.error("[leads] Internal new-lead alert failed:", error);
+  }
+}
+
+/** Urgent alert when deposit paid but $499 balance hold could not be placed. */
+export async function sendBalanceHoldFailedEmail(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY not configured");
+  }
+
+  const meta = session.metadata ?? {};
+  const email =
+    session.customer_details?.email ?? meta.email ?? session.customer_email ?? "(unknown)";
+  const dash = stripeDashboardBase();
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  const { error } = await resend.emails.send({
+    from: "998 web designs <website@998webdesigns.com>",
+    to: NOTIFY_TO,
+    subject: `[998] ACTION REQUIRED — balance hold missing for ${meta.businessName || email}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+        <h2 style="margin: 0 0 12px; color: #b45309;">Balance hold not created</h2>
+        <p>Deposit checkout completed but the $499 authorization hold failed or was skipped.</p>
+        <p><strong>Customer:</strong> ${escapeHtml(meta.fullName || "—")} / ${escapeHtml(email)}</p>
+        <p><strong>Business:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Checkout session:</strong> <a href="${dash}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
+        <p style="font-size: 14px; color: #52525b;">Create the hold manually in Stripe or re-send the webhook from the Dashboard. Stripe will retry this webhook automatically.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    throw new Error(`[webhook] Balance-hold alert failed: ${JSON.stringify(error)}`);
   }
 }
 
@@ -70,8 +108,7 @@ export async function sendInternalPaymentEmail(
   balanceHoldIntentId?: string | null
 ): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[webhook] RESEND_API_KEY not set, skipping internal payment alert");
-    return;
+    throw new Error("RESEND_API_KEY not configured");
   }
 
   const meta = session.metadata ?? {};
@@ -117,6 +154,6 @@ export async function sendInternalPaymentEmail(
   });
 
   if (error) {
-    console.warn("[webhook] Internal payment alert email failed:", error);
+    throw new Error(`[webhook] Internal payment alert failed: ${JSON.stringify(error)}`);
   }
 }

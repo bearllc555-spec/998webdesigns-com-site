@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { DEPOSIT_PRODUCT, FULL_PRODUCT } from "@/lib/products";
+import { buildCheckoutLineItems } from "@/lib/checkout-line-items";
 import { sendLeadCheckoutEmail } from "@/lib/lead-email";
 import { validateLeadPayload } from "@/lib/validate-lead";
 import { checkoutOrigin } from "@/lib/checkout-origin";
@@ -58,8 +58,10 @@ export async function POST(req: NextRequest) {
   });
 
   if (!dbResult.ok) {
-    console.warn(`[leads] wd_leads persist skipped (${dbResult.reason}):`, dbResult.detail);
-    console.info("[leads] payload preserved:", JSON.stringify(payload));
+    console.warn(
+      `[leads] wd_leads persist skipped (${dbResult.reason}) for ${lead.email} / ${lead.businessName}:`,
+      dbResult.detail
+    );
   }
 
   // Create Stripe Checkout session
@@ -67,25 +69,12 @@ export async function POST(req: NextRequest) {
     warnIfProductionStripeTestMode("leads");
     const origin = checkoutOrigin(req);
     const payFull = lead.paymentOption === "full";
-    const product = payFull ? FULL_PRODUCT : DEPOSIT_PRODUCT;
 
     const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       mode: "payment",
       customer_creation: "always",
       customer_email: lead.email,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              description: product.description,
-            },
-            unit_amount: product.priceInCents,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: buildCheckoutLineItems(lead),
       metadata: {
         fullName: lead.fullName,
         businessName: lead.businessName,

@@ -1,5 +1,9 @@
 import { stripe } from "@/lib/stripe";
-import { findWdLeadForCapture, updateWdLead } from "@/lib/leads-db";
+import {
+  countWdLeadsByEmail,
+  findWdLeadForCapture,
+  updateWdLead,
+} from "@/lib/leads-db";
 
 export type CaptureBalanceInput = {
   email?: string;
@@ -14,6 +18,18 @@ export type CaptureBalanceResult =
 export async function captureBalanceForLead(
   input: CaptureBalanceInput
 ): Promise<CaptureBalanceResult> {
+  if (input.email && !input.depositSessionId && !input.leadId) {
+    const total = await countWdLeadsByEmail(input.email);
+    if (total > 1) {
+      return {
+        ok: false,
+        error:
+          "Multiple leads share this email. Pass depositSessionId (Checkout session id) or leadId.",
+        status: 409,
+      };
+    }
+  }
+
   const lead = await findWdLeadForCapture(input);
   if (!lead) {
     return { ok: false, error: "Lead not found", status: 404 };

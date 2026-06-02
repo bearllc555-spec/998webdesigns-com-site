@@ -5,6 +5,7 @@ import {
   type RateLimitConfig,
 } from "@/lib/rate-limit";
 import { checkRateLimitSupabase } from "@/lib/rate-limit-supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/leads": { limit: 5, windowMs: 60_000 },
@@ -39,6 +40,33 @@ export async function enforceApiRateLimit(
       allowed: distributed.allowed,
       retryAfterSec: distributed.retryAfterSec,
     };
+  }
+
+  const memory = checkRateLimit(key, config);
+  return memory;
+}
+
+/** Admin bearer routes: fail closed when Supabase is configured but rate-limit table is unreachable. */
+export async function enforceAdminRateLimit(
+  req: NextRequest,
+  path: "/api/admin/capture-balance"
+): Promise<{ allowed: boolean; retryAfterSec?: number }> {
+  const config = API_RATE_LIMITS[path];
+  const key = `${path}:${clientIp(req)}`;
+
+  pruneRateLimitStore();
+
+  const distributed = await checkRateLimitSupabase(key, config);
+  if (distributed.usedDatabase) {
+    return {
+      allowed: distributed.allowed,
+      retryAfterSec: distributed.retryAfterSec,
+    };
+  }
+
+  if (supabaseAdmin()) {
+    console.error("[rate-limit] Admin route denied — distributed limit unavailable");
+    return { allowed: false, retryAfterSec: 60 };
   }
 
   return checkRateLimit(key, config);

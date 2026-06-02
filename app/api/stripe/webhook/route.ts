@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
+import {
+  sendBalanceHoldFailedEmail,
+  sendInternalPaymentEmail,
+} from "@/lib/internal-lead-email";
 import { ensureBalanceHoldForDeposit } from "@/lib/balance-hold";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import {
@@ -12,6 +15,42 @@ import Stripe from "stripe";
 export const runtime = "nodejs";
 
 export const dynamic = "force-dynamic";
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  const paymentType = session.metadata?.paymentType;
+
+  if (paymentType === "full") {
+    await syncWdLeadPaidInFull(session);
+    await sendInternalPaymentEmail(session, null);
+    return;
+  }
+
+  if (paymentType === "deposit" && session.payment_intent) {
+    let holdIntentId: string | null = null;
+    try {
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        session.payment_intent as string
+      );
+      holdIntentId = await ensureBalanceHoldForDeposit(session, paymentIntent);
+    } catch (err) {
+      console.error("[webhook] Failed to create auth hold:", err);
+      throw err;
+    }
+
+    await syncWdLeadDepositPaid(session, holdIntentId);
+
+    if (!holdIntentId) {
+      await sendBalanceHoldFailedEmail(session);
+      await sendInternalPaymentEmail(session, null);
+      throw new Error("Balance hold not created for deposit checkout");
+    }
+
+    await sendInternalPaymentEmail(session, holdIntentId);
+    return;
+  }
+
+  await sendInternalPaymentEmail(session, null);
+}
 
 export async function POST(req: NextRequest) {
   warnIfProductionStripeTestMode("webhook");
@@ -39,38 +78,11 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const paymentType = session.metadata?.paymentType;
-
-    if (paymentType === "full") {
-      await syncWdLeadPaidInFull(session);
-      try {
-        await sendInternalPaymentEmail(session, null);
-      } catch (err) {
-        console.error("[webhook] Internal payment alert failed:", err);
-      }
-    } else if (paymentType === "deposit" && session.payment_intent) {
-      let holdIntentId: string | null = null;
-      try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(
-          session.payment_intent as string
-        );
-        holdIntentId = await ensureBalanceHoldForDeposit(session, paymentIntent);
-      } catch (err) {
-        console.error("[webhook] Failed to create auth hold:", err);
-      }
-
-      await syncWdLeadDepositPaid(session, holdIntentId);
-      try {
-        await sendInternalPaymentEmail(session, holdIntentId);
-      } catch (err) {
-        console.error("[webhook] Internal payment alert failed:", err);
-      }
-    } else {
-      try {
-        await sendInternalPaymentEmail(session, null);
-      } catch (err) {
-        console.error("[webhook] Internal payment alert failed:", err);
-      }
+    try {
+      await handleCheckoutCompleted(session);
+    } catch (err) {
+      console.error("[webhook] checkout.session.completed handler failed:", err);
+      return NextResponse.json({ error: "Handler failed" }, { status: 500 });
     }
   }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyBearerSecret } from "@/lib/admin-auth";
-import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { enforceAdminRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { getProductionConfigStatus } from "@/lib/production-config";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ function unauthorized() {
 
 /** GET production env wiring snapshot (no secret values). Same Bearer as capture-balance. */
 export async function GET(req: NextRequest) {
-  const rate = await enforceApiRateLimit(req, "/api/admin/capture-balance");
+  const rate = await enforceAdminRateLimit(req, "/api/admin/capture-balance");
   if (!rate.allowed) {
     const body = rateLimitResponse(rate.retryAfterSec);
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
@@ -30,5 +30,5 @@ export async function GET(req: NextRequest) {
     return unauthorized();
   }
 
-  return NextResponse.json(getProductionConfigStatus());
+  return NextResponse.json(await getProductionConfigStatus());
 }

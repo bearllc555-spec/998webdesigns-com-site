@@ -90,6 +90,14 @@ Or capture in the [Stripe Dashboard](https://dashboard.stripe.com) on the balanc
 
 `wd_leads.status` becomes `balance_captured` on success.
 
+## Checkout line items
+
+Stripe Checkout charges:
+
+- Design: $499 deposit or $998 pay-in-full (per form step 4)
+- **Ten-year hosting:** +$998 when lead selects ten-year hosting on the form
+- **Month-to-month hosting:** not in Checkout yet ($98/mo billed after launch — metadata + emails only)
+
 ## SEO (sitemap / robots)
 
 Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are excluded from the sitemap and blocked in `robots.txt`. Bump `SITEMAP_LAST_MODIFIED` in that file when home or legal pages change materially.

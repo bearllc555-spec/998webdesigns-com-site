@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyBearerSecret } from "@/lib/admin-auth";
-import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { enforceAdminRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { captureBalanceForLead } from "@/lib/capture-balance";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ function unauthorized() {
 }
 
 export async function POST(req: NextRequest) {
-  const rate = await enforceApiRateLimit(req, "/api/admin/capture-balance");
+  const rate = await enforceAdminRateLimit(req, "/api/admin/capture-balance");
   if (!rate.allowed) {
     const body = rateLimitResponse(rate.retryAfterSec);
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
