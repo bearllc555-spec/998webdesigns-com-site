@@ -132,7 +132,7 @@ export function Hero() {
           </p>
           <div className="max-w-2xl">
             <p className="mt-4 text-base leading-relaxed text-ink">
-              Every build includes options for blogging strategies, hyper‑local SEO, Google Profile Optimization, review generation, email/SMS follow‑ups, social media strategies, booking calendar, and an on‑site AI chatbot so you get more calls, more bookings, and more repeat clients.
+              Every build includes options for blog writing & local posts, hyper‑local SEO, Google Profile Optimization, review generation, email/SMS follow‑ups, social media management, booking calendar, and an on‑site AI chatbot so you get more calls, more bookings, and more repeat clients.
             </p>
           </div>
 
