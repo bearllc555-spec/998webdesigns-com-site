@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getSelectedAddons } from "@/lib/addons";
 
 type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
@@ -72,6 +73,13 @@ export function LeadForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = getSelectedAddons();
+    if (saved.length > 0) {
+      setForm((prev) => ({ ...prev, addons: saved }));
+    }
+  }, []);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));

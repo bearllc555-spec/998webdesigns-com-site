@@ -1,0 +1,333 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { getSelectedAddons, toggleAddon } from "@/lib/addons";
+
+const ADDONS = [
+  {
+    value: "ai-chatbot",
+    title: "AI Chatbot",
+    setup: "$299",
+    monthly: "$79",
+    bullets: [
+      "Answer visitor questions around the clock",
+      "Process orders and quote requests",
+      "Send brochures, pricing, and documentation",
+      "Schedule appointments and callbacks",
+      "Capture leads after hours and route urgent requests",
+    ],
+  },
+  {
+    value: "social-media",
+    title: "Social Media Management",
+    setup: "$199",
+    monthly: "$299",
+    bullets: [
+      "Post photos, product clips, and service videos to your accounts",
+      "Image carousels, Stories, Reels, and short‑form clips",
+      "UGC and before/after job‑site content",
+      "Scheduled publishing across Facebook, Instagram, and more",
+      "Captions, hashtags, and repurposed blog posts",
+    ],
+  },
+  {
+    value: "email-sms",
+    title: "Email & SMS",
+    setup: "$149",
+    monthly: "$149",
+    bullets: [
+      "Nurture past clients so you stay top of mind for the next job",
+      "Confirm appointments, send reminders, and cut no‑shows",
+      "Follow up on quotes, invoices, and completed work automatically",
+      "Win‑back sequences when a customer hasn't booked in a while",
+      "Two‑way SMS for quick replies when you're on the truck or job site",
+    ],
+  },
+  {
+    value: "blog-writing",
+    title: "Blog Writing & Local Posts",
+    setup: "$199",
+    monthly: "$199",
+    bullets: [
+      "Dominate your territory with posts about every service you offer locally",
+      'Target city, neighborhood, and "near me" searches competitors skip',
+      "Answer the questions homeowners ask before they pick up the phone",
+      "Turn finished jobs into case studies, photos, and proof you can trust",
+      "Build authority so search engines and AI tools recommend you first",
+    ],
+  },
+  {
+    value: "hyper-local-seo",
+    title: "Hyper-Local SEO",
+    setup: "$299",
+    monthly: "$249",
+    bullets: [
+      "Tune your site to pull traffic from your exact service area—not generic national keywords",
+      "Pages for each city, town, or ZIP you want to own",
+      "On‑page copy, headings, and structure aligned with how locals search",
+      "Technical basics: speed, mobile UX, and crawlability that affect local rankings",
+      "Track what ranks, what drives calls, and where to publish next",
+    ],
+  },
+  {
+    value: "google-profile",
+    title: "Google Profile Optimization",
+    setup: "$149",
+    monthly: "$79",
+    bullets: [
+      "Complete, accurate Google Business Profile—photos, hours, services, and attributes",
+      "One of the most underused levers local businesses ignore",
+      "Review requests, replies, and reputation workflows that build trust",
+      "Profile posts, offers, and Q&A so you look active on Maps",
+      "Map pack visibility when someone searches your trade nearby",
+    ],
+  },
+  {
+    value: "booking-calendar",
+    title: "Booking Calendar",
+    setup: "$99",
+    monthly: "$29",
+    footnote: "*Client pays booking tool subscription separately.",
+    bullets: [
+      "Let customers book online 24/7 straight from your website",
+      "Integrates with Google Calendar, Calendly, and tools you already use",
+      "See new bookings and manage availability from your phone",
+      "Automatic confirmations and reminders by email or SMS",
+      "Less phone tag, fewer gaps, and a schedule that fills itself",
+    ],
+  },
+] as const;
+
+function AddonCardCta({
+  value,
+  selected,
+  onToggle,
+}: {
+  value: string;
+  selected: boolean;
+  onToggle: (value: string) => void;
+}) {
+  if (!selected) {
+    return (
+      <button
+        type="button"
+        onClick={() => onToggle(value)}
+        className="mt-4 inline-flex items-center text-sm font-medium text-accent hover:underline"
+      >
+        Add to your build →
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-4 flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={() => onToggle(value)}
+        className="inline-flex items-center gap-1 text-sm font-medium text-green-600"
+      >
+        <span>✓</span> Added
+      </button>
+      <button
+        type="button"
+        onClick={() => onToggle(value)}
+        className="text-left text-xs text-ink-soft hover:text-red-500"
+      >
+        Remove
+      </button>
+    </div>
+  );
+}
+
+export function AddonsSection() {
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedAddons(getSelectedAddons());
+  }, []);
+
+  useEffect(() => {
+    function handleUpdate(e: Event) {
+      const detail = (e as CustomEvent<string[]>).detail;
+      setSelectedAddons(detail);
+    }
+    window.addEventListener("addons-updated", handleUpdate);
+    return () => window.removeEventListener("addons-updated", handleUpdate);
+  }, []);
+
+  function handleToggle(value: string) {
+    const updated = toggleAddon(value);
+    setSelectedAddons(updated);
+  }
+
+  const isSelected = (value: string) => selectedAddons.includes(value);
+  const growthSelected = isSelected("growth-pack");
+
+  return (
+    <div id="addons" className="border-t border-rule">
+      <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+          High‑value add‑ons
+        </p>
+        <div className="max-w-2xl">
+          <p className="mt-4 text-base leading-relaxed text-ink">
+            Every build includes options for blog writing & local posts, hyper‑local SEO, Google
+            Profile Optimization, review generation, email/SMS follow‑ups, social media management,
+            booking calendar, and an on‑site AI chatbot so you get more calls, more bookings, and
+            more repeat clients.
+          </p>
+        </div>
+
+        <div className="mb-8 mt-8 rounded-xl border border-accent/20 bg-accent/[0.08] px-6 py-4">
+          <p className="font-semibold text-ink">
+            Agencies charge $500–$2,000/month for local SEO alone.
+          </p>
+          <p className="mt-1 text-sm text-ink-soft">
+            We don&apos;t. Every add-on below is priced for real small businesses — not agency
+            retainers.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {ADDONS.map((addon) => {
+            const selected = isSelected(addon.value);
+            return (
+              <div
+                key={addon.value}
+                className={
+                  selected
+                    ? "card-lift relative rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+                    : "card-lift relative rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200"
+                }
+              >
+                {selected && (
+                  <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
+                    ✓
+                  </span>
+                )}
+                <h3 className="font-display text-lg font-medium text-ink">{addon.title}</h3>
+                <p className="mt-1 text-sm text-ink-soft">
+                  {addon.setup} setup &middot;{" "}
+                  <span className="font-semibold text-accent">{addon.monthly}/mo</span>
+                </p>
+                <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                  {addon.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+                {"footnote" in addon && addon.footnote ? (
+                  <p className="mt-2 text-xs text-ink-soft">{addon.footnote}</p>
+                ) : null}
+                <AddonCardCta
+                  value={addon.value}
+                  selected={selected}
+                  onToggle={handleToggle}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          className={
+            growthSelected
+              ? "relative mt-10 rounded-xl border border-green-500 bg-green-50 p-8 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+              : "mt-10 rounded-xl bg-accent p-8 text-white"
+          }
+        >
+          {growthSelected && (
+            <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
+              ✓
+            </span>
+          )}
+          <p
+            className={`text-xs font-semibold uppercase tracking-widest ${
+              growthSelected ? "text-accent" : "text-white/70"
+            }`}
+          >
+            Most Popular Bundle
+          </p>
+          <h3
+            className={`mt-2 font-display text-2xl font-semibold ${
+              growthSelected ? "text-ink" : "text-white"
+            }`}
+          >
+            Growth Pack
+          </h3>
+          <p
+            className={`mt-1 text-sm ${growthSelected ? "text-ink-soft" : "text-white/80"}`}
+          >
+            The three add-ons that move the needle fastest for local service businesses — bundled
+            at a discount.
+          </p>
+
+          <ul
+            className={`mt-4 space-y-2 text-sm ${
+              growthSelected ? "text-ink-soft" : "text-white/90"
+            }`}
+          >
+            <li className="flex items-center gap-2">
+              <span className={`font-semibold ${growthSelected ? "text-ink" : "text-white"}`}>
+                ✓
+              </span>{" "}
+              Hyper-Local SEO
+            </li>
+            <li className="flex items-center gap-2">
+              <span className={`font-semibold ${growthSelected ? "text-ink" : "text-white"}`}>
+                ✓
+              </span>{" "}
+              Google Profile Optimization
+            </li>
+            <li className="flex items-center gap-2">
+              <span className={`font-semibold ${growthSelected ? "text-ink" : "text-white"}`}>
+                ✓
+              </span>{" "}
+              Blog Writing &amp; Local Posts
+            </li>
+          </ul>
+
+          <div className="mt-4">
+            <p className={`text-sm ${growthSelected ? "text-ink-soft" : "text-white/70"}`}>
+              $647 setup
+            </p>
+            <p
+              className={`mt-0.5 text-lg font-semibold ${
+                growthSelected ? "text-ink" : "text-white"
+              }`}
+            >
+              <span className="mr-2 line-through opacity-60">$527/mo</span>
+              $399/mo
+            </p>
+          </div>
+
+          {!growthSelected ? (
+            <button
+              type="button"
+              onClick={() => handleToggle("growth-pack")}
+              className="mt-6 inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-accent hover:bg-white/90"
+            >
+              Get the Growth Pack →
+            </button>
+          ) : (
+            <div className="mt-6 flex flex-col items-start gap-1">
+              <button
+                type="button"
+                onClick={() => handleToggle("growth-pack")}
+                className="inline-flex items-center rounded-full bg-green-500 px-6 py-3 text-sm font-semibold text-white hover:bg-green-600"
+              >
+                Growth Pack Added ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggle("growth-pack")}
+                className="text-xs text-ink-soft hover:text-red-500"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
