@@ -1,38 +1,43 @@
-# 998webdesigns-com-app — Project Handoff
+# 998webdesigns-com-site — Project Handoff
 
-Read at the start of every session that touches this repo. Captures stack, env, file layout, deploy flow, and what's wired vs deferred so a fresh session has full context.
-
----
-
-## Status (v0.1 — initial scaffold, 2026-05-21)
-
-**Local-only, not deployed yet.** Scaffolded as the replacement for the static `998webdesigns.com` Cloudflare Pages splash (repo `bearllc555-spec/998webdesigns-com-site`). When this app is reviewed and ready, DNS flips from CF Pages to Vercel and the static repo gets archived.
-
-Pricing copy in `src/components/Pricing.tsx` is taken verbatim from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
+Read at the start of every session that touches this repo. Stack, env, file layout, deploy flow, and what is wired vs deferred.
 
 ---
 
-## What ships in v0.1
+## Status (production — 2026-06)
 
-- Home page (`/`) — Hero with portfolio carousel, value props strip, How it works (4 steps), Pricing, FAQ accordion, 4-step embedded lead form, Footer.
-- `/thanks` — post-submit timeline + auto-deliver clause stated up front.
-- `/api/leads` — POST handler that validates, drops honeypot, attempts to persist to `wd_leads` Supabase table (logs + carries on if table is missing).
-- Brand tokens locked in `src/app/globals.css` (primitive → semantic). Inter (body) + Fraunces (display) font pairing.
-- Portfolio data layer at `src/data/portfolio.ts` — add a client = add one row.
-- FAQ data at `src/data/faq.ts`.
-- Placeholder SVG at `public/portfolio/placeholder.svg` — every entry points at this until real screenshots ship.
+**Live on Vercel** at https://998webdesigns.com (project `998webdesigns-com-app`, GitHub `bearllc555-spec/998webdesigns-com-site`). Replaced the legacy Cloudflare Pages static splash. Site version label in nav/footer (`lib/version.ts`, currently v25.x).
 
-## What's deferred to next session
+Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
 
-- **Stripe Invoicing** — `$499 deposit` invoice on submit, balance invoice on approval, `$98/mo` subscription, lifetime-upgrade flow, webhook handler at `/api/stripe/webhook`. Restricted API keys + signed webhook required.
-- **SendGrid** — confirmation email to lead with deposit invoice link + delivery-flow recap.
-- **Slack** — incoming-webhook ping to internal channel on every new lead.
-- **Supabase `wd_leads` table** — needs to be created in the existing Supabase project (`jxthwtflrzudepxysgje`). Schema sketch in this doc, below.
-- **shadcn/ui init** — for polished dialog/toast/table components (plain Tailwind controls suffice for v0.1).
-- **`/portfolio`**, **`/pricing`**, **`/start`**, **`/legal/terms`**, **`/legal/privacy`** standalone pages.
-- **Real rate-limit** via middleware (currently just a honeypot field + Supabase IP capture).
-- **Security review + Lighthouse pass** before DNS cutover.
-- **Vercel project + deploy wiring**.
+---
+
+## What ships today
+
+- Home (`/`) — Hero, add-ons, portfolio carousel, value props, how it works, pricing, FAQ, 4-step lead form, footer. Light/dark theme toggle.
+- `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
+- `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
+- `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout (`customer_creation: always`), Resend checkout-link email, webhook balance auth hold on deposit.
+- `/api/contact` — POST: honeypot, Resend to hello@998webdesigns.com.
+- `/api/stripe/webhook` — signed webhook; $499 balance authorization hold after deposit checkout.
+- SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
+- OG image — `app/opengraph-image.tsx`.
+- Rate limiting — `proxy.ts` on `/api/leads` (5/min/IP) and `/api/contact` (10/min/IP).
+- Analytics — `@vercel/analytics` in root layout.
+
+---
+
+## Deferred / backlog
+
+- **Portfolio carousel** — mix of Serenity Spa + template demo URLs until more 998 mockups ship (`data/portfolio.ts`).
+- **Slack** — internal ping on new lead (env `SLACK_WEBHOOK_URL` not wired).
+- **$98/mo hosting subscription** — Stripe Subscription not built.
+- **Balance capture on approval** — auth hold created in webhook; capture flow not productized in admin.
+- **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
+- **SendGrid** — not used; transactional email is **Resend**.
+- **Supabase `wd_leads`** — schema below; create in project `jxthwtflrzudepxysgje` if not already live.
+- **Lighthouse / security review** — manual pass still recommended.
+- **Lawyer review** — Terms/Privacy are operator-drafted.
 
 ---
 
@@ -40,92 +45,71 @@ Pricing copy in `src/components/Pricing.tsx` is taken verbatim from the locked p
 
 | Surface | URL |
 |---|---|
-| Repo (private) | https://github.com/bearllc555-spec/998webdesigns-com-app |
-| Vercel project | (to be created next session) |
-| Live splash being replaced | https://998webdesigns.com/ |
-| Old repo (legacy CF Pages static) | https://github.com/bearllc555-spec/998webdesigns-com-site |
-| Supabase project | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
+| Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
+| Production | https://998webdesigns.com |
+| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-app` |
+| Supabase | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
 
 ---
 
 ## Stack
 
-- **Next.js 16** (App Router, TypeScript, src/ layout, Tailwind CSS v4, no Turbopack)
-- **Tailwind v4** with inline `@theme` (no `tailwind.config.ts` — config lives in `globals.css`)
-- **Supabase** — Postgres + Auth + Storage (Free tier, shared with editor-v2)
-- **Vercel** — deploy target, Hobby plan (next session)
-- **Stripe** — Invoicing for deposit + balance + lifetime; Subscription for monthly hosting (next session)
-- **SendGrid** — transactional email (next session)
-- **Slack incoming-webhook** — internal lead alerts (next session)
+- **Next.js 16** — App Router, TypeScript, `app/` at repo root (no `src/`), Tailwind CSS v4 (`app/globals.css` @theme)
+- **Fonts** — Inter (body) + Geist (display via `font-display`)
+- **Supabase** — Postgres; service-role inserts for leads
+- **Vercel** — production host, Hobby plan, Git push to `main` auto-deploys
+- **Stripe** — Checkout (deposit $499 / full $998); webhook for balance hold
+- **Resend** — contact form + lead checkout-link email (`RESEND_API_KEY`)
+
+---
 
 ## File layout
 
 ```
-src/
-├── app/
-│   ├── api/leads/route.ts      # POST /api/leads — validates + inserts to wd_leads
-│   ├── globals.css              # design tokens, Tailwind v4 @theme
-│   ├── layout.tsx               # root layout, font wiring
-│   ├── page.tsx                 # home — composes section components
-│   └── thanks/page.tsx          # post-submit timeline + auto-deliver clause
-├── components/
-│   ├── Nav.tsx
-│   ├── Hero.tsx                 # composes Carousel
-│   ├── Carousel.tsx             # client — autoplay, arrow nav, pause-on-hover
-│   ├── ValueProps.tsx
-│   ├── HowItWorks.tsx
-│   ├── Pricing.tsx              # PRICING COPY IS THE PRODUCT — do not edit without approval
-│   ├── FAQ.tsx                  # client — accordion
-│   ├── LeadForm.tsx             # client — 4-step form, honeypot, validation
-│   └── Footer.tsx
-├── data/
-│   ├── portfolio.ts             # PortfolioItem[] — one row per client site
-│   └── faq.ts                   # FAQItem[]
-└── lib/
-    └── supabase.ts              # supabaseAdmin() (server) + supabasePublic (anon)
-public/
-└── portfolio/placeholder.svg     # used for every carousel slot until real .jpg ships
+app/
+├── api/leads/route.ts
+├── api/contact/route.ts
+├── api/stripe/webhook/route.ts
+├── globals.css
+├── layout.tsx
+├── page.tsx
+├── opengraph-image.tsx
+├── robots.ts
+├── sitemap.ts
+├── thanks/page.tsx
+└── legal/{terms,privacy}/
+components/
+├── Nav.tsx, Footer.tsx, Hero.tsx, Carousel.tsx
+├── ValueProps.tsx, HowItWorks.tsx, Pricing.tsx, FAQ.tsx, LeadForm.tsx
+├── ContactModal.tsx, ThemeToggle.tsx
+data/
+├── portfolio.ts
+└── faq.ts
+lib/
+├── supabase.ts, stripe.ts, products.ts, version.ts
+├── validate-lead.ts, lead-email.ts, rate-limit.ts
+proxy.ts
+public/portfolio/
 ```
 
 ---
 
 ## Env vars (.env.local — gitignored)
 
-| Key | Source | Used by |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | `<workspace>/.local/supabase-project-url.txt` | client + server |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `<workspace>/.local/supabase-publishable-key.txt` | client + server |
-| `SUPABASE_SERVICE_ROLE_KEY` | `<workspace>/.local/supabase-secret-key.txt` | server only |
-| `STRIPE_SECRET_KEY` | TBD next session — Stripe dashboard, restricted key | `/api/leads`, `/api/stripe/webhook` |
-| `STRIPE_WEBHOOK_SECRET` | TBD next session | `/api/stripe/webhook` |
-| `SENDGRID_API_KEY` | `<workspace>/.local/sendgrid-api-key.txt` | `/api/leads` |
-| `SLACK_WEBHOOK_URL` | TBD next session — Slack admin | `/api/leads` |
-| `LEAD_NOTIFY_EMAIL` | constant `hello@998webdesigns.com` | `/api/leads` |
+| Key | Used by |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase client |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client |
+| `SUPABASE_SERVICE_ROLE_KEY` | `/api/leads` insert |
+| `STRIPE_SECRET_KEY` | Checkout + webhook |
+| `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
+| `RESEND_API_KEY` | `/api/contact`, `/api/leads` email |
 
-Production env vars get set in Vercel → Project Settings → Environment Variables.
-
----
-
-## Adding a new portfolio thumbnail
-
-1. Save the screenshot as `public/portfolio/<slug>.jpg` (4:3 aspect ratio, ~1200x900 source preferred).
-2. Add one entry to the `portfolio` array in `src/data/portfolio.ts`:
-   ```ts
-   {
-     slug: "your-slug",
-     name: "Client Name",
-     industry: "One of the industries shown elsewhere",
-     url: "https://their-live-site.com",
-     thumbnail: "/portfolio/your-slug.jpg",
-   }
-   ```
-3. Commit. The carousel and `/portfolio` page (when built) both render from this array.
+Set the same keys in Vercel → Project Settings → Environment Variables.
 
 ---
 
 ## Supabase `wd_leads` table — schema sketch
-
-To be created in the existing Supabase project next session. Suggested schema:
 
 ```sql
 create table wd_leads (
@@ -137,10 +121,7 @@ create table wd_leads (
   ip text,
   payload jsonb not null,
   status text not null default 'new',
-    -- 'new' | 'deposit_sent' | 'deposit_paid' | 'designing' | 'awaiting_approval' | 'delivered' | 'closed'
   stripe_customer_id text,
-  stripe_deposit_invoice_id text,
-  stripe_balance_invoice_id text,
   notes text
 );
 ```
@@ -152,37 +133,32 @@ RLS: deny all to anon. Service-role inserts/reads only.
 ## How to ship a change
 
 ```
-cd repos/998webdesigns-com-app
-git checkout -b feat/<branch-name>
-# ... edit ...
-npm run dev            # local preview on :3000
-npm run build          # confirm prod build still passes
-git add . && git commit -m "<ascii-only msg>"
-git push -u origin feat/<branch-name>
-# open PR, review preview deploy, merge to main
+cd repos/998webdesigns-com-site
+git checkout -b fix/<name>   # or polish/feat — preview on Vercel branch deploy
+npm run dev
+npm run build
+git commit -m "v25.x: description"   # ASCII-only
+git push -u origin fix/<name>
+# review preview, merge to main for production
 ```
 
 Rules:
-- **Never push directly to `main`.** Branch first, merge after preview review (Vercel auto-deploys preview URLs for every push).
-- **ASCII-only commit messages.** (Same Cloudflare deployments-API gotcha applies if/when CF Pages ever sees this repo.)
-- **One commit per change.**
-- **Pricing copy** in `Pricing.tsx` is the product. Don't change wording without explicit approval.
+- Bump `SITE_VERSION` in `lib/version.ts` on every deploy-visible change.
+- **Pricing copy** in `Pricing.tsx` — product; no edits without approval.
+- Merge to `main` deploys https://998webdesigns.com (~30–60s).
 
 ---
 
-## Recovery / cold restart
+## Recovery
 
-If `repos/998webdesigns-com-app/` is missing:
 ```bash
 cd C:\Users\thede\OneDrive\Documents\Claude\slatepress\repos
-git clone https://github.com/bearllc555-spec/998webdesigns-com-app
-cd 998webdesigns-com-app
+git clone https://github.com/bearllc555-spec/998webdesigns-com-site
+cd 998webdesigns-com-site
 npm install
-# Recreate .env.local from <workspace>/.local/ files (see Env vars section above)
+# .env.local from workspace .local/ Supabase + Stripe + Resend keys
 npm run dev
 ```
-
-If env vars are missing: read from `<workspace>/.local/` per the table above.
 
 ---
 
@@ -190,4 +166,5 @@ If env vars are missing: read from `<workspace>/.local/` per the table above.
 
 | Date | Event |
 |---|---|
-| 2026-05-21 | v0.1 scaffold. Next.js 15 + Tailwind v4 + Supabase wired. Home, /thanks, /api/leads stub built. Pricing copy from locked brief. Stripe/SendGrid/Slack deferred to v0.2. |
+| 2026-05-21 | v0.1 scaffold (Next.js + Supabase + home + leads stub). |
+| 2026-06 | Vercel production, Stripe Checkout, Resend, legal pages, SEO, rate limit, v25.x audit passes. |
