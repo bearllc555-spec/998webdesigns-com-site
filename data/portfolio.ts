@@ -20,7 +20,7 @@ export const portfolio: PortfolioItem[] = [
   },
   {
     slug: "tuscano-excavating",
-    name: "Frank Tuscano Excavation",
+    name: "Frank Tuscano Excavating",
     industry: "Excavation & site work",
     url: "https://tuscano-excavating.pages.dev/",
     thumbnail: "/portfolio/tuscano-excavating.jpg",
