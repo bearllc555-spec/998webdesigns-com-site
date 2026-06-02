@@ -24,7 +24,7 @@ export function Pricing() {
               $1,998 <span className="text-2xl text-ink-soft">— paid in full to start</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
-              A handcrafted custom site, designed around your business. Delivered in 5&ndash;7
+              A handcrafted custom site, designed around your business. Delivered in 7
               business days from the moment payment clears. Yours to keep.
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
