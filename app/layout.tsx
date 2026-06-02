@@ -28,6 +28,21 @@ export const metadata: Metadata = {
     url: "https://998webdesigns.com",
     siteName: "998 web designs",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "998 web designs — handcrafted websites for small businesses",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "998 web designs — handcrafted websites for small businesses",
+    description:
+      "A handcrafted custom website for $998. Delivered in 5–7 business days. No agencies, no retainers, no surprises.",
+    images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },
   icons: {

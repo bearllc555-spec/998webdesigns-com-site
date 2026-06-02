@@ -54,29 +54,7 @@ export function Carousel() {
       onBlur={() => setPaused(false)}
     >
       <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-5 pb-4 md:px-8">
-        <div className="hidden items-center gap-2 md:flex">
-          <button
-            type="button"
-            onClick={() => scrollByCard(-1)}
-            aria-label="Previous"
-            className="rounded-full border border-rule bg-bg p-2 text-ink-soft transition hover:border-ink hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollByCard(1)}
-            aria-label="Next"
-            className="rounded-full border border-rule bg-bg p-2 text-ink-soft transition hover:border-ink hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
-        </div>
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate md:flex-1">
           Hover any thumbnail to scroll through the page
         </p>
         <div className="hidden items-center gap-2 md:flex">

@@ -13,6 +13,7 @@ export function PrivacyContent() {
         <h1 className="font-display text-4xl font-bold text-ink md:text-5xl">
           Privacy Policy
         </h1>
+        <p className="mt-4 text-sm text-slate">Last updated: June 2026</p>
 
         <div className="prose prose-sm mt-12 space-y-8 text-ink">
           <section>
@@ -20,85 +21,141 @@ export function PrivacyContent() {
               1. Introduction
             </h2>
             <p className="text-ink-soft">
-              998 web designs ("we," "us," "our," or "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.
+              998 web designs (&ldquo;we,&rdquo; &ldquo;us&rdquo;) is operated by Bear LLC. This
+              policy explains what we collect when you use 998webdesigns.com, submit our lead or
+              contact forms, or pay for a website package.
             </p>
           </section>
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              2. Information We Collect
+              2. Information we collect
             </h2>
             <p className="text-ink-soft">
-              We may collect information about you in a variety of ways. The information we may collect on the site includes:
-            </p>
-            <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
-              <li>
-                <strong>Personal Data:</strong> Personally identifiable information, such as your name, shipping address, email address, and telephone number, and demographic information, such as your age, gender, hometown, and interests, that you voluntarily give to us when you register with the site or when you choose to participate in various activities related to the site.
-              </li>
-              <li>
-                <strong>Financial Data:</strong> Financial information, such as data related to your payment method (e.g., valid credit card number, card brand, expiration date) that we may collect when you purchase products or services from the site.
-              </li>
-              <li>
-                <strong>Data From Social Networks:</strong> User information from social networks, including your name, your social network username, location, gender, birth date, email address, profile picture, and public data for contacts, if you connect your account to such social networks.
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl font-semibold text-ink">
-              3. Use of Your Information
-            </h2>
-            <p className="text-ink-soft">
-              Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the site to:
-            </p>
-            <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
-              <li>Generate a personal profile about you so that future visits to the site will be personalized as possible</li>
-              <li>Increase the efficiency and operation of the site</li>
-              <li>Monitor and analyze usage and trends to improve your experience with the site</li>
-              <li>Notify you of updates to the site</li>
-              <li>Offer new products, services, and/or recommendations to you</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl font-semibold text-ink">
-              4. Disclosure of Your Information
-            </h2>
-            <p className="text-ink-soft">
-              We may share your information in the following situations:
+              We collect only what we need to respond, build your site, and process payment.
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
-                <strong>By Law or to Protect Rights:</strong> If we believe the release of information about you is necessary to comply with the law, to enforce our site policies, or to protect ours or others' rights, property, and safety.
+                <strong>Lead form:</strong> Name, business name, email, optional phone, contact
+                preference, business and project details, hosting preference, payment option, optional
+                start date and notes. We may also record your IP address and submission time for
+                abuse prevention.
               </li>
               <li>
-                <strong>Third-Party Service Providers:</strong> We may share your information with third parties that perform services for us or on our behalf, including payment processing, data analysis, email delivery, hosting services, customer service, and marketing assistance.
+                <strong>Contact form:</strong> Name, email, and message when you reach out through
+                the contact modal.
+              </li>
+              <li>
+                <strong>Payments:</strong> Stripe handles card payments. We receive confirmation,
+                customer email, and transaction metadata from Stripe. We do not store full card
+                numbers on our servers.
+              </li>
+              <li>
+                <strong>Site usage:</strong> Standard server and hosting logs (browser type, pages
+                requested, approximate timing) from our hosting provider.
               </li>
             </ul>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl font-semibold text-ink">
-              5. Security of Your Information
-            </h2>
-            <p className="text-ink-soft">
-              We use administrative, technical, and physical security measures to protect your personal information. However, perfect security does not exist on the Internet, so we cannot guarantee absolute security.
+            <p className="mt-4 text-ink-soft">
+              We do not require social network logins and do not pull data from social accounts.
             </p>
           </section>
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              6. Contact Us
+              3. How we use information
+            </h2>
+            <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
+              <li>Respond to inquiries and deliver your website project</li>
+              <li>Send transactional email (receipts, drafts, project updates)</li>
+              <li>Process deposits, balances, and hosting-related billing through Stripe</li>
+              <li>Operate, secure, and improve the website</li>
+              <li>Comply with law and prevent fraud or abuse</li>
+            </ul>
+            <p className="mt-4 text-ink-soft">
+              We do not sell your personal information. We do not use lead data to build advertising
+              profiles.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              4. Where data is stored and who sees it
             </h2>
             <p className="text-ink-soft">
-              If you have questions or comments about this Privacy Policy, please{" "}
+              Lead submissions may be stored in our database (Supabase) and are accessible to our
+              team. Email may be sent through our transactional email provider. Payments are
+              processed by Stripe under{" "}
+              <a
+                href="https://stripe.com/privacy"
+                className="text-accent underline hover:text-accent-deep"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Stripe&rsquo;s privacy policy
+              </a>
+              . Hosting and file delivery use our cloud hosting vendors. We share data with service
+              providers only as needed to run the service, not for their independent marketing.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              5. Retention
+            </h2>
+            <p className="text-ink-soft">
+              We keep lead and project records as long as needed to fulfill the engagement, support
+              hosting, and meet legal or accounting obligations. You may ask us to delete or
+              correct information that is not required to retain by law.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              6. Security
+            </h2>
+            <p className="text-ink-soft">
+              We use HTTPS, reputable payment and hosting vendors, and access controls on our
+              systems. No online service can guarantee perfect security; contact us if you believe
+              your data was compromised.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              7. Your choices
+            </h2>
+            <p className="text-ink-soft">
+              You may request access, correction, or deletion of personal data we hold, subject to
+              legal and contractual limits (for example, records tied to a completed payment). Email
+              us using the contact information below.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              8. Changes
+            </h2>
+            <p className="text-ink-soft">
+              We may update this policy. The &ldquo;Last updated&rdquo; date at the top will change
+              when we do. Continued use of the site after changes means you accept the revised
+              policy.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              9. Contact
+            </h2>
+            <p className="text-ink-soft">
+              Privacy questions?{" "}
               <button
+                type="button"
                 onClick={() => setContactOpen(true)}
-                className="text-accent underline hover:text-accent-deep transition"
+                className="text-accent underline transition hover:text-accent-deep"
               >
                 get in touch with us
               </button>
-              {" "}or email us at{" "}
+              {" "}or email{" "}
               <Image
                 src="/email-address.jpg"
                 alt="email address: hello@998webdesigns.com"
@@ -106,15 +163,6 @@ export function PrivacyContent() {
                 height={44}
                 className="inline-block align-middle"
               />
-            </p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl font-semibold text-ink">
-              7. Changes to This Privacy Policy
-            </h2>
-            <p className="text-ink-soft">
-              998 web designs reserves the right to modify this privacy policy at any time. Please review this Privacy Policy periodically, and especially before you provide any personal information. Your continued use of the site following the posting of revised Privacy Policy means that you accept and agree to the changes.
             </p>
           </section>
         </div>
