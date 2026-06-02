@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
 
-type PaymentOption = "deposit" | "full";
+type PaymentOption = "full";
 
 type FormState = {
   // Step 1

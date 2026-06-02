@@ -17,10 +17,10 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - Home (`/`) — Hero, add-ons, portfolio carousel, value props, how it works, pricing, FAQ, 4-step lead form, footer. Light/dark theme toggle.
 - `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
-- `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout (`customer_creation: always`), Resend checkout-link email, webhook balance auth hold on deposit.
+- `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout ($998 pay-in-full only), Resend checkout-link email.
 - `/api/contact` — POST: honeypot, Resend to hello@998webdesigns.com.
-- `/api/stripe/webhook` — signed webhook; $499 balance auth hold on deposit; updates `wd_leads` status; Resend alerts on submit + payment.
-- `/api/admin/capture-balance` — POST with `BALANCE_CAPTURE_SECRET` captures deposit balance (`lib/capture-balance.ts`).
+- `/api/stripe/webhook` — signed webhook; `checkout.session.completed` syncs `paid_in_full` + internal payment email.
+- `/api/admin/env-status` — GET with `BALANCE_CAPTURE_SECRET` bearer; production wiring snapshot.
 - **Checkout origins** — `lib/checkout-origin.ts` allowlist (no open redirect via `Origin`).
 - **Stripe go-live** — `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
@@ -60,7 +60,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Fonts** — Inter (body) + Geist (display via `font-display`)
 - **Supabase** — Postgres; service-role inserts for leads
 - **Vercel** — production host, Hobby plan, Git push to `main` auto-deploys
-- **Stripe** — Checkout (deposit $499 / full $998); webhook for balance hold
+- **Stripe** — Checkout ($998 pay-in-full + optional ten-year hosting line item)
 - **Resend** — contact form + lead checkout-link email (`RESEND_API_KEY`)
 
 ---
@@ -72,6 +72,7 @@ app/
 ├── api/leads/route.ts
 ├── api/contact/route.ts
 ├── api/stripe/webhook/route.ts
+├── api/admin/env-status/route.ts
 ├── globals.css
 ├── layout.tsx
 ├── page.tsx
@@ -106,7 +107,7 @@ public/portfolio/
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
 | `RESEND_API_KEY` | `/api/contact`, `/api/leads` email |
-| `BALANCE_CAPTURE_SECRET` | `/api/admin/capture-balance` |
+| `BALANCE_CAPTURE_SECRET` | `/api/admin/env-status` |
 
 Set the same keys in Vercel → Project Settings → Environment Variables.
 

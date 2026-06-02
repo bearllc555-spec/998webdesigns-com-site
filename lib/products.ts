@@ -7,21 +7,14 @@ export interface Product {
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'website-deposit',
-    name: 'Website Design Deposit',
-    description: '$499 deposit. Balance of $499 due upon site completion.',
-    priceInCents: 49900, // $499.00
-  },
-  {
     id: 'website-full',
-    name: 'Website Design - Pay in Full',
-    description: 'Complete payment for your custom website. No balance due.',
+    name: 'Website Design',
+    description: 'Complete payment for your custom website ($998 paid in full to start).',
     priceInCents: 99800, // $998.00
   },
 ]
 
-export const DEPOSIT_PRODUCT = PRODUCTS.find(p => p.id === 'website-deposit')!
-export const FULL_PRODUCT = PRODUCTS.find(p => p.id === 'website-full')!
+export const FULL_PRODUCT = PRODUCTS[0]!
 
 /** Billed in Checkout when lead selects ten-year hosting (pricing page: $998 one-time). */
 export const HOSTING_TEN_YEAR_PRODUCT: Product = {
@@ -30,6 +23,3 @@ export const HOSTING_TEN_YEAR_PRODUCT: Product = {
   description: 'One-time hosting for ten years, including domain (com, net, org).',
   priceInCents: 99800,
 }
-
-// Balance amount for authorization hold (in cents)
-export const BALANCE_AMOUNT_CENTS = 49900 // $499.00

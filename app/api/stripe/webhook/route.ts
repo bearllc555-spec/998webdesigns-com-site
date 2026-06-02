@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import {
-  sendBalanceHoldFailedEmail,
-  sendInternalPaymentEmail,
-} from "@/lib/internal-lead-email";
-import { ensureBalanceHoldForDeposit } from "@/lib/balance-hold";
+import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
-import {
-  syncWdLeadDepositPaid,
-  syncWdLeadPaidInFull,
-} from "@/lib/wd-leads-sync";
+import { syncWdLeadPaidInFull } from "@/lib/wd-leads-sync";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -17,39 +10,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const paymentType = session.metadata?.paymentType;
-
-  if (paymentType === "full") {
-    await syncWdLeadPaidInFull(session);
-    await sendInternalPaymentEmail(session, null);
-    return;
+  if (session.metadata?.paymentType === "deposit") {
+    console.warn(
+      `[webhook] Legacy deposit checkout ${session.id} — treating as paid in full (no balance capture)`
+    );
   }
 
-  if (paymentType === "deposit" && session.payment_intent) {
-    let holdIntentId: string | null = null;
-    try {
-      const paymentIntent = await stripe.paymentIntents.retrieve(
-        session.payment_intent as string
-      );
-      holdIntentId = await ensureBalanceHoldForDeposit(session, paymentIntent);
-    } catch (err) {
-      console.error("[webhook] Failed to create auth hold:", err);
-      throw err;
-    }
-
-    await syncWdLeadDepositPaid(session, holdIntentId);
-
-    if (!holdIntentId) {
-      await sendBalanceHoldFailedEmail(session);
-      await sendInternalPaymentEmail(session, null);
-      throw new Error("Balance hold not created for deposit checkout");
-    }
-
-    await sendInternalPaymentEmail(session, holdIntentId);
-    return;
-  }
-
-  await sendInternalPaymentEmail(session, null);
+  await syncWdLeadPaidInFull(session);
+  await sendInternalPaymentEmail(session);
 }
 
 export async function POST(req: NextRequest) {
@@ -83,29 +51,6 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       console.error("[webhook] checkout.session.completed handler failed:", err);
       return NextResponse.json({ error: "Handler failed" }, { status: 500 });
-    }
-  }
-
-  if (event.type === "payment_intent.amount_capturable_updated") {
-    const intent = event.data.object as Stripe.PaymentIntent;
-    if (intent.metadata?.type === "balance_hold") {
-      console.info(
-        `[webhook] Auth hold capturable amount updated:`,
-        intent.id,
-        `$${(intent.amount_capturable / 100).toFixed(2)}`
-      );
-    }
-  }
-
-  if (event.type === "payment_intent.canceled") {
-    const intent = event.data.object as Stripe.PaymentIntent;
-    if (intent.metadata?.type === "balance_hold") {
-      console.warn(
-        `[webhook] Auth hold canceled/expired for ${intent.metadata?.email}:`,
-        intent.id,
-        "Reason:",
-        intent.cancellation_reason
-      );
     }
   }
 

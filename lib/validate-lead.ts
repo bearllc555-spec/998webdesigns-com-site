@@ -1,5 +1,5 @@
 export type HostingChoice = "ten_year" | "monthly" | "later";
-export type PaymentOption = "deposit" | "full";
+export type PaymentOption = "full";
 export type ContactPref = "email" | "phone" | "text";
 export type ProjectType = "new" | "redesign";
 
@@ -68,8 +68,11 @@ export function validateLeadPayload(
   if (!hostingChoice || !["ten_year", "monthly", "later"].includes(hostingChoice)) {
     return { ok: false, error: "Missing or invalid hostingChoice" };
   }
-  if (!paymentOption || !["deposit", "full"].includes(paymentOption)) {
-    return { ok: false, error: "Missing or invalid paymentOption" };
+  if (paymentOption && paymentOption !== "full") {
+    return {
+      ok: false,
+      error: "Invalid paymentOption — $998 must be paid in full upfront",
+    };
   }
 
   return {
@@ -95,7 +98,7 @@ export function validateLeadPayload(
       startDate: str(body.startDate) ?? "",
       hostingChoice: hostingChoice as HostingChoice,
       notes: str(body.notes) ?? "",
-      paymentOption: paymentOption as PaymentOption,
+      paymentOption: "full",
     },
   };
 }

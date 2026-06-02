@@ -67,7 +67,7 @@ export function PrivacyContent() {
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>Respond to inquiries and deliver your website project</li>
               <li>Send transactional email (receipts, drafts, project updates)</li>
-              <li>Process deposits, balances, and hosting-related billing through Stripe</li>
+              <li>Process payments and hosting-related billing through Stripe</li>
               <li>Operate, secure, and improve the website</li>
               <li>Comply with law and prevent fraud or abuse</li>
             </ul>

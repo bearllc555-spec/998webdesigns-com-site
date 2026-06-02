@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
   try {
     warnIfProductionStripeTestMode("leads");
     const origin = checkoutOrigin(req);
-    const payFull = lead.paymentOption === "full";
 
     const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       mode: "payment",
@@ -79,7 +78,7 @@ export async function POST(req: NextRequest) {
         fullName: lead.fullName,
         businessName: lead.businessName,
         email: lead.email,
-        paymentType: payFull ? "full" : "deposit",
+        paymentType: "full",
         hostingChoice: lead.hostingChoice,
         submittedAt,
         ...(dbResult.ok && dbResult.id ? { wdLeadId: dbResult.id } : {}),
@@ -88,11 +87,10 @@ export async function POST(req: NextRequest) {
         metadata: {
           fullName: lead.fullName,
           businessName: lead.businessName,
-          paymentType: payFull ? "full" : "deposit",
+          paymentType: "full",
           hostingChoice: lead.hostingChoice,
         },
         receipt_email: lead.email,
-        ...(payFull ? {} : { setup_future_usage: "off_session" as const }),
       },
       success_url: `${origin}/thanks?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#start`,

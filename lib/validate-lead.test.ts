@@ -11,7 +11,7 @@ const validBase = {
   whoYouServe: "Homeowners",
   projectType: "new",
   hostingChoice: "later",
-  paymentOption: "deposit",
+  paymentOption: "full",
 };
 
 describe("validateLeadPayload", () => {
@@ -20,8 +20,21 @@ describe("validateLeadPayload", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.email).toBe("jane@example.com");
-      expect(result.data.paymentOption).toBe("deposit");
+      expect(result.data.paymentOption).toBe("full");
     }
+  });
+
+  it("defaults to full when paymentOption omitted", () => {
+    const { paymentOption: _, ...withoutPayment } = validBase;
+    const result = validateLeadPayload(withoutPayment);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.paymentOption).toBe("full");
+  });
+
+  it("rejects deposit paymentOption", () => {
+    const result = validateLeadPayload({ ...validBase, paymentOption: "deposit" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/full upfront/i);
   });
 
   it("rejects invalid email", () => {

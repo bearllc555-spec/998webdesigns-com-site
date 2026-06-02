@@ -10,9 +10,9 @@ function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
-/** GET production env wiring snapshot (no secret values). Same Bearer as capture-balance. */
+/** GET production env wiring snapshot (no secret values). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function GET(req: NextRequest) {
-  const rate = await enforceAdminRateLimit(req, "/api/admin/capture-balance");
+  const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {
     const body = rateLimitResponse(rate.retryAfterSec);
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });

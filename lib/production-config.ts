@@ -13,7 +13,7 @@ export type ProductionConfigStatus = {
   };
   resendConfigured: boolean;
   supabaseConfigured: boolean;
-  balanceCaptureConfigured: boolean;
+  adminAuthConfigured: boolean;
   warnings: string[];
   readyForLiveCharges: boolean;
 };
@@ -67,13 +67,13 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
-    warnings.push("BALANCE_CAPTURE_SECRET missing — capture-balance API returns 503.");
+    warnings.push("BALANCE_CAPTURE_SECRET missing — env-status API returns 503.");
   }
 
   const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
   const supabaseConfigured =
     supabase.configured && supabase.wdLeadsTable && supabase.apiRateLimitsTable;
-  const balanceCaptureConfigured = Boolean(process.env.BALANCE_CAPTURE_SECRET?.trim());
+  const adminAuthConfigured = Boolean(process.env.BALANCE_CAPTURE_SECRET?.trim());
 
   const readyForLiveCharges =
     mode === "live" &&
@@ -93,7 +93,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     },
     resendConfigured,
     supabaseConfigured,
-    balanceCaptureConfigured,
+    adminAuthConfigured,
     warnings,
     readyForLiveCharges,
   };

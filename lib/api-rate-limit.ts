@@ -10,8 +10,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/leads": { limit: 5, windowMs: 60_000 },
   "/api/contact": { limit: 10, windowMs: 60_000 },
-  /** Shared bucket for admin bearer routes (capture + env-status). */
-  "/api/admin/capture-balance": { limit: 5, windowMs: 60_000 },
+  "/api/admin/env-status": { limit: 5, windowMs: 60_000 },
 };
 
 export function clientIp(req: NextRequest): string {
@@ -49,7 +48,7 @@ export async function enforceApiRateLimit(
 /** Admin bearer routes: fail closed when Supabase is configured but rate-limit table is unreachable. */
 export async function enforceAdminRateLimit(
   req: NextRequest,
-  path: "/api/admin/capture-balance"
+  path: "/api/admin/env-status"
 ): Promise<{ allowed: boolean; retryAfterSec?: number }> {
   const config = API_RATE_LIMITS[path];
   const key = `${path}:${clientIp(req)}`;

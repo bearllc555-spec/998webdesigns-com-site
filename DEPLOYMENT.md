@@ -23,7 +23,7 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
 | `RESEND_API_KEY` | Contact form + lead emails + internal lead/payment alerts |
-| `BALANCE_CAPTURE_SECRET` | Bearer token for admin routes (`capture-balance`, `env-status`) |
+| `BALANCE_CAPTURE_SECRET` | Bearer token for `GET /api/admin/env-status` |
 | `STRIPE_EXPECTED_MODE` | Optional `test` or `live` — must match `STRIPE_SECRET_KEY` prefix |
 | `NEXT_PUBLIC_SUPABASE_URL` | Lead storage |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (if used client-side) |
@@ -31,7 +31,7 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 
 Secrets live in workspace `.local/` (gitignored). Never commit keys.
 
-## Stripe: test vs live (audit item 3)
+## Stripe: test vs live
 
 **Current intent:** Production may run `sk_test_...` while you test with card `4242 4242 4242 4242` in Stripe Sandbox.
 
@@ -40,7 +40,7 @@ Secrets live in workspace `.local/` (gitignored). Never commit keys.
 1. Stripe Dashboard → turn off Sandbox / use **Live** mode.
 2. Developers → API keys → copy **live** secret (`sk_live_...`).
 3. Developers → Webhooks → add endpoint `https://998webdesigns.com/api/stripe/webhook`, event `checkout.session.completed`, copy **live** signing secret (`whsec_...`).
-4. Vercel → **998webdesigns-com-site** → Production → update `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` (not Preview unless you want live there too).
+4. Vercel → **998webdesigns-com-site** → Production → update `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
 5. Redeploy Production.
 6. Run one real small-charge test, then refund in Stripe if needed.
 
@@ -59,42 +59,24 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
 
 - URL: `https://998webdesigns.com/api/stripe/webhook`
 - Event: `checkout.session.completed` (required)
-- Deposit flow creates a $499 balance authorization hold after payment.
+- All new checkouts are **$998 pay-in-full** (plus optional ten-year hosting). No deposit or balance-hold flow.
+
+**Legacy:** Old deposit checkouts in Stripe still complete the webhook and sync as `paid_in_full`. Any open balance holds from before this change must be captured or released in the [Stripe Dashboard](https://dashboard.stripe.com) manually.
 
 ## Internal lead alerts (Resend)
 
 | When | Email to `hello@998webdesigns.com` |
 |------|-------------------------------------|
 | Form submitted, Checkout link created | **New lead — awaiting payment** (checkout URL + session link) |
-| Checkout completed | **Payment received** (deposit or pay-in-full; deposit includes balance-hold link + capture instructions) |
+| Checkout completed | **Paid in full** (amount + Stripe session link) |
 
 Uses `RESEND_API_KEY`.
-
-## Capture $499 balance after client approval
-
-Deposit checkouts place a **manual-capture** PaymentIntent for the $499 balance. When the design is approved:
-
-1. Set `BALANCE_CAPTURE_SECRET` in Vercel Production (long random string).
-2. Call:
-
-```bash
-curl -X POST https://998webdesigns.com/api/admin/capture-balance \
-  -H "Authorization: Bearer YOUR_BALANCE_CAPTURE_SECRET" \
-  -H "Content-Type: application/json" \
-  -d "{\"email\":\"client@example.com\"}"
-```
-
-You can also pass `depositSessionId` (Checkout session id) or `leadId` (Supabase uuid).
-
-Or capture in the [Stripe Dashboard](https://dashboard.stripe.com) on the balance-hold PaymentIntent linked in the payment email.
-
-`wd_leads.status` becomes `balance_captured` on success.
 
 ## Checkout line items
 
 Stripe Checkout charges:
 
-- Design: $499 deposit or $998 pay-in-full (per form step 4)
+- Design: **$998 pay-in-full** (required)
 - **Ten-year hosting:** +$998 when lead selects ten-year hosting on the form
 - **Month-to-month hosting:** not in Checkout yet ($98/mo billed after launch — metadata + emails only)
 
@@ -118,4 +100,4 @@ If tables are missing, leads still reach Stripe; Vercel logs will say `wd_leads 
 
 ## Checkout return URLs
 
-`/api/leads` uses `lib/checkout-origin.ts` (audit item 6) — allowlisted origins only; no open redirect via `Origin`.
+`/api/leads` uses `lib/checkout-origin.ts` — allowlisted origins only; no open redirect via `Origin`.
