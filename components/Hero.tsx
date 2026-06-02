@@ -44,7 +44,7 @@ export function Hero() {
           </p>
           <div className="max-w-2xl">
             <p className="mt-4 text-base leading-relaxed text-ink">
-              Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, email/SMS follow‑ups, and an on‑site AI chatbot so you get more calls, more bookings, and more repeat clients.
+              Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, email/SMS follow‑ups, social media posting, and an on‑site AI chatbot so you get more calls, more bookings, and more repeat clients.
             </p>
           </div>
 
@@ -57,6 +57,16 @@ export function Hero() {
                 <li>Send brochures, pricing, and documentation</li>
                 <li>Schedule appointments and callbacks</li>
                 <li>Capture leads after hours and route urgent requests</li>
+              </ul>
+            </div>
+            <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
+              <h3 className="font-display text-lg font-medium text-ink">Social media</h3>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Post photos, product clips, and service videos to your accounts</li>
+                <li>Image carousels, Stories, Reels, and short‑form clips</li>
+                <li>UGC and before/after job‑site content</li>
+                <li>Scheduled publishing across Facebook, Instagram, and more</li>
+                <li>Captions, hashtags, and repurposed blog posts</li>
               </ul>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
