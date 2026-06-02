@@ -16,22 +16,34 @@ function isVercelPreviewOrigin(origin: string): boolean {
   }
 }
 
-/** Stripe success/cancel URLs — never trust arbitrary Origin headers. */
-export function checkoutOrigin(req: NextRequest): string {
-  const raw = req.headers.get("origin");
-  if (!raw) return "https://998webdesigns.com";
+export type CheckoutOriginEnv = {
+  VERCEL_ENV?: string;
+  NODE_ENV?: string;
+};
 
-  const origin = raw.replace(/\/$/, "");
+/** Pure resolver for tests and `checkoutOrigin`. */
+export function resolveCheckoutOrigin(
+  originHeader: string | null,
+  env: CheckoutOriginEnv = process.env as CheckoutOriginEnv
+): string {
+  if (!originHeader) return "https://998webdesigns.com";
+
+  const origin = originHeader.replace(/\/$/, "");
 
   if (PRODUCTION_ORIGINS.has(origin)) return origin;
 
-  if (process.env.VERCEL_ENV === "preview" && isVercelPreviewOrigin(origin)) {
+  if (env.VERCEL_ENV === "preview" && isVercelPreviewOrigin(origin)) {
     return origin;
   }
 
-  if (process.env.NODE_ENV === "development" && LOCAL_ORIGIN_RE.test(origin)) {
+  if (env.NODE_ENV === "development" && LOCAL_ORIGIN_RE.test(origin)) {
     return origin;
   }
 
   return "https://998webdesigns.com";
+}
+
+/** Stripe success/cancel URLs — never trust arbitrary Origin headers. */
+export function checkoutOrigin(req: NextRequest): string {
+  return resolveCheckoutOrigin(req.headers.get("origin"));
 }

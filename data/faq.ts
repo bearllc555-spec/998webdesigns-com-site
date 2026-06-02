@@ -27,7 +27,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Do you do logos, copywriting, or SEO?",
-    a: "Honest answer: not as part of $998. We'll design around your existing brand and copy. If you need a logo or written copy, we'll point you to people who do that well, or we can quote it separately. SEO basics (meta tags, page speed, mobile, schema) are baked in; ongoing SEO campaigns are not.",
+    a: "Logos and full copywriting are not part of the $998 design fee — we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional — priced clearly if you want them.",
   },
   {
     q: "What happens if I don't respond during the approval window?",

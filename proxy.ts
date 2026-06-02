@@ -7,11 +7,19 @@ import {
 } from "@/lib/api-rate-limit";
 import { checkRateLimit, pruneRateLimitStore } from "@/lib/rate-limit";
 
+function shouldApplyEdgeRateLimit(req: NextRequest): boolean {
+  const path = req.nextUrl.pathname;
+  if (!(path in API_RATE_LIMITS)) return false;
+  if (req.method === "POST") return true;
+  if (req.method === "GET" && path === "/api/admin/env-status") return true;
+  return false;
+}
+
 /** Fast in-memory gate at the edge; API routes also enforce via Supabase when configured. */
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  if (req.method !== "POST" || !(path in API_RATE_LIMITS)) {
+  if (!shouldApplyEdgeRateLimit(req)) {
     return NextResponse.next();
   }
 

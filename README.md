@@ -25,6 +25,7 @@ Open http://localhost:3000
 pnpm dev      # development server
 pnpm build    # production build
 pnpm start    # serve production build
+pnpm test     # vitest unit tests (lib/*.test.ts)
 ```
 
 ## What not to edit without approval

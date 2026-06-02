@@ -125,7 +125,7 @@ cd repos/998webdesigns-com-site
 git checkout -b fix/<name>   # or polish/feat — preview on Vercel branch deploy
 npm run dev
 npm run build
-git commit -m "v25.x: description"   # ASCII-only
+git commit -m "v27.x: description"   # ASCII-only
 git push -u origin fix/<name>
 # review preview, merge to main for production
 ```
@@ -155,4 +155,4 @@ npm run dev
 | Date | Event |
 |---|---|
 | 2026-05-21 | v0.1 scaffold (Next.js + Supabase + home + leads stub). |
-| 2026-06 | Vercel production, Stripe Checkout, Resend, legal pages, SEO, rate limit, v25.x audit passes. |
+| 2026-06 | Vercel production, Stripe Checkout, Resend, legal, SEO, rate limits, v27.x audit fixes, vitest. |

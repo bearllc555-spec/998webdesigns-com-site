@@ -21,7 +21,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          Strategy, design, blogging, hyper‑local SEO, and automation in one affordable package, delivered fast for local service businesses.
+          Strategy, design, blogging strategies, hyper‑local SEO, automation, and high‑value add‑ons in one affordable package, delivered fast for local service businesses.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
