@@ -114,10 +114,10 @@ export default async function Thanks({
               &larr; Back to home
             </Link>
             <a
-              href="mailto:hello@998webdesigns.com"
-              className="inline-flex items-center gap-2 rounded-full bg-surface-contrast px-5 py-3 text-sm font-medium text-on-surface-contrast transition hover:opacity-90"
+              href="mailto:hello@998webdesigns.com?subject=Deposit%20paid%20-%20question"
+              className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-medium text-on-accent shadow-sm transition hover:bg-accent-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Email us
+              Email hello@998webdesigns.com
             </a>
           </div>
         </div>

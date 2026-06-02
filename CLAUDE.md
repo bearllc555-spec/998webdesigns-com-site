@@ -6,7 +6,7 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production — 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com (project `998webdesigns-com-app`, GitHub `bearllc555-spec/998webdesigns-com-site`). Replaced the legacy Cloudflare Pages static splash. Site version label in nav/footer (`lib/version.ts`, currently v25.x).
+**Live on Vercel** at https://998webdesigns.com (project **`998webdesigns-com-site`** — not `998webdesigns-com-app`; domain is on `-com-site`). GitHub `bearllc555-spec/998webdesigns-com-site`. Replaced the legacy Cloudflare Pages static splash. Site version label in nav/footer (`lib/version.ts`, currently v25.x).
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
 
@@ -47,7 +47,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 |---|---|
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
-| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-app` |
+| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` (custom domain here; `-com-app` is a separate project) |
 | Supabase | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
 
 ---
