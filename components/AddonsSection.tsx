@@ -105,6 +105,105 @@ const ADDONS = [
   },
 ] as const;
 
+type AddonItem = (typeof ADDONS)[number];
+
+const OTHER_ADDONS = ADDONS.filter((a) => !isGrowthPackMember(a.value));
+const GROWTH_MEMBER_ADDONS = ADDONS.filter((a) => isGrowthPackMember(a.value));
+
+function GrowthPackBanner({
+  growthSelected,
+  onToggle,
+}: {
+  growthSelected: boolean;
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <div
+      className={
+        growthSelected
+          ? "relative mt-8 rounded-xl border border-green-500 bg-green-50 px-4 py-3 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+          : "mt-8 rounded-xl bg-accent px-4 py-3 text-white"
+      }
+    >
+      {growthSelected && (
+        <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
+          ✓
+        </span>
+      )}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0 flex-1 pr-6 sm:pr-0">
+          <p
+            className={`text-[10px] font-semibold uppercase tracking-widest ${
+              growthSelected ? "text-accent" : "text-white/70"
+            }`}
+          >
+            Most Popular Bundle
+          </p>
+          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <h3
+              className={`font-display text-lg font-semibold leading-tight ${
+                growthSelected ? "text-ink" : "text-white"
+              }`}
+            >
+              Growth Pack
+            </h3>
+            <p
+              className={`text-sm ${
+                growthSelected ? "text-ink-soft" : "text-white/90"
+              }`}
+            >
+              <span className="font-medium">$647</span> setup
+              <span className="mx-1.5 opacity-50">·</span>
+              <span className="line-through opacity-60">$527/mo</span>{" "}
+              <span className={growthSelected ? "font-semibold text-accent" : "font-semibold"}>
+                $399/mo
+              </span>
+            </p>
+          </div>
+          <p
+            className={`mt-0.5 text-xs leading-snug ${
+              growthSelected ? "text-ink-soft" : "text-white/75"
+            }`}
+          >
+            Hyper-Local SEO, Google Profile Optimization, and Blog Writing — bundled at a
+            discount.
+          </p>
+        </div>
+        <div className="shrink-0">
+          {!growthSelected ? (
+            <button
+              type="button"
+              onClick={() => onToggle(GROWTH_PACK_ID)}
+              className="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-accent hover:bg-white/90"
+            >
+              Get the Growth Pack →
+            </button>
+          ) : (
+            <div className="flex flex-col items-start gap-0.5 sm:items-end">
+              <button
+                type="button"
+                onClick={() => onToggle(GROWTH_PACK_ID)}
+                className="inline-flex items-center rounded-full bg-green-500 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600"
+              >
+                Growth Pack Added ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => onToggle(GROWTH_PACK_ID)}
+                className={`text-xs hover:text-red-500 ${
+                  growthSelected ? "text-ink-soft" : "text-white/70 hover:text-white"
+                }`}
+              >
+                Remove growth package
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AddonCardCta({
   value,
   selected,
@@ -177,6 +276,45 @@ export function AddonsSection() {
     isGrowthPackMember(value) &&
     !selectedAddons.includes(value);
 
+  function renderAddonCard(addon: AddonItem) {
+    const selected = isSelected(addon.value);
+    return (
+      <div
+        key={addon.value}
+        className={
+          selected
+            ? "card-lift relative rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+            : "card-lift relative rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200"
+        }
+      >
+        {selected && (
+          <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
+            ✓
+          </span>
+        )}
+        <h3 className="font-display text-lg font-medium text-ink">{addon.title}</h3>
+        <p className="mt-1 text-sm text-ink-soft">
+          {addon.setup} setup &middot;{" "}
+          <span className="font-semibold text-accent">{addon.monthly}/mo</span>
+        </p>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+          {addon.bullets.map((bullet) => (
+            <li key={bullet}>{bullet}</li>
+          ))}
+        </ul>
+        {"footnote" in addon && addon.footnote ? (
+          <p className="mt-2 text-xs text-ink-soft">{addon.footnote}</p>
+        ) : null}
+        <AddonCardCta
+          value={addon.value}
+          selected={selected}
+          viaGrowthPack={isViaGrowthPack(addon.value)}
+          onToggle={handleToggle}
+        />
+      </div>
+    );
+  }
+
   return (
     <div id="addons" className="border-t border-rule">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
@@ -203,144 +341,13 @@ export function AddonsSection() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {ADDONS.map((addon) => {
-            const selected = isSelected(addon.value);
-            return (
-              <div
-                key={addon.value}
-                className={
-                  selected
-                    ? "card-lift relative rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-                    : "card-lift relative rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200"
-                }
-              >
-                {selected && (
-                  <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
-                    ✓
-                  </span>
-                )}
-                <h3 className="font-display text-lg font-medium text-ink">{addon.title}</h3>
-                <p className="mt-1 text-sm text-ink-soft">
-                  {addon.setup} setup &middot;{" "}
-                  <span className="font-semibold text-accent">{addon.monthly}/mo</span>
-                </p>
-                <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
-                  {addon.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-                {"footnote" in addon && addon.footnote ? (
-                  <p className="mt-2 text-xs text-ink-soft">{addon.footnote}</p>
-                ) : null}
-                <AddonCardCta
-                  value={addon.value}
-                  selected={selected}
-                  viaGrowthPack={isViaGrowthPack(addon.value)}
-                  onToggle={handleToggle}
-                />
-              </div>
-            );
-          })}
+          {OTHER_ADDONS.map(renderAddonCard)}
         </div>
 
-        <div
-          className={
-            growthSelected
-              ? "relative mt-10 rounded-xl border border-green-500 bg-green-50 p-8 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-              : "mt-10 rounded-xl bg-accent p-8 text-white"
-          }
-        >
-          {growthSelected && (
-            <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs text-white">
-              ✓
-            </span>
-          )}
-          <p
-            className={`text-xs font-semibold uppercase tracking-widest ${
-              growthSelected ? "text-accent" : "text-white/70"
-            }`}
-          >
-            Most Popular Bundle
-          </p>
-          <h3
-            className={`mt-2 font-display text-2xl font-semibold ${
-              growthSelected ? "text-ink" : "text-white"
-            }`}
-          >
-            Growth Pack
-          </h3>
-          <p
-            className={`mt-1 text-sm ${growthSelected ? "text-ink-soft" : "text-white/80"}`}
-          >
-            The three add-ons that move the needle fastest for local service businesses — bundled
-            at a discount.
-          </p>
+        <GrowthPackBanner growthSelected={growthSelected} onToggle={handleToggle} />
 
-          <ul
-            className={`mt-4 space-y-2 text-sm ${
-              growthSelected ? "text-ink-soft" : "text-white/90"
-            }`}
-          >
-            <li className="flex items-center gap-2">
-              <span className={`font-semibold ${growthSelected ? "text-ink" : "text-white"}`}>
-                ✓
-              </span>{" "}
-              Hyper-Local SEO
-            </li>
-            <li className="flex items-center gap-2">
-              <span className={`font-semibold ${growthSelected ? "text-ink" : "text-white"}`}>
-                ✓
-              </span>{" "}
-              Google Profile Optimization
-            </li>
-            <li className="flex items-center gap-2">
-              <span className={`font-semibold ${growthSelected ? "text-ink" : "text-white"}`}>
-                ✓
-              </span>{" "}
-              Blog Writing &amp; Local Posts
-            </li>
-          </ul>
-
-          <div className="mt-4">
-            <p className={`text-sm ${growthSelected ? "text-ink-soft" : "text-white/70"}`}>
-              $647 setup
-            </p>
-            <p
-              className={`mt-0.5 text-lg font-semibold ${
-                growthSelected ? "text-ink" : "text-white"
-              }`}
-            >
-              <span className="mr-2 line-through opacity-60">$527/mo</span>
-              $399/mo
-            </p>
-          </div>
-
-          {!growthSelected ? (
-            <button
-              type="button"
-              onClick={() => handleToggle(GROWTH_PACK_ID)}
-              className="mt-6 inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-accent hover:bg-white/90"
-            >
-              Get the Growth Pack →
-            </button>
-          ) : (
-            <div className="mt-6 flex flex-col items-start gap-1">
-              <button
-                type="button"
-                onClick={() => handleToggle(GROWTH_PACK_ID)}
-                className="inline-flex items-center rounded-full bg-green-500 px-6 py-3 text-sm font-semibold text-white hover:bg-green-600"
-              >
-                Growth Pack Added ✓
-              </button>
-              <button
-                type="button"
-                onClick={() => handleToggle(GROWTH_PACK_ID)}
-                className="text-xs text-ink-soft hover:text-red-500"
-              >
-                Remove growth package
-              </button>
-            </div>
-          )}
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {GROWTH_MEMBER_ADDONS.map(renderAddonCard)}
         </div>
       </div>
     </div>
