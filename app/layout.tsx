@@ -29,7 +29,16 @@ export const metadata: Metadata = {
     siteName: "998 web designs",
     type: "website",
   },
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
+  icons: {
+    icon: [
+      { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
+      { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-icon.png",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

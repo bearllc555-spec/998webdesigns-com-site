@@ -6,7 +6,7 @@ import { PrivacyContent } from "./PrivacyContent";
 export const metadata: Metadata = {
   title: "Privacy Policy — 998 web designs",
   description: "Privacy policy for 998 web designs",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 export default function PrivacyPage() {

@@ -89,6 +89,9 @@ export function LeadForm() {
     if (step === 2) {
       if (!form.projectType) e.projectType = "Pick one.";
     }
+    if (step === 3) {
+      if (!form.hostingChoice) e.hostingChoice = "Pick a hosting preference.";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -425,7 +428,7 @@ export function LeadForm() {
                 />
               </Field>
 
-              <Field label="Hosting Choice. First Month Free">
+              <Field label="Hosting preference (select one)" required error={errors.hostingChoice}>
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
                     ["lifetime", "Ten Year $998"],
@@ -504,10 +507,13 @@ export function LeadForm() {
           </div>
         </form>
 
-        <p className="mt-6 text-center text-xs text-slate">
-          You&rsquo;ll be redirected to Stripe to complete payment securely.
-          {form.paymentOption === "deposit" && " We'll place a 7-day hold on your card for the $499 balance, captured upon site approval."}
-        </p>
+        {step === 3 && (
+          <p className="mt-6 text-center text-xs text-slate">
+            You&rsquo;ll be redirected to Stripe to complete payment securely.
+            {form.paymentOption === "deposit" &&
+              " We'll place a 7-day hold on your card for the $499 balance, captured upon site approval."}
+          </p>
+        )}
       </div>
     </section>
   );

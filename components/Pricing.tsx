@@ -50,7 +50,7 @@ export function Pricing() {
               $98 <span className="text-xl text-ink-soft">/month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Cancel anytime. Upgrade to lifetime hosting whenever you want for $998.
+              Cancel anytime. Upgrade to ten-year hosting whenever you want for $998.
             </p>
           </article>
 
