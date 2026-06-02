@@ -7,23 +7,22 @@ export function Hero() {
       <div className="mx-auto max-w-6xl px-5 pb-14 pt-16 md:px-8 md:pb-20 md:pt-24">
         <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-rule bg-rule-soft px-3 py-1 text-xs font-medium uppercase tracking-wider text-ink-soft">
           <span className="h-1.5 w-1.5 rounded-full bg-success" />
-          Now booking small-business websites
+          Now building growth systems for local businesses
         </p>
 
         <h1
           className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl"
-          aria-label="we don't just build sites. we build systems that bring you more business."
+          aria-label="We don't sell websites. We build growth systems."
         >
-          <span className="block">we don&apos;t just build sites.</span>
+          <span className="block">we don&apos;t sell websites.</span>
           <span className="block">
-            we build <span className="text-accent">systems</span> that bring you{" "}
-            <span className="text-accent">more</span> business.
+            we build <span className="text-accent">growth systems.</span>
           </span>
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          Strategy, design, blogging, hyper‑local SEO, automation, and high‑value add‑ons in one
-          affordable package, delivered fast for local service businesses.
+          The site is step one. Stack on SEO, chatbot, email automation, and content — each module
+          compounds the last until your pipeline runs itself.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
