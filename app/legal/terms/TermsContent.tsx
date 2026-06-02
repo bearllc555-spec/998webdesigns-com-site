@@ -39,12 +39,8 @@ export function TermsContent() {
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
-                <strong>Deposit path:</strong> $499 deposit at checkout, with a $499 balance due
-                when you approve the finished design (we may place a short-term card authorization
-                for the balance as described at checkout).
-              </li>
-              <li>
-                <strong>Pay in full:</strong> $998 at checkout with no balance due on approval.
+                <strong>Design fee:</strong> $998 paid in full at checkout before your project
+                enters the queue.
               </li>
               <li>
                 <strong>Hosting:</strong> You choose ten-year hosting ($998 one-time), month-to-month
@@ -74,6 +70,19 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
+              Project Completion &amp; Inactivity Policy
+            </h2>
+            <p className="text-ink-soft">
+              Your project is considered complete if we do not receive feedback or revision requests
+              within 14 days of delivering a draft. Completed designs are held on file for 90 days
+              — if you return within that window, we&apos;ll pick up where we left off under the
+              standard edit terms. After 90 days, a re-engagement fee of $249 applies to reopen the
+              project.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
               4. Ownership
             </h2>
             <p className="text-ink-soft">
@@ -90,9 +99,8 @@ export function TermsContent() {
             </h2>
             <p className="text-ink-soft">
               Payments are processed by Stripe. We do not store full card numbers on our servers.
-              Refunds are handled case by case; deposit and balance timing follow the flow you
-              select at checkout. Chargebacks without contacting us first may result in suspension
-              of work or hosting.
+              Refunds are handled case by case. Chargebacks without contacting us first may result
+              in suspension of work or hosting.
             </p>
           </section>
 

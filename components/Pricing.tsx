@@ -21,11 +21,15 @@ export function Pricing() {
               Design fee
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $998 <span className="text-2xl text-ink-soft">/once</span>
+              $998 <span className="text-2xl text-ink-soft">— paid in full to start</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
               A handcrafted custom site, designed around your business. Delivered in 5&ndash;7
-              business days from the moment your deposit clears. Yours to keep.
+              business days from the moment payment clears. Yours to keep.
+            </p>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
+              We collect full payment before your project enters the queue. This keeps things simple
+              for both sides — no holds, no follow-up invoices.
             </p>
           </article>
 

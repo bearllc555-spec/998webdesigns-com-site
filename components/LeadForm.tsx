@@ -43,7 +43,7 @@ const initial: FormState = {
   industry: "", yearsInBusiness: "", existingUrl: "", whatYouDo: "", whoYouServe: "",
   projectType: "", visitorActions: [], pages: [], pagesOther: "", brandAssets: [],
   inspirationUrls: "", avoidances: "",
-  startDate: "", hostingChoice: "", notes: "", paymentOption: "deposit",
+  startDate: "", hostingChoice: "", notes: "", paymentOption: "full",
   website: "",
 };
 
@@ -374,48 +374,12 @@ export function LeadForm() {
 
           {step === 3 && (
             <div className="grid gap-5">
-              <Field label="Payment option (select one)">
-                <div className="grid gap-2 md:grid-cols-2">
-                  <label
-                    className={`cursor-pointer rounded-xl border px-4 py-4 transition ${
-                      form.paymentOption === "deposit"
-                        ? "border-accent bg-accent text-on-accent"
-                        : "border-rule bg-bg text-ink-soft hover:border-accent/50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      value="deposit"
-                      checked={form.paymentOption === "deposit"}
-                      onChange={() => set("paymentOption", "deposit")}
-                      className="sr-only"
-                    />
-                    <span className="block text-sm font-medium">$499 Deposit</span>
-                    <span className={`block text-xs mt-1 ${form.paymentOption === "deposit" ? "text-on-accent/70" : "text-slate"}`}>
-                      $499 balance held on your card for 7 days
-                    </span>
-                  </label>
-                  <label
-                    className={`cursor-pointer rounded-xl border px-4 py-4 transition ${
-                      form.paymentOption === "full"
-                        ? "border-accent bg-accent text-on-accent"
-                        : "border-rule bg-bg text-ink-soft hover:border-accent/50"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentOption"
-                      value="full"
-                      checked={form.paymentOption === "full"}
-                      onChange={() => set("paymentOption", "full")}
-                      className="sr-only"
-                    />
-                    <span className="block text-sm font-medium">$998 Pay in Full</span>
-                    <span className={`block text-xs mt-1 ${form.paymentOption === "full" ? "text-on-accent/70" : "text-slate"}`}>
-                      No balance due — you&apos;re all set
-                    </span>
-                  </label>
+              <Field label="Payment">
+                <div className="rounded-xl border border-accent bg-accent px-4 py-4 text-on-accent">
+                  <span className="block text-sm font-medium">$998 — paid in full to start</span>
+                  <span className="mt-1 block text-xs text-on-accent/70">
+                    Full payment before your project enters the queue
+                  </span>
                 </div>
               </Field>
 
@@ -501,7 +465,7 @@ export function LeadForm() {
                 disabled={submitting}
                 className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
               >
-                {submitting ? "Redirecting to payment..." : form.paymentOption === "full" ? "Continue to pay $998" : "Continue to pay $499 deposit"}
+                {submitting ? "Redirecting to payment..." : "Continue to pay $998"}
               </button>
             )}
           </div>
@@ -509,9 +473,8 @@ export function LeadForm() {
 
         {step === 3 && (
           <p className="mt-6 text-center text-xs text-slate">
-            You&rsquo;ll be redirected to Stripe to complete payment securely.
-            {form.paymentOption === "deposit" &&
-              " We'll place a 7-day hold on your card for the $499 balance, captured upon site approval."}
+            You&rsquo;ll be redirected to Stripe to complete payment securely. We collect full
+            payment before your project enters the queue.
           </p>
         )}
       </div>

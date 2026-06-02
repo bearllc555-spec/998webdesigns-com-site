@@ -5,7 +5,7 @@ const props = [
   },
   {
     title: "Delivered in 5–7 business days",
-    body: "The clock starts the moment your deposit clears. You'll see the first draft inside a week.",
+    body: "The clock starts the moment payment clears. You'll see the first draft inside a week.",
   },
   {
     title: "No agencies. No retainers. No surprises.",

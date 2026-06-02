@@ -21,19 +21,17 @@ export default async function Thanks({
     redirect("/#start");
   }
 
-  let isPaidInFull = false;
   let contactPrefill = {
     name: "",
     email: "",
     businessName: "",
-    message: "I just completed checkout and have a question:\n\n",
+    message: "I just paid in full and have a question:\n\n",
   };
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== "paid") {
       redirect("/#start");
     }
-    isPaidInFull = session.metadata?.paymentType === "full";
     contactPrefill = {
       name: session.metadata?.fullName ?? "",
       email:
@@ -42,9 +40,7 @@ export default async function Thanks({
         session.customer_email ??
         "",
       businessName: session.metadata?.businessName ?? "",
-      message: isPaidInFull
-        ? "I just paid in full and have a question:\n\n"
-        : "I just paid my deposit and have a question:\n\n",
+      message: "I just paid in full and have a question:\n\n",
     };
   } catch {
     redirect("/#start");
@@ -59,35 +55,21 @@ export default async function Thanks({
             Payment received
           </p>
           <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
-            {isPaidInFull
-              ? "Thanks — you're paid in full!"
-              : "Thanks — your deposit is paid!"}
+            Thanks — you&apos;re paid in full!
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
-            {isPaidInFull
-              ? "Your $998 payment has been received. A receipt is on its way to your email. Here's exactly what happens next, in writing, so there are no surprises."
-              : "Your $499 deposit has been received. A receipt is on its way to your email. Here's exactly what happens next, in writing, so there are no surprises."}
+            Your payment has been received. A receipt is on its way to your email. Here&apos;s
+            exactly what happens next, in writing, so there are no surprises.
           </p>
 
           <div className="mt-8 rounded-2xl border border-success/30 bg-success/10 p-6">
-            {isPaidInFull ? (
-              <p className="font-display text-lg font-medium text-ink">
-                Total: $998 &nbsp;|&nbsp;{" "}
-                <span className="text-success">Paid in full — no balance due</span>
-              </p>
-            ) : (
-              <>
-                <p className="font-display text-lg font-medium text-ink">
-                  Total: $998 &nbsp;|&nbsp; Deposit paid: $499 &nbsp;|&nbsp;{" "}
-                  <span className="text-success">Balance: $499 (held on your card)</span>
-                </p>
-                <p className="mt-2 text-sm text-ink-soft">
-                  We&apos;ve placed a 7-day authorization hold on your card for the $499
-                  balance. When your site is ready and approved, we&apos;ll capture the
-                  balance — no action needed from you.
-                </p>
-              </>
-            )}
+            <p className="font-display text-lg font-medium text-ink">
+              <span className="text-success">Paid in full — you&apos;re all set</span>
+            </p>
+            <p className="mt-2 text-sm text-ink-soft">
+              No follow-up invoices for the design fee. Hosting, if selected separately, follows the
+              option you chose at checkout.
+            </p>
           </div>
 
           <ol className="mt-12 space-y-6">
@@ -98,17 +80,13 @@ export default async function Thanks({
             />
             <Step
               n="02"
-              title="Approval window"
-              body="When we send the draft, you have 7 business days to respond. The clock pauses while we wait for your approval or edits."
+              title="Feedback window"
+              body="When we send the draft, you have 14 days to respond with approval or edits. We'll follow up if we don't hear back."
             />
             <Step
               n="03"
-              title={isPaidInFull ? "Go live" : "Go live + balance captured"}
-              body={
-                isPaidInFull
-                  ? "Approve the design and we launch your site. Same-day launch once approved."
-                  : "Approve the design and we capture the $499 balance from your card and launch your site. Same-day launch once approved."
-              }
+              title="Go live"
+              body="Approve the design and we launch your site. Same-day launch once approved."
             />
           </ol>
 
@@ -117,10 +95,11 @@ export default async function Thanks({
               One thing to know up front
             </p>
             <p className="mt-3 text-base leading-relaxed text-ink">
-              If we send a design draft and don&rsquo;t hear back within 7 business days, the
-              project auto-delivers as final
-              {!isPaidInFull && " and the balance comes due"}. We say this here so it&rsquo;s
-              never a surprise later.
+              If we send a design draft and don&rsquo;t hear back within 14 days, we&apos;ll mark
+              the project complete and deliver the best version we have. Your files are held for 90
+              days — come back in that window under normal edit terms. After 90 days, a $249
+              re-engagement fee applies to reopen. We say this here so it&apos;s never a surprise
+              later.
             </p>
           </aside>
 
