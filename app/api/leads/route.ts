@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
-import { DEPOSIT_PRODUCT, FULL_PRODUCT, BALANCE_AMOUNT_CENTS } from "@/lib/products";
+import { DEPOSIT_PRODUCT, FULL_PRODUCT } from "@/lib/products";
+import { sendLeadCheckoutEmail } from "@/lib/lead-email";
+import { validateLeadPayload } from "@/lib/validate-lead";
 
 export const runtime = "nodejs";
 
-type LeadPayload = Record<string, unknown> & { website?: string; paymentOption?: 'deposit' | 'full' };
+type LeadPayload = Record<string, unknown> & { website?: string };
 
 export async function POST(req: NextRequest) {
   let body: LeadPayload;
@@ -21,16 +23,11 @@ export async function POST(req: NextRequest) {
   }
   delete body.website;
 
-  // Basic shape check
-  const required = ["fullName", "businessName", "email"];
-  for (const f of required) {
-    if (!body[f] || typeof body[f] !== "string") {
-      return NextResponse.json(
-        { error: `Missing required field: ${f}` },
-        { status: 400 }
-      );
-    }
+  const validated = validateLeadPayload(body);
+  if (!validated.ok) {
+    return NextResponse.json({ error: validated.error }, { status: 400 });
   }
+  const lead = validated.data;
 
   const submittedAt = new Date().toISOString();
   const ip =
@@ -38,41 +35,43 @@ export async function POST(req: NextRequest) {
     req.headers.get("x-real-ip") ||
     null;
 
+  const payload = { ...lead, submittedAt };
+
   // Try to persist lead to Supabase
   const supa = supabaseAdmin();
   if (!supa) {
     console.warn("[leads] Supabase not configured, skipping database insert");
-    console.info("[leads] payload preserved:", JSON.stringify(body));
+    console.info("[leads] payload preserved:", JSON.stringify(payload));
   } else {
     try {
       const { error } = await supa.from("wd_leads").insert({
-        payload: body,
-        email: body.email,
-        business_name: body.businessName,
-        full_name: body.fullName,
+        payload,
+        email: lead.email,
+        business_name: lead.businessName,
+        full_name: lead.fullName,
         submitted_at: submittedAt,
         ip,
       });
       if (error) {
         console.warn("[leads] supabase insert failed:", error.message);
-        console.info("[leads] payload preserved:", JSON.stringify(body));
+        console.info("[leads] payload preserved:", JSON.stringify(payload));
       }
     } catch (err) {
       console.warn("[leads] supabase client error:", err);
-      console.info("[leads] payload preserved:", JSON.stringify(body));
+      console.info("[leads] payload preserved:", JSON.stringify(payload));
     }
   }
 
   // Create Stripe Checkout session
   try {
     const origin = req.headers.get("origin") || "https://998webdesigns.com";
-    const payFull = body.paymentOption === 'full';
+    const payFull = lead.paymentOption === "full";
     const product = payFull ? FULL_PRODUCT : DEPOSIT_PRODUCT;
-    
-    // For deposit payments, we'll save the card for future use (to create auth hold after)
+
     const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       mode: "payment",
-      customer_email: body.email as string,
+      customer_creation: "always",
+      customer_email: lead.email,
       line_items: [
         {
           price_data: {
@@ -87,27 +86,37 @@ export async function POST(req: NextRequest) {
         },
       ],
       metadata: {
-        fullName: body.fullName as string,
-        businessName: body.businessName as string,
-        email: body.email as string,
-        paymentType: payFull ? 'full' : 'deposit',
+        fullName: lead.fullName,
+        businessName: lead.businessName,
+        email: lead.email,
+        paymentType: payFull ? "full" : "deposit",
+        hostingChoice: lead.hostingChoice,
         submittedAt,
       },
       payment_intent_data: {
         metadata: {
-          fullName: body.fullName as string,
-          businessName: body.businessName as string,
-          paymentType: payFull ? 'full' : 'deposit',
+          fullName: lead.fullName,
+          businessName: lead.businessName,
+          paymentType: payFull ? "full" : "deposit",
+          hostingChoice: lead.hostingChoice,
         },
-        receipt_email: body.email as string,
-        // For deposit: save card for future use to create the balance auth hold
-        ...(payFull ? {} : { setup_future_usage: 'off_session' as const }),
+        receipt_email: lead.email,
+        ...(payFull ? {} : { setup_future_usage: "off_session" as const }),
       },
-      success_url: `${origin}/thanks?session_id={CHECKOUT_SESSION_ID}&type=${payFull ? 'full' : 'deposit'}`,
+      success_url: `${origin}/thanks?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#start`,
     };
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    if (!session.url) {
+      return NextResponse.json(
+        { error: "Failed to create checkout session" },
+        { status: 500 }
+      );
+    }
+
+    await sendLeadCheckoutEmail(lead, session.url);
 
     return NextResponse.json({ ok: true, checkoutUrl: session.url });
   } catch (err) {

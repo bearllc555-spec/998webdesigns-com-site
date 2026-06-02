@@ -8,7 +8,7 @@ const steps = [
   {
     n: "02",
     title: "Pay the $499 deposit",
-    body: "An invoice is sent the moment you submit. The clock starts the second it clears.",
+    body: "You pay the $499 deposit through secure Stripe checkout. The clock starts the second it clears.",
   },
   {
     n: "03",

@@ -1,15 +1,36 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { stripe } from "@/lib/stripe";
 
 export const metadata = {
   title: "Payment received — let's build your site! | 998 web designs",
   robots: { index: false, follow: false },
 };
 
-export default async function Thanks({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
+export default async function Thanks({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
   const params = await searchParams;
-  const isPaidInFull = params.type === 'full';
+  const sessionId = params.session_id;
+
+  if (!sessionId) {
+    redirect("/#start");
+  }
+
+  let isPaidInFull = false;
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== "paid") {
+      redirect("/#start");
+    }
+    isPaidInFull = session.metadata?.paymentType === "full";
+  } catch {
+    redirect("/#start");
+  }
 
   return (
     <>
@@ -20,8 +41,8 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
             Payment received
           </p>
           <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
-            {isPaidInFull 
-              ? "Thanks — you're paid in full!" 
+            {isPaidInFull
+              ? "Thanks — you're paid in full!"
               : "Thanks — your deposit is paid!"}
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
@@ -33,16 +54,19 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
           <div className="mt-8 rounded-2xl border border-success/30 bg-success/10 p-6">
             {isPaidInFull ? (
               <p className="font-display text-lg font-medium text-ink">
-                Total: $998 &nbsp;|&nbsp; <span className="text-success">Paid in full — no balance due</span>
+                Total: $998 &nbsp;|&nbsp;{" "}
+                <span className="text-success">Paid in full — no balance due</span>
               </p>
             ) : (
               <>
                 <p className="font-display text-lg font-medium text-ink">
-                  Total: $998 &nbsp;|&nbsp; Deposit paid: $499 &nbsp;|&nbsp; <span className="text-success">Balance: $499 (held on your card)</span>
+                  Total: $998 &nbsp;|&nbsp; Deposit paid: $499 &nbsp;|&nbsp;{" "}
+                  <span className="text-success">Balance: $499 (held on your card)</span>
                 </p>
                 <p className="mt-2 text-sm text-ink-soft">
-                  We&apos;ve placed a 7-day authorization hold on your card for the $499 balance. 
-                  When your site is ready and approved, we&apos;ll capture the balance — no action needed from you.
+                  We&apos;ve placed a 7-day authorization hold on your card for the $499
+                  balance. When your site is ready and approved, we&apos;ll capture the
+                  balance — no action needed from you.
                 </p>
               </>
             )}
@@ -62,9 +86,11 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
             <Step
               n="03"
               title={isPaidInFull ? "Go live" : "Go live + balance captured"}
-              body={isPaidInFull 
-                ? "Approve the design and we launch your site. Same-day launch once approved."
-                : "Approve the design and we capture the $499 balance from your card and launch your site. Same-day launch once approved."}
+              body={
+                isPaidInFull
+                  ? "Approve the design and we launch your site. Same-day launch once approved."
+                  : "Approve the design and we capture the $499 balance from your card and launch your site. Same-day launch once approved."
+              }
             />
           </ol>
 
@@ -74,7 +100,8 @@ export default async function Thanks({ searchParams }: { searchParams: Promise<{
             </p>
             <p className="mt-3 text-base leading-relaxed text-ink">
               If we send a design draft and don&rsquo;t hear back within 7 business days, the
-              project auto-delivers as final{!isPaidInFull && " and the balance comes due"}. We say this here so it&rsquo;s
+              project auto-delivers as final
+              {!isPaidInFull && " and the balance comes due"}. We say this here so it&rsquo;s
               never a surprise later.
             </p>
           </aside>

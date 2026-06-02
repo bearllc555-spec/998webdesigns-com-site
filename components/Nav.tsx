@@ -40,15 +40,16 @@ export function Nav() {
           aria-label="Primary"
           className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 md:px-8"
         >
-          <Link href="/" className="flex items-baseline gap-2 text-lg font-semibold tracking-tight">
+          <Link
+            href="/"
+            aria-label={`998 webdesigns home, ${SITE_VERSION}`}
+            className="flex items-baseline gap-2 text-lg font-semibold tracking-tight"
+          >
             <span className="flex items-baseline gap-1">
               <span className="text-accent font-bold">998</span>
               <span className="text-ink">webdesigns</span>
             </span>
-            <span
-              aria-hidden="true"
-              className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-slate"
-            >
+            <span className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-slate">
               {SITE_VERSION}
             </span>
           </Link>

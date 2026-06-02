@@ -9,12 +9,15 @@ export function Hero() {
           Now booking small-business websites
         </p>
 
-        <h1 className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl">
-          we don&apos;t just build sites.
-          <br />
-          we build <span className="text-accent">systems</span> that bring you
-          {"\u00a0"}
-          <span className="text-accent">more</span> business.
+        <h1
+          className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-7xl"
+          aria-label="we don't just build sites. we build systems that bring you more business."
+        >
+          <span className="block">we don&apos;t just build sites.</span>
+          <span className="block">
+            we build <span className="text-accent">systems</span> that bring you{" "}
+            <span className="text-accent">more</span> business.
+          </span>
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">

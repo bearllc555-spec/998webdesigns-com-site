@@ -83,7 +83,7 @@ export function PrivacyContent() {
             </h2>
             <p className="text-ink-soft">
               Lead submissions may be stored in our database (Supabase) and are accessible to our
-              team. Email may be sent through our transactional email provider. Payments are
+              team. Contact form and lead confirmation emails are sent through Resend. Payments are
               processed by Stripe under{" "}
               <a
                 href="https://stripe.com/privacy"
@@ -93,8 +93,9 @@ export function PrivacyContent() {
               >
                 Stripe&rsquo;s privacy policy
               </a>
-              . Hosting and file delivery use our cloud hosting vendors. We share data with service
-              providers only as needed to run the service, not for their independent marketing.
+              . Site analytics may be collected by Vercel Analytics. Hosting and file delivery use
+              our cloud hosting vendors. We share data with service providers only as needed to run
+              the service, not for their independent marketing.
             </p>
           </section>
 

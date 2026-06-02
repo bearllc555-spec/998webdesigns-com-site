@@ -31,7 +31,7 @@ type FormState = {
   avoidances: string;
   // Step 4
   startDate: string;
-  hostingChoice: "lifetime" | "monthly" | "later" | "";
+  hostingChoice: "ten_year" | "monthly" | "later" | "";
   notes: string;
   paymentOption: PaymentOption;
   // Honeypot
@@ -431,7 +431,7 @@ export function LeadForm() {
               <Field label="Hosting preference (select one)" required error={errors.hostingChoice}>
                 <div className="grid gap-2 md:grid-cols-3">
                   {([
-                    ["lifetime", "Ten Year $998"],
+                    ["ten_year", "Ten Year $998"],
                     ["monthly", "Month-to-month $98"],
                     ["later", "Decide later"],
                   ] as const).map(([val, label]) => (

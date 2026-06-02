@@ -13,15 +13,16 @@ export function Footer() {
       <footer className="border-t border-rule bg-bg">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 text-sm text-ink-soft md:flex-row md:items-center md:justify-between md:px-8">
           <div>
-            <Link href="/" className="flex items-baseline gap-2 text-base font-semibold tracking-tight">
+            <Link
+              href="/"
+              aria-label={`998 webdesigns home, ${SITE_VERSION}`}
+              className="flex items-baseline gap-2 text-base font-semibold tracking-tight"
+            >
               <span className="flex items-baseline gap-1">
                 <span className="text-accent font-bold">998</span>
                 <span className="text-ink">webdesigns</span>
               </span>
-              <span
-                aria-hidden="true"
-                className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-slate"
-              >
+              <span className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-slate">
                 {SITE_VERSION}
               </span>
             </Link>

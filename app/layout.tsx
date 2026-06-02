@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -69,6 +70,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
           <Toaster />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
