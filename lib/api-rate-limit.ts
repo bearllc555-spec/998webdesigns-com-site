@@ -9,6 +9,8 @@ import { checkRateLimitSupabase } from "@/lib/rate-limit-supabase";
 export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/leads": { limit: 5, windowMs: 60_000 },
   "/api/contact": { limit: 10, windowMs: 60_000 },
+  /** Shared bucket for admin bearer routes (capture + env-status). */
+  "/api/admin/capture-balance": { limit: 5, windowMs: 60_000 },
 };
 
 export function clientIp(req: NextRequest): string {

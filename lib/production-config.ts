@@ -1,0 +1,95 @@
+import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
+
+export type ProductionConfigStatus = {
+  vercelEnv: string;
+  stripe: {
+    mode: StripeKeyMode;
+    keyPresent: boolean;
+    webhookSecretPresent: boolean;
+    expectedMode: string | null;
+    modeMismatch: boolean;
+  };
+  resendConfigured: boolean;
+  supabaseConfigured: boolean;
+  balanceCaptureConfigured: boolean;
+  warnings: string[];
+  readyForLiveCharges: boolean;
+};
+
+/**
+ * Snapshot of production-critical env wiring (no secret values returned).
+ * Call from GET /api/admin/env-status with BALANCE_CAPTURE_SECRET.
+ */
+export function getProductionConfigStatus(): ProductionConfigStatus {
+  const warnings: string[] = [];
+  const vercelEnv = process.env.VERCEL_ENV ?? "local";
+  const mode = stripeKeyMode();
+  const keyPresent = mode !== "missing";
+  const webhookSecretPresent = Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim());
+  const expectedMode = process.env.STRIPE_EXPECTED_MODE?.trim().toLowerCase() ?? null;
+
+  let modeMismatch = false;
+  if (expectedMode === "live" && mode !== "live") {
+    modeMismatch = true;
+    warnings.push(
+      "STRIPE_EXPECTED_MODE=live but STRIPE_SECRET_KEY is not sk_live_. Real cards will fail."
+    );
+  }
+  if (expectedMode === "test" && mode === "live") {
+    modeMismatch = true;
+    warnings.push(
+      "STRIPE_EXPECTED_MODE=test but STRIPE_SECRET_KEY is sk_live_. Sandbox cards will fail."
+    );
+  }
+  if (vercelEnv === "production" && mode === "test") {
+    warnings.push(
+      "Production is using sk_test_. Intentional until go-live; set STRIPE_EXPECTED_MODE=test to acknowledge."
+    );
+  }
+  if (vercelEnv === "production" && mode === "live" && !webhookSecretPresent) {
+    warnings.push("STRIPE_WEBHOOK_SECRET missing on Production.");
+  }
+  if (!process.env.RESEND_API_KEY?.trim()) {
+    warnings.push("RESEND_API_KEY missing — contact and lead emails will fail.");
+  }
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+    !process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+  ) {
+    warnings.push(
+      "Supabase service role not configured — wd_leads and distributed rate limits degraded."
+    );
+  }
+  if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
+    warnings.push("BALANCE_CAPTURE_SECRET missing — capture-balance API returns 503.");
+  }
+
+  const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
+  const supabaseConfigured = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+  );
+  const balanceCaptureConfigured = Boolean(process.env.BALANCE_CAPTURE_SECRET?.trim());
+
+  const readyForLiveCharges =
+    mode === "live" &&
+    webhookSecretPresent &&
+    resendConfigured &&
+    !modeMismatch;
+
+  return {
+    vercelEnv,
+    stripe: {
+      mode,
+      keyPresent,
+      webhookSecretPresent,
+      expectedMode,
+      modeMismatch,
+    },
+    resendConfigured,
+    supabaseConfigured,
+    balanceCaptureConfigured,
+    warnings,
+    readyForLiveCharges,
+  };
+}

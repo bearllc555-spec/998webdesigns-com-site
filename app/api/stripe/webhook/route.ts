@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { BALANCE_AMOUNT_CENTS } from "@/lib/products";
 import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
+import { ensureBalanceHoldForDeposit } from "@/lib/balance-hold";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import {
   syncWdLeadDepositPaid,
@@ -12,16 +12,6 @@ import Stripe from "stripe";
 export const runtime = "nodejs";
 
 export const dynamic = "force-dynamic";
-
-function stripeId(value: unknown): string | null {
-  if (!value) return null;
-  if (typeof value === "string") return value;
-  if (typeof value === "object" && value !== null && "id" in value) {
-    const id = (value as { id?: string }).id;
-    return typeof id === "string" ? id : null;
-  }
-  return null;
-}
 
 export async function POST(req: NextRequest) {
   warnIfProductionStripeTestMode("webhook");
@@ -64,48 +54,7 @@ export async function POST(req: NextRequest) {
         const paymentIntent = await stripe.paymentIntents.retrieve(
           session.payment_intent as string
         );
-
-        const customerId =
-          stripeId(session.customer) ?? stripeId(paymentIntent.customer);
-        const paymentMethodId = stripeId(paymentIntent.payment_method);
-
-        if (customerId && paymentMethodId) {
-          const holdIntent = await stripe.paymentIntents.create({
-            amount: BALANCE_AMOUNT_CENTS,
-            currency: "usd",
-            customer: customerId,
-            payment_method: paymentMethodId,
-            capture_method: "manual",
-            confirm: true,
-            off_session: true,
-            description: "Website Design - Balance Due ($499)",
-            metadata: {
-              fullName: session.metadata?.fullName || "",
-              businessName: session.metadata?.businessName || "",
-              email: session.metadata?.email || "",
-              type: "balance_hold",
-              depositSessionId: session.id,
-            },
-            receipt_email: session.metadata?.email || undefined,
-          });
-
-          holdIntentId = holdIntent.id;
-          console.info(
-            `[webhook] Created $499 auth hold for ${session.metadata?.email}:`,
-            holdIntent.id,
-            "Status:",
-            holdIntent.status
-          );
-        } else {
-          console.warn(
-            "[webhook] Could not create auth hold - missing payment_method or customer:",
-            {
-              paymentMethod: paymentMethodId,
-              customer: customerId,
-              sessionCustomer: session.customer,
-            }
-          );
-        }
+        holdIntentId = await ensureBalanceHoldForDeposit(session, paymentIntent);
       } catch (err) {
         console.error("[webhook] Failed to create auth hold:", err);
       }

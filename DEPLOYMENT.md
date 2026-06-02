@@ -23,7 +23,8 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
 | `RESEND_API_KEY` | Contact form + lead emails + internal lead/payment alerts |
-| `BALANCE_CAPTURE_SECRET` | Bearer token for `POST /api/admin/capture-balance` |
+| `BALANCE_CAPTURE_SECRET` | Bearer token for admin routes (`capture-balance`, `env-status`) |
+| `STRIPE_EXPECTED_MODE` | Optional `test` or `live` — must match `STRIPE_SECRET_KEY` prefix |
 | `NEXT_PUBLIC_SUPABASE_URL` | Lead storage |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (if used client-side) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `wd_leads` inserts |
@@ -43,7 +44,16 @@ Secrets live in workspace `.local/` (gitignored). Never commit keys.
 5. Redeploy Production.
 6. Run one real small-charge test, then refund in Stripe if needed.
 
-Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`).
+Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`). While sandbox testing, set `STRIPE_EXPECTED_MODE=test` on Production so env-status does not flag a false mismatch.
+
+## Verify production wiring (no secrets in response)
+
+```bash
+curl -s https://998webdesigns.com/api/admin/env-status \
+  -H "Authorization: Bearer YOUR_BALANCE_CAPTURE_SECRET"
+```
+
+Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`, and `readyForLiveCharges`. Use after every key rotation or before accepting real cards.
 
 ## Stripe webhook
 

@@ -15,3 +15,6 @@ node_modules
 out/
 .DS_Store.next
 .vercel
+
+# Accidental pnpm workspace stub (not a monorepo)
+pnpm-workspace.yaml

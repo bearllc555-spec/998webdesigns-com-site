@@ -30,5 +30,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/leads", "/api/contact"],
+  matcher: ["/api/leads", "/api/contact", "/api/admin/capture-balance", "/api/admin/env-status"],
 };

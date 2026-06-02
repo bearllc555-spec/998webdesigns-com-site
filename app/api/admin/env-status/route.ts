@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyBearerSecret } from "@/lib/admin-auth";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
-import { captureBalanceForLead } from "@/lib/capture-balance";
+import { getProductionConfigStatus } from "@/lib/production-config";
 
 export const runtime = "nodejs";
-
 export const dynamic = "force-dynamic";
 
 function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
-export async function POST(req: NextRequest) {
+/** GET production env wiring snapshot (no secret values). Same Bearer as capture-balance. */
+export async function GET(req: NextRequest) {
   const rate = await enforceApiRateLimit(req, "/api/admin/capture-balance");
   if (!rate.allowed) {
     const body = rateLimitResponse(rate.retryAfterSec);
@@ -30,29 +30,5 @@ export async function POST(req: NextRequest) {
     return unauthorized();
   }
 
-  let body: { email?: string; depositSessionId?: string; leadId?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  if (!body.email && !body.depositSessionId && !body.leadId) {
-    return NextResponse.json(
-      { error: "Provide email, depositSessionId, or leadId" },
-      { status: 400 }
-    );
-  }
-
-  const result = await captureBalanceForLead(body);
-  if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: result.status });
-  }
-
-  return NextResponse.json({
-    ok: true,
-    leadId: result.leadId,
-    paymentIntentId: result.paymentIntentId,
-    alreadyCaptured: result.alreadyCaptured ?? false,
-  });
+  return NextResponse.json(getProductionConfigStatus());
 }
