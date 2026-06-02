@@ -7,6 +7,8 @@ import { checkoutOrigin } from "@/lib/checkout-origin";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { insertWdLead } from "@/lib/leads-db";
+import { sendInternalLeadSubmittedEmail } from "@/lib/internal-lead-email";
+import { syncWdLeadCheckoutCreated } from "@/lib/wd-leads-sync";
 
 export const runtime = "nodejs";
 
@@ -91,6 +93,7 @@ export async function POST(req: NextRequest) {
         paymentType: payFull ? "full" : "deposit",
         hostingChoice: lead.hostingChoice,
         submittedAt,
+        ...(dbResult.ok && dbResult.id ? { wdLeadId: dbResult.id } : {}),
       },
       payment_intent_data: {
         metadata: {
@@ -116,6 +119,8 @@ export async function POST(req: NextRequest) {
     }
 
     await sendLeadCheckoutEmail(lead, session.url);
+    await syncWdLeadCheckoutCreated(dbResult.ok ? dbResult.id : undefined, session);
+    await sendInternalLeadSubmittedEmail(lead, session.url, session.id);
 
     return NextResponse.json({ ok: true, checkoutUrl: session.url });
   } catch (err) {

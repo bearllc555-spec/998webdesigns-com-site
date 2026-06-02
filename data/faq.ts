@@ -3,7 +3,7 @@ export type FAQItem = { q: string; a: string };
 export const faq: FAQItem[] = [
   {
     q: "What's actually included for $998?",
-    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 5–7 business days from the moment your deposit clears.",
+    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 5–7 business days from the moment payment clears — whether you choose the $499 deposit or $998 pay-in-full on the last step of the form.",
   },
   {
     q: "How is this so much cheaper than an agency?",
@@ -31,6 +31,6 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What happens if I don't respond during the approval window?",
-    a: "If we send you a design draft and don't hear back within 7 business days, we deliver as-final and the balance comes due. We say this up front because surprise late fees are agency behavior and we don't do that.",
+    a: "If we send you a design draft and don't hear back within 7 business days, we deliver as-final. If you paid a deposit, the remaining $499 balance is captured from the card on file; if you paid in full up front, there is no further charge. We say this up front because surprise late fees are agency behavior and we don't do that.",
   },
 ];

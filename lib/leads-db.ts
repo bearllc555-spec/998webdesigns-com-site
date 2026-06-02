@@ -10,6 +10,15 @@ export type WdLeadInsert = {
   ip: string | null;
 };
 
+export type WdLeadPatch = {
+  status?: string;
+  stripe_customer_id?: string | null;
+  /** Checkout session id (deposit or pay-in-full). */
+  stripe_deposit_invoice_id?: string | null;
+  /** Balance-hold PaymentIntent id (deposit path only). */
+  stripe_balance_invoice_id?: string | null;
+};
+
 export type WdLeadInsertResult =
   | { ok: true; id?: string }
   | { ok: false; reason: "not_configured" | "table_missing" | "insert_failed"; detail: string };
@@ -31,6 +40,93 @@ export async function insertWdLead(row: WdLeadInsert): Promise<WdLeadInsertResul
     console.error("[leads] Supabase client error:", detail);
     return { ok: false, reason: "insert_failed", detail };
   }
+}
+
+export async function updateWdLead(
+  leadId: string,
+  patch: WdLeadPatch
+): Promise<boolean> {
+  const supa = supabaseAdmin();
+  if (!supa) return false;
+
+  const { error } = await supa.from("wd_leads").update(patch).eq("id", leadId);
+  if (error) {
+    console.warn("[leads] wd_leads update failed:", error.message);
+    return false;
+  }
+  return true;
+}
+
+/** Latest row for this email (most recent submit). */
+export async function updateLatestWdLeadByEmail(
+  email: string,
+  patch: WdLeadPatch
+): Promise<boolean> {
+  const supa = supabaseAdmin();
+  if (!supa) return false;
+
+  const { data, error: selectError } = await supa
+    .from("wd_leads")
+    .select("id")
+    .eq("email", email)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (selectError || !data?.id) {
+    if (selectError) console.warn("[leads] wd_leads lookup failed:", selectError.message);
+    return false;
+  }
+
+  return updateWdLead(data.id, patch);
+}
+
+export async function findWdLeadForCapture(params: {
+  email?: string;
+  depositSessionId?: string;
+  leadId?: string;
+}): Promise<{
+  id: string;
+  email: string;
+  status: string;
+  stripe_balance_invoice_id: string | null;
+} | null> {
+  const supa = supabaseAdmin();
+  if (!supa) return null;
+
+  if (params.leadId) {
+    const { data, error } = await supa
+      .from("wd_leads")
+      .select("id, email, status, stripe_balance_invoice_id")
+      .eq("id", params.leadId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data;
+  }
+
+  if (params.depositSessionId) {
+    const { data, error } = await supa
+      .from("wd_leads")
+      .select("id, email, status, stripe_balance_invoice_id")
+      .eq("stripe_deposit_invoice_id", params.depositSessionId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data;
+  }
+
+  if (params.email) {
+    const { data, error } = await supa
+      .from("wd_leads")
+      .select("id, email, status, stripe_balance_invoice_id")
+      .eq("email", params.email)
+      .order("submitted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data;
+  }
+
+  return null;
 }
 
 async function insertWithClient(

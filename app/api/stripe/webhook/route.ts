@@ -3,6 +3,10 @@ import { stripe } from "@/lib/stripe";
 import { BALANCE_AMOUNT_CENTS } from "@/lib/products";
 import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
+import {
+  syncWdLeadDepositPaid,
+  syncWdLeadPaidInFull,
+} from "@/lib/wd-leads-sync";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -47,13 +51,15 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const paymentType = session.metadata?.paymentType;
 
-    try {
-      await sendInternalPaymentEmail(session);
-    } catch (err) {
-      console.error("[webhook] Internal payment alert failed:", err);
-    }
-
-    if (paymentType === "deposit" && session.payment_intent) {
+    if (paymentType === "full") {
+      await syncWdLeadPaidInFull(session);
+      try {
+        await sendInternalPaymentEmail(session, null);
+      } catch (err) {
+        console.error("[webhook] Internal payment alert failed:", err);
+      }
+    } else if (paymentType === "deposit" && session.payment_intent) {
+      let holdIntentId: string | null = null;
       try {
         const paymentIntent = await stripe.paymentIntents.retrieve(
           session.payment_intent as string
@@ -83,6 +89,7 @@ export async function POST(req: NextRequest) {
             receipt_email: session.metadata?.email || undefined,
           });
 
+          holdIntentId = holdIntent.id;
           console.info(
             `[webhook] Created $499 auth hold for ${session.metadata?.email}:`,
             holdIntent.id,
@@ -101,6 +108,19 @@ export async function POST(req: NextRequest) {
         }
       } catch (err) {
         console.error("[webhook] Failed to create auth hold:", err);
+      }
+
+      await syncWdLeadDepositPaid(session, holdIntentId);
+      try {
+        await sendInternalPaymentEmail(session, holdIntentId);
+      } catch (err) {
+        console.error("[webhook] Internal payment alert failed:", err);
+      }
+    } else {
+      try {
+        await sendInternalPaymentEmail(session, null);
+      } catch (err) {
+        console.error("[webhook] Internal payment alert failed:", err);
       }
     }
   }

@@ -10,10 +10,11 @@ create table if not exists public.wd_leads (
   full_name text not null,
   ip text,
   payload jsonb not null,
+  -- new | awaiting_payment | deposit_paid | balance_held | balance_captured | paid_in_full
   status text not null default 'new',
   stripe_customer_id text,
-  stripe_deposit_invoice_id text,
-  stripe_balance_invoice_id text,
+  stripe_deposit_invoice_id text,  -- Stripe Checkout session id
+  stripe_balance_invoice_id text,  -- balance-hold PaymentIntent id (deposit path)
   notes text
 );
 

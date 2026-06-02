@@ -22,7 +22,8 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 |----------|---------|
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
-| `RESEND_API_KEY` | Contact form + lead emails + internal payment alerts |
+| `RESEND_API_KEY` | Contact form + lead emails + internal lead/payment alerts |
+| `BALANCE_CAPTURE_SECRET` | Bearer token for `POST /api/admin/capture-balance` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Lead storage |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (if used client-side) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `wd_leads` inserts |
@@ -50,9 +51,34 @@ Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`).
 - Event: `checkout.session.completed` (required)
 - Deposit flow creates a $499 balance authorization hold after payment.
 
-## Internal payment alerts
+## Internal lead alerts (Resend)
 
-On each completed checkout, Resend emails `hello@998webdesigns.com` (`lib/internal-lead-email.ts`). Uses the same `RESEND_API_KEY` as the contact form.
+| When | Email to `hello@998webdesigns.com` |
+|------|-------------------------------------|
+| Form submitted, Checkout link created | **New lead — awaiting payment** (checkout URL + session link) |
+| Checkout completed | **Payment received** (deposit or pay-in-full; deposit includes balance-hold link + capture instructions) |
+
+Uses `RESEND_API_KEY`.
+
+## Capture $499 balance after client approval
+
+Deposit checkouts place a **manual-capture** PaymentIntent for the $499 balance. When the design is approved:
+
+1. Set `BALANCE_CAPTURE_SECRET` in Vercel Production (long random string).
+2. Call:
+
+```bash
+curl -X POST https://998webdesigns.com/api/admin/capture-balance \
+  -H "Authorization: Bearer YOUR_BALANCE_CAPTURE_SECRET" \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"client@example.com\"}"
+```
+
+You can also pass `depositSessionId` (Checkout session id) or `leadId` (Supabase uuid).
+
+Or capture in the [Stripe Dashboard](https://dashboard.stripe.com) on the balance-hold PaymentIntent linked in the payment email.
+
+`wd_leads.status` becomes `balance_captured` on success.
 
 ## SEO (sitemap / robots)
 

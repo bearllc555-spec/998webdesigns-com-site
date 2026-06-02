@@ -19,7 +19,8 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
 - `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout (`customer_creation: always`), Resend checkout-link email, webhook balance auth hold on deposit.
 - `/api/contact` — POST: honeypot, Resend to hello@998webdesigns.com.
-- `/api/stripe/webhook` — signed webhook; $499 balance auth hold on deposit; Resend alert to `hello@` on every completed checkout.
+- `/api/stripe/webhook` — signed webhook; $499 balance auth hold on deposit; updates `wd_leads` status; Resend alerts on submit + payment.
+- `/api/admin/capture-balance` — POST with `BALANCE_CAPTURE_SECRET` captures deposit balance (`lib/capture-balance.ts`).
 - **Checkout origins** — `lib/checkout-origin.ts` allowlist (no open redirect via `Origin`).
 - **Stripe go-live** — `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
@@ -34,7 +35,6 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Portfolio carousel** — Serenity Spa is live-linked; other slots use placeholder art until real mockups + URLs ship (`data/portfolio.ts`).
 - **Slack** — optional; payment alerts already email `hello@` via Resend on webhook.
 - **$98/mo hosting subscription** — Stripe Subscription not built.
-- **Balance capture on approval** — auth hold created in webhook; capture flow not productized in admin.
 - **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
 - **SendGrid** — not used; transactional email is **Resend**.
 - **Supabase tables** — run `supabase/schema.sql` once if `wd_leads` / `api_rate_limits` are missing.
@@ -106,6 +106,7 @@ public/portfolio/
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
 | `RESEND_API_KEY` | `/api/contact`, `/api/leads` email |
+| `BALANCE_CAPTURE_SECRET` | `/api/admin/capture-balance` |
 
 Set the same keys in Vercel → Project Settings → Environment Variables.
 
