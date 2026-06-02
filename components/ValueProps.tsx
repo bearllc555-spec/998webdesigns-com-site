@@ -4,8 +4,8 @@ const props = [
     body: "No templates. No AI slop. A real designer working on your site, by hand, like a craftsperson.",
   },
   {
-    title: "Delivered in 5–7 business days",
-    body: "The clock starts the moment payment clears. You'll see the first draft inside a week.",
+    title: "Delivered in 7 business days",
+    body: "The clock starts the moment payment clears. You'll see the first draft in 7 business days.",
   },
   {
     title: "No agencies. No retainers. No surprises.",
