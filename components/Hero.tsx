@@ -44,11 +44,21 @@ export function Hero() {
           </p>
           <div className="max-w-2xl">
             <p className="mt-4 text-base leading-relaxed text-ink">
-              Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, and email/SMS follow‑ups so you get more calls, more bookings, and more repeat clients.
+              Every build includes options for blogging, hyper‑local SEO, Google Business optimization, review generation, email/SMS follow‑ups, and an on‑site AI chatbot so you get more calls, more bookings, and more repeat clients.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
+              <h3 className="font-display text-lg font-medium text-ink">AI chatbot</h3>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Answer visitor questions around the clock</li>
+                <li>Process orders and quote requests</li>
+                <li>Send brochures, pricing, and documentation</li>
+                <li>Schedule appointments and callbacks</li>
+                <li>Capture leads after hours and route urgent requests</li>
+              </ul>
+            </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
               <h3 className="font-display text-lg font-medium text-ink">Email & SMS</h3>
               <p className="mt-2 text-sm text-ink-soft">Customer nurturing campaigns that keep your clients coming back.</p>
