@@ -71,23 +71,53 @@ export function Hero() {
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
               <h3 className="font-display text-lg font-medium text-ink">Email & SMS</h3>
-              <p className="mt-2 text-sm text-ink-soft">Customer nurturing campaigns that keep your clients coming back.</p>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Nurture past clients so you stay top of mind for the next job</li>
+                <li>Confirm appointments, send reminders, and cut no‑shows</li>
+                <li>Follow up on quotes, invoices, and completed work automatically</li>
+                <li>Win‑back sequences when a customer hasn&apos;t booked in a while</li>
+                <li>Two‑way SMS for quick replies when you&apos;re on the truck or job site</li>
+              </ul>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
               <h3 className="font-display text-lg font-medium text-ink">Blogging strategies</h3>
-              <p className="mt-2 text-sm text-ink-soft">Content that attracts organic traffic and keeps customers engaged.</p>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Dominate your territory with posts about every service you offer locally</li>
+                <li>Target city, neighborhood, and &ldquo;near me&rdquo; searches competitors skip</li>
+                <li>Answer the questions homeowners ask before they pick up the phone</li>
+                <li>Turn finished jobs into case studies, photos, and proof you can trust</li>
+                <li>Build authority so search engines and AI tools recommend you first</li>
+              </ul>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
               <h3 className="font-display text-lg font-medium text-ink">Hyper‑local SEO</h3>
-              <p className="mt-2 text-sm text-ink-soft">Hyper‑local optimization to help customers find you in search results.</p>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Tune your site to pull traffic from your exact service area—not generic national keywords</li>
+                <li>Pages for each city, town, or ZIP you want to own</li>
+                <li>On‑page copy, headings, and structure aligned with how locals search</li>
+                <li>Technical basics: speed, mobile UX, and crawlability that affect local rankings</li>
+                <li>Track what ranks, what drives calls, and where to publish next</li>
+              </ul>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
               <h3 className="font-display text-lg font-medium text-ink">Google Profile Optimization</h3>
-              <p className="mt-2 text-sm text-ink-soft">Google Business Profile optimization and review management tools.</p>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Complete, accurate Google Business Profile—photos, hours, services, and attributes</li>
+                <li>One of the most underused levers local businesses ignore</li>
+                <li>Review requests, replies, and reputation workflows that build trust</li>
+                <li>Profile posts, offers, and Q&amp;A so you look active on Maps</li>
+                <li>Map pack visibility when someone searches your trade nearby</li>
+              </ul>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
               <h3 className="font-display text-lg font-medium text-ink">Booking calendar</h3>
-              <p className="mt-2 text-sm text-ink-soft">Integrated booking calendar to streamline customer appointments.</p>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+                <li>Let customers book online 24/7 straight from your website</li>
+                <li>Integrates with Google Calendar, Calendly, and tools you already use</li>
+                <li>See new bookings and manage availability from your phone</li>
+                <li>Automatic confirmations and reminders by email or SMS</li>
+                <li>Less phone tag, fewer gaps, and a schedule that fills itself</li>
+              </ul>
             </div>
           </div>
         </div>
