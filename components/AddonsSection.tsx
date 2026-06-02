@@ -179,7 +179,7 @@ function GrowthPackBanner({
               Get the Growth Pack →
             </button>
           ) : (
-            <div className="flex flex-col items-start gap-0.5 sm:items-end">
+            <div className="flex flex-col items-start gap-1.5 sm:items-end">
               <button
                 type="button"
                 onClick={() => onToggle(GROWTH_PACK_ID)}
