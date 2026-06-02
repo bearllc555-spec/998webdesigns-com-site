@@ -33,9 +33,12 @@ export function TermsContent() {
             </h2>
             <p className="text-ink-soft">
               The core offer is a handcrafted custom website for a flat $998 design fee, delivered
-              in 5&ndash;7 business days after your payment clears. Scope, pricing, hosting options,
-              and edit policy are described on our home page and in the FAQ. That on-page copy is
-              part of what you agree to when you submit the lead form and pay.
+              in 5&ndash;7 business days after your payment clears. Add-on timelines begin when all
+              required client materials are received. Add-ons are typically delivered within 1–3
+              business days of site delivery. Full-stack builds (three or more add-ons) are delivered
+              within 14 business days. Scope, pricing, hosting options, and edit policy are described
+              on our home page and in the FAQ. That on-page copy is part of what you agree to when
+              you submit the lead form and pay.
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>

@@ -12,6 +12,7 @@ const validBase = {
   projectType: "new",
   hostingChoice: "later",
   paymentOption: "full",
+  addons: [],
 };
 
 describe("validateLeadPayload", () => {

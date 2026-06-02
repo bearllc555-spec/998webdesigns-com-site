@@ -2,7 +2,7 @@ const steps = [
   {
     n: "01",
     title: "Fill out the form",
-    body: "Tell us about your business — who you serve, what you do, what you want the site to do for you.",
+    body: "Tell us about your business — who you serve, what you do, what you want the site to do for you. If you'd like add-ons at launch — SEO, chatbot, booking calendar, and more — select them here and we'll scope everything into one timeline.",
     cta: true,
   },
   {
@@ -12,8 +12,8 @@ const steps = [
   },
   {
     n: "03",
-    title: "We design in 5–7 business days",
-    body: "Handcrafted, not templated. A real designer working on your site by hand.",
+    title: "We build your site",
+    body: "We build your site in 7 business days. If you selected add-ons, setup runs in parallel — most add-ons go live within 1–3 business days of site delivery. Full-stack builds (3 or more add-ons) are delivered within 14 business days.",
   },
   {
     n: "04",
@@ -61,6 +61,31 @@ export function HowItWorks() {
             </li>
           ))}
         </ol>
+
+        {/* What Comes Next — post-steps fork */}
+        <div className="mt-10">
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-accent">
+            What Comes Next
+          </p>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
+              <p className="mb-2 font-display text-base font-medium text-ink">
+                Launch &amp; done
+              </p>
+              <p className="text-sm text-ink-soft">
+                Your site is live, hosted, and yours. Edits are $10 each. Nothing else required.
+              </p>
+            </div>
+            <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
+              <p className="mb-2 font-display text-base font-medium text-ink">
+                Keep growing
+              </p>
+              <p className="text-sm text-ink-soft">
+                Add-ons can be started at launch or any time after. SEO, content, automation, social — bolt on whatever makes sense when you&apos;re ready.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

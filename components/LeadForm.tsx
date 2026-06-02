@@ -34,6 +34,7 @@ type FormState = {
   hostingChoice: "ten_year" | "monthly" | "later" | "";
   notes: string;
   paymentOption: PaymentOption;
+  addons: string[];
   // Honeypot
   website: string;
 };
@@ -44,10 +45,21 @@ const initial: FormState = {
   projectType: "", visitorActions: [], pages: [], pagesOther: "", brandAssets: [],
   inspirationUrls: "", avoidances: "",
   startDate: "", hostingChoice: "", notes: "", paymentOption: "full",
+  addons: [],
   website: "",
 };
 
-const STEP_LABELS = ["About you", "Your business", "The project", "Logistics"];
+const STEP_LABELS = ["About you", "Your business", "The project", "Add-ons", "Logistics"];
+
+const ADDON_OPTIONS = [
+  { id: "addon-chatbot", value: "ai-chatbot", label: "AI Chatbot", pricing: "$299 setup · $79/mo" },
+  { id: "addon-social", value: "social-media", label: "Social Media Management", pricing: "$199 setup · $299/mo" },
+  { id: "addon-email-sms", value: "email-sms", label: "Email & SMS", pricing: "$149 setup · $149/mo" },
+  { id: "addon-blog", value: "blog-writing", label: "Blog Writing & Local Posts", pricing: "$199 setup · $199/mo" },
+  { id: "addon-seo", value: "hyper-local-seo", label: "Hyper-Local SEO", pricing: "$299 setup · $249/mo" },
+  { id: "addon-gmb", value: "google-profile", label: "Google Profile Optimization", pricing: "$149 setup · $79/mo" },
+  { id: "addon-booking", value: "booking-calendar", label: "Booking Calendar", pricing: "$99 setup · $29/mo" },
+] as const;
 
 const ACTIONS = ["Call", "Book", "Buy", "Request a quote", "Learn", "Other"];
 const PAGES = ["Home", "About", "Services", "Portfolio", "Pricing", "Blog", "Contact"];
@@ -71,6 +83,16 @@ export function LeadForm() {
     });
   };
 
+  const toggleAddon = (value: string) => {
+    setForm((f) => {
+      const has = f.addons.includes(value);
+      return {
+        ...f,
+        addons: has ? f.addons.filter((x) => x !== value) : [...f.addons, value],
+      };
+    });
+  };
+
   const validateStep = () => {
     const e: Partial<Record<keyof FormState, string>> = {};
     if (step === 0) {
@@ -89,7 +111,7 @@ export function LeadForm() {
     if (step === 2) {
       if (!form.projectType) e.projectType = "Pick one.";
     }
-    if (step === 3) {
+    if (step === 4) {
       if (!form.hostingChoice) e.hostingChoice = "Pick a hosting preference.";
     }
     setErrors(e);
@@ -99,7 +121,7 @@ export function LeadForm() {
   const next = (e?: React.MouseEvent) => {
     e?.preventDefault();
     if (!validateStep()) return;
-    setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(s + 1, 4));
   };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
@@ -147,7 +169,7 @@ export function LeadForm() {
         </div>
 
         {/* Progress */}
-        <ol className="mt-12 grid grid-cols-4 gap-2" aria-label="Form progress">
+        <ol className="mt-12 grid grid-cols-5 gap-2" aria-label="Form progress">
           {STEP_LABELS.map((label, i) => {
             const done = i < step;
             const active = i === step;
@@ -373,6 +395,65 @@ export function LeadForm() {
           )}
 
           {step === 3 && (
+            <div className="mt-8">
+              <p className="mb-1 font-display text-lg font-semibold text-ink">
+                Want any add-ons at launch?{" "}
+                <span className="text-sm font-normal text-ink-soft">(optional)</span>
+              </p>
+
+              <div className="mb-5 rounded-xl border-2 border-accent/30 bg-accent/[0.04] p-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="addon-growth-pack"
+                    checked={form.addons.includes("growth-pack")}
+                    onChange={() => toggleAddon("growth-pack")}
+                    className="mt-1 accent-[#2563eb]"
+                  />
+                  <label htmlFor="addon-growth-pack" className="cursor-pointer">
+                    <span className="mb-0.5 block text-xs font-medium uppercase tracking-widest text-accent">
+                      Most Popular
+                    </span>
+                    <span className="block font-display text-base font-medium text-ink">
+                      Growth Pack — Hyper-Local SEO + Google Profile Optimization + Blog Writing &amp; Local Posts
+                    </span>
+                    <span className="text-sm text-ink-soft">
+                      $647 setup · $399/mo{" "}
+                      <span className="font-medium text-ink">(save $128/mo)</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {ADDON_OPTIONS.map((addon) => (
+                  <div key={addon.id} className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id={addon.id}
+                      checked={form.addons.includes(addon.value)}
+                      onChange={() => toggleAddon(addon.value)}
+                      className="mt-1 accent-[#2563eb]"
+                    />
+                    <label htmlFor={addon.id} className="cursor-pointer">
+                      <span className="font-medium text-ink">{addon.label}</span>{" "}
+                      <span className="text-sm text-ink-soft">{addon.pricing}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              <p className="mt-4 text-sm text-ink-soft">
+                <strong>Your estimated delivery:</strong> 7 business days for your site. Add-ons go live 1–3 business days after. Full-stack builds (3+ add-ons): up to 14 business days.
+              </p>
+
+              <p className="mt-2 text-xs text-ink-soft">
+                Add-on timelines begin when all required client materials are received. Most add-ons go live within 1–3 business days of site delivery.
+              </p>
+            </div>
+          )}
+
+          {step === 4 && (
             <div className="grid gap-5">
               <Field label="Payment">
                 <div className="rounded-xl border border-accent bg-accent px-4 py-4 text-on-accent">
@@ -451,7 +532,7 @@ export function LeadForm() {
               &larr; Back
             </button>
 
-            {step < 3 ? (
+            {step < 4 ? (
                 <button
                 type="button"
                 onClick={(e) => next(e)}
@@ -471,7 +552,7 @@ export function LeadForm() {
           </div>
         </form>
 
-        {step === 3 && (
+        {step === 4 && (
           <p className="mt-6 text-center text-xs text-slate">
             You&rsquo;ll be redirected to Stripe to complete payment securely. We collect full
             payment before your project enters the queue.

@@ -25,7 +25,19 @@ export type ValidatedLead = {
   hostingChoice: HostingChoice;
   notes: string;
   paymentOption: PaymentOption;
+  addons: string[];
 };
+
+const ALLOWED_ADDONS = new Set([
+  "growth-pack",
+  "ai-chatbot",
+  "social-media",
+  "email-sms",
+  "blog-writing",
+  "hyper-local-seo",
+  "google-profile",
+  "booking-calendar",
+]);
 
 import { isValidEmail } from "@/lib/validate-email";
 
@@ -99,6 +111,7 @@ export function validateLeadPayload(
       hostingChoice: hostingChoice as HostingChoice,
       notes: str(body.notes) ?? "",
       paymentOption: "full",
+      addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
     },
   };
 }

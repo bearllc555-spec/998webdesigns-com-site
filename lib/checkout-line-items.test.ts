@@ -25,6 +25,7 @@ function lead(overrides: Partial<ValidatedLead>): ValidatedLead {
     hostingChoice: "later",
     notes: "",
     paymentOption: "full",
+    addons: [],
     ...overrides,
   };
 }
