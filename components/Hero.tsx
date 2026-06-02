@@ -136,7 +136,7 @@ export function Hero() {
             </p>
           </div>
 
-          <div className="mb-8 rounded-xl border border-accent/20 bg-accent/[0.08] px-6 py-4">
+          <div className="mt-8 mb-8 rounded-xl border border-accent/20 bg-accent/[0.08] px-6 py-4">
             <p className="font-semibold text-ink">
               Agencies charge $500–$2,000/month for local SEO alone.
             </p>
