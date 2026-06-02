@@ -82,7 +82,7 @@ export function Hero() {
               <p className="mt-2 text-sm text-ink-soft">Hyper‑local optimization to help customers find you in search results.</p>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
-              <h3 className="font-display text-lg font-medium text-ink">Google</h3>
+              <h3 className="font-display text-lg font-medium text-ink">Google profile optimization</h3>
               <p className="mt-2 text-sm text-ink-soft">Google Business Profile optimization and review management tools.</p>
             </div>
             <div className="card-lift rounded-xl border border-rule bg-bg p-6 shadow-sm">
