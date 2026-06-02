@@ -81,7 +81,7 @@ export function HowItWorks() {
                 Keep growing
               </p>
               <p className="text-sm text-ink-soft">
-                Add-ons can be started at launch or any time after. SEO, content, automation, social — bolt on whatever makes sense when you&apos;re ready.
+                Add-ons you selected go live within 1–3 days of your site. New ones can be added any time — each one compounds the last.
               </p>
             </div>
           </div>
