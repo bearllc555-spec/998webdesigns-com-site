@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   GROWTH_PACK_ID,
@@ -75,17 +75,22 @@ const ASSETS = ["Logo", "Photos", "Brand colors", "Existing copy"];
 export function LeadForm() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(initial);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...initial,
+    addons: getSelectedAddons(),
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = getSelectedAddons();
-    if (saved.length > 0) {
-      setForm((prev) => ({ ...prev, addons: saved }));
-    }
-  }, []);
+  const syncAddonsFromStorage = () => {
+    setForm((prev) => ({ ...prev, addons: getSelectedAddons() }));
+  };
+
+  const goToStep = (target: number) => {
+    if (target === 3) syncAddonsFromStorage();
+    setStep(target);
+  };
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -150,9 +155,9 @@ export function LeadForm() {
   const next = (e?: React.MouseEvent) => {
     e?.preventDefault();
     if (!validateStep()) return;
-    setStep((s) => Math.min(s + 1, 4));
+    goToStep(Math.min(step + 1, 4));
   };
-  const prev = () => setStep((s) => Math.max(s - 1, 0));
+  const prev = () => goToStep(Math.max(step - 1, 0));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -434,7 +439,9 @@ export function LeadForm() {
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
+                    name="addons"
                     id="addon-growth-pack"
+                    value={GROWTH_PACK_ID}
                     checked={form.addons.includes(GROWTH_PACK_ID)}
                     onChange={() => toggleAddon(GROWTH_PACK_ID)}
                     className="mt-1 accent-[#2563eb]"
@@ -459,7 +466,9 @@ export function LeadForm() {
                   <div key={addon.id} className="flex items-start gap-3">
                     <input
                       type="checkbox"
+                      name="addons"
                       id={addon.id}
+                      value={addon.value}
                       checked={isAddonVisuallySelected(addon.value, form.addons)}
                       onChange={() => toggleAddon(addon.value)}
                       className="mt-1 accent-[#2563eb]"
