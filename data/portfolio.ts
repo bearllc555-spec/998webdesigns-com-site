@@ -48,6 +48,13 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/yogacentric.jpg",
   },
   {
+    slug: "borst-landscape",
+    name: "Borst Landscape & Design",
+    industry: "Landscaping",
+    url: "https://landscape-design-site-cui.pages.dev/",
+    thumbnail: "/portfolio/borst-landscape.jpg",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
