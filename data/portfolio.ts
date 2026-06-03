@@ -33,6 +33,13 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/livingpdfs.jpg",
   },
   {
+    slug: "jetvip-charter",
+    name: "VIP Charters",
+    industry: "Private aviation",
+    url: "https://jetvipcharter-dev.pages.dev/",
+    thumbnail: "/portfolio/jetvip-charter.jpg",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
