@@ -283,8 +283,8 @@ export function AddonsSection() {
         key={addon.value}
         className={
           selected
-            ? "card-lift relative rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-            : "card-lift relative rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200"
+            ? "relative rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+            : "relative rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200 hover:border-accent"
         }
       >
         {selected && (
