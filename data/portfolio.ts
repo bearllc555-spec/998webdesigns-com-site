@@ -71,6 +71,14 @@ export const portfolio: PortfolioItem[] = [
     previewVideo: "/portfolio/new-empire-corp.mp4",
   },
   {
+    slug: "pocono-vacation-homes",
+    name: "Pocono Vacation Homes",
+    industry: "Vacation rentals",
+    url: "https://dev.vacation-homes.pages.dev/",
+    thumbnail: "/portfolio/pocono-vacation-homes.jpg",
+    previewVideo: "/portfolio/pocono-vacation-homes.mp4",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
