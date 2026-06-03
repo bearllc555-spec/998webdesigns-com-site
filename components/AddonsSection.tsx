@@ -228,18 +228,18 @@ function AddonCardCta({
   }
 
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="flex w-full items-center justify-between gap-4">
       <button
         type="button"
         onClick={() => onToggle(viaGrowthPack ? GROWTH_PACK_ID : value)}
-        className="inline-flex items-center gap-1 text-sm font-medium text-green-600"
+        className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-green-600"
       >
         <span>✓</span> Added
       </button>
       <button
         type="button"
         onClick={() => onToggle(viaGrowthPack ? GROWTH_PACK_ID : value)}
-        className="text-left text-xs text-ink-soft hover:text-red-500"
+        className="shrink-0 text-right text-xs text-ink-soft hover:text-red-500"
       >
         {viaGrowthPack ? "Remove growth package" : "Remove"}
       </button>
