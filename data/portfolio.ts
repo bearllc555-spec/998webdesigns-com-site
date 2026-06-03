@@ -91,12 +91,6 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/placeholder.svg",
   },
   {
-    slug: "hayes-and-co-studio",
-    name: "Hayes & Co Studio",
-    industry: "Creative & photography",
-    thumbnail: "/portfolio/placeholder.svg",
-  },
-  {
     slug: "three-hills-cafe",
     name: "Three Hills Cafe",
     industry: "Restaurants & cafes",
