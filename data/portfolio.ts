@@ -34,13 +34,6 @@ export const portfolio: PortfolioItem[] = [
     previewVideo: "/portfolio/tuscano-excavating.mp4",
   },
   {
-    slug: "livingpdfs",
-    name: "LivingPDFs",
-    industry: "Education & publishing",
-    url: "https://livingpdfs.pages.dev/",
-    thumbnail: "/portfolio/livingpdfs.jpg",
-  },
-  {
     slug: "jetvip-charter",
     name: "VIP Charters",
     industry: "Private aviation",
