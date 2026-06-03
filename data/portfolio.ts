@@ -22,8 +22,9 @@ export const portfolio: PortfolioItem[] = [
     slug: "serenity-spa",
     name: "Serenity Spa",
     industry: "Spa & wellness",
-    url: "https://serenity-spa.998webdesigns.com",
+    url: "https://dev.serenity-spa-3r8.pages.dev/",
     thumbnail: "/portfolio/serenity-spa.jpg",
+    previewVideo: "/portfolio/serenity-spa.mp4",
   },
   {
     slug: "tuscano-excavating",
