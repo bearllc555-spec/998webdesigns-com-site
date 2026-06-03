@@ -220,7 +220,7 @@ function AddonCardCta({
       <button
         type="button"
         onClick={() => onToggle(value)}
-        className="mt-4 inline-flex items-center text-sm font-medium text-accent hover:underline"
+        className="inline-flex items-center text-sm font-medium text-accent hover:underline"
       >
         Add to your build →
       </button>
@@ -228,7 +228,7 @@ function AddonCardCta({
   }
 
   return (
-    <div className="mt-4 flex flex-col gap-1">
+    <div className="flex flex-col items-start gap-1">
       <button
         type="button"
         onClick={() => onToggle(viaGrowthPack ? GROWTH_PACK_ID : value)}
@@ -283,8 +283,8 @@ export function AddonsSection() {
         key={addon.value}
         className={
           selected
-            ? "relative rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-            : "relative rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200 hover:border-accent"
+            ? "relative flex h-full flex-col rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+            : "relative flex h-full flex-col rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200 hover:border-accent"
         }
       >
         {selected && (
@@ -292,25 +292,29 @@ export function AddonsSection() {
             ✓
           </span>
         )}
-        <h3 className="font-display text-lg font-medium text-ink">{addon.title}</h3>
-        <p className="mt-1 text-sm text-ink-soft">
-          {addon.setup} setup &middot;{" "}
-          <span className="font-semibold text-accent">{addon.monthly}/mo</span>
-        </p>
-        <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
-          {addon.bullets.map((bullet) => (
-            <li key={bullet}>{bullet}</li>
-          ))}
-        </ul>
-        {"footnote" in addon && addon.footnote ? (
-          <p className="mt-2 text-xs text-ink-soft">{addon.footnote}</p>
-        ) : null}
-        <AddonCardCta
-          value={addon.value}
-          selected={selected}
-          viaGrowthPack={isViaGrowthPack(addon.value)}
-          onToggle={handleToggle}
-        />
+        <div className="min-h-0 flex-1">
+          <h3 className="font-display text-lg font-medium text-ink">{addon.title}</h3>
+          <p className="mt-1 text-sm text-ink-soft">
+            {addon.setup} setup &middot;{" "}
+            <span className="font-semibold text-accent">{addon.monthly}/mo</span>
+          </p>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-soft">
+            {addon.bullets.map((bullet) => (
+              <li key={bullet}>{bullet}</li>
+            ))}
+          </ul>
+          {"footnote" in addon && addon.footnote ? (
+            <p className="mt-2 text-xs text-ink-soft">{addon.footnote}</p>
+          ) : null}
+        </div>
+        <div className="mt-auto pt-4">
+          <AddonCardCta
+            value={addon.value}
+            selected={selected}
+            viaGrowthPack={isViaGrowthPack(addon.value)}
+            onToggle={handleToggle}
+          />
+        </div>
       </div>
     );
   }
