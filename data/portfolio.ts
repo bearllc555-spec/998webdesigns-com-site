@@ -41,6 +41,13 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/jetvip-charter.jpg",
   },
   {
+    slug: "yogacentric",
+    name: "YogaCentric",
+    industry: "Yoga & wellness",
+    url: "https://yogacentric-com-site.pages.dev/",
+    thumbnail: "/portfolio/yogacentric.jpg",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
