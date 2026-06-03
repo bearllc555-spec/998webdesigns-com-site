@@ -26,6 +26,13 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/tuscano-excavating.jpg",
   },
   {
+    slug: "livingpdfs",
+    name: "LivingPDFs",
+    industry: "Education & publishing",
+    url: "https://livingpdfs.pages.dev/",
+    thumbnail: "/portfolio/livingpdfs.jpg",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
