@@ -60,48 +60,53 @@ export function Carousel() {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-5 pb-4 md:px-8">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate md:flex-1">
+      <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
           {hoverHint}
         </p>
-        <div className="hidden items-center gap-2 md:flex">
-          <button
-            type="button"
-            onClick={() => scrollByCard(-1)}
-            aria-label="Previous"
-            className="rounded-full border border-rule bg-bg p-2 text-ink-soft transition hover:border-ink hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollByCard(1)}
-            aria-label="Next"
-            className="rounded-full border border-rule bg-bg p-2 text-ink-soft transition hover:border-ink hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
-        </div>
       </div>
 
-      <ul
-        ref={trackRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pl-0 pr-5 pb-4 md:gap-5 md:pr-8 scrollbar-hide"
-        aria-label="Recent client websites"
-      >
-        {portfolio.map((p) => (
-          <li
-            key={p.slug}
-            className="snap-start shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
-          >
-            <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
-          </li>
-        ))}
-      </ul>
+      <div className="relative">
+        <ul
+          ref={trackRef}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
+          aria-label="Recent client websites"
+        >
+          {portfolio.map((p) => (
+            <li
+              key={p.slug}
+              className="snap-start shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
+            >
+              <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
+            </li>
+          ))}
+        </ul>
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-2 md:pb-3">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-rule bg-bg/95 px-1.5 py-1 shadow-sm backdrop-blur">
+            <button
+              type="button"
+              onClick={() => scrollByCard(-1)}
+              aria-label="Previous"
+              className="rounded-full p-2 text-ink-soft transition hover:bg-rule-soft hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCard(1)}
+              aria-label="Next"
+              className="rounded-full p-2 text-ink-soft transition hover:bg-rule-soft hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <style>{`
         .group:hover .thumb-img--pan { object-position: bottom center !important; }
