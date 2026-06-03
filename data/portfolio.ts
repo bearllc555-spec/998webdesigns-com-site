@@ -1,5 +1,6 @@
 // Portfolio carousel data.
 // Add a client: drop public/portfolio/<slug>.jpg (~1200x900) and set url when the site is live.
+// Video-hero sites (e.g. jetvip-charter): capture a frame after the video loads — see scripts/capture-jetvip-portfolio.mjs or ffmpeg on the hero mp4.
 
 export type PortfolioItem = {
   slug: string;
