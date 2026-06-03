@@ -63,6 +63,14 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/borst-landscape.jpg",
   },
   {
+    slug: "new-empire-corp",
+    name: "New Empire Corp",
+    industry: "Corporate & design",
+    url: "https://dev.nyc-design.pages.dev/",
+    thumbnail: "/portfolio/new-empire-corp.jpg",
+    previewVideo: "/portfolio/new-empire-corp.mp4",
+  },
+  {
     slug: "field-books-cpa",
     name: "Field Books CPA",
     industry: "Professional services",
