@@ -60,6 +60,12 @@ const STEP_LABELS = ["About you", "Your business", "The project", "Add-ons", "Lo
 
 const ADDON_OPTIONS = [
   { id: "addon-chatbot", value: "ai-chatbot", label: "AI Chatbot", pricing: "$299 setup · $79/mo" },
+  {
+    id: "addon-receptionist",
+    value: "ai-receptionist",
+    label: "AI Receptionist",
+    pricing: "$399 setup · $149/mo",
+  },
   { id: "addon-social", value: "social-media", label: "Social Media Management", pricing: "$199 setup · $299/mo" },
   { id: "addon-email-sms", value: "email-sms", label: "Email & SMS", pricing: "$149 setup · $149/mo" },
   { id: "addon-blog", value: "blog-writing", label: "Blog Writing & Local Posts", pricing: "$199 setup · $199/mo" },

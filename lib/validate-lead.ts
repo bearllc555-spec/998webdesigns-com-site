@@ -31,6 +31,7 @@ export type ValidatedLead = {
 const ALLOWED_ADDONS = new Set([
   "growth-pack",
   "ai-chatbot",
+  "ai-receptionist",
   "social-media",
   "email-sms",
   "blog-writing",

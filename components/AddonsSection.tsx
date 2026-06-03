@@ -25,6 +25,19 @@ const ADDONS = [
     ],
   },
   {
+    value: "ai-receptionist",
+    title: "AI Receptionist",
+    setup: "$399",
+    monthly: "$149",
+    bullets: [
+      "Answer your business line 24/7 — nights, weekends, and when you're on a job",
+      "Greet callers by name, capture name, number, and what they need",
+      "Book appointments and route urgent calls to your cell",
+      "Answer FAQs about hours, service area, pricing ranges, and availability",
+      "Every call logged and summarized so you never miss a lead",
+    ],
+  },
+  {
     value: "social-media",
     title: "Social Media Management",
     setup: "$199",
@@ -329,7 +342,8 @@ export function AddonsSection() {
           <p className="mt-4 text-base leading-relaxed text-ink">
             Every build includes options for blog writing & local posts, hyper‑local SEO, Google
             Profile Optimization, review generation, email/SMS follow‑ups, social media management,
-            booking calendar, and an on‑site AI chatbot so you get more calls, more bookings, and
+            booking calendar, an AI receptionist, and an on‑site AI chatbot so you get more calls,
+            more bookings, and
             more repeat clients.
           </p>
         </div>
