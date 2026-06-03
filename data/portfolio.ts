@@ -1,7 +1,7 @@
 // Portfolio carousel data.
-// Static fallback: public/portfolio/<slug>.jpg (~1200px wide).
-// Hover preview clip: public/portfolio/<slug>.mp4 — record via scripts/capture-portfolio-preview.mjs
-// Video-hero stills: scripts/capture-jetvip-portfolio.mjs or ffmpeg on hero mp4.
+// Poster: public/portfolio/<slug>.jpg
+// Hover preview: public/portfolio/<slug>.mp4 — scripts/capture-portfolio-preview.mjs
+//   (splices ~5s from the page hero <video> MP4, then a viewport scroll recording)
 
 export type PortfolioItem = {
   slug: string;
@@ -46,6 +46,7 @@ export const portfolio: PortfolioItem[] = [
     industry: "Private aviation",
     url: "https://jetvipcharter-dev.pages.dev/",
     thumbnail: "/portfolio/jetvip-charter.jpg",
+    previewVideo: "/portfolio/jetvip-charter.mp4",
   },
   {
     slug: "yogacentric",
