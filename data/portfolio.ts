@@ -1,6 +1,7 @@
 // Portfolio carousel data.
-// Add a client: drop public/portfolio/<slug>.jpg (~1200x900) and set url when the site is live.
-// Video-hero sites (e.g. jetvip-charter): capture a frame after the video loads — see scripts/capture-jetvip-portfolio.mjs or ffmpeg on the hero mp4.
+// Static fallback: public/portfolio/<slug>.jpg (~1200px wide).
+// Hover preview clip: public/portfolio/<slug>.mp4 — record via scripts/capture-portfolio-preview.mjs
+// Video-hero stills: scripts/capture-jetvip-portfolio.mjs or ffmpeg on hero mp4.
 
 export type PortfolioItem = {
   slug: string;
@@ -8,7 +9,12 @@ export type PortfolioItem = {
   industry: string;
   /** Live client URL only — do not link to third-party template demos. */
   url?: string;
+  /** Poster / fallback when preview video is absent or reduced-motion. */
   thumbnail: string;
+  /** Muted loop played on card hover (desktop). */
+  previewVideo?: string;
+  /** Optional poster override; defaults to thumbnail. */
+  previewPoster?: string;
 };
 
 export const portfolio: PortfolioItem[] = [
@@ -25,6 +31,7 @@ export const portfolio: PortfolioItem[] = [
     industry: "Excavation & site work",
     url: "https://tuscano-excavating.pages.dev/",
     thumbnail: "/portfolio/tuscano-excavating.jpg",
+    previewVideo: "/portfolio/tuscano-excavating.mp4",
   },
   {
     slug: "livingpdfs",
@@ -89,3 +96,5 @@ export const portfolio: PortfolioItem[] = [
 export const industries = Array.from(
   new Set(portfolio.map((p) => p.industry))
 ).sort();
+
+export const hasPortfolioVideoPreviews = portfolio.some((p) => p.previewVideo);

@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { portfolio, type PortfolioItem } from "@/data/portfolio";
+import {
+  hasPortfolioVideoPreviews,
+  portfolio,
+  type PortfolioItem,
+} from "@/data/portfolio";
 
 const AUTOPLAY_MS = 5000;
-// How long the scroll-reveal animation takes from top -> bottom of the screenshot.
+// Pan duration for static JPEG fallbacks (no previewVideo).
 const HOVER_REVEAL_S = 6;
 
 export function Carousel() {
@@ -22,7 +26,6 @@ export function Carousel() {
     track.scrollBy({ left: step * direction, behavior: "smooth" });
   }, []);
 
-  // Autoplay — pause on hover/focus, respect reduced motion.
   useEffect(() => {
     const prefersReducedMotion =
       typeof window !== "undefined" &&
@@ -45,6 +48,10 @@ export function Carousel() {
     return () => window.clearInterval(id);
   }, [paused, scrollByCard]);
 
+  const hoverHint = hasPortfolioVideoPreviews
+    ? "Hover any thumbnail to preview the site"
+    : "Hover any thumbnail to scroll through the page";
+
   return (
     <div
       className="relative pt-16 pb-14 md:pt-24 md:pb-20"
@@ -55,7 +62,7 @@ export function Carousel() {
     >
       <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate md:flex-1">
-          Hover any thumbnail to scroll through the page
+          {hoverHint}
         </p>
         <div className="hidden items-center gap-2 md:flex">
           <button
@@ -96,15 +103,105 @@ export function Carousel() {
         ))}
       </ul>
 
-      {/* Hover-reveal: on group-hover, slide object-position from top to bottom.
-          Respects prefers-reduced-motion via the global rule in globals.css. */}
       <style>{`
-        .group:hover .thumb-img { object-position: bottom center !important; }
+        .group:hover .thumb-img--pan { object-position: bottom center !important; }
         @media (prefers-reduced-motion: reduce) {
-          .thumb-img { transition: none !important; }
-          .group:hover .thumb-img { object-position: top center !important; }
+          .thumb-img--pan { transition: none !important; }
+          .group:hover .thumb-img--pan { object-position: top center !important; }
         }
       `}</style>
+    </div>
+  );
+}
+
+function PortfolioPreview({
+  item,
+  revealSeconds,
+}: {
+  item: PortfolioItem;
+  revealSeconds: number;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [videoActive, setVideoActive] = useState(false);
+
+  const poster = item.previewPoster ?? item.thumbnail;
+  const useVideo = Boolean(item.previewVideo) && !reduceMotion;
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduceMotion(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const startPreview = () => {
+    if (!useVideo) return;
+    const video = videoRef.current;
+    if (!video) return;
+    setVideoActive(true);
+    video.currentTime = 0;
+    void video.play().catch(() => setVideoActive(false));
+  };
+
+  const stopPreview = () => {
+    if (!useVideo) return;
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+    setVideoActive(false);
+  };
+
+  return (
+    <div
+      className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft"
+      onMouseEnter={startPreview}
+      onMouseLeave={stopPreview}
+      onFocus={startPreview}
+      onBlur={stopPreview}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={poster}
+        alt={`${item.name} — ${item.industry}`}
+        loading="lazy"
+        decoding="async"
+        className={[
+          "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
+          useVideo ? (videoActive ? "opacity-0" : "opacity-100") : "thumb-img--pan",
+        ].join(" ")}
+        style={
+          useVideo
+            ? { objectPosition: "top center" }
+            : {
+                objectPosition: "top center",
+                transition: `object-position ${revealSeconds}s linear`,
+              }
+        }
+      />
+      {useVideo && item.previewVideo ? (
+        <video
+          ref={videoRef}
+          src={item.previewVideo}
+          poster={poster}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className={[
+            "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300",
+            videoActive ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+          aria-hidden
+        />
+      ) : null}
+      {!item.url && (
+        <span className="absolute bottom-3 left-3 z-10 rounded-full bg-bg/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-ink-soft backdrop-blur">
+          Preview coming soon
+        </span>
+      )}
     </div>
   );
 }
@@ -121,25 +218,7 @@ function PortfolioCard({
 
   const inner = (
     <>
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={item.thumbnail}
-          alt={`${item.name} — ${item.industry}`}
-          loading="lazy"
-          decoding="async"
-          className="thumb-img absolute inset-0 h-full w-full object-cover"
-          style={{
-            objectPosition: "top center",
-            transition: `object-position ${revealSeconds}s linear`,
-          }}
-        />
-        {!item.url && (
-          <span className="absolute bottom-3 left-3 rounded-full bg-bg/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-ink-soft backdrop-blur">
-            Preview coming soon
-          </span>
-        )}
-      </div>
+      <PortfolioPreview item={item} revealSeconds={revealSeconds} />
       <div className="flex items-baseline justify-between gap-3 px-4 py-3">
         <span className="truncate font-display text-base font-medium text-ink">
           {item.name}
