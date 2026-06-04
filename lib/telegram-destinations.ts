@@ -1,4 +1,21 @@
+import { loadTelegramConfig, type TelegramConfig } from "@/lib/telegram-config";
+
 /** Comma- or semicolon-separated chat ids in TELEGRAM_CHAT_ID and/or TELEGRAM_CHAT_IDS. */
+export function parseChatIdsFromRaw(raw: string): string[] {
+  const ids: string[] = [];
+  for (const segment of raw.split(/[,;]+/)) {
+    const id = segment.trim();
+    if (id) ids.push(id);
+  }
+  return [...new Set(ids)];
+}
+
+export function parseLabelsFromRaw(raw: string): string[] {
+  if (!raw.trim()) return [];
+  return raw.split(/[,;]+/).map((s) => s.trim()).filter(Boolean);
+}
+
+/** Env-only chat ids (fallback when CRM DB has none). */
 export function getTelegramChatIds(): string[] {
   const rawParts = [
     process.env.TELEGRAM_CHAT_ID,
@@ -7,19 +24,13 @@ export function getTelegramChatIds(): string[] {
 
   const ids: string[] = [];
   for (const raw of rawParts) {
-    for (const segment of raw.split(/[,;]+/)) {
-      const id = segment.trim();
-      if (id) ids.push(id);
-    }
+    ids.push(...parseChatIdsFromRaw(raw));
   }
   return [...new Set(ids)];
 }
 
-/** Optional labels in TELEGRAM_CHAT_LABELS — same order as combined chat id list. */
 export function getTelegramChatLabels(): string[] {
-  const raw = process.env.TELEGRAM_CHAT_LABELS?.trim();
-  if (!raw) return [];
-  return raw.split(/[,;]+/).map((s) => s.trim()).filter(Boolean);
+  return parseLabelsFromRaw(process.env.TELEGRAM_CHAT_LABELS ?? "");
 }
 
 export function getTelegramBotToken(): string | null {
@@ -27,7 +38,8 @@ export function getTelegramBotToken(): string | null {
   return token || null;
 }
 
-export function isTelegramNotifyConfigured(): boolean {
+/** Env-only check (tests). Runtime uses loadTelegramConfig(). */
+export function isTelegramNotifyConfiguredFromEnv(): boolean {
   return Boolean(getTelegramBotToken() && getTelegramChatIds().length > 0);
 }
 
@@ -40,9 +52,9 @@ export type TelegramChatResolved = {
   link: string | null;
 };
 
-type TelegramApiResult<T> = { ok: true; result: T } | { ok: false };
+export type TelegramApiResult<T> = { ok: true; result: T } | { ok: false; error?: string };
 
-async function telegramApi<T>(
+export async function telegramApi<T>(
   token: string,
   method: string,
   params?: Record<string, string>
@@ -53,11 +65,13 @@ async function telegramApi<T>(
   }
   try {
     const res = await fetch(url.toString(), { method: "GET" });
-    const data = (await res.json()) as { ok: boolean; result?: T };
-    if (!data.ok || data.result === undefined) return { ok: false };
+    const data = (await res.json()) as { ok: boolean; result?: T; description?: string };
+    if (!data.ok || data.result === undefined) {
+      return { ok: false, error: data.description };
+    }
     return { ok: true, result: data.result };
-  } catch {
-    return { ok: false };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "request failed" };
   }
 }
 
@@ -77,6 +91,13 @@ type TelegramChat = {
   last_name?: string;
 };
 
+type TelegramUpdate = {
+  update_id: number;
+  message?: { chat: TelegramChat };
+  edited_message?: { chat: TelegramChat };
+  channel_post?: { chat: TelegramChat };
+};
+
 function displayNameFromChat(chat: TelegramChat): string {
   if (chat.title) return chat.title;
   const parts = [chat.first_name, chat.last_name].filter(Boolean);
@@ -90,14 +111,61 @@ function linkFromChat(chat: TelegramChat): string | null {
   return null;
 }
 
-export async function resolveTelegramDestinations(): Promise<{
+export async function verifyTelegramBotToken(
+  token: string
+): Promise<
+  | { ok: true; bot: { username: string | null; displayName: string; link: string | null } }
+  | { ok: false; error: string }
+> {
+  const me = await telegramApi<TelegramUser>(token, "getMe");
+  if (!me.ok) return { ok: false, error: me.error ?? "Invalid bot token" };
+  return {
+    ok: true,
+    bot: {
+      username: me.result.username ?? null,
+      displayName: me.result.first_name,
+      link: me.result.username ? `https://t.me/${me.result.username}` : null,
+    },
+  };
+}
+
+export type TelegramRecentChat = {
+  chatId: string;
+  type: string;
+  displayName: string;
+  username: string | null;
+};
+
+export async function fetchTelegramRecentChats(token: string): Promise<TelegramRecentChat[]> {
+  const updates = await telegramApi<TelegramUpdate[]>(token, "getUpdates", { limit: "50" });
+  if (!updates.ok) return [];
+
+  const byId = new Map<string, TelegramRecentChat>();
+  for (const u of updates.result) {
+    const chat = u.message?.chat ?? u.edited_message?.chat ?? u.channel_post?.chat;
+    if (!chat || chat.type === "private" && chat.id === 0) continue;
+    const chatId = String(chat.id);
+    byId.set(chatId, {
+      chatId,
+      type: chat.type,
+      displayName: displayNameFromChat(chat),
+      username: chat.username ?? null,
+    });
+  }
+  return [...byId.values()];
+}
+
+export async function resolveTelegramDestinations(
+  config?: TelegramConfig
+): Promise<{
   bot: { username: string | null; displayName: string; link: string | null } | null;
   destinations: TelegramChatResolved[];
   configured: boolean;
 }> {
-  const token = getTelegramBotToken();
-  const chatIds = getTelegramChatIds();
-  const labels = getTelegramChatLabels();
+  const cfg = config ?? (await loadTelegramConfig());
+  const token = cfg.botToken;
+  const chatIds = cfg.chatIds;
+  const labels = cfg.labels;
   const configured = Boolean(token && chatIds.length > 0);
 
   if (!token || chatIds.length === 0) {

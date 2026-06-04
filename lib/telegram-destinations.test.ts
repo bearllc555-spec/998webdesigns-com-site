@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   getTelegramChatIds,
   getTelegramChatLabels,
-  isTelegramNotifyConfigured,
+  isTelegramNotifyConfiguredFromEnv,
+  parseChatIdsFromRaw,
 } from "./telegram-destinations";
 
 const env = process.env;
@@ -31,14 +32,20 @@ describe("getTelegramChatLabels", () => {
   });
 });
 
-describe("isTelegramNotifyConfigured", () => {
+describe("parseChatIdsFromRaw", () => {
+  it("parses and dedupes", () => {
+    expect(parseChatIdsFromRaw("1, 2; 1")).toEqual(["1", "2"]);
+  });
+});
+
+describe("isTelegramNotifyConfiguredFromEnv", () => {
   it("requires token and at least one chat id", () => {
     delete process.env.TELEGRAM_BOT_TOKEN;
     delete process.env.TELEGRAM_CHAT_ID;
-    expect(isTelegramNotifyConfigured()).toBe(false);
+    expect(isTelegramNotifyConfiguredFromEnv()).toBe(false);
 
     process.env.TELEGRAM_BOT_TOKEN = "tok";
     process.env.TELEGRAM_CHAT_ID = "1,2";
-    expect(isTelegramNotifyConfigured()).toBe(true);
+    expect(isTelegramNotifyConfiguredFromEnv()).toBe(true);
   });
 });

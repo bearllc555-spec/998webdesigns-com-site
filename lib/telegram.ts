@@ -1,4 +1,4 @@
-import { getTelegramBotToken, getTelegramChatIds } from "@/lib/telegram-destinations";
+import { loadTelegramConfig } from "@/lib/telegram-config";
 
 function escapeHtml(text: string): string {
   return text
@@ -30,16 +30,15 @@ async function sendTelegramHtmlToChat(
 
 /** Fire-and-forget Telegram alert to every configured chat. Never throws to callers. */
 export async function sendTelegramHtml(html: string): Promise<void> {
-  const token = getTelegramBotToken();
-  const chatIds = getTelegramChatIds();
-  if (!token || chatIds.length === 0) {
-    console.warn("[telegram] TELEGRAM_BOT_TOKEN or chat id(s) missing — skip notify");
+  const { botToken, chatIds } = await loadTelegramConfig();
+  if (!botToken || chatIds.length === 0) {
+    console.warn("[telegram] bot token or chat id(s) missing — skip notify");
     return;
   }
 
   try {
     await Promise.allSettled(
-      chatIds.map((chatId) => sendTelegramHtmlToChat(token, chatId, html))
+      chatIds.map((chatId) => sendTelegramHtmlToChat(botToken, chatId, html))
     );
   } catch (err) {
     console.error("[telegram] sendMessage error:", err);

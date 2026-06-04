@@ -53,5 +53,16 @@ create index if not exists contact_submissions_email_idx on public.contact_submi
 
 alter table public.contact_submissions enable row level security;
 
+-- CRM Telegram bot config (singleton; /api/crm/telegram PUT)
+create table if not exists public.crm_telegram_settings (
+  id text primary key default 'default' check (id = 'default'),
+  bot_token text,
+  chat_ids text not null default '',
+  chat_labels text,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.crm_telegram_settings enable row level security;
+
 -- Optional: purge stale rate-limit rows (run via cron or manually)
 -- delete from public.api_rate_limits where window_ends_at < now() - interval '1 day';

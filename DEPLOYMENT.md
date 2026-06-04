@@ -143,15 +143,17 @@ Private mini-CRM at **https://998webdesigns.com/crm** (also works after you add 
 
 | Variable | Purpose |
 |----------|---------|
-| `TELEGRAM_BOT_TOKEN` | From [@BotFather](https://t.me/BotFather) |
-| `TELEGRAM_CHAT_ID` | One or more chat ids, **comma-separated** — each destination gets every alert |
-| `TELEGRAM_CHAT_IDS` | Optional extra chat ids (merged with `TELEGRAM_CHAT_ID`) |
-| `TELEGRAM_CHAT_LABELS` | Optional display names, same order as ids (e.g. `Anthony,Ops group`) |
+| `TELEGRAM_BOT_TOKEN` | Optional fallback — prefer configuring in CRM |
+| `TELEGRAM_CHAT_ID` | Optional fallback (comma-separated chat ids) |
+| `TELEGRAM_CHAT_IDS` | Optional extra env chat ids |
+| `TELEGRAM_CHAT_LABELS` | Optional env labels |
 | `CRM_ADMIN_SECRET` | Sign-in password for `/crm` (optional — falls back to `BALANCE_CAPTURE_SECRET`) |
 
-**Telegram alerts** fire on: lead form submit, checkout link created, paid, ACH pending/failed, hosting renewal fail/cancel, contact form. Each event is sent to **all** configured chat ids in parallel.
+**Telegram (recommended):** configure at **https://998webdesigns.com/crm/telegram** — bot token, chat ids, labels saved to Supabase table `crm_telegram_settings`. Use **Discover recent chats** after messaging your bot, then **Save** and **Send test alert**. Env vars apply only until CRM settings are saved.
 
-**CRM:** https://998webdesigns.com/crm/telegram lists the bot and forward-to destinations (resolved via Telegram API when possible).
+**Schema:** `crm_telegram_settings` is in `supabase/schema.sql` / migration `20260602180000_crm_telegram_settings.sql` — run once on helmet if save returns table missing.
+
+**Telegram alerts** fire on: lead form submit, checkout link created, paid, ACH pending/failed, hosting renewal fail/cancel, contact form. Each event is sent to **all** configured chat ids in parallel.
 
 **Sign in:** https://998webdesigns.com/crm/login — paste the same secret you use for `GET /api/admin/env-status` if `CRM_ADMIN_SECRET` is unset.
 
