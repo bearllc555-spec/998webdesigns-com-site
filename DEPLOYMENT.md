@@ -84,6 +84,12 @@ Stripe Checkout charges:
 
 Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are excluded from the sitemap and blocked in `robots.txt`. Bump `SITEMAP_LAST_MODIFIED` in that file when home or legal pages change materially.
 
+## Supabase (correct project)
+
+Production must use project **`jxthwtflrzudepxysgje`** (`NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from `slatepress/.local/supabase-*.txt`). Do not use a stray Vercel-linked `xyfhj...` project.
+
+Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or ask Cursor to fix Supabase on Vercel.
+
 ## Supabase tables
 
 Run **`supabase/schema.sql`** once in the Supabase SQL editor if not already applied:
