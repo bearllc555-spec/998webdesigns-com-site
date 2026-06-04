@@ -37,33 +37,38 @@ type TelegramStatus = {
   setupHint: string | null;
 };
 
-function mergeChatId(current: string, chatId: string): string {
-  const parts = current
-    .split(/[,;]+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (parts.includes(chatId)) return current;
-  return parts.length ? `${current}, ${chatId}` : chatId;
+type PendingDelete = {
+  chatId: string;
+  label: string;
+  step: 1 | 2;
+};
+
+function cardTitle(d: TelegramDestination): string {
+  return d.label?.trim() || d.displayName;
 }
 
 export function CrmTelegramPanel() {
   const [status, setStatus] = useState<TelegramStatus | null>(null);
+  const [adminOpen, setAdminOpen] = useState(false);
   const [botToken, setBotToken] = useState("");
-  const [chatIds, setChatIds] = useState("");
-  const [chatLabels, setChatLabels] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [newChatId, setNewChatId] = useState("");
   const [recentChats, setRecentChats] = useState<TelegramRecentChat[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [discovering, setDiscovering] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const applyStatus = useCallback((data: TelegramStatus) => {
     setStatus(data);
-    setChatIds(data.settings.chatIds);
-    setChatLabels(data.settings.chatLabels);
     setBotToken("");
+    setNewLabel("");
+    setNewChatId("");
+    setRecentChats([]);
   }, []);
 
   const load = useCallback(async () => {
@@ -89,15 +94,27 @@ export function CrmTelegramPanel() {
     load();
   }, [load]);
 
-  async function saveSettings(e: React.FormEvent) {
+  async function saveNewRecipient(e: React.FormEvent) {
     e.preventDefault();
+    const chatId = newChatId.trim();
+    if (!chatId) {
+      setError("Chat ID is required.");
+      return;
+    }
+    if (!status?.settings.hasStoredToken && !botToken.trim()) {
+      setError("Bot token is required before adding the first recipient.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setMessage(null);
     try {
-      const payload: { chatIds: string; chatLabels: string; botToken?: string } = {
-        chatIds,
-        chatLabels,
+      const payload: {
+        addRecipient: { chatId: string; label?: string };
+        botToken?: string;
+      } = {
+        addRecipient: { chatId, label: newLabel.trim() || undefined },
       };
       if (botToken.trim()) payload.botToken = botToken.trim();
 
@@ -113,13 +130,14 @@ export function CrmTelegramPanel() {
         return;
       }
       if (!res.ok) {
-        setError(data.error ?? "Could not save settings.");
+        setError(data.error ?? "Could not save.");
         return;
       }
       applyStatus(data as TelegramStatus);
-      setMessage("Settings saved. Alerts will use this configuration.");
+      setAdminOpen(false);
+      setMessage("Recipient saved.");
     } catch {
-      setError("Could not save settings.");
+      setError("Could not save.");
     } finally {
       setSaving(false);
     }
@@ -128,7 +146,6 @@ export function CrmTelegramPanel() {
   async function discoverChats() {
     setDiscovering(true);
     setError(null);
-    setMessage(null);
     try {
       const res = await fetch("/api/crm/telegram/discover", {
         method: "POST",
@@ -144,9 +161,6 @@ export function CrmTelegramPanel() {
       }
       setRecentChats(data.recentChats ?? []);
       if (data.hint) setMessage(data.hint);
-      else if ((data.recentChats?.length ?? 0) > 0) {
-        setMessage(`Found ${data.recentChats.length} chat(s). Click Add to include them.`);
-      }
     } catch {
       setError("Could not discover chats.");
     } finally {
@@ -168,11 +182,44 @@ export function CrmTelegramPanel() {
         setError(data.error ?? "Test failed.");
         return;
       }
-      setMessage(`Test sent to ${data.sentTo} destination(s). Check Telegram.`);
+      setMessage(`Test sent to ${data.sentTo} destination(s).`);
     } catch {
       setError("Could not send test.");
     } finally {
       setTesting(false);
+    }
+  }
+
+  async function confirmDeleteRecipient() {
+    if (!pendingDelete) return;
+    if (pendingDelete.step === 1) {
+      setPendingDelete({ ...pendingDelete, step: 2 });
+      return;
+    }
+
+    setDeleting(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/crm/telegram/recipients/${encodeURIComponent(pendingDelete.chatId)}`,
+        { method: "DELETE", credentials: "include" }
+      );
+      const data = await res.json();
+      if (res.status === 401) {
+        window.location.href = "/crm/login";
+        return;
+      }
+      if (!res.ok) {
+        setError(data.error ?? "Delete failed.");
+        return;
+      }
+      applyStatus(data as TelegramStatus);
+      setPendingDelete(null);
+      setMessage("Recipient removed.");
+    } catch {
+      setError("Could not delete recipient.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -184,17 +231,33 @@ export function CrmTelegramPanel() {
         title="Telegram"
         subtitle={
           status?.configured
-            ? `Alerts forward to ${destCount} destination${destCount === 1 ? "" : "s"} simultaneously`
-            : "Configure your bot below"
+            ? `${destCount} recipient${destCount === 1 ? "" : "s"} receive every alert`
+            : "Add recipients in Admin"
         }
         actions={
-          <button
-            type="button"
-            onClick={load}
-            className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
-          >
-            Refresh
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setPendingDelete(null);
+                setAdminOpen((o) => !o);
+              }}
+              className={`rounded-full px-4 py-2 text-sm font-medium ${
+                adminOpen
+                  ? "bg-accent text-white"
+                  : "border border-rule hover:border-accent/50"
+              }`}
+            >
+              Admin
+            </button>
+            <button
+              type="button"
+              onClick={load}
+              className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
+            >
+              Refresh
+            </button>
+          </>
         }
       />
 
@@ -213,177 +276,238 @@ export function CrmTelegramPanel() {
 
         {!loading && status && (
           <div className="space-y-6">
-            <section className="rounded-2xl border border-accent/30 bg-bg p-5 shadow-sm">
-              <h2 className="font-display text-lg font-medium">Configure bot</h2>
-              <p className="mt-2 text-sm text-ink-soft">
-                Saved in Supabase (CRM settings). Vercel env vars are only used until you save
-                here.
-              </p>
-              {status.settings.storedInDatabase && status.settings.updatedAt && (
-                <p className="mt-2 text-xs text-ink-soft">
-                  Last saved{" "}
-                  {new Date(status.settings.updatedAt).toLocaleString("en-US", {
-                    timeZone: "America/New_York",
-                  })}{" "}
-                  ET · source: {status.settings.source}
-                </p>
-              )}
-
-              <form onSubmit={saveSettings} className="mt-5 grid gap-4">
-                <label className="block text-sm font-medium">
-                  Bot token
-                  <input
-                    type="password"
-                    autoComplete="off"
-                    value={botToken}
-                    onChange={(e) => setBotToken(e.target.value)}
-                    placeholder={
-                      status.settings.hasStoredToken
-                        ? `Saved ${status.settings.botTokenMasked ?? ""} — paste to replace`
-                        : "Paste token from @BotFather"
-                    }
-                    className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
-                  />
-                </label>
-
-                <label className="block text-sm font-medium">
-                  Chat IDs (comma-separated)
-                  <textarea
-                    value={chatIds}
-                    onChange={(e) => setChatIds(e.target.value)}
-                    rows={3}
-                    placeholder="123456789, -1009876543210"
-                    className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 font-mono text-sm"
-                  />
-                </label>
-
-                <label className="block text-sm font-medium">
-                  Labels (optional, same order)
-                  <input
-                    type="text"
-                    value={chatLabels}
-                    onChange={(e) => setChatLabels(e.target.value)}
-                    placeholder="Anthony, Ops group"
-                    className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
-                  />
-                </label>
-
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white disabled:opacity-60"
-                  >
-                    {saving ? "Saving…" : "Save settings"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={discovering}
-                    onClick={discoverChats}
-                    className="rounded-full border border-rule px-5 py-2 text-sm font-medium hover:border-accent/50 disabled:opacity-60"
-                  >
-                    {discovering ? "Discovering…" : "Discover recent chats"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={testing || !status.configured}
-                    onClick={sendTest}
-                    className="rounded-full border border-rule px-5 py-2 text-sm font-medium hover:border-accent/50 disabled:opacity-60"
-                  >
-                    {testing ? "Sending…" : "Send test alert"}
-                  </button>
-                </div>
-              </form>
-
-              {recentChats.length > 0 && (
-                <ul className="mt-4 space-y-2 border-t border-rule pt-4">
-                  {recentChats.map((c) => (
-                    <li
-                      key={c.chatId}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rule px-3 py-2 text-sm"
-                    >
-                      <span>
-                        {c.displayName}
-                        <span className="ml-2 font-mono text-xs text-ink-soft">{c.chatId}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setChatIds((prev) => mergeChatId(prev, c.chatId))}
-                        className="rounded-full border border-rule px-3 py-1 text-xs font-medium hover:border-accent/50"
-                      >
-                        Add
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <p className="mt-4 text-xs text-ink-soft">
-                1. Create a bot with{" "}
+            {status.bot && (
+              <p className="text-sm text-ink-soft">
+                Bot:{" "}
                 <a
-                  href="https://t.me/BotFather"
+                  href={status.bot.link ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline"
+                  className="font-medium text-accent hover:underline"
                 >
-                  @BotFather
+                  @{status.bot.username ?? status.bot.displayName}
                 </a>
-                . 2. Message your bot (Start). 3. Discover chats or paste chat ids. 4. Save, then
-                send a test.
+                {status.settings.hasStoredToken && status.settings.botTokenMasked && (
+                  <span className="ml-2 text-xs">· token {status.settings.botTokenMasked}</span>
+                )}
               </p>
-            </section>
+            )}
 
-            <section className="rounded-2xl border border-rule bg-bg p-5 shadow-sm">
-              <h2 className="font-display text-lg font-medium">Bot</h2>
-              {status.bot ? (
-                <p className="mt-3 text-sm">
-                  <a
-                    href={status.bot.link ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-accent hover:underline"
-                  >
-                    @{status.bot.username ?? status.bot.displayName}
-                  </a>
+            {adminOpen && (
+              <section className="rounded-2xl border border-accent/40 bg-bg p-5 shadow-md">
+                <h2 className="font-display text-lg font-medium">Admin configuration</h2>
+                <p className="mt-2 text-sm text-ink-soft">
+                  Add a recipient, then Save. This panel closes automatically.
                 </p>
-              ) : (
-                <p className="mt-3 text-sm text-warn">Save a valid bot token to connect.</p>
-              )}
-            </section>
 
-            <section className="rounded-2xl border border-rule bg-bg p-5 shadow-sm">
-              <h2 className="font-display text-lg font-medium">Forward to</h2>
-              {!status.configured && status.setupHint && (
-                <p className="mt-3 text-sm text-ink-soft">{status.setupHint}</p>
-              )}
-              <ul className="mt-4 space-y-3">
-                {status.destinations.map((d) => (
-                  <li key={d.chatId} className="rounded-xl border border-rule px-4 py-3">
-                    <p className="font-medium">
-                      {d.label ? (
-                        <>
-                          {d.label}
-                          <span className="ml-2 font-normal text-ink-soft">({d.displayName})</span>
-                        </>
-                      ) : (
-                        d.displayName
-                      )}
-                    </p>
-                    <p className="mt-1 break-all text-xs text-ink-soft">Chat ID: {d.chatId}</p>
-                    {d.link && (
-                      <a
-                        href={d.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-block text-sm text-accent hover:underline"
+                <form onSubmit={saveNewRecipient} className="mt-5 grid gap-4">
+                  <label className="block text-sm font-medium">
+                    Bot token
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      value={botToken}
+                      onChange={(e) => setBotToken(e.target.value)}
+                      placeholder={
+                        status.settings.hasStoredToken
+                          ? `Saved ${status.settings.botTokenMasked ?? ""} — paste only to replace`
+                          : "Paste token from @BotFather"
+                      }
+                      className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium">
+                    Name (label)
+                    <input
+                      type="text"
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                      placeholder="Anthony"
+                      className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium">
+                    Chat ID
+                    <input
+                      type="text"
+                      value={newChatId}
+                      onChange={(e) => setNewChatId(e.target.value)}
+                      placeholder="123456789"
+                      required
+                      className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 font-mono text-sm"
+                    />
+                  </label>
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white disabled:opacity-60"
+                    >
+                      {saving ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={discovering}
+                      onClick={discoverChats}
+                      className="rounded-full border border-rule px-5 py-2 text-sm font-medium hover:border-accent/50 disabled:opacity-60"
+                    >
+                      {discovering ? "Discovering…" : "Discover chats"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAdminOpen(false)}
+                      className="rounded-full border border-rule px-5 py-2 text-sm hover:border-accent/50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+
+                {recentChats.length > 0 && (
+                  <ul className="mt-4 space-y-2 border-t border-rule pt-4">
+                    {recentChats.map((c) => (
+                      <li
+                        key={c.chatId}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rule px-3 py-2 text-sm"
                       >
-                        Open in Telegram
-                      </a>
+                        <span>
+                          {c.displayName}
+                          <span className="ml-2 font-mono text-xs text-ink-soft">{c.chatId}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewChatId(c.chatId);
+                            if (!newLabel.trim()) setNewLabel(c.displayName);
+                          }}
+                          className="rounded-full border border-rule px-3 py-1 text-xs font-medium hover:border-accent/50"
+                        >
+                          Use
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-lg font-medium">Recipients</h2>
+              <button
+                type="button"
+                disabled={testing || !status.configured}
+                onClick={sendTest}
+                className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50 disabled:opacity-60"
+              >
+                {testing ? "Sending…" : "Send test alert"}
+              </button>
+            </div>
+
+            {!status.configured && status.setupHint && (
+              <p className="text-sm text-ink-soft">{status.setupHint}</p>
+            )}
+
+            {destCount === 0 && (
+              <p className="text-sm text-ink-soft">No recipients yet. Click Admin to add one.</p>
+            )}
+
+            <ul className="grid gap-4 sm:grid-cols-1">
+              {status.destinations.map((d) => {
+                const isDeleting =
+                  pendingDelete?.chatId === d.chatId;
+                const title = cardTitle(d);
+
+                return (
+                  <li
+                    key={d.chatId}
+                    className="rounded-2xl border border-rule bg-bg p-5 shadow-sm"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium uppercase tracking-wider text-slate">
+                          {d.type ?? "recipient"}
+                        </p>
+                        <p className="mt-1 font-display text-xl font-medium text-ink">{title}</p>
+                        {d.label && d.displayName !== d.label && (
+                          <p className="mt-1 text-sm text-ink-soft">Telegram: {d.displayName}</p>
+                        )}
+                        {d.username && (
+                          <p className="mt-1 text-sm text-ink-soft">@{d.username}</p>
+                        )}
+                        <p className="mt-2 break-all font-mono text-xs text-ink-soft">
+                          Chat ID: {d.chatId}
+                        </p>
+                        {d.link && (
+                          <a
+                            href={d.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block text-sm text-accent hover:underline"
+                          >
+                            Open in Telegram
+                          </a>
+                        )}
+                      </div>
+                      {!isDeleting && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPendingDelete({
+                              chatId: d.chatId,
+                              label: title,
+                              step: 1,
+                            })
+                          }
+                          className="shrink-0 rounded-full border border-warn/40 px-3 py-1 text-xs font-medium text-warn hover:bg-warn-soft/40"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+
+                    {isDeleting && pendingDelete && (
+                      <div className="mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4">
+                        {pendingDelete.step === 1 ? (
+                          <p className="text-sm font-medium text-ink">
+                            Remove <span className="text-ink">{pendingDelete.label}</span> from
+                            alerts?
+                          </p>
+                        ) : (
+                          <p className="text-sm font-medium text-warn">
+                            Final confirmation — remove {pendingDelete.label} permanently?
+                          </p>
+                        )}
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={deleting}
+                            onClick={confirmDeleteRecipient}
+                            className="rounded-full bg-warn px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                          >
+                            {deleting
+                              ? "Removing…"
+                              : pendingDelete.step === 1
+                                ? "Continue"
+                                : "Delete permanently"}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={deleting}
+                            onClick={() => setPendingDelete(null)}
+                            className="rounded-full border border-rule px-4 py-2 text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </li>
-                ))}
-              </ul>
-            </section>
+                );
+              })}
+            </ul>
           </div>
         )}
       </main>

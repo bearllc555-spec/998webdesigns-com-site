@@ -10,6 +10,13 @@ import {
   parseChatIdsFromRaw,
   parseLabelsFromRaw,
 } from "@/lib/telegram-destinations";
+import {
+  appendRecipient,
+  recipientsFromParallel,
+  removeRecipient,
+  serializeRecipients,
+  type TelegramRecipient,
+} from "@/lib/telegram-recipients";
 
 export type TelegramConfigSource = "database" | "environment" | "none";
 
@@ -67,15 +74,18 @@ export async function loadTelegramConfig(): Promise<TelegramConfig> {
   };
 }
 
-export async function saveTelegramConfigFromCrm(input: {
+export function configToRecipients(config: TelegramConfig): TelegramRecipient[] {
+  return recipientsFromParallel(config.chatIds, config.labels);
+}
+
+export async function persistTelegramRecipients(input: {
   botToken?: string;
-  chatIds: string;
-  chatLabels?: string;
+  recipients: TelegramRecipient[];
+  requireAtLeastOne?: boolean;
 }): Promise<SaveCrmTelegramSettingsResult & { config?: TelegramConfig }> {
   const existing = await loadTelegramConfig();
-  const chatIds = parseChatIdsFromRaw(input.chatIds);
-  if (chatIds.length === 0) {
-    return { ok: false, reason: "save_failed", detail: "At least one chat id is required" };
+  if (input.requireAtLeastOne && input.recipients.length === 0) {
+    return { ok: false, reason: "save_failed", detail: "At least one recipient is required" };
   }
 
   const nextToken = input.botToken?.trim()
@@ -86,14 +96,55 @@ export async function saveTelegramConfigFromCrm(input: {
     return { ok: false, reason: "save_failed", detail: "Bot token is required" };
   }
 
-  const labelsRaw = input.chatLabels?.trim() ?? "";
+  const { chatIds, chatLabels } = serializeRecipients(input.recipients);
   const saveResult = await saveCrmTelegramSettingsToDb({
     botToken: nextToken,
-    chatIds: formatChatIdsForInput(chatIds),
-    chatLabels: labelsRaw || null,
+    chatIds,
+    chatLabels: chatLabels || null,
   });
 
   if (!saveResult.ok) return saveResult;
 
   return { ok: true, config: await loadTelegramConfig() };
 }
+
+export async function saveTelegramConfigFromCrm(input: {
+  botToken?: string;
+  chatIds: string;
+  chatLabels?: string;
+}): Promise<SaveCrmTelegramSettingsResult & { config?: TelegramConfig }> {
+  const chatIds = parseChatIdsFromRaw(input.chatIds);
+  const labels = parseLabelsFromRaw(input.chatLabels ?? "");
+  return persistTelegramRecipients({
+    botToken: input.botToken,
+    recipients: recipientsFromParallel(chatIds, labels),
+    requireAtLeastOne: true,
+  });
+}
+
+export async function addTelegramRecipientFromCrm(input: {
+  botToken?: string;
+  chatId: string;
+  label?: string;
+}): Promise<SaveCrmTelegramSettingsResult & { config?: TelegramConfig }> {
+  const existing = await loadTelegramConfig();
+  const recipients = configToRecipients(existing);
+  const merged = appendRecipient(recipients, input.chatId, input.label);
+  return persistTelegramRecipients({
+    botToken: input.botToken,
+    recipients: merged,
+    requireAtLeastOne: true,
+  });
+}
+
+export async function removeTelegramRecipientFromCrm(
+  chatId: string
+): Promise<SaveCrmTelegramSettingsResult & { config?: TelegramConfig }> {
+  const existing = await loadTelegramConfig();
+  const recipients = removeRecipient(configToRecipients(existing), chatId);
+  return persistTelegramRecipients({
+    recipients,
+    requireAtLeastOne: false,
+  });
+}
+
