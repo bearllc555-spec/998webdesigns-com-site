@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CRM_VERSION } from "@/lib/crm-version";
 
 type CrmHeaderProps = {
   title: string;
@@ -25,6 +26,14 @@ export function CrmHeader({ title, subtitle, actions }: CrmHeaderProps) {
   return (
     <header className="shrink-0 border-b border-rule bg-bg">
       <div className="mx-auto max-w-4xl px-5 py-4 md:px-8">
+        <p className="mb-3 flex items-center gap-2">
+          <span
+            className="rounded-full bg-rule-soft px-2 py-0.5 text-[10px] font-medium tracking-wider text-slate"
+            aria-label={`CRM version ${CRM_VERSION}`}
+          >
+            {CRM_VERSION}
+          </span>
+        </p>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
