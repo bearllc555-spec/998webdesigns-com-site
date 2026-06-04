@@ -125,8 +125,12 @@ function InboxRow({
   return (
     <li className={expanded ? "bg-accent/[0.04]" : undefined}>
       <div
-        className={`flex w-full items-stretch ${
-          expanded ? "bg-accent/[0.08]" : ""
+        className={`flex w-full items-stretch transition ${
+          expanded
+            ? "bg-accent/[0.08]"
+            : unread
+              ? "dark:bg-zinc-700/50 dark:hover:bg-zinc-600/45"
+              : "dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
         }`}
       >
       <button
@@ -135,10 +139,10 @@ function InboxRow({
         aria-expanded={expanded}
         className={`flex min-w-0 flex-1 gap-3 px-4 py-3.5 text-left transition ${
           expanded
-            ? "bg-accent/[0.08]"
+            ? "bg-accent/[0.08] dark:bg-transparent"
             : unread
-              ? "bg-bg hover:bg-rule-soft/80 dark:bg-rule-soft/35 dark:hover:bg-rule-soft/50"
-              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-rule-soft/15 dark:hover:bg-rule-soft/25"
+              ? "bg-bg hover:bg-rule-soft/80 dark:bg-transparent dark:hover:bg-transparent"
+              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-transparent dark:hover:bg-transparent"
         }`}
       >
         <span
