@@ -50,7 +50,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
 | Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` |
-| Supabase | https://supabase.com/dashboard/project/jxthwtflrzudepxysgje |
+| Supabase | **supabase-998webdesigns-helmet** (Vercel org bearllc555-6551's projects) |
 
 ---
 
@@ -115,7 +115,7 @@ Set the same keys in Vercel → Project Settings → Environment Variables.
 
 ## Supabase schema
 
-Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run in Supabase SQL editor for project `jxthwtflrzudepxysgje`. Service-role API routes bypass RLS.
+Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run once in **helmet** SQL editor. Service-role API routes bypass RLS.
 
 ---
 

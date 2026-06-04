@@ -86,7 +86,7 @@ Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are exc
 
 ## Supabase (correct project)
 
-Production must use project **`jxthwtflrzudepxysgje`** (`NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from `slatepress/.local/supabase-*.txt`). Do not use a stray Vercel-linked `xyfhj...` project.
+Production must use **`supabase-998webdesigns-helmet`** (org **bearllc555-6551's projects**). Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` from that project's API settings. Helper: `slatepress/GO-FIX-SUPABASE-998-HELMET.ps1` (reads `.local/supabase-helmet-*.txt`, `supabase-project-*.txt`, or `supabase-998-helmet-notes.txt`). Do not use deleted `jxth...` or stale `xyfhj...` integration leftovers.
 
 Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or ask Cursor to fix Supabase on Vercel.
 
