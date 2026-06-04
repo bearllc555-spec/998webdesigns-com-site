@@ -1,4 +1,4 @@
--- Run once in Supabase SQL editor (project jxthwtflrzudepxysgje).
+-- Run once on helmet (xwldbxburzqryxlzocck): SQL editor or scripts/apply-helmet-schema.mjs
 -- Service-role API routes bypass RLS; anon/authenticated have no policies (denied).
 
 -- Lead intake from /api/leads
