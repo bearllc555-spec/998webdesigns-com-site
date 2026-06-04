@@ -12,4 +12,4 @@ export const INDEXABLE_ROUTES = [
 ];
 
 /** Paths crawlers should not fetch (keep in sync with sitemap). */
-export const ROBOTS_DISALLOW = ["/thanks", "/api/"];
+export const ROBOTS_DISALLOW = ["/thanks", "/api/", "/crm"];

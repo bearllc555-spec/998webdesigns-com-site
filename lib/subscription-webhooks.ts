@@ -1,6 +1,10 @@
 import type Stripe from "stripe";
 import { updateLatestWdLeadBySubscriptionId } from "@/lib/leads-db";
 import {
+  notifyHostingCanceled,
+  notifyHostingRenewalFailed,
+} from "@/lib/crm-notify-stripe";
+import {
   sendInternalHostingCanceledEmail,
   sendInternalHostingRenewalFailedEmail,
 } from "@/lib/internal-lead-email";
@@ -32,6 +36,7 @@ export async function handleInvoicePaymentFailed(
     status: "hosting_payment_failed",
   });
   await sendInternalHostingRenewalFailedEmail(invoice, subscriptionId);
+  notifyHostingRenewalFailed(invoice, subscriptionId);
 }
 
 /** Client canceled month-to-month hosting in Stripe. */
@@ -43,4 +48,5 @@ export async function handleSubscriptionDeleted(
     stripe_subscription_id: null,
   });
   await sendInternalHostingCanceledEmail(subscription);
+  notifyHostingCanceled(subscription);
 }

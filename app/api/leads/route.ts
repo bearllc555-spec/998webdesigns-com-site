@@ -8,6 +8,7 @@ import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { insertWdLead } from "@/lib/leads-db";
 import { sendInternalLeadSubmittedEmail } from "@/lib/internal-lead-email";
+import { notifyCrmActivity } from "@/lib/crm-notify";
 import { syncWdLeadCheckoutCreated } from "@/lib/wd-leads-sync";
 
 export const runtime = "nodejs";
@@ -62,6 +63,16 @@ export async function POST(req: NextRequest) {
       `[leads] wd_leads persist skipped (${dbResult.reason}) for ${lead.email} / ${lead.businessName}:`,
       dbResult.detail
     );
+  } else {
+    void notifyCrmActivity({
+      kind: "lead_submitted",
+      businessName: lead.businessName,
+      fullName: lead.fullName,
+      email: lead.email,
+      status: "new",
+      hostingChoice: lead.hostingChoice,
+      paymentChannel: lead.paymentChannel,
+    });
   }
 
   // Create Stripe Checkout session
@@ -87,6 +98,18 @@ export async function POST(req: NextRequest) {
     await sendLeadCheckoutEmail(lead, session.url);
     await syncWdLeadCheckoutCreated(dbResult.ok ? dbResult.id : undefined, session);
     await sendInternalLeadSubmittedEmail(lead, session.url, session.id);
+
+    void notifyCrmActivity({
+      kind: "lead_checkout",
+      businessName: lead.businessName,
+      fullName: lead.fullName,
+      email: lead.email,
+      status: "awaiting_payment",
+      hostingChoice: lead.hostingChoice,
+      paymentChannel: lead.paymentChannel,
+      checkoutUrl: session.url,
+      stripeSessionId: session.id,
+    });
 
     return NextResponse.json({ ok: true, checkoutUrl: session.url });
   } catch (err) {

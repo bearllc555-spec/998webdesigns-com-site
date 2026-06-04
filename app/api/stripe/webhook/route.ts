@@ -6,6 +6,11 @@ import {
 } from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import {
+  notifyLeadAchFailed,
+  notifyLeadAchPending,
+  notifyLeadPaid,
+} from "@/lib/crm-notify-stripe";
+import {
   handleInvoicePaymentFailed,
   handleSubscriptionDeleted,
 } from "@/lib/subscription-webhooks";
@@ -30,6 +35,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   if (session.payment_status === "paid") {
     await syncWdLeadPaidInFull(session);
     await sendInternalPaymentEmail(session);
+    notifyLeadPaid(session);
     return;
   }
 
@@ -40,6 +46,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     session.status === "complete"
   ) {
     await syncWdLeadAwaitingBankSettlement(session);
+    notifyLeadAchPending(session);
     return;
   }
 
@@ -51,6 +58,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
   await syncWdLeadPaidInFull(session);
   await sendInternalPaymentEmail(session, { settledAfterAch: true });
+  notifyLeadPaid(session);
 }
 
 export async function POST(req: NextRequest) {
@@ -88,6 +96,7 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       await syncWdLeadBankPaymentFailed(session);
       await sendInternalAchFailedEmail(session);
+      notifyLeadAchFailed(session);
     } else if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object as Stripe.Invoice;
       await handleInvoicePaymentFailed(invoice);

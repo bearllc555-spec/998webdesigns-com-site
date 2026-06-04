@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { insertContactSubmission } from "@/lib/contact-db";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { notifyCrmActivity } from "@/lib/crm-notify";
 import { isValidEmail } from "@/lib/validate-email";
 
 export const runtime = "nodejs";
@@ -104,6 +105,14 @@ export async function POST(req: NextRequest) {
       console.error("[contact] Resend error:", error);
       return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
     }
+
+    void notifyCrmActivity({
+      kind: "contact",
+      fullName: name,
+      email,
+      businessName: businessName || undefined,
+      message,
+    });
 
     return NextResponse.json({ ok: true, saved: dbResult.ok });
   } catch (err) {

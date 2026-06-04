@@ -19,6 +19,7 @@ export type WdLeadPatch = {
   stripe_balance_invoice_id?: string | null;
   /** Month-to-month hosting subscription id (when applicable). */
   stripe_subscription_id?: string | null;
+  notes?: string | null;
 };
 
 export type WdLeadInsertResult =
