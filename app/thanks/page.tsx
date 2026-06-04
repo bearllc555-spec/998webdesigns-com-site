@@ -128,8 +128,10 @@ export default async function Thanks({
               <span className="text-success">Paid in full — you&apos;re all set</span>
             </p>
             <p className="mt-2 text-sm text-ink-soft">
-              No follow-up invoices for the design fee. Hosting, if selected separately, follows the
-              option you chose at checkout.
+              No follow-up invoices for the design fee. If you added ten-year hosting, it was
+              included in this payment. If you chose month-to-month hosting, your first month was
+              charged in this Checkout and renews at $198/month until you cancel. If you chose
+              hosting later, we will set that up with you separately.
             </p>
           </div>
 

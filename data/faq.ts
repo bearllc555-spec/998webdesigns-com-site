@@ -7,7 +7,11 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Do I have to pay the full $1,998 upfront?",
-    a: "Yes — we collect full payment before your project enters the queue. Pay by bank (ACH) at list price or by card with a 3% processing fee on your checkout total (design plus ten-year hosting if you select it). There's no deposit-then-balance structure. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
+    a: "Yes — we collect full payment before your project enters the queue. Checkout defaults to card; you can switch to bank transfer for list price with no 3% processing fee on the design fee (and on ten-year hosting if you add it). That 3% fee does not apply to the $198/month hosting line. Month-to-month hosting, if you select it, is charged in the same Checkout — first month due there, then $198/month renews automatically until you cancel. Ten-year hosting ($1,349) is a one-time add-on in Checkout when you choose it. There's no deposit-then-balance structure. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
+  },
+  {
+    q: "Can I pay by card or bank?",
+    a: "Checkout defaults to credit or debit card. Before you pay, you can switch to bank transfer (ACH) if you want list price with no 3% processing fee on the design fee and on ten-year hosting if selected. The 3% card fee never applies to month-to-month hosting. Bank payments may take a few business days to settle; the design clock starts when Stripe confirms cleared funds.",
   },
   {
     q: "What happens if I go quiet during the design process?",

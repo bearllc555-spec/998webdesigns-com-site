@@ -101,11 +101,13 @@ export function TermsContent() {
               5. Payments
             </h2>
             <p className="text-ink-soft">
-              Payments are processed by Stripe. You may pay by U.S. bank account (ACH) at the list
-              prices shown on our site, or by credit or debit card with a 3% processing fee on your
-              checkout subtotal (design fee plus ten-year hosting if selected at checkout).
-              Month-to-month hosting is billed separately after launch and is not part of that
-              checkout subtotal. We do not store full card or bank account numbers on our servers.
+              Payments are processed by Stripe. Checkout defaults to credit or debit card. You may
+              pay by U.S. bank account (ACH) at list price instead. Card payments include a 3%
+              processing fee on the design fee and on ten-year hosting if selected at checkout; that
+              fee does not apply to month-to-month hosting. If you select month-to-month hosting
+              ($198/month), it is charged in the same Checkout session — first month due at checkout,
+              then recurring monthly through Stripe until you cancel. We do not store full card or
+              bank account numbers on our servers.
               We do not collect sales tax at checkout unless we state otherwise in writing for your
               jurisdiction. Bank payments may take several business days to settle; work on your
               design begins when Stripe confirms cleared funds. Refunds are handled case by case.
