@@ -151,7 +151,14 @@ Private mini-CRM at **https://998webdesigns.com/crm** (also works after you add 
 
 **Telegram (recommended):** configure at **https://998webdesigns.com/crm/telegram** — bot token, chat ids, labels saved to Supabase table `crm_telegram_settings`. Use **Discover recent chats** after messaging your bot, then **Save** and **Send test alert**. Env vars apply only until CRM settings are saved.
 
-**Schema:** `crm_telegram_settings` is in `supabase/schema.sql` / migration `20260602180000_crm_telegram_settings.sql` — run once on helmet if save returns table missing.
+**Schema:** `crm_telegram_settings` is in `supabase/schema.sql` / migration `20260602180000_crm_telegram_settings.sql`. One-time apply on production:
+
+```bash
+curl -X POST https://998webdesigns.com/api/admin/migrate-crm-telegram \
+  -H "Authorization: Bearer YOUR_BALANCE_CAPTURE_SECRET"
+```
+
+Returns `{"ok":true,"via":"..."}` when the table exists. Also runnable via `node scripts/apply-crm-telegram-from-env.mjs .env.vercel.prod` if local Postgres creds work.
 
 **Telegram alerts** fire on: lead form submit, checkout link created, paid, ACH pending/failed, hosting renewal fail/cancel, contact form. Each event is sent to **all** configured chat ids in parallel.
 

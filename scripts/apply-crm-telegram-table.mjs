@@ -1,7 +1,5 @@
 /**
- * Apply supabase/schema.sql to helmet (xwldbxburzqryxlzocck).
- * Needs DB password in slatepress/.local/supabase-helmet-db-password.txt
- * or DATABASE_URL / SUPABASE_DB_URL in env (full postgres URI).
+ * Apply only crm_telegram_settings migration to helmet.
  */
 import fs from "fs";
 import path from "path";
@@ -12,7 +10,12 @@ const REF = "xwldbxburzqryxlzocck";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const workspaceLocal = path.resolve(repoRoot, "..", "..", ".local");
-const schemaPath = path.join(repoRoot, "supabase", "schema.sql");
+const migrationPath = path.join(
+  repoRoot,
+  "supabase",
+  "migrations",
+  "20260602180000_crm_telegram_settings.sql"
+);
 
 function readPasswordFile() {
   const candidates = [
@@ -33,7 +36,6 @@ function readPasswordFile() {
   return null;
 }
 
-/** Helmet (Vercel org) resolves on aws-1-us-east-1 pooler. */
 const POOLER_HOSTS = ["aws-1-us-east-1.pooler.supabase.com"];
 
 function buildConfigs(cred) {
@@ -79,15 +81,11 @@ async function main() {
       : readPasswordFile();
 
   if (!cred) {
-    console.error(
-      "Missing DB password. Save it to:\n  " +
-        path.join(workspaceLocal, "supabase-helmet-db-password.txt") +
-        "\n(Get it: Supabase -> helmet -> Project Settings -> Database -> Database password)\n"
-    );
+    console.error("Missing DB credentials in slatepress/.local/");
     process.exit(1);
   }
 
-  const sql = fs.readFileSync(schemaPath, "utf8");
+  const sql = fs.readFileSync(migrationPath, "utf8");
   const configs = buildConfigs(cred);
   let lastErr;
   for (const config of configs) {
@@ -95,13 +93,13 @@ async function main() {
     try {
       await client.connect();
       await client.query(sql);
-      const tables = await client.query(
-        `select table_name from information_schema.tables where table_schema = 'public' and table_name in ('wd_leads','api_rate_limits') order by 1`
+      const check = await client.query(
+        `select table_name from information_schema.tables where table_schema = 'public' and table_name = 'crm_telegram_settings'`
       );
       console.log(
-        "OK — tables:",
-        tables.rows.map((r) => r.table_name).join(", "),
-        `(via ${config.host ?? "uri"})`
+        check.rows.length
+          ? "OK — crm_telegram_settings exists"
+          : "WARN — migration ran but table not found"
       );
       await client.end();
       return;
@@ -110,17 +108,7 @@ async function main() {
       await client.end().catch(() => undefined);
     }
   }
-  const msg = lastErr?.message ?? "Could not connect to helmet database";
-  console.error(msg);
-  console.error(
-    "\nIf password auth failed: Supabase -> helmet -> Settings -> Database ->\n" +
-      "Connection string -> Session pooler -> URI. Paste that full postgresql:// line into\n" +
-      path.join(workspaceLocal, "supabase-helmet-db-password.txt") +
-      " (replace the password line), then re-run.\n" +
-      "Or run HELMET-RUN-SQL.sql in the SQL Editor: https://supabase.com/dashboard/project/" +
-      REF +
-      "/sql/new\n"
-  );
+  console.error(lastErr?.message ?? "Could not connect");
   process.exit(1);
 }
 

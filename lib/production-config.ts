@@ -78,6 +78,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "wd_leads.stripe_subscription_id column missing — run supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql."
     );
+  } else if (!supabase.crmTelegramSettingsTable) {
+    warnings.push(
+      "crm_telegram_settings table missing — POST /api/admin/migrate-crm-telegram with BALANCE_CAPTURE_SECRET."
+    );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
     warnings.push("BALANCE_CAPTURE_SECRET missing — env-status API returns 503.");
