@@ -139,15 +139,11 @@ function InboxRow({
           expanded
             ? "bg-accent/[0.08]"
             : unread
-              ? "crm-inbox-row-unread dark:bg-zinc-700/50 dark:hover:bg-zinc-600/45"
-              : "crm-inbox-row-read dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
+              ? "crm-inbox-row-unread dark:bg-zinc-700/50"
+              : "crm-inbox-row-read dark:bg-zinc-900/35"
         }`}
       >
-      <div
-        className={`crm-inbox-row-body flex min-w-0 flex-1 gap-3 px-4 py-3.5 text-left ${
-          expanded ? "bg-accent/[0.08] dark:bg-transparent" : ""
-        }`}
-      >
+      <div className="crm-inbox-row-body flex min-w-0 flex-1 gap-3 bg-transparent px-4 py-3.5 text-left">
         <span
           className={`mt-2 h-2 w-2 shrink-0 rounded-full ${
             unread ? "bg-accent" : "bg-transparent"

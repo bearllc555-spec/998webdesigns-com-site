@@ -169,14 +169,14 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-html.dark .crm-inbox-row-interactive:hover {
-  box-shadow: var(--shadow-md);
+/* CRM inbox — unread row (light theme only; dark theme untouched) */
+html:not(.dark) .crm-inbox-row-unread.crm-inbox-row-interactive {
+  background-color: var(--c-white) !important;
 }
 
-/* CRM inbox — unread row (light theme only; dark theme untouched) */
-html:not(.dark) .crm-inbox-row-unread,
-html:not(.dark) .crm-inbox-row-unread > .crm-inbox-row-body {
-  background-color: var(--c-white) !important;
+html:not(.dark) .crm-inbox-row-unread.crm-inbox-row-interactive:hover {
+  background-color: var(--c-rule-soft) !important;
+  box-shadow: var(--shadow-md);
 }
 
 html:not(.dark) .crm-inbox-row-unread .crm-inbox-row-unread-text {
@@ -190,13 +190,28 @@ html.dark .crm-inbox-row-unread .crm-inbox-row-unread-text {
 }
 
 /* CRM inbox — read row (light theme only) */
-html:not(.dark) .crm-inbox-row-read,
-html:not(.dark) .crm-inbox-row-read > .crm-inbox-row-body {
+html:not(.dark) .crm-inbox-row-read.crm-inbox-row-interactive {
   background-color: var(--c-rule-soft) !important;
 }
 
 html:not(.dark) .crm-inbox-row-read.crm-inbox-row-interactive:hover {
   background-color: var(--c-rule) !important;
+  box-shadow: var(--shadow-md);
+}
+
+/* Dark — full-row hover (not just the flag column) */
+html.dark .crm-inbox-row-unread.crm-inbox-row-interactive:hover {
+  background-color: #3f3f46 !important;
+  box-shadow: var(--shadow-md);
+}
+
+html.dark .crm-inbox-row-read.crm-inbox-row-interactive:hover {
+  background-color: #27272a !important;
+  box-shadow: var(--shadow-md);
+}
+
+.crm-inbox-row-interactive:hover .crm-inbox-flag-btn {
+  background-color: transparent !important;
 }
 
 html:not(.dark) .crm-inbox-row-read .crm-inbox-row-read-text {
