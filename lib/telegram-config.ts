@@ -14,6 +14,7 @@ import {
   appendRecipient,
   recipientsFromParallel,
   removeRecipient,
+  updateRecipient,
   serializeRecipients,
   type TelegramRecipient,
 } from "@/lib/telegram-recipients";
@@ -144,6 +145,41 @@ export async function removeTelegramRecipientFromCrm(
   const recipients = removeRecipient(configToRecipients(existing), chatId);
   return persistTelegramRecipients({
     recipients,
+    requireAtLeastOne: false,
+  });
+}
+
+export async function saveTelegramBotTokenFromCrm(
+  botToken: string
+): Promise<SaveCrmTelegramSettingsResult & { config?: TelegramConfig }> {
+  const existing = await loadTelegramConfig();
+  return persistTelegramRecipients({
+    botToken,
+    recipients: configToRecipients(existing),
+    requireAtLeastOne: false,
+  });
+}
+
+export async function updateTelegramRecipientFromCrm(
+  oldChatId: string,
+  input: { chatId?: string; label?: string }
+): Promise<SaveCrmTelegramSettingsResult & { config?: TelegramConfig }> {
+  const existing = await loadTelegramConfig();
+  const recipients = configToRecipients(existing);
+  const current = recipients.find((r) => r.chatId === oldChatId);
+  if (!current) {
+    return { ok: false, reason: "save_failed", detail: "Recipient not found" };
+  }
+
+  const nextChatId = input.chatId?.trim() || current.chatId;
+  const nextLabel = input.label !== undefined ? input.label.trim() : current.label;
+  const updated = updateRecipient(recipients, oldChatId, {
+    chatId: nextChatId,
+    label: nextLabel,
+  });
+
+  return persistTelegramRecipients({
+    recipients: updated,
     requireAtLeastOne: false,
   });
 }

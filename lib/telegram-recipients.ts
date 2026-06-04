@@ -43,3 +43,14 @@ export function removeRecipient(
 ): TelegramRecipient[] {
   return recipients.filter((r) => r.chatId !== chatId);
 }
+
+export function updateRecipient(
+  recipients: TelegramRecipient[],
+  oldChatId: string,
+  next: { chatId: string; label?: string }
+): TelegramRecipient[] {
+  const nextId = next.chatId.trim();
+  if (!nextId) return recipients;
+  const without = removeRecipient(recipients, oldChatId);
+  return appendRecipient(without, nextId, next.label);
+}

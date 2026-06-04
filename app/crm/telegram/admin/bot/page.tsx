@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { CrmTelegramHome } from "@/components/crm/CrmTelegramHome";
+import { CrmTelegramAdminBot } from "@/components/crm/CrmTelegramAdminBot";
 import { isCrmAuthenticated } from "@/lib/crm-session";
 
-export default async function CrmTelegramPage() {
+export default async function CrmTelegramAdminBotPage() {
   if (!(await isCrmAuthenticated())) {
     redirect("/crm/login");
   }
-  return <CrmTelegramHome />;
+  return <CrmTelegramAdminBot />;
 }

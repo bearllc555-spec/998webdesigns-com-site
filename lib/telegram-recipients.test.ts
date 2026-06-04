@@ -4,6 +4,7 @@ import {
   recipientsFromParallel,
   removeRecipient,
   serializeRecipients,
+  updateRecipient,
 } from "./telegram-recipients";
 
 describe("telegram-recipients", () => {
@@ -19,6 +20,12 @@ describe("telegram-recipients", () => {
     const r = recipientsFromParallel(["1", "2"], ["A", "B"]);
     const next = removeRecipient(r, "1");
     expect(serializeRecipients(next)).toEqual({ chatIds: "2", chatLabels: "B" });
+  });
+
+  it("updates chat id and label", () => {
+    const r = recipientsFromParallel(["1"], ["A"]);
+    const next = updateRecipient(r, "1", { chatId: "2", label: "B" });
+    expect(next).toEqual([{ chatId: "2", label: "B" }]);
   });
 
   it("appends without duplicate", () => {
