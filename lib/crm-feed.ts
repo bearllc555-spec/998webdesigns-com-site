@@ -1,4 +1,7 @@
+import { isCrmInboxFlag, type CrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { supabaseAdmin } from "@/lib/supabase";
+
+export type { CrmInboxFlag };
 
 export type CrmFeedItem = {
   id: string;
@@ -15,7 +18,13 @@ export type CrmFeedItem = {
   payload: Record<string, unknown> | null;
   /** null = unread */
   readAt: string | null;
+  /** null = outline star; cycles star → check → alert → null */
+  inboxFlag: CrmInboxFlag | null;
 };
+
+function parseInboxFlag(value: unknown): CrmInboxFlag | null {
+  return isCrmInboxFlag(value) ? value : null;
+}
 
 export function isCrmFeedItemUnread(item: CrmFeedItem): boolean {
   return item.readAt == null;
@@ -29,13 +38,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
     supa
       .from("wd_leads")
       .select(
-        "id, submitted_at, email, business_name, full_name, status, notes, stripe_deposit_invoice_id, stripe_subscription_id, payload, read_at"
+        "id, submitted_at, email, business_name, full_name, status, notes, stripe_deposit_invoice_id, stripe_subscription_id, payload, read_at, inbox_flag"
       )
       .order("submitted_at", { ascending: false })
       .limit(limit),
     supa
       .from("contact_submissions")
-      .select("id, submitted_at, email, name, business_name, message, read_at")
+      .select("id, submitted_at, email, name, business_name, message, read_at, inbox_flag")
       .order("submitted_at", { ascending: false })
       .limit(limit),
   ]);
@@ -57,6 +66,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
       message: null,
       payload: (row.payload as Record<string, unknown>) ?? null,
       readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
   }
 
@@ -75,6 +85,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
       message: row.message,
       payload: null,
       readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
   }
 

@@ -18,7 +18,8 @@ create table if not exists public.wd_leads (
   stripe_balance_invoice_id text,  -- legacy balance-hold PaymentIntent id (pre pay-in-full-only)
   stripe_subscription_id text,     -- month-to-month hosting Subscription id (when applicable)
   notes text,
-  read_at timestamptz
+  read_at timestamptz,
+  inbox_flag text check (inbox_flag is null or inbox_flag in ('star', 'check', 'alert'))
 );
 
 create index if not exists wd_leads_submitted_at_idx on public.wd_leads (submitted_at desc);
@@ -46,7 +47,8 @@ create table if not exists public.contact_submissions (
   business_name text,
   message text not null,
   ip text,
-  read_at timestamptz
+  read_at timestamptz,
+  inbox_flag text check (inbox_flag is null or inbox_flag in ('star', 'check', 'alert'))
 );
 
 create index if not exists contact_submissions_submitted_at_idx

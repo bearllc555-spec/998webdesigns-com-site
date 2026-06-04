@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { SubmissionFieldStack } from "@/components/form-field-stack";
+import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
+import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 
 type PendingDelete = {
@@ -81,6 +83,8 @@ type InboxRowProps = {
   pendingDelete: PendingDelete | null;
   deleting: boolean;
   readBusy: boolean;
+  flagBusy: boolean;
+  onCycleFlag: (item: CrmFeedItem) => void;
   editingNotes: boolean;
   notesDraft: string;
   onNotesDraftChange: (v: string) => void;
@@ -100,6 +104,8 @@ function InboxRow({
   pendingDelete,
   deleting,
   readBusy,
+  flagBusy,
+  onCycleFlag,
   editingNotes,
   notesDraft,
   onNotesDraftChange,
@@ -118,11 +124,16 @@ function InboxRow({
 
   return (
     <li className={expanded ? "bg-accent/[0.04]" : undefined}>
+      <div
+        className={`flex w-full items-stretch ${
+          expanded ? "bg-accent/[0.08]" : ""
+        }`}
+      >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={expanded}
-        className={`flex w-full gap-3 px-4 py-3.5 text-left transition ${
+        className={`flex min-w-0 flex-1 gap-3 px-4 py-3.5 text-left transition ${
           expanded
             ? "bg-accent/[0.08]"
             : unread
@@ -149,7 +160,7 @@ function InboxRow({
             </span>
             <span
               className={`flex shrink-0 items-center gap-2 text-xs ${
-                unread ? "text-slate" : "text-zinc-600 dark:text-slate"
+                unread ? "text-slate dark:text-zinc-400" : "text-zinc-600 dark:text-zinc-600"
               }`}
             >
               <span>{formatListWhen(item.at)}</span>
@@ -165,7 +176,7 @@ function InboxRow({
             <>
               <span
                 className={`mt-0.5 block truncate text-xs ${
-                  unread ? "text-ink-soft" : "text-zinc-600 dark:text-slate"
+                  unread ? "text-ink-soft dark:text-zinc-400" : "text-zinc-600 dark:text-zinc-600"
                 }`}
               >
                 {company ? `${company} · ` : ""}
@@ -176,7 +187,7 @@ function InboxRow({
                   className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                     unread
                       ? "bg-accent/15 text-accent"
-                      : "bg-zinc-300/80 text-zinc-700 dark:bg-rule dark:text-slate"
+                      : "bg-zinc-300/80 text-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-600"
                   }`}
                 >
                   {unread ? "Unread" : "Read"}
@@ -186,6 +197,13 @@ function InboxRow({
           )}
         </span>
       </button>
+      <CrmInboxFlagButton
+        flag={item.inboxFlag}
+        disabled={flagBusy}
+        onCycle={() => onCycleFlag(item)}
+        className="my-1.5 mr-2"
+      />
+      </div>
 
       {expanded && (
         <div className="border-t border-rule bg-bg px-4 py-5 md:px-6">
@@ -199,6 +217,11 @@ function InboxRow({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <CrmInboxFlagButton
+                flag={item.inboxFlag}
+                disabled={flagBusy}
+                onCycle={() => onCycleFlag(item)}
+              />
               {item.status && (
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-medium ${statusClass(item.status)}`}
@@ -393,6 +416,7 @@ export function CrmActivityInbox({
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [readBusy, setReadBusy] = useState(false);
+  const [flagBusy, setFlagBusy] = useState(false);
 
   const patchItemRead = useCallback(
     (item: CrmFeedItem, read: boolean) => {
@@ -405,6 +429,50 @@ export function CrmActivityInbox({
     },
     [onItemsChange]
   );
+
+  const patchItemFlag = useCallback(
+    (item: CrmFeedItem, inboxFlag: CrmFeedItem["inboxFlag"]) => {
+      onItemsChange((prev) =>
+        prev.map((i) =>
+          i.source === item.source && i.id === item.id ? { ...i, inboxFlag } : i
+        )
+      );
+    },
+    [onItemsChange]
+  );
+
+  async function cycleFlag(item: CrmFeedItem) {
+    const next = nextCrmInboxFlag(item.inboxFlag);
+    setFlagBusy(true);
+    const prev = item.inboxFlag;
+    patchItemFlag(item, next);
+    try {
+      const res = await fetch(`/api/crm/items/${item.source}/${item.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flag: next }),
+      });
+      if (res.status === 401) {
+        window.location.href = "/crm/login";
+        return;
+      }
+      if (!res.ok) {
+        patchItemFlag(item, prev);
+        return;
+      }
+      const data = (await res.json()) as { flag: string | null };
+      const flag =
+        data.flag === "star" || data.flag === "check" || data.flag === "alert"
+          ? data.flag
+          : null;
+      patchItemFlag(item, flag);
+    } catch {
+      patchItemFlag(item, prev);
+    } finally {
+      setFlagBusy(false);
+    }
+  }
 
   async function setReadState(item: CrmFeedItem, read: boolean) {
     setReadBusy(true);
@@ -472,6 +540,8 @@ export function CrmActivityInbox({
     pendingDelete,
     deleting,
     readBusy,
+    flagBusy,
+    onCycleFlag: cycleFlag,
     editingNotes,
     notesDraft,
     onNotesDraftChange: setNotesDraft,

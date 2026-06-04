@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteContactSubmission } from "@/lib/contact-db";
+import {
+  isCrmInboxFlag,
+  setCrmItemInboxFlag,
+  type CrmInboxFlag,
+} from "@/lib/crm-inbox-flag";
 import { setCrmItemReadState } from "@/lib/crm-read-state";
 import { deleteWdLead } from "@/lib/leads-db";
 import { isCrmRequestAuthorized } from "@/lib/crm-session";
@@ -58,24 +63,48 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 
-  let body: { read?: boolean };
+  let body: { read?: boolean; flag?: string | null };
   try {
     body = (await req.json()) as typeof body;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (typeof body.read !== "boolean") {
-    return NextResponse.json({ error: "read (boolean) is required" }, { status: 400 });
+  const hasRead = typeof body.read === "boolean";
+  const hasFlag = Object.prototype.hasOwnProperty.call(body, "flag");
+
+  if (!hasRead && !hasFlag) {
+    return NextResponse.json(
+      { error: "Provide read (boolean) and/or flag (null | star | check | alert)" },
+      { status: 400 }
+    );
   }
 
-  const ok = await setCrmItemReadState(source, id, body.read);
-  if (!ok) {
-    return NextResponse.json({ error: "Could not update read state" }, { status: 500 });
+  if (hasFlag && body.flag !== null && !isCrmInboxFlag(body.flag)) {
+    return NextResponse.json({ error: "Invalid flag value" }, { status: 400 });
   }
 
-  return NextResponse.json({
+  const response: { ok: true; readAt?: string | null; flag?: string | null } = {
     ok: true,
-    readAt: body.read ? new Date().toISOString() : null,
-  });
+  };
+
+  if (hasRead) {
+    const ok = await setCrmItemReadState(source, id, body.read as boolean);
+    if (!ok) {
+      return NextResponse.json({ error: "Could not update read state" }, { status: 500 });
+    }
+    response.readAt = body.read ? new Date().toISOString() : null;
+  }
+
+  if (hasFlag) {
+    const flag: CrmInboxFlag | null =
+      body.flag === null ? null : (body.flag as CrmInboxFlag);
+    const ok = await setCrmItemInboxFlag(source, id, flag);
+    if (!ok) {
+      return NextResponse.json({ error: "Could not update flag" }, { status: 500 });
+    }
+    response.flag = flag;
+  }
+
+  return NextResponse.json(response);
 }
