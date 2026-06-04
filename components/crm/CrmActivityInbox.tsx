@@ -127,7 +127,7 @@ function InboxRow({
             ? "bg-accent/[0.08]"
             : unread
               ? "bg-bg hover:bg-rule-soft/80"
-              : "bg-rule-soft/30 text-ink-soft hover:bg-rule-soft/60"
+              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-rule-soft/30 dark:text-ink-soft dark:hover:bg-rule-soft/60"
         }`}
       >
         <span
@@ -140,12 +140,18 @@ function InboxRow({
           <span className="flex items-baseline justify-between gap-2">
             <span
               className={`truncate text-sm ${
-                unread ? "font-semibold text-ink" : "font-medium text-ink-soft"
+                unread
+                  ? "font-semibold text-ink"
+                  : "font-medium text-zinc-700 dark:text-ink-soft"
               }`}
             >
               {item.title || item.email}
             </span>
-            <span className="flex shrink-0 items-center gap-2 text-xs text-slate">
+            <span
+              className={`flex shrink-0 items-center gap-2 text-xs ${
+                unread ? "text-slate" : "text-zinc-600 dark:text-slate"
+              }`}
+            >
               <span>{formatListWhen(item.at)}</span>
               <span
                 className={`inline-block transition-transform ${expanded ? "rotate-180" : ""}`}
