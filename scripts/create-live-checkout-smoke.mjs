@@ -1,5 +1,5 @@
 /**
- * Creates a live Stripe Checkout session ($1,998 design smoke test).
+ * Creates a live Stripe Checkout session ($1 card smoke test).
  * Open the printed URL only if you intend to run a real-card live payment test.
  * Cancel in Stripe Checkout to avoid a charge.
  */
@@ -29,10 +29,10 @@ const session = await stripe.checkout.sessions.create({
       price_data: {
         currency: "usd",
         product_data: {
-          name: "Website Design (live smoke test)",
-          description: "Ops verification — cancel in Checkout if not intended.",
+          name: "Live webhook smoke ($1)",
+          description: "Ops verification — refund in Stripe Dashboard after delivery shows 200.",
         },
-        unit_amount: 199800,
+        unit_amount: 100,
       },
       quantity: 1,
     },
