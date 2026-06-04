@@ -53,7 +53,7 @@ export async function sendInternalLeadSubmittedEmail(
         <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(lead.paymentChannel))}</p>
         <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel)))}</p>
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
-        <p><strong>Business:</strong> ${escapeHtml(lead.businessName)}</p>
+        <p><strong>Company:</strong> ${lead.businessName ? escapeHtml(lead.businessName) : "&nbsp;"}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Checkout link:</strong> <a href="${escapeHtml(checkoutUrl)}">Open Stripe Checkout</a></p>
@@ -110,7 +110,7 @@ export async function sendInternalPaymentEmail(
         ${achNote}
         <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
         <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
-        <p><strong>Business:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Hosting:</strong> ${escapeHtml(meta.hostingChoice || "—")}</p>
         <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
@@ -150,7 +150,7 @@ export async function sendInternalAchFailedEmail(
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">Bank payment did not settle</h2>
         <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
-        <p><strong>Business:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
         <p style="font-size: 14px; color: #52525b;">Lead status set to bank_payment_failed. Contact the customer for another payment method.</p>

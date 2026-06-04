@@ -56,4 +56,10 @@ describe("validateLeadPayload", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/paymentChannel/i);
   });
+
+  it("accepts empty company name", () => {
+    const result = validateLeadPayload({ ...validBase, businessName: "" });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.businessName).toBe("");
+  });
 });

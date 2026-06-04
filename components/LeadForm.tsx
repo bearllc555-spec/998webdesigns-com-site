@@ -11,6 +11,7 @@ import {
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
 import type { PaymentChannel } from "@/lib/validate-lead";
+import { FixedFormField } from "@/components/form-field-stack";
 
 type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
@@ -146,7 +147,6 @@ export function LeadForm() {
     const e: Partial<Record<keyof FormState, string>> = {};
     if (step === 0) {
       if (!form.fullName.trim()) e.fullName = "Your name, please.";
-      if (!form.businessName.trim()) e.businessName = "Business name, please.";
       if (!form.email.trim()) e.email = "Email, please.";
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
         e.email = "That doesn't look like an email.";
@@ -259,34 +259,37 @@ export function LeadForm() {
           />
 
           {step === 0 && (
-            <div className="grid gap-5 md:grid-cols-2">
-              <Field label="Full name" required error={errors.fullName}>
-                <input
-                  type="text"
+            <div className="grid gap-5">
+              <div className="grid gap-4">
+                <FixedFormField
+                  id="lead-full-name"
+                  label="Name"
                   value={form.fullName}
-                  onChange={(e) => set("fullName", e.target.value)}
+                  onChange={(v) => set("fullName", v)}
+                  required
+                  error={errors.fullName}
                   autoComplete="name"
-                  className={inputCls(errors.fullName)}
                 />
-              </Field>
-              <Field label="Business name" required error={errors.businessName}>
-                <input
-                  type="text"
+                <FixedFormField
+                  id="lead-company"
+                  label="Company"
                   value={form.businessName}
-                  onChange={(e) => set("businessName", e.target.value)}
+                  onChange={(v) => set("businessName", v)}
+                  optionalHint
                   autoComplete="organization"
-                  className={inputCls(errors.businessName)}
                 />
-              </Field>
-              <Field label="Email" required error={errors.email}>
-                <input
+                <FixedFormField
+                  id="lead-email"
+                  label="Email"
                   type="email"
                   value={form.email}
-                  onChange={(e) => set("email", e.target.value)}
+                  onChange={(v) => set("email", v)}
+                  required
+                  error={errors.email}
                   autoComplete="email"
-                  className={inputCls(errors.email)}
                 />
-              </Field>
+              </div>
+              <div className="grid gap-5 md:grid-cols-2">
               <Field label="Phone (optional)">
                 <input
                   type="tel"
@@ -296,7 +299,7 @@ export function LeadForm() {
                   className={inputCls()}
                 />
               </Field>
-              <Field label="Best way to reach you (select one)" className="md:col-span-2" error={errors.contactPref}>
+              <Field label="Best way to reach you (select one)" error={errors.contactPref}>
                 <div className="flex gap-2">
                   {(["email", "phone", "text"] as const).map((opt) => (
                     <label
@@ -320,6 +323,7 @@ export function LeadForm() {
                   ))}
                 </div>
               </Field>
+              </div>
             </div>
           )}
 

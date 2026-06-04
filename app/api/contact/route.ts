@@ -91,8 +91,8 @@ export async function POST(req: NextRequest) {
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <h2>New Contact Form Submission</h2>
           <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Company:</strong> ${businessName ? escapeHtml(businessName) : "&nbsp;"}</p>
           <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          ${businessName ? `<p><strong>Business Name:</strong> ${escapeHtml(businessName)}</p>` : ""}
           <p><strong>Message:</strong></p>
           <p style="white-space: pre-wrap; background-color: #f5f5f5; padding: 12px; border-radius: 4px;">
             ${escapeHtml(message)}

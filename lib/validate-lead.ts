@@ -69,7 +69,6 @@ export function validateLeadPayload(
   const paymentChannel = str(body.paymentChannel);
 
   if (!fullName) return { ok: false, error: "Missing required field: fullName" };
-  if (!businessName) return { ok: false, error: "Missing required field: businessName" };
   if (!email) return { ok: false, error: "Missing required field: email" };
   if (!isValidEmail(email)) return { ok: false, error: "Invalid email address" };
   if (!contactPref || !["email", "phone", "text"].includes(contactPref)) {
@@ -98,7 +97,7 @@ export function validateLeadPayload(
     ok: true,
     data: {
       fullName,
-      businessName,
+      businessName: businessName ?? "",
       email,
       phone: str(body.phone) ?? "",
       contactPref: contactPref as ContactPref,

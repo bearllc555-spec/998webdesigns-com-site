@@ -54,8 +54,8 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
     telegramLine("Site", "998webdesigns.com"),
   ];
 
-  if (input.businessName) lines.push(telegramLine("Business", input.businessName));
   if (input.fullName) lines.push(telegramLine("Name", input.fullName));
+  lines.push(telegramLine("Company", input.businessName?.trim() || "—"));
   if (input.email) lines.push(telegramLine("Email", input.email));
   if (input.status) lines.push(telegramLine("Status", input.status));
   if (input.hostingChoice) lines.push(telegramLine("Hosting", input.hostingChoice));

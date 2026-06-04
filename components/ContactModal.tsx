@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FixedFormField, MessageFormField } from "@/components/form-field-stack";
 
 type ContactFormState = {
   name: string;
@@ -154,62 +155,61 @@ export function ContactModal({
               <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
             <form onSubmit={submit} className="space-y-4">
-              <input type="hidden" value={form.website} onChange={(e) => set("website", e.target.value)} />
+              <input
+                type="text"
+                name="website"
+                value={form.website}
+                onChange={(e) => set("website", e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="absolute -z-10 h-0 w-0 opacity-0"
+              />
 
-              <div>
-                <label htmlFor="contact-name" className="block text-sm font-medium text-ink mb-1">Name</label>
-                <input
-                  id="contact-name"
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-accent"
-                  disabled={submitting}
-                />
-                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-              </div>
+              <FixedFormField
+                id="contact-name"
+                label="Name"
+                value={form.name}
+                onChange={(v) => set("name", v)}
+                required
+                error={errors.name}
+                disabled={submitting}
+                autoComplete="name"
+              />
 
-              <div>
-                <label htmlFor="contact-email" className="block text-sm font-medium text-ink mb-1">Email</label>
-                <input
-                  id="contact-email"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => set("email", e.target.value)}
-                  className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-accent"
-                  disabled={submitting}
-                />
-                {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
-              </div>
+              <FixedFormField
+                id="contact-company"
+                label="Company"
+                value={form.businessName}
+                onChange={(v) => set("businessName", v)}
+                optionalHint
+                disabled={submitting}
+                autoComplete="organization"
+              />
 
-              <div>
-                <label htmlFor="contact-business" className="block text-sm font-medium text-ink mb-1">
-                  Business name <span className="text-slate">(optional)</span>
-                </label>
-                <input
-                  id="contact-business"
-                  type="text"
-                  value={form.businessName}
-                  onChange={(e) => set("businessName", e.target.value)}
-                  className="w-full rounded-lg border border-rule bg-bg px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-accent"
-                  disabled={submitting}
-                />
-              </div>
+              <FixedFormField
+                id="contact-email"
+                label="Email"
+                type="email"
+                value={form.email}
+                onChange={(v) => set("email", v)}
+                required
+                error={errors.email}
+                disabled={submitting}
+                autoComplete="email"
+              />
 
-              <div>
-                <label htmlFor="contact-message" className="block text-sm font-medium text-ink mb-1">Message</label>
-                <textarea
-                  id="contact-message"
-                  value={form.message}
-                  onChange={(e) => set("message", e.target.value)}
-                  rows={4}
-                  className="w-full resize-none rounded-lg border border-rule bg-bg px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-accent"
-                  disabled={submitting}
-                />
-                {errors.message && <p className="text-xs text-red-500 mt-1">{errors.message}</p>}
-              </div>
+              <MessageFormField
+                id="contact-message"
+                label="Message"
+                value={form.message}
+                onChange={(v) => set("message", v)}
+                required
+                error={errors.message}
+                disabled={submitting}
+              />
 
-              {submitError && <p className="text-sm text-red-500">{submitError}</p>}
+              {submitError && <p className="text-sm text-warn">{submitError}</p>}
 
               <div className="flex gap-3 pt-4">
                 <button
@@ -235,4 +235,3 @@ export function ContactModal({
     </Dialog>
   );
 }
-

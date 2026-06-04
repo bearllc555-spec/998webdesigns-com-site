@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CrmHeader } from "@/components/crm/CrmHeader";
+import { SubmissionFieldStack } from "@/components/form-field-stack";
 import type { CrmFeedItem } from "@/lib/crm-feed";
 
 type PendingDelete = {
@@ -173,10 +174,8 @@ export function CrmDashboard() {
                     <p className="text-xs font-medium uppercase tracking-wider text-slate">
                       {item.source === "lead" ? "Lead" : "Contact"} · {formatWhen(item.at)}
                     </p>
-                    <p className="mt-1 font-display text-lg font-medium">{item.title}</p>
-                    <p className="text-sm text-ink-soft">
-                      {item.businessName ? `${item.businessName} · ` : ""}
-                      {item.email}
+                    <p className="mt-1 font-display text-lg font-medium">
+                      {item.source === "lead" ? "Lead brief" : "Contact"}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -247,11 +246,15 @@ export function CrmDashboard() {
                   </div>
                 )}
 
-                {item.message && (
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">
-                    {item.message}
-                  </p>
-                )}
+                <SubmissionFieldStack
+                  name={item.title}
+                  company={item.businessName}
+                  email={item.email}
+                  message={item.message ?? undefined}
+                  messagePlaceholder={
+                    item.source === "lead" ? "Project brief — see notes and payload below." : undefined
+                  }
+                />
 
                 {item.source === "lead" && !isDeletingThis && (
                   <div className="mt-4 border-t border-rule pt-4">
