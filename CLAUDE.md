@@ -123,6 +123,10 @@ Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run i
 
 **Pinned:** http://localhost:3000 · Full practices: **`DEV.md`** · Cursor rule: `.cursor/rules/multi-cursor-local-dev.mdc`
 
+## Stripe
+
+**`STRIPE-SETUP.md`** — test vs live, Vercel vars, Dashboard webhook, local CLI, env-status check. **`DEPLOYMENT.md`** — production go-live checklist.
+
 ---
 
 ## How to ship a change
