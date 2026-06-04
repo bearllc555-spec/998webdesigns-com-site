@@ -18,7 +18,7 @@ const OPTIONS = [
 ] as const;
 
 export function CrmTelegramAdminMenu() {
-  const { loading, error, message } = useCrmTelegramStatus();
+  const { loading, error, message, load } = useCrmTelegramStatus();
 
   return (
     <CrmTelegramShell
@@ -29,6 +29,7 @@ export function CrmTelegramAdminMenu() {
       loading={loading}
       error={error}
       message={message}
+      onRefresh={load}
     >
       <ul className="grid gap-4 sm:grid-cols-1">
         {OPTIONS.map((opt) => (

@@ -8,16 +8,26 @@ import { CRM_VERSION } from "@/lib/crm-version";
 type CrmHeaderProps = {
   title: string;
   subtitle?: string;
+  /** Extra controls before Telegram (e.g. Admin, back). */
   actions?: React.ReactNode;
+  /** Renders Refresh in the nav row beside Activity. */
+  onRefresh?: () => void;
+  refreshDisabled?: boolean;
 };
 
-const NAV = [
-  { href: "/crm/telegram", label: "Telegram" },
-  { href: "/crm", label: "Activity" },
-] as const;
+const pillBase =
+  "rounded-full px-4 py-1.5 text-sm font-medium transition";
 
-export function CrmHeader({ title, subtitle, actions }: CrmHeaderProps) {
+export function CrmHeader({
+  title,
+  subtitle,
+  actions,
+  onRefresh,
+  refreshDisabled,
+}: CrmHeaderProps) {
   const pathname = usePathname();
+  const onActivity = pathname === "/crm";
+  const onTelegram = pathname?.startsWith("/crm/telegram") ?? false;
 
   async function logout() {
     await fetch("/api/crm/session", { method: "DELETE", credentials: "include" });
@@ -45,6 +55,16 @@ export function CrmHeader({ title, subtitle, actions }: CrmHeaderProps) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {actions}
+            <Link
+              href="/crm/telegram"
+              className={`${pillBase} border px-4 py-2 ${
+                onTelegram
+                  ? "border-accent bg-accent text-white"
+                  : "border-rule text-ink-soft hover:border-accent/50"
+              }`}
+            >
+              Telegram
+            </Link>
             <ThemeToggle />
             <button
               type="button"
@@ -56,23 +76,26 @@ export function CrmHeader({ title, subtitle, actions }: CrmHeaderProps) {
           </div>
         </div>
         <nav className="mt-4 flex flex-wrap gap-2" aria-label="CRM sections">
-          {NAV.map(({ href, label }) => {
-            const active =
-              href === "/crm" ? pathname === "/crm" : pathname?.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium ${
-                  active
-                    ? "bg-accent text-white"
-                    : "border border-rule text-ink-soft hover:border-accent/50"
-                }`}
-              >
-                {label}
-              </Link>
-            );
-          })}
+          <Link
+            href="/crm"
+            className={`${pillBase} ${
+              onActivity
+                ? "bg-accent text-white"
+                : "border border-rule text-ink-soft hover:border-accent/50"
+            }`}
+          >
+            Activity
+          </Link>
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={refreshDisabled}
+              className={`${pillBase} border border-rule text-ink-soft hover:border-accent/50 disabled:opacity-50`}
+            >
+              Refresh
+            </button>
+          )}
         </nav>
       </div>
     </header>

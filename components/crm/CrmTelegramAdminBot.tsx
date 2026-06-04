@@ -139,15 +139,7 @@ export function CrmTelegramAdminBot() {
       loading={loading}
       error={error}
       message={message}
-      actions={
-        <button
-          type="button"
-          onClick={load}
-          className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
-        >
-          Refresh
-        </button>
-      }
+      onRefresh={load}
     >
       {status && (
         <div className="space-y-6">

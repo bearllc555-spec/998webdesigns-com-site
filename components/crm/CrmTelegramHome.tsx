@@ -49,22 +49,14 @@ export function CrmTelegramHome() {
       loading={loading}
       error={error}
       message={message}
+      onRefresh={load}
       actions={
-        <>
-          <button
-            type="button"
-            onClick={load}
-            className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
-          >
-            Refresh
-          </button>
-          <Link
-            href="/crm/telegram/admin"
-            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-deep"
-          >
-            Admin
-          </Link>
-        </>
+        <Link
+          href="/crm/telegram/admin"
+          className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-deep"
+        >
+          Admin
+        </Link>
       }
     >
       {status && (

@@ -50,15 +50,8 @@ export function CrmDashboard() {
             ? `${unreadCount} unread · ${contactItems.length} contacts · ${leadItems.length} leads`
             : `${contactItems.length} contacts · ${leadItems.length} leads`
         }
-        actions={
-          <button
-            type="button"
-            onClick={load}
-            className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
-          >
-            Refresh
-          </button>
-        }
+        onRefresh={load}
+        refreshDisabled={loading}
       />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 pb-24 md:px-8">

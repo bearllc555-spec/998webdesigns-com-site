@@ -9,6 +9,7 @@ type CrmTelegramShellProps = {
   backHref?: string;
   backLabel?: string;
   actions?: React.ReactNode;
+  onRefresh?: () => void;
   loading?: boolean;
   error?: string | null;
   message?: string | null;
@@ -21,6 +22,7 @@ export function CrmTelegramShell({
   backHref,
   backLabel = "Back",
   actions,
+  onRefresh,
   loading,
   error,
   message,
@@ -31,6 +33,8 @@ export function CrmTelegramShell({
       <CrmHeader
         title={title}
         subtitle={subtitle}
+        onRefresh={onRefresh}
+        refreshDisabled={loading}
         actions={
           <>
             {actions}
