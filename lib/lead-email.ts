@@ -54,7 +54,7 @@ export async function sendLeadCheckoutEmail(
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Continue to payment</a>
         </p>
-        <p>After payment clears, the 5&ndash;7 business-day design clock starts. You will get a first draft within a week.</p>
+        <p>After payment clears, the 7 business-day design clock starts. You will get a first draft within that window.</p>
         <p style="font-size: 14px; color: #52525b;">Questions? Reply to this email or write hello@998webdesigns.com.</p>
         <p style="font-size: 14px; color: #71717a; margin-top: 32px;">998 web designs &middot; A Bear LLC digital property</p>
       </div>

@@ -52,6 +52,11 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   if (vercelEnv === "production" && mode === "live" && !webhookSecretPresent) {
     warnings.push("STRIPE_WEBHOOK_SECRET missing on Production.");
   }
+  if (keyPresent && webhookSecretPresent) {
+    warnings.push(
+      "Stripe Dashboard: enable ACH Direct Debit (Payment methods) and subscribe the webhook to checkout.session.completed, checkout.session.async_payment_succeeded, and checkout.session.async_payment_failed."
+    );
+  }
   if (!process.env.RESEND_API_KEY?.trim()) {
     warnings.push("RESEND_API_KEY missing — contact and lead emails will fail.");
   }

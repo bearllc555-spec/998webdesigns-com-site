@@ -3,11 +3,11 @@ export type FAQItem = { q: string; a: string };
 export const faq: FAQItem[] = [
   {
     q: "What's actually included for $1,998?",
-    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 5–7 business days from the moment payment clears.",
+    a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 7 business days from the moment payment clears.",
   },
   {
     q: "Do I have to pay the full $1,998 upfront?",
-    a: "Yes — we collect full payment before your project enters the queue. There's no deposit-then-balance structure. This keeps things clean on both sides: no holds, no follow-up charges, and no ambiguity about when work starts. Once payment clears, you're in the queue and we start within one business day.",
+    a: "Yes — we collect full payment before your project enters the queue. Pay by bank (ACH) at list price or by card with a 3% processing fee on your checkout total (design plus ten-year hosting if you select it). There's no deposit-then-balance structure. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
   },
   {
     q: "What happens if I go quiet during the design process?",

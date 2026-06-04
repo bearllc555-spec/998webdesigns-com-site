@@ -50,6 +50,15 @@ After any change: redeploy Production or push to `main`.
 
 **Checkout:** Lead form picks bank (ACH, list price) or card (+3% on design + in-checkout hosting). No Stripe Tax.
 
+**Go-live checklist (Dashboard, test + live):**
+
+1. Settings → Payment methods → enable **ACH Direct Debit** (US).
+2. Webhooks → endpoint `https://998webdesigns.com/api/stripe/webhook` must listen for:
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded` (ACH settled)
+   - `checkout.session.async_payment_failed` (ACH failed — alerts hello@)
+3. `GET /api/admin/env-status` (Bearer `BALANCE_CAPTURE_SECRET`) surfaces `readyForLiveCharges` and Stripe reminders.
+
 Test keys: https://dashboard.stripe.com/test/apikeys
 
 ---

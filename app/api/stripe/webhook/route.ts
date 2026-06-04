@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
+import {
+  sendInternalAchFailedEmail,
+  sendInternalPaymentEmail,
+} from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import {
   syncWdLeadAwaitingBankSettlement,
+  syncWdLeadBankPaymentFailed,
   syncWdLeadPaidInFull,
 } from "@/lib/wd-leads-sync";
 import Stripe from "stripe";
@@ -78,9 +82,8 @@ export async function POST(req: NextRequest) {
       await handleAsyncPaymentSucceeded(session);
     } else if (event.type === "checkout.session.async_payment_failed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.warn(
-        `[webhook] ACH payment failed for session ${session.id} email=${session.metadata?.email}`
-      );
+      await syncWdLeadBankPaymentFailed(session);
+      await sendInternalAchFailedEmail(session);
     }
   } catch (err) {
     console.error(`[webhook] ${event.type} handler failed:`, err);

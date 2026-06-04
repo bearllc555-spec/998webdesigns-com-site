@@ -46,9 +46,9 @@ export function PrivacyContent() {
                 the contact modal.
               </li>
               <li>
-                <strong>Payments:</strong> Stripe handles card payments. We receive confirmation,
-                customer email, and transaction metadata from Stripe. We do not store full card
-                numbers on our servers.
+                <strong>Payments:</strong> Stripe handles card and bank (ACH) payments. We receive
+                confirmation, customer email, and transaction metadata from Stripe. We do not store
+                full card or bank account numbers on our servers.
               </li>
               <li>
                 <strong>Site usage:</strong> Standard server and hosting logs (browser type, pages

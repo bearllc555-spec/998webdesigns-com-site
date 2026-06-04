@@ -41,6 +41,25 @@ export async function syncWdLeadAwaitingBankSettlement(
   if (email) await updateLatestWdLeadByEmail(email, patch);
 }
 
+/** ACH debit failed after Checkout was completed. */
+export async function syncWdLeadBankPaymentFailed(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  const email = session.metadata?.email ?? session.customer_email;
+
+  const patch = {
+    status: "bank_payment_failed",
+    stripe_deposit_invoice_id: session.id,
+  };
+
+  const leadId = session.metadata?.wdLeadId;
+  if (leadId) {
+    await updateWdLead(leadId, patch);
+    return;
+  }
+  if (email) await updateLatestWdLeadByEmail(email, patch);
+}
+
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
   const email = session.metadata?.email ?? session.customer_email;
   const customerId =

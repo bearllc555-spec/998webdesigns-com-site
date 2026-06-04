@@ -76,7 +76,7 @@ export default async function Thanks({
                 <span className="text-accent">Processing — not in the queue yet</span>
               </p>
               <p className="mt-2 text-sm text-ink-soft">
-                The 5&ndash;7 business-day design clock starts when your bank payment settles, not
+                The 7 business-day design clock starts when your bank payment settles, not
                 when you finish this checkout step.
               </p>
             </div>
@@ -95,7 +95,7 @@ export default async function Thanks({
               <Step
                 n="03"
                 title="Then the design clock starts"
-                body="First draft within 5–7 business days after cleared payment."
+                body="First draft within 7 business days after cleared payment."
               />
             </ol>
 
@@ -136,7 +136,7 @@ export default async function Thanks({
           <ol className="mt-12 space-y-6">
             <Step
               n="01"
-              title="The 5–7 business-day clock starts now"
+              title="The 7 business-day clock starts now"
               body="We get to work today. You'll see a first draft inside a week."
             />
             <Step

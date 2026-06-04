@@ -3,7 +3,7 @@
  * Excluded from sitemap + robots: /thanks (post-checkout, noindex), /api/* (non-page).
  * Bump SITEMAP_LAST_MODIFIED when these pages change materially.
  */
-export const SITEMAP_LAST_MODIFIED = "2026-06-02";
+export const SITEMAP_LAST_MODIFIED = "2026-06-04";
 
 export const INDEXABLE_ROUTES = [
   { path: "", changeFrequency: "weekly" as const, priority: 1 },

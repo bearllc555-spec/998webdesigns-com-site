@@ -8,7 +8,7 @@ const steps = [
   {
     n: "02",
     title: "Pay through Stripe",
-    body: "On the last form step, pay $1,998 in full through secure Stripe checkout — the design clock starts when payment clears.",
+    body: "On the last form step, choose bank (ACH) at list price or card (+3% processing on your checkout total). Pay in full through secure Stripe checkout — the design clock starts when payment clears (bank transfers may take a few business days).",
   },
   {
     n: "03",

@@ -124,3 +124,41 @@ export async function sendInternalPaymentEmail(
     throw new Error(`[webhook] Internal payment alert failed: ${JSON.stringify(error)}`);
   }
 }
+
+/** ACH settlement failed — follow up with the customer manually. */
+export async function sendInternalAchFailedEmail(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[webhook] RESEND_API_KEY not set, skipping ACH failed alert");
+    return;
+  }
+
+  const meta = session.metadata ?? {};
+  const email =
+    session.customer_details?.email ?? meta.email ?? session.customer_email ?? "(unknown)";
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const dashboardBase = stripeDashboardBase();
+
+  const { error } = await resend.emails.send({
+    from: "998 web designs <website@998webdesigns.com>",
+    to: NOTIFY_TO,
+    subject: `[998] ACH payment failed — ${meta.businessName || email}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+        <h2 style="margin: 0 0 12px;">Bank payment did not settle</h2>
+        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
+        <p><strong>Business:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
+        <p style="font-size: 14px; color: #52525b;">Lead status set to bank_payment_failed. Contact the customer for another payment method.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("[webhook] Internal ACH failed alert failed:", error);
+  }
+}

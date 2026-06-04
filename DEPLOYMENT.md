@@ -83,6 +83,8 @@ Stripe Checkout charges (separate sessions by payment channel):
 - **Month-to-month hosting:** not in Checkout yet ($198/mo billed after launch — metadata + emails only)
 - **Sales tax:** not collected (no Stripe Tax)
 
+**Stripe Dashboard (required for ACH):** Enable ACH Direct Debit; webhook must include `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed`. See `STRIPE-SETUP.md`. `GET /api/admin/env-status` lists reminders when Stripe keys are present.
+
 ## SEO (sitemap / robots)
 
 Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are excluded from the sitemap and blocked in `robots.txt`. Bump `SITEMAP_LAST_MODIFIED` in that file when home or legal pages change materially.

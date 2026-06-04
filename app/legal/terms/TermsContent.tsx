@@ -63,11 +63,11 @@ export function TermsContent() {
             </h2>
             <p className="text-ink-soft">
               You agree to provide accurate information in the lead form, respond within the
-              approval window we describe (7 business days from draft delivery unless we agree
-              otherwise in writing), and supply brand assets or feedback we need to complete the
-              site. Delays on your side may push delivery dates. If we send a draft and do not hear
-              back within 7 business days, the project may be treated as approved and delivered as
-              described on the site and thank-you page.
+              approval window we describe (14 days from draft delivery unless we agree otherwise in
+              writing), and supply brand assets or feedback we need to complete the site. Delays on
+              your side may push delivery dates. If we send a draft and do not hear back within 14
+              days, the project may be treated as complete as described in the Project Completion
+              section below and on our thank-you page.
             </p>
           </section>
 
@@ -101,9 +101,15 @@ export function TermsContent() {
               5. Payments
             </h2>
             <p className="text-ink-soft">
-              Payments are processed by Stripe. We do not store full card numbers on our servers.
-              Refunds are handled case by case. Chargebacks without contacting us first may result
-              in suspension of work or hosting.
+              Payments are processed by Stripe. You may pay by U.S. bank account (ACH) at the list
+              prices shown on our site, or by credit or debit card with a 3% processing fee on your
+              checkout subtotal (design fee plus ten-year hosting if selected at checkout).
+              Month-to-month hosting is billed separately after launch and is not part of that
+              checkout subtotal. We do not store full card or bank account numbers on our servers.
+              We do not collect sales tax at checkout unless we state otherwise in writing for your
+              jurisdiction. Bank payments may take several business days to settle; work on your
+              design begins when Stripe confirms cleared funds. Refunds are handled case by case.
+              Chargebacks without contacting us first may result in suspension of work or hosting.
             </p>
           </section>
 
