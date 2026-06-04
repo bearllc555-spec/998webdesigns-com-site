@@ -84,18 +84,6 @@ export const portfolio: PortfolioItem[] = [
     industry: "Trades",
     thumbnail: "/portfolio/placeholder.svg",
   },
-  {
-    slug: "three-hills-cafe",
-    name: "Three Hills Cafe",
-    industry: "Restaurants & cafes",
-    thumbnail: "/portfolio/placeholder.svg",
-  },
-  {
-    slug: "broadway-outdoor",
-    name: "Broadway Outdoor Co.",
-    industry: "Boutique retail",
-    thumbnail: "/portfolio/placeholder.svg",
-  },
 ];
 
 export const industries = Array.from(
