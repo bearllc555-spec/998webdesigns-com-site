@@ -154,18 +154,17 @@ export function Carousel() {
       className={CARD_WIDTH}
       aria-hidden={index >= portfolio.length ? true : undefined}
     >
-      <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
+      <PortfolioCard
+        item={p}
+        revealSeconds={HOVER_REVEAL_S}
+        onThumbnailEnter={handleThumbnailEnter}
+        onThumbnailLeave={handleThumbnailLeave}
+      />
     </li>
   ));
 
   return (
-    <div
-      className="relative pt-16 pb-14 md:pt-24 md:pb-20"
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={handlePointerLeave}
-      onFocus={() => setHoverPaused(true)}
-      onBlur={handlePointerLeave}
-    >
+    <div className="relative pt-16 pb-14 md:pt-24 md:pb-20">
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
           {hoverHint}
@@ -183,7 +182,12 @@ export function Carousel() {
           >
             {portfolio.map((p) => (
               <li key={p.slug} className={CARD_WIDTH}>
-                <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
+                <PortfolioCard
+                  item={p}
+                  revealSeconds={HOVER_REVEAL_S}
+                  onThumbnailEnter={handleThumbnailEnter}
+                  onThumbnailLeave={handleThumbnailLeave}
+                />
               </li>
             ))}
           </ul>
@@ -250,9 +254,13 @@ export function Carousel() {
 function PortfolioPreview({
   item,
   revealSeconds,
+  onThumbnailEnter,
+  onThumbnailLeave,
 }: {
   item: PortfolioItem;
   revealSeconds: number;
+  onThumbnailEnter?: () => void;
+  onThumbnailLeave?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -269,7 +277,8 @@ function PortfolioPreview({
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  const startPreview = () => {
+  const handleEnter = () => {
+    onThumbnailEnter?.();
     if (!useVideo) return;
     const video = videoRef.current;
     if (!video) return;
@@ -278,7 +287,8 @@ function PortfolioPreview({
     void video.play().catch(() => setVideoActive(false));
   };
 
-  const stopPreview = () => {
+  const handleLeave = () => {
+    onThumbnailLeave?.();
     if (!useVideo) return;
     const video = videoRef.current;
     if (!video) return;
@@ -290,10 +300,10 @@ function PortfolioPreview({
   return (
     <div
       className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft"
-      onMouseEnter={startPreview}
-      onMouseLeave={stopPreview}
-      onFocus={startPreview}
-      onBlur={stopPreview}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onFocus={handleEnter}
+      onBlur={handleLeave}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -342,16 +352,25 @@ function PortfolioPreview({
 function PortfolioCard({
   item,
   revealSeconds,
+  onThumbnailEnter,
+  onThumbnailLeave,
 }: {
   item: PortfolioItem;
   revealSeconds: number;
+  onThumbnailEnter?: () => void;
+  onThumbnailLeave?: () => void;
 }) {
   const cardClass =
     "group block overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm transition hover:-translate-y-0.5 hover:shadow-md";
 
   const inner = (
     <>
-      <PortfolioPreview item={item} revealSeconds={revealSeconds} />
+      <PortfolioPreview
+        item={item}
+        revealSeconds={revealSeconds}
+        onThumbnailEnter={onThumbnailEnter}
+        onThumbnailLeave={onThumbnailLeave}
+      />
       <div className="flex items-baseline justify-between gap-3 px-4 py-3">
         <span className="truncate font-display text-base font-medium text-ink">
           {item.name}
