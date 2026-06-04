@@ -150,9 +150,9 @@ export function Carousel() {
   return (
     <div
       className="relative pt-16 pb-14 md:pt-24 md:pb-20"
-      onMouseEnter={() => setPaused(true)}
+      onMouseEnter={() => setHoverPaused(true)}
       onMouseLeave={handlePointerLeave}
-      onFocus={() => setPaused(true)}
+      onFocus={() => setHoverPaused(true)}
       onBlur={handlePointerLeave}
     >
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
@@ -198,6 +198,19 @@ export function Carousel() {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </button>
+            {!reduceMotion && (
+              <button
+                type="button"
+                onClick={toggleUserPause}
+                aria-label={userPaused ? "Resume carousel" : "Pause carousel"}
+                aria-pressed={userPaused}
+                className={`mx-0.5 h-3.5 w-6 shrink-0 rounded-full border transition-colors duration-200 ${
+                  userPaused
+                    ? "border-rule bg-rule-soft dark:border-zinc-500 dark:bg-zinc-600"
+                    : "border-ink-soft/70 bg-transparent hover:border-ink-soft"
+                }`}
+              />
+            )}
             <button
               type="button"
               onClick={() => scrollByCard(1)}
