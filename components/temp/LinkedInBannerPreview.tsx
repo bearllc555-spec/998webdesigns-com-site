@@ -1,4 +1,9 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useRef, type ReactNode } from "react";
+
+const ARTBOARD_W = 1584;
+const ARTBOARD_H = 396;
 
 type LinkedInBannerPreviewProps = {
   children: ReactNode;
@@ -10,6 +15,26 @@ type LinkedInBannerPreviewProps = {
  * Profile photo placeholder shows the overlap zone before upload.
  */
 export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerPreviewProps) {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const scaleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const slot = slotRef.current;
+    const scale = scaleRef.current;
+    if (!slot || !scale) return;
+
+    const applyScale = () => {
+      const w = slot.clientWidth;
+      if (w <= 0) return;
+      scale.style.transform = `scale(${w / ARTBOARD_W})`;
+    };
+
+    applyScale();
+    const ro = new ResizeObserver(applyScale);
+    ro.observe(slot);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div className="linkedin-preview-wrap">
       <div className="linkedin-preview-meta">
@@ -21,8 +46,14 @@ export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerP
       </div>
 
       <div className="linkedin-mockup" aria-label="LinkedIn profile header preview">
-        <div className="linkedin-cover-slot">
-          <div className="linkedin-cover-scale">{children}</div>
+        <div ref={slotRef} className="linkedin-cover-slot">
+          <div
+            ref={scaleRef}
+            className="linkedin-cover-scale"
+            style={{ width: ARTBOARD_W, height: ARTBOARD_H }}
+          >
+            {children}
+          </div>
         </div>
         <div className="linkedin-profile-stub" aria-hidden="true">
           <div className="linkedin-avatar" title="Profile photo overlap zone" />

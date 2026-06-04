@@ -51,8 +51,12 @@
   overflow: visible;
 }
 
+.linkedin-preview-wrap {
+  width: 100%;
+  max-width: 1128px;
+}
+
 .linkedin-cover-slot {
-  container-type: inline-size;
   width: 100%;
   aspect-ratio: 1584 / 396;
   overflow: hidden;
@@ -60,12 +64,46 @@
   background: #ffffff;
 }
 
-/* Artboard 1584×396 scales to LinkedIn desktop cover width */
+/* 1584×396 artboard — scale applied via ResizeObserver in LinkedInBannerPreview */
 .linkedin-cover-scale {
-  width: 1584px;
-  height: 396px;
-  transform: scale(calc(100cqw / 1584));
+  position: absolute;
+  left: 0;
+  top: 0;
   transform-origin: top left;
+  will-change: transform;
+}
+
+/* Shared layout: fits artboard + clears LinkedIn avatar (~24px + 152px) */
+.linkedin-cover-scale .linkedin-banner .content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 32px;
+  padding: 0 48px 0 200px;
+  box-sizing: border-box;
+}
+
+.linkedin-cover-scale .linkedin-banner .brand-block {
+  min-width: 0;
+  max-width: none;
+}
+
+.linkedin-cover-scale .linkedin-banner .logo {
+  font-size: 58px;
+}
+
+.linkedin-cover-scale .linkedin-banner .tagline {
+  font-size: 18px;
+}
+
+.linkedin-cover-scale .linkedin-banner .offer {
+  flex-shrink: 0;
+  min-width: 280px;
+  max-width: 300px;
+}
+
+.linkedin-cover-scale .linkedin-banner .offer-main {
+  font-size: 26px;
 }
 
 .linkedin-profile-stub {
@@ -78,7 +116,7 @@
 
 .linkedin-avatar {
   position: absolute;
-  left: 4.26%;
+  left: 2.13%;
   top: 0;
   width: 13.48%;
   min-width: 104px;
