@@ -160,6 +160,29 @@ export async function saveTelegramBotTokenFromCrm(
   });
 }
 
+export async function clearTelegramBotTokenFromCrm(): Promise<
+  SaveCrmTelegramSettingsResult & { config?: TelegramConfig }
+> {
+  const existing = await loadTelegramConfig();
+  if (!existing.hasStoredToken) {
+    return {
+      ok: false,
+      reason: "save_failed",
+      detail: "No bot token saved in CRM settings.",
+    };
+  }
+
+  const { chatIds, chatLabels } = serializeRecipients(configToRecipients(existing));
+  const saveResult = await saveCrmTelegramSettingsToDb({
+    botToken: null,
+    chatIds,
+    chatLabels: chatLabels || null,
+  });
+
+  if (!saveResult.ok) return saveResult;
+  return { ok: true, config: await loadTelegramConfig() };
+}
+
 export async function updateTelegramRecipientFromCrm(
   oldChatId: string,
   input: { chatId?: string; label?: string }
