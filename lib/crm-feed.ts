@@ -13,7 +13,13 @@ export type CrmFeedItem = {
   stripeSubscriptionId: string | null;
   message: string | null;
   payload: Record<string, unknown> | null;
+  /** null = unread */
+  readAt: string | null;
 };
+
+export function isCrmFeedItemUnread(item: CrmFeedItem): boolean {
+  return item.readAt == null;
+}
 
 export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
   const supa = supabaseAdmin();
@@ -23,13 +29,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
     supa
       .from("wd_leads")
       .select(
-        "id, submitted_at, email, business_name, full_name, status, notes, stripe_deposit_invoice_id, stripe_subscription_id, payload"
+        "id, submitted_at, email, business_name, full_name, status, notes, stripe_deposit_invoice_id, stripe_subscription_id, payload, read_at"
       )
       .order("submitted_at", { ascending: false })
       .limit(limit),
     supa
       .from("contact_submissions")
-      .select("id, submitted_at, email, name, business_name, message")
+      .select("id, submitted_at, email, name, business_name, message, read_at")
       .order("submitted_at", { ascending: false })
       .limit(limit),
   ]);
@@ -50,6 +56,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
       stripeSubscriptionId: row.stripe_subscription_id,
       message: null,
       payload: (row.payload as Record<string, unknown>) ?? null,
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
     });
   }
 
@@ -67,6 +74,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
       stripeSubscriptionId: null,
       message: row.message,
       payload: null,
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
     });
   }
 

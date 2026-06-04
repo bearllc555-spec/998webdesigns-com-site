@@ -17,7 +17,8 @@ create table if not exists public.wd_leads (
   stripe_deposit_invoice_id text,  -- Stripe Checkout session id (legacy column name)
   stripe_balance_invoice_id text,  -- legacy balance-hold PaymentIntent id (pre pay-in-full-only)
   stripe_subscription_id text,     -- month-to-month hosting Subscription id (when applicable)
-  notes text
+  notes text,
+  read_at timestamptz
 );
 
 create index if not exists wd_leads_submitted_at_idx on public.wd_leads (submitted_at desc);
@@ -44,7 +45,8 @@ create table if not exists public.contact_submissions (
   email text not null,
   business_name text,
   message text not null,
-  ip text
+  ip text,
+  read_at timestamptz
 );
 
 create index if not exists contact_submissions_submitted_at_idx
