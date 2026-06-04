@@ -30,8 +30,10 @@ export function Carousel() {
   const trackRef = useRef<HTMLUListElement>(null);
   const scrollRef = useRef<HTMLUListElement>(null);
   const manualXRef = useRef<number | null>(null);
-  const [paused, setPaused] = useState(false);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const paused = hoverPaused || userPaused;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -109,14 +111,24 @@ export function Carousel() {
       manualXRef.current = x;
       track.style.animation = "none";
       track.style.transform = `translate3d(${x}px, 0, 0)`;
-      setPaused(true);
+      setUserPaused(true);
     },
     [reduceMotion]
   );
 
+  const toggleUserPause = () => {
+    setUserPaused((was) => {
+      const next = !was;
+      if (!next && manualXRef.current !== null) {
+        queueMicrotask(() => resumeMarqueeAnimation());
+      }
+      return next;
+    });
+  };
+
   const handlePointerLeave = () => {
-    setPaused(false);
-    if (manualXRef.current !== null) {
+    setHoverPaused(false);
+    if (!userPaused && manualXRef.current !== null) {
       resumeMarqueeAnimation();
     }
   };
