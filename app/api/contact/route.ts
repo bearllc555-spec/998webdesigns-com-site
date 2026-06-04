@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, saved: dbResult.ok });
   } catch (err) {
     console.error("[contact] Unexpected error:", err);
     return NextResponse.json({ error: "Failed to process contact form" }, { status: 500 });
