@@ -92,7 +92,9 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     mode === "live" &&
     webhookSecretPresent &&
     resendConfigured &&
-    !modeMismatch;
+    !modeMismatch &&
+    supabaseConfigured &&
+    supabase.stripeSubscriptionColumn;
 
   return {
     vercelEnv,

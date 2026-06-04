@@ -33,18 +33,19 @@ Secrets live in workspace `.local/` (gitignored). Never commit keys.
 
 ## Stripe: test vs live
 
-**Current intent:** Production may run `sk_test_...` while you test with card `4242 4242 4242 4242` in Stripe Sandbox.
+**Production today:** Live mode (`sk_live_...`), `STRIPE_EXPECTED_MODE=live`, Bear LLC Payments account.
 
-**Before accepting real money:**
+**Sandbox (optional):** Use `sk_test_...` on a Preview deploy or locally with `STRIPE_EXPECTED_MODE=test`. Card `4242 4242 4242 4242` in Stripe Sandbox.
 
-1. Stripe Dashboard → turn off Sandbox / use **Live** mode.
-2. Developers → API keys → copy **live** secret (`sk_live_...`).
-3. Developers → Webhooks → add endpoint `https://998webdesigns.com/api/stripe/webhook`, event `checkout.session.completed`, copy **live** signing secret (`whsec_...`).
-4. Vercel → **998webdesigns-com-site** → Production → update `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
-5. Redeploy Production.
-6. Run one real small-charge test, then refund in Stripe if needed. **Blocked 2026-06-04:** bank approval required before Anthony uses a personal card — see workspace `whats-next.md` (998 item 13). Until then, webhook signature probe + `env-status` `stripeOps` probes are the verification baseline.
+**Go-live checklist (already done on prod unless you rotate keys):**
 
-Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`). While sandbox testing, set `STRIPE_EXPECTED_MODE=test` on Production so env-status does not flag a false mismatch.
+1. Stripe Dashboard → **Live** mode → Developers → API keys → `sk_live_...`.
+2. Webhooks → endpoint `https://998webdesigns.com/api/stripe/webhook` with events below → copy **live** `whsec_...`.
+3. Vercel Production → `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, redeploy.
+4. `GET /api/admin/env-status` → `readyForLiveCharges: true`, `warnings: []`.
+5. One completed live Checkout (optional proof) — **blocked until bank approves a real-card test**; see workspace `whats-next.md` item 13.
+
+Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`).
 
 ## Verify production wiring (no secrets in response)
 
@@ -58,17 +59,29 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
 ## Stripe webhook
 
 - URL: `https://998webdesigns.com/api/stripe/webhook`
-- Event: `checkout.session.completed` (required)
-- All new checkouts are **$1,998 pay-in-full** (plus optional ten-year hosting). No deposit or balance-hold flow.
+- **Checkout (required):**
+  - `checkout.session.completed`
+  - `checkout.session.async_payment_succeeded` (ACH settled)
+  - `checkout.session.async_payment_failed` (ACH failed → hello@ alert)
+- **Month-to-month hosting (recommended when billing $198/mo):**
+  - `invoice.payment_failed` → hello@ + lead status `hosting_payment_failed`
+  - `customer.subscription.deleted` → hello@ + lead status `hosting_canceled`
+
+All new checkouts are **$1,998 pay-in-full** (plus optional ten-year or monthly hosting). No deposit or balance-hold flow on new leads.
 
 **Legacy:** Old deposit checkouts in Stripe still complete the webhook and sync as `paid_in_full`. Any open balance holds from before this change must be captured or released in the [Stripe Dashboard](https://dashboard.stripe.com) manually.
+
+`GET /api/admin/env-status` probes ACH + subscribed webhook events when `sk_live_` is set.
 
 ## Internal lead alerts (Resend)
 
 | When | Email to `hello@998webdesigns.com` |
 |------|-------------------------------------|
 | Form submitted, Checkout link created | **New lead — awaiting payment** (checkout URL + session link) |
-| Checkout completed | **Paid in full** (amount + Stripe session link) |
+| Checkout completed (card or ACH settled) | **Paid in full** (amount + Stripe session link) |
+| ACH failed after Checkout | **ACH payment failed** |
+| $198/mo renewal failed | **Hosting renewal failed** |
+| Subscription canceled | **Hosting subscription ended** |
 
 Uses `RESEND_API_KEY`.
 
@@ -83,7 +96,9 @@ Stripe Checkout charges (separate sessions by payment channel):
 - **Month-to-month hosting:** $198/mo in Stripe Checkout (subscription mode + first month on the initial invoice). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
 - **Sales tax:** not collected (no Stripe Tax)
 
-**Stripe Dashboard (required for ACH):** Enable ACH Direct Debit; webhook must include `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed`. See `STRIPE-SETUP.md`. `GET /api/admin/env-status` lists reminders when Stripe keys are present.
+**Hero add-ons (lead form):** Google Profile Optimization, blogging strategies, hyper-local SEO, etc. are **scope flags only** — they do not add Stripe line items or change the checkout amount. Ops uses them when scoping the build.
+
+**Stripe Dashboard (required for ACH):** Enable ACH Direct Debit; subscribe all webhook events in the section above. See `STRIPE-SETUP.md`.
 
 ## SEO (sitemap / robots)
 

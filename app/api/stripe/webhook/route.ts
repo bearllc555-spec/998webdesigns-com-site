@@ -6,6 +6,10 @@ import {
 } from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import {
+  handleInvoicePaymentFailed,
+  handleSubscriptionDeleted,
+} from "@/lib/subscription-webhooks";
+import {
   syncWdLeadAwaitingBankSettlement,
   syncWdLeadBankPaymentFailed,
   syncWdLeadPaidInFull,
@@ -84,6 +88,12 @@ export async function POST(req: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
       await syncWdLeadBankPaymentFailed(session);
       await sendInternalAchFailedEmail(session);
+    } else if (event.type === "invoice.payment_failed") {
+      const invoice = event.data.object as Stripe.Invoice;
+      await handleInvoicePaymentFailed(invoice);
+    } else if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      await handleSubscriptionDeleted(subscription);
     }
   } catch (err) {
     console.error(`[webhook] ${event.type} handler failed:`, err);

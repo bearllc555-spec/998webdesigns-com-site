@@ -11,9 +11,9 @@ Quick reference. Secrets live in `slatepress/.local/` (gitignored). Never commit
 | **Test (sandbox)** | `sk_test_` | `4242 4242 4242 4242` |
 | **Live** | `sk_live_` | Real cards only |
 
-**Current intent:** Test on Production until you flip go-live (see `DEPLOYMENT.md`).
+**Production:** Live keys (`sk_live_...`) with `STRIPE_EXPECTED_MODE=live` on Vercel.
 
-Set `STRIPE_EXPECTED_MODE=test` or `live` on Vercel Production so `/api/admin/env-status` does not false-alarm.
+**Sandbox:** Use test keys on Preview/local; set `STRIPE_EXPECTED_MODE=test` so `/api/admin/env-status` does not false-alarm.
 
 ---
 
@@ -30,7 +30,7 @@ Required Production env vars:
 | `STRIPE_EXPECTED_MODE` | `test` or `live` (match key prefix) |
 | `BALANCE_CAPTURE_SECRET` | Bearer for `GET /api/admin/env-status` |
 | `RESEND_API_KEY` | Lead + payment emails |
-| `NEXT_PUBLIC_SUPABASE_URL` | **`jxthwtflrzudepxysgje`** project |
+| `NEXT_PUBLIC_SUPABASE_URL` | **helmet** project `xwldbxburzqryxlzocck` |
 | `SUPABASE_SERVICE_ROLE_KEY` | `wd_leads` inserts |
 
 Dashboard: https://vercel.com/bearllc555-6551s-projects/998webdesigns-com-site/settings/environment-variables
@@ -43,7 +43,7 @@ After any change: redeploy Production or push to `main`.
 
 1. https://dashboard.stripe.com/test/webhooks (Sandbox on)
 2. **Add endpoint** → `https://998webdesigns.com/api/stripe/webhook`
-3. Events: **`checkout.session.completed`**, **`checkout.session.async_payment_succeeded`**, **`checkout.session.async_payment_failed`** (ACH settlement)
+3. Events: **`checkout.session.completed`**, **`checkout.session.async_payment_succeeded`**, **`checkout.session.async_payment_failed`**, plus **`invoice.payment_failed`** and **`customer.subscription.deleted`** for $198/mo hosting
 4. Enable **ACH Direct Debit** under Settings → Payment methods (US bank account)
 5. Copy **Signing secret** (`whsec_...`) → Vercel `STRIPE_WEBHOOK_SECRET` (Production)
 6. Redeploy
@@ -57,7 +57,9 @@ After any change: redeploy Production or push to `main`.
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded` (ACH settled)
    - `checkout.session.async_payment_failed` (ACH failed — alerts hello@)
-3. `GET /api/admin/env-status` (Bearer `BALANCE_CAPTURE_SECRET`) surfaces `readyForLiveCharges` and Stripe reminders.
+   - `invoice.payment_failed` (monthly hosting renewal failed)
+   - `customer.subscription.deleted` (hosting canceled)
+3. `GET /api/admin/env-status` (Bearer `BALANCE_CAPTURE_SECRET`) surfaces `readyForLiveCharges`, `stripeOps`, and any missing events.
 
 Test keys: https://dashboard.stripe.com/test/apikeys
 

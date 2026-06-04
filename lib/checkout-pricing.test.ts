@@ -15,10 +15,15 @@ describe("checkout pricing", () => {
     expect(checkoutSubtotalCents("ten_year")).toBe(334700);
   });
 
-  it("card adds 3% on full cart", () => {
+  it("card adds 3% on design + ten-year subtotal only (not monthly line)", () => {
     expect(cardProcessingFeeCents(199800)).toBe(5994);
     expect(checkoutTotalCents("later", "card")).toBe(205794);
     expect(checkoutTotalCents("ten_year", "card")).toBe(344741);
+  });
+
+  it("first month hosting has no card surcharge", () => {
+    const designWithCardFee = checkoutTotalCents("later", "card");
+    expect(checkoutDueTodayCents("monthly", "card") - designWithCardFee).toBe(19800);
   });
 
   it("ACH stays at list subtotal", () => {

@@ -83,6 +83,32 @@ export async function updateLatestWdLeadByEmail(
   return updateWdLead(data.id, patch);
 }
 
+/** Latest row tied to a Stripe subscription (month-to-month hosting). */
+export async function updateLatestWdLeadBySubscriptionId(
+  subscriptionId: string,
+  patch: WdLeadPatch
+): Promise<boolean> {
+  const supa = supabaseAdmin();
+  if (!supa) return false;
+
+  const { data, error: selectError } = await supa
+    .from("wd_leads")
+    .select("id")
+    .eq("stripe_subscription_id", subscriptionId)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (selectError || !data?.id) {
+    if (selectError) {
+      console.warn("[leads] wd_leads subscription lookup failed:", selectError.message);
+    }
+    return false;
+  }
+
+  return updateWdLead(data.id, patch);
+}
+
 export async function countWdLeadsByEmail(email: string): Promise<number> {
   const supa = supabaseAdmin();
   if (!supa) return 0;

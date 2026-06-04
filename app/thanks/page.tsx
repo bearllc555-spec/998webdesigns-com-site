@@ -84,7 +84,7 @@ export default async function Thanks({
             <ol className="mt-12 space-y-6">
               <Step
                 n="01"
-                title="Bank settlement (typically 3–5 business days)"
+                title="Bank settlement (typically a few business days)"
                 body="Stripe will confirm when your transfer completes. No action needed unless your bank declines the debit."
               />
               <Step

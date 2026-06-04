@@ -162,3 +162,78 @@ export async function sendInternalAchFailedEmail(
     console.error("[webhook] Internal ACH failed alert failed:", error);
   }
 }
+
+/** Month-to-month hosting renewal failed (Stripe subscription invoice). */
+export async function sendInternalHostingRenewalFailedEmail(
+  invoice: Stripe.Invoice,
+  subscriptionId: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[webhook] RESEND_API_KEY not set, skipping hosting renewal failed alert");
+    return;
+  }
+
+  const amount =
+    invoice.amount_due != null
+      ? `$${(invoice.amount_due / 100).toFixed(2)} ${(invoice.currency ?? "usd").toUpperCase()}`
+      : "—";
+  const customerEmail =
+    (invoice as Stripe.Invoice & { customer_email?: string | null }).customer_email ??
+    "(unknown)";
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const dashboardBase = stripeDashboardBase();
+
+  const { error } = await resend.emails.send({
+    from: "998 web designs <website@998webdesigns.com>",
+    to: NOTIFY_TO,
+    subject: `[998] Hosting renewal failed — ${customerEmail}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+        <h2 style="margin: 0 0 12px;">$198/mo hosting payment failed</h2>
+        <p><strong>Customer email:</strong> ${escapeHtml(customerEmail)}</p>
+        <p><strong>Amount due:</strong> ${escapeHtml(amount)}</p>
+        <p><strong>Subscription:</strong> <a href="${dashboardBase}/subscriptions/${escapeHtml(subscriptionId)}">${escapeHtml(subscriptionId)}</a></p>
+        <p><strong>Invoice:</strong> <a href="${dashboardBase}/invoices/${escapeHtml(invoice.id)}">${escapeHtml(invoice.id)}</a></p>
+        <p style="font-size: 14px; color: #52525b;">Lead status set to hosting_payment_failed. Stripe will retry; contact the client if it keeps failing.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("[webhook] Hosting renewal failed alert failed:", error);
+  }
+}
+
+/** Month-to-month subscription ended (canceled or expired). */
+export async function sendInternalHostingCanceledEmail(
+  subscription: Stripe.Subscription
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[webhook] RESEND_API_KEY not set, skipping hosting canceled alert");
+    return;
+  }
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const dashboardBase = stripeDashboardBase();
+
+  const { error } = await resend.emails.send({
+    from: "998 web designs <website@998webdesigns.com>",
+    to: NOTIFY_TO,
+    subject: `[998] Hosting subscription ended — ${subscription.id}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+        <h2 style="margin: 0 0 12px;">Month-to-month hosting canceled</h2>
+        <p><strong>Subscription:</strong> <a href="${dashboardBase}/subscriptions/${escapeHtml(subscription.id)}">${escapeHtml(subscription.id)}</a></p>
+        <p><strong>Status:</strong> ${escapeHtml(subscription.status)}</p>
+        <p style="font-size: 14px; color: #52525b;">Lead status set to hosting_canceled. Site may still be live until you deprovision hosting manually.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("[webhook] Hosting canceled alert failed:", error);
+  }
+}

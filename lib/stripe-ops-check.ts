@@ -9,11 +9,18 @@ export const REQUIRED_WEBHOOK_EVENTS = [
   "checkout.session.async_payment_failed",
 ] as const;
 
+/** Month-to-month hosting lifecycle — subscribe in Stripe when billing $198/mo clients. */
+export const RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS = [
+  "invoice.payment_failed",
+  "customer.subscription.deleted",
+] as const;
+
 export type StripeOpsSnapshot = {
   achEnabled: boolean | null;
   webhookFound: boolean;
   webhookEvents: string[];
   missingWebhookEvents: string[];
+  missingSubscriptionWebhookEvents: string[];
 };
 
 /** Live Stripe account probes for env-status (no secret values returned). */
@@ -33,6 +40,7 @@ export async function probeStripeOps(): Promise<{
     webhookFound: false,
     webhookEvents: [],
     missingWebhookEvents: [...REQUIRED_WEBHOOK_EVENTS],
+    missingSubscriptionWebhookEvents: [...RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS],
   };
 
   try {
@@ -69,9 +77,18 @@ export async function probeStripeOps(): Promise<{
       snapshot.missingWebhookEvents = REQUIRED_WEBHOOK_EVENTS.filter(
         (ev) => !hook.enabled_events.includes(ev)
       );
+      snapshot.missingSubscriptionWebhookEvents =
+        RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS.filter(
+          (ev) => !hook.enabled_events.includes(ev)
+        );
       if (snapshot.missingWebhookEvents.length) {
         warnings.push(
           `Stripe webhook missing events: ${snapshot.missingWebhookEvents.join(", ")}.`
+        );
+      }
+      if (snapshot.missingSubscriptionWebhookEvents.length) {
+        warnings.push(
+          `Stripe webhook missing subscription events: ${snapshot.missingSubscriptionWebhookEvents.join(", ")}.`
         );
       }
     }
@@ -84,6 +101,7 @@ export async function probeStripeOps(): Promise<{
       webhookFound: false,
       webhookEvents: [],
       missingWebhookEvents: [...REQUIRED_WEBHOOK_EVENTS],
+      missingSubscriptionWebhookEvents: [...RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS],
     };
   }
 
