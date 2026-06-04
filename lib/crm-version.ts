@@ -1,3 +1,3 @@
 // CRM-only version label (independent of public site SITE_VERSION).
 // Bump on every CRM change: v1.0, v1.1, v1.2, …
-export const CRM_VERSION = "v2.0";
+export const CRM_VERSION = "v2.1";

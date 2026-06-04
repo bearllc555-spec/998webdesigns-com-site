@@ -12,8 +12,8 @@ type CrmHeaderProps = {
 };
 
 const NAV = [
-  { href: "/crm", label: "Activity" },
   { href: "/crm/telegram", label: "Telegram" },
+  { href: "/crm", label: "Activity" },
 ] as const;
 
 export function CrmHeader({ title, subtitle, actions }: CrmHeaderProps) {

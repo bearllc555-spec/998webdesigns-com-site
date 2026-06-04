@@ -33,6 +33,7 @@ export function CrmTelegramShell({
         subtitle={subtitle}
         actions={
           <>
+            {actions}
             {backHref && (
               <Link
                 href={backHref}
@@ -41,7 +42,6 @@ export function CrmTelegramShell({
                 {backLabel}
               </Link>
             )}
-            {actions}
           </>
         }
       />
