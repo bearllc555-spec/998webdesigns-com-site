@@ -43,9 +43,12 @@ After any change: redeploy Production or push to `main`.
 
 1. https://dashboard.stripe.com/test/webhooks (Sandbox on)
 2. **Add endpoint** → `https://998webdesigns.com/api/stripe/webhook`
-3. Event: **`checkout.session.completed`**
-4. Copy **Signing secret** (`whsec_...`) → Vercel `STRIPE_WEBHOOK_SECRET` (Production)
-5. Redeploy
+3. Events: **`checkout.session.completed`**, **`checkout.session.async_payment_succeeded`**, **`checkout.session.async_payment_failed`** (ACH settlement)
+4. Enable **ACH Direct Debit** under Settings → Payment methods (US bank account)
+5. Copy **Signing secret** (`whsec_...`) → Vercel `STRIPE_WEBHOOK_SECRET` (Production)
+6. Redeploy
+
+**Checkout:** Lead form picks bank (ACH, list price) or card (+3% on design + in-checkout hosting). No Stripe Tax.
 
 Test keys: https://dashboard.stripe.com/test/apikeys
 

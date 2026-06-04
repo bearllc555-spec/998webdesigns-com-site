@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { buildCheckoutLineItems } from "@/lib/checkout-line-items";
+import type { PaymentChannel } from "@/lib/checkout-pricing";
 import { sendLeadCheckoutEmail } from "@/lib/lead-email";
 import { validateLeadPayload } from "@/lib/validate-lead";
 import { checkoutOrigin } from "@/lib/checkout-origin";
@@ -69,16 +70,22 @@ export async function POST(req: NextRequest) {
     warnIfProductionStripeTestMode("leads");
     const origin = checkoutOrigin(req);
 
+    const channel: PaymentChannel = lead.paymentChannel;
+    const paymentMethodTypes: ("card" | "us_bank_account")[] =
+      channel === "ach" ? ["us_bank_account"] : ["card"];
+
     const sessionConfig: Parameters<typeof stripe.checkout.sessions.create>[0] = {
       mode: "payment",
       customer_creation: "always",
       customer_email: lead.email,
-      line_items: buildCheckoutLineItems(lead),
+      payment_method_types: paymentMethodTypes,
+      line_items: buildCheckoutLineItems(lead, channel),
       metadata: {
         fullName: lead.fullName,
         businessName: lead.businessName,
         email: lead.email,
         paymentType: "full",
+        paymentChannel: channel,
         hostingChoice: lead.hostingChoice,
         submittedAt,
         ...(dbResult.ok && dbResult.id ? { wdLeadId: dbResult.id } : {}),
@@ -88,6 +95,7 @@ export async function POST(req: NextRequest) {
           fullName: lead.fullName,
           businessName: lead.businessName,
           paymentType: "full",
+          paymentChannel: channel,
           hostingChoice: lead.hostingChoice,
         },
         receipt_email: lead.email,

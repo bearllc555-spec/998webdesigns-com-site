@@ -74,11 +74,14 @@ Uses `RESEND_API_KEY`.
 
 ## Checkout line items
 
-Stripe Checkout charges:
+Stripe Checkout charges (separate sessions by payment channel):
 
 - Design: **$1,998 pay-in-full** (required)
 - **Ten-year hosting:** +$1,349 when lead selects ten-year hosting on the form
+- **Card only:** +3% processing on the checkout subtotal (design + ten-year hosting if selected)
+- **Bank (ACH):** list price; settlement async — webhook `checkout.session.async_payment_succeeded` marks paid
 - **Month-to-month hosting:** not in Checkout yet ($198/mo billed after launch — metadata + emails only)
+- **Sales tax:** not collected (no Stripe Tax)
 
 ## SEO (sitemap / robots)
 

@@ -25,21 +25,34 @@ function lead(overrides: Partial<ValidatedLead>): ValidatedLead {
     hostingChoice: "later",
     notes: "",
     paymentOption: "full",
+    paymentChannel: "ach",
     addons: [],
     ...overrides,
   };
 }
 
 describe("buildCheckoutLineItems", () => {
-  it("charges full design fee when hosting is later", () => {
-    const items = buildCheckoutLineItems(lead({ hostingChoice: "later" }));
+  it("charges full design fee when hosting is later (ACH)", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "later" }), "ach");
     expect(items).toHaveLength(1);
     expect(items[0].price_data?.unit_amount).toBe(199800);
   });
 
-  it("adds ten-year hosting line item", () => {
-    const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }));
+  it("adds ten-year hosting line item (ACH)", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "ach");
     expect(items).toHaveLength(2);
     expect(items[1].price_data?.unit_amount).toBe(134900);
+  });
+
+  it("adds 3% card processing fee on subtotal", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "later" }), "card");
+    expect(items).toHaveLength(2);
+    expect(items[1].price_data?.unit_amount).toBe(5994);
+  });
+
+  it("card fee applies to design plus ten-year hosting", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "card");
+    expect(items).toHaveLength(3);
+    expect(items[2].price_data?.unit_amount).toBe(10041);
   });
 });

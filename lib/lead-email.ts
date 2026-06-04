@@ -1,3 +1,8 @@
+import {
+  checkoutTotalCents,
+  formatCheckoutUsd,
+  paymentChannelLabel,
+} from "@/lib/checkout-pricing";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "./validate-lead";
 
@@ -24,6 +29,15 @@ export async function sendLeadCheckoutEmail(
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
 
+  const totalLabel = formatCheckoutUsd(
+    checkoutTotalCents(lead.hostingChoice, lead.paymentChannel)
+  );
+  const methodLabel = paymentChannelLabel(lead.paymentChannel);
+  const achNote =
+    lead.paymentChannel === "ach"
+      ? "<p style=\"font-size: 14px; color: #52525b;\">Bank payments (ACH) typically clear in a few business days. Your design clock starts once the transfer settles.</p>"
+      : "";
+
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: lead.email,
@@ -33,8 +47,10 @@ export async function sendLeadCheckoutEmail(
         <p>Hi ${escapeHtml(lead.fullName)},</p>
         <p>Thanks for submitting your project brief for <strong>${escapeHtml(lead.businessName)}</strong>. We received everything.</p>
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
-        <p><strong>Next step:</strong> complete your $1,998 pay-in-full through our secure Stripe checkout${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}:</p>
+        <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
+        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)}${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}</p>
         ${lead.hostingChoice === "monthly" ? `<p style="font-size: 14px; color: #52525b;">Month-to-month hosting ($198/mo) is set up after your site launches — it is not charged in this checkout.</p>` : ""}
+        ${achNote}
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Continue to payment</a>
         </p>

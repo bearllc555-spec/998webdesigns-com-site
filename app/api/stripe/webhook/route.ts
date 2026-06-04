@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { sendInternalPaymentEmail } from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
-import { syncWdLeadPaidInFull } from "@/lib/wd-leads-sync";
+import {
+  syncWdLeadAwaitingBankSettlement,
+  syncWdLeadPaidInFull,
+} from "@/lib/wd-leads-sync";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -16,8 +19,30 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     );
   }
 
+  if (session.payment_status === "paid") {
+    await syncWdLeadPaidInFull(session);
+    await sendInternalPaymentEmail(session);
+    return;
+  }
+
+  // ACH: customer finished Checkout; funds settle asynchronously.
+  if (
+    session.metadata?.paymentChannel === "ach" &&
+    session.payment_status === "unpaid" &&
+    session.status === "complete"
+  ) {
+    await syncWdLeadAwaitingBankSettlement(session);
+    return;
+  }
+
+  console.warn(
+    `[webhook] checkout.session.completed unhandled payment_status=${session.payment_status} channel=${session.metadata?.paymentChannel} session=${session.id}`
+  );
+}
+
+async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
   await syncWdLeadPaidInFull(session);
-  await sendInternalPaymentEmail(session);
+  await sendInternalPaymentEmail(session, { settledAfterAch: true });
 }
 
 export async function POST(req: NextRequest) {
@@ -44,14 +69,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    try {
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
       await handleCheckoutCompleted(session);
-    } catch (err) {
-      console.error("[webhook] checkout.session.completed handler failed:", err);
-      return NextResponse.json({ error: "Handler failed" }, { status: 500 });
+    } else if (event.type === "checkout.session.async_payment_succeeded") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handleAsyncPaymentSucceeded(session);
+    } else if (event.type === "checkout.session.async_payment_failed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      console.warn(
+        `[webhook] ACH payment failed for session ${session.id} email=${session.metadata?.email}`
+      );
     }
+  } catch (err) {
+    console.error(`[webhook] ${event.type} handler failed:`, err);
+    return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

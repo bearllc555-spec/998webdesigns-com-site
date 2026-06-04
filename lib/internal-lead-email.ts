@@ -1,4 +1,9 @@
 import type Stripe from "stripe";
+import {
+  checkoutTotalCents,
+  formatCheckoutUsd,
+  paymentChannelLabel,
+} from "@/lib/checkout-pricing";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "@/lib/validate-lead";
 import { stripeKeyMode } from "@/lib/stripe-env";
@@ -45,6 +50,8 @@ export async function sendInternalLeadSubmittedEmail(
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">New lead — payment not completed yet</h2>
         <p><strong>Plan:</strong> $1,998 pay in full (selected)</p>
+        <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(lead.paymentChannel))}</p>
+        <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutTotalCents(lead.hostingChoice, lead.paymentChannel)))}</p>
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
         <p><strong>Business:</strong> ${escapeHtml(lead.businessName)}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
@@ -62,7 +69,8 @@ export async function sendInternalLeadSubmittedEmail(
 }
 
 export async function sendInternalPaymentEmail(
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
+  options?: { settledAfterAch?: boolean }
 ): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
     throw new Error("RESEND_API_KEY not configured");
@@ -80,6 +88,16 @@ export async function sendInternalPaymentEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
   const dashboardBase = stripeDashboardBase();
 
+  const channelLabel =
+    meta.paymentChannel === "ach"
+      ? "Bank (ACH)"
+      : meta.paymentChannel === "card"
+        ? "Card"
+        : "—";
+  const achNote = options?.settledAfterAch
+    ? "<p style=\"font-size: 14px; color: #52525b;\">ACH settlement completed (async payment succeeded).</p>"
+    : "";
+
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
@@ -88,6 +106,8 @@ export async function sendInternalPaymentEmail(
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">New checkout completed</h2>
         <p><strong>Status:</strong> Paid in full</p>
+        <p><strong>Payment method:</strong> ${escapeHtml(channelLabel)}</p>
+        ${achNote}
         <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
         <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
         <p><strong>Business:</strong> ${escapeHtml(meta.businessName || "—")}</p>

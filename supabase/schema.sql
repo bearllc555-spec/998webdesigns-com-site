@@ -11,7 +11,7 @@ create table if not exists public.wd_leads (
   full_name text not null,
   ip text,
   payload jsonb not null,
-  -- new | awaiting_payment | deposit_paid | balance_held | balance_captured | paid_in_full
+  -- new | awaiting_payment | awaiting_bank_settlement | deposit_paid | balance_held | balance_captured | paid_in_full
   status text not null default 'new',
   stripe_customer_id text,
   stripe_deposit_invoice_id text,  -- Stripe Checkout session id (legacy column name)

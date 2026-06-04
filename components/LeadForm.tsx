@@ -9,6 +9,11 @@ import {
   isAddonVisuallySelected,
   isGrowthPackMember,
 } from "@/lib/addons";
+import {
+  checkoutTotalCents,
+  formatCheckoutUsd,
+} from "@/lib/checkout-pricing";
+import type { PaymentChannel } from "@/lib/validate-lead";
 
 type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
@@ -41,6 +46,7 @@ type FormState = {
   hostingChoice: "ten_year" | "monthly" | "later" | "";
   notes: string;
   paymentOption: PaymentOption;
+  paymentChannel: PaymentChannel;
   addons: string[];
   // Honeypot
   website: string;
@@ -52,6 +58,7 @@ const initial: FormState = {
   projectType: "", visitorActions: [], pages: [], pagesOther: "", brandAssets: [],
   inspirationUrls: "", avoidances: "",
   startDate: "", hostingChoice: "", notes: "", paymentOption: "full",
+  paymentChannel: "ach",
   addons: [],
   website: "",
 };
@@ -158,6 +165,7 @@ export function LeadForm() {
     }
     if (step === 4) {
       if (!form.hostingChoice) e.hostingChoice = "Pick a hosting preference.";
+      if (!form.paymentChannel) e.paymentChannel = "Pick how you want to pay.";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -504,12 +512,52 @@ export function LeadForm() {
 
           {step === 4 && (
             <div className="grid gap-5">
-              <Field label="Payment">
-                <div className="rounded-xl border border-accent bg-accent px-4 py-4 text-on-accent">
-                  <span className="block text-sm font-medium">$1,998 — paid in full to start</span>
-                  <span className="mt-1 block text-xs text-on-accent/70">
-                    Full payment before your project enters the queue
+              <Field label="Payment" required error={errors.paymentChannel}>
+                <div className="rounded-xl border border-rule bg-bg px-4 py-4">
+                  <span className="block text-sm font-medium text-ink">
+                    $1,998 design — paid in full to start
+                    {form.hostingChoice === "ten_year" ? " (+ $1,349 ten-year hosting at checkout)" : ""}
                   </span>
+                  <span className="mt-1 block text-xs text-ink-soft">
+                    Full payment before your project enters the queue (after bank transfer clears for ACH).
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-2 md:grid-cols-2">
+                  {([
+                    ["ach", "Bank account (ACH)", "List price — no card fee"],
+                    ["card", "Credit or debit card", "Includes 3% processing on your total"],
+                  ] as const).map(([val, title, hint]) => {
+                    const channel = val as PaymentChannel;
+                    const total =
+                      form.hostingChoice &&
+                      formatCheckoutUsd(checkoutTotalCents(form.hostingChoice, channel));
+                    return (
+                      <label
+                        key={val}
+                        className={`cursor-pointer rounded-xl border px-4 py-3 transition ${
+                          form.paymentChannel === val
+                            ? "border-accent bg-accent/[0.06]"
+                            : "border-rule bg-bg hover:border-accent/50"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentChannel"
+                          value={val}
+                          checked={form.paymentChannel === val}
+                          onChange={() => set("paymentChannel", channel)}
+                          className="sr-only"
+                        />
+                        <span className="block text-sm font-medium text-ink">{title}</span>
+                        <span className="mt-1 block text-xs text-ink-soft">{hint}</span>
+                        {total && (
+                          <span className="mt-2 block text-sm font-medium text-accent">
+                            Checkout total: {total}
+                          </span>
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
               </Field>
 
@@ -592,10 +640,16 @@ export function LeadForm() {
             ) : (
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !form.hostingChoice}
                 className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
               >
-                {submitting ? "Redirecting to payment..." : "Continue to pay $1,998"}
+                {submitting
+                  ? "Redirecting to payment..."
+                  : form.hostingChoice
+                    ? `Continue to pay ${formatCheckoutUsd(
+                        checkoutTotalCents(form.hostingChoice, form.paymentChannel)
+                      )}`
+                    : "Continue to payment"}
               </button>
             )}
           </div>
@@ -603,8 +657,9 @@ export function LeadForm() {
 
         {step === 4 && (
           <p className="mt-6 text-center text-xs text-slate">
-            You&rsquo;ll be redirected to Stripe to complete payment securely. We collect full
-            payment before your project enters the queue.
+            You&rsquo;ll be redirected to Stripe to pay by bank or card. Card payments include a 3%
+            processing fee on your checkout total. Bank (ACH) is list price. Sales tax is not
+            collected at checkout.
           </p>
         )}
       </div>

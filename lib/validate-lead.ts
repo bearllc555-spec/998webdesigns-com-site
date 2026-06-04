@@ -1,5 +1,6 @@
 export type HostingChoice = "ten_year" | "monthly" | "later";
 export type PaymentOption = "full";
+export type PaymentChannel = "ach" | "card";
 export type ContactPref = "email" | "phone" | "text";
 export type ProjectType = "new" | "redesign";
 
@@ -25,6 +26,7 @@ export type ValidatedLead = {
   hostingChoice: HostingChoice;
   notes: string;
   paymentOption: PaymentOption;
+  paymentChannel: PaymentChannel;
   addons: string[];
 };
 
@@ -64,6 +66,7 @@ export function validateLeadPayload(
   const projectType = str(body.projectType);
   const hostingChoice = str(body.hostingChoice);
   const paymentOption = str(body.paymentOption);
+  const paymentChannel = str(body.paymentChannel);
 
   if (!fullName) return { ok: false, error: "Missing required field: fullName" };
   if (!businessName) return { ok: false, error: "Missing required field: businessName" };
@@ -86,6 +89,9 @@ export function validateLeadPayload(
       ok: false,
       error: "Invalid paymentOption — $1,998 must be paid in full upfront",
     };
+  }
+  if (!paymentChannel || !["ach", "card"].includes(paymentChannel)) {
+    return { ok: false, error: "Missing or invalid paymentChannel (ach or card)" };
   }
 
   return {
@@ -112,6 +118,7 @@ export function validateLeadPayload(
       hostingChoice: hostingChoice as HostingChoice,
       notes: str(body.notes) ?? "",
       paymentOption: "full",
+      paymentChannel: paymentChannel as PaymentChannel,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
     },
   };

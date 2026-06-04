@@ -12,6 +12,7 @@ const validBase = {
   projectType: "new",
   hostingChoice: "later",
   paymentOption: "full",
+  paymentChannel: "ach",
   addons: [],
 };
 
@@ -47,5 +48,12 @@ describe("validateLeadPayload", () => {
   it("rejects invalid hostingChoice", () => {
     const result = validateLeadPayload({ ...validBase, hostingChoice: "weekly" });
     expect(result.ok).toBe(false);
+  });
+
+  it("rejects missing paymentChannel", () => {
+    const { paymentChannel: _, ...withoutChannel } = validBase;
+    const result = validateLeadPayload(withoutChannel);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/paymentChannel/i);
   });
 });
