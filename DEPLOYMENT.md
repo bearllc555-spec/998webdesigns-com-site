@@ -90,14 +90,23 @@ Production must use **`supabase-998webdesigns-helmet`** (org **bearllc555-6551's
 
 Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or ask Cursor to fix Supabase on Vercel.
 
+## Supabase + GitHub
+
+Repo is set up for [Supabase GitHub integration](https://supabase.com/docs/guides/deployment/branching/github-integration): `supabase/config.toml` + `supabase/migrations/`.
+
+**One-time (Anthony):** double-click `slatepress/GO-LINK-SUPABASE-GITHUB-998.cmd` → authorize GitHub → connect repo `bearllc555-spec/998webdesigns-com-site` → production branch `main` → enable **Deploy to production**. Details: `supabase/README.md`.
+
+**Baseline repair (once, after connect):** helmet already has tables — run `npx supabase migration repair --status applied 20260604140000` after `supabase link --project-ref xwldbxburzqryxlzocck` so history matches live DB.
+
 ## Supabase tables
 
-Run **`supabase/schema.sql`** once in the Supabase SQL editor if not already applied:
+- **`wd_leads`** — Get started (`/api/leads`)
+- **`contact_submissions`** — Contact modal (`/api/contact`)
+- **`api_rate_limits`** — distributed API rate limits
 
-- **`wd_leads`** — lead form rows from `/api/leads`
-- **`api_rate_limits`** — shared rate limits across Vercel instances (5/min leads, 10/min contact per IP)
+Apply via GitHub push (migrations) or run **`supabase/schema.sql`** once in the SQL editor.
 
-If tables are missing, leads still reach Stripe; Vercel logs will say `wd_leads table missing` or `api_rate_limits table missing`.
+If tables are missing, leads still reach Stripe; contact email still sends; logs note missing tables.
 
 ## Rate limiting
 

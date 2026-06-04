@@ -1,8 +1,6 @@
--- Mirror of supabase/migrations/ (GitHub + Supabase integration). Prefer new migration files for changes.
--- Run once on helmet (xwldbxburzqryxlzocck): SQL editor or scripts/apply-helmet-schema.mjs
--- Service-role API routes bypass RLS; anon/authenticated have no policies (denied).
+-- Baseline schema for 998webdesigns.com (helmet: xwldbxburzqryxlzocck).
+-- Idempotent (IF NOT EXISTS) for brownfield DBs already set up via schema.sql.
 
--- Lead intake from /api/leads
 create table if not exists public.wd_leads (
   id uuid primary key default gen_random_uuid(),
   submitted_at timestamptz not null default now(),
@@ -11,11 +9,10 @@ create table if not exists public.wd_leads (
   full_name text not null,
   ip text,
   payload jsonb not null,
-  -- new | awaiting_payment | deposit_paid | balance_held | balance_captured | paid_in_full
   status text not null default 'new',
   stripe_customer_id text,
-  stripe_deposit_invoice_id text,  -- Stripe Checkout session id (legacy column name)
-  stripe_balance_invoice_id text,  -- legacy balance-hold PaymentIntent id (pre pay-in-full-only)
+  stripe_deposit_invoice_id text,
+  stripe_balance_invoice_id text,
   notes text
 );
 
@@ -24,7 +21,6 @@ create index if not exists wd_leads_email_idx on public.wd_leads (email);
 
 alter table public.wd_leads enable row level security;
 
--- Distributed API rate limits (/api/leads, /api/contact)
 create table if not exists public.api_rate_limits (
   rate_key text primary key,
   hit_count int not null default 1 check (hit_count >= 0),
@@ -35,7 +31,6 @@ create index if not exists api_rate_limits_window_idx on public.api_rate_limits 
 
 alter table public.api_rate_limits enable row level security;
 
--- Contact modal /api/contact (email + Supabase log)
 create table if not exists public.contact_submissions (
   id uuid primary key default gen_random_uuid(),
   submitted_at timestamptz not null default now(),
@@ -51,6 +46,3 @@ create index if not exists contact_submissions_submitted_at_idx
 create index if not exists contact_submissions_email_idx on public.contact_submissions (email);
 
 alter table public.contact_submissions enable row level security;
-
--- Optional: purge stale rate-limit rows (run via cron or manually)
--- delete from public.api_rate_limits where window_ends_at < now() - interval '1 day';

@@ -6,6 +6,10 @@ __v0_jsx-dev-runtime.ts
 .v0-trash/
 .vercel/
 
+# Supabase CLI local state
+.branches
+.temp
+
 # Environment variables
 .env*.local
 
