@@ -23,6 +23,14 @@ Read `DEV.md` in this repo for full detail. Enforce these defaults in every sess
 - Do not edit this repo from two Cursor windows simultaneously (OneDrive sync risk).
 - Chat context does not carry across windows; use `CLAUDE.md`, `DEV.md`, and `lib/version.ts` as source of truth.
 
+## CRM in Cursor (not external Chrome)
+
+- **CRM local URL:** http://localhost:3000/crm
+- Open inside Cursor: **Terminal → Run Task… → `998: dev + CRM tab`** (starts dev if needed, then Simple Browser to `/crm`).
+- Or **Command Palette → `Simple Browser: Show` →** paste `http://localhost:3000/crm`.
+- Browser tab title is **`CRM`** (see `app/crm/layout.tsx` metadata).
+
 ## Handoff language
 
-When opening local for Anthony, give the Chrome link: http://localhost:3000 (not IDE-only URLs).
+- **Marketing site:** http://localhost:3000
+- **CRM:** http://localhost:3000/crm — prefer Cursor Simple Browser for CRM work in this repo.

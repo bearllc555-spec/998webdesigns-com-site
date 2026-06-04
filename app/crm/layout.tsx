@@ -1,5 +1,7 @@
-export const metadata = {
-  title: "CRM — 998 web designs",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: { absolute: "CRM" },
   robots: { index: false, follow: false },
 };
 

@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "998: dev server",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "nextjs",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Ready in|✓ Ready|Local:\\s+http)"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "998-dev"
+      }
+    },
+    {
+      "label": "998: open CRM in Cursor browser",
+      "command": "${input:openCrmSimpleBrowser}",
+      "problemMatcher": []
+    },
+    {
+      "label": "998: dev + CRM tab",
+      "dependsOn": ["998: dev server", "998: open CRM in Cursor browser"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "openCrmSimpleBrowser",
+      "type": "command",
+      "command": "simpleBrowser.show",
+      "args": ["http://localhost:3000/crm"]
+    }
+  ]
+}

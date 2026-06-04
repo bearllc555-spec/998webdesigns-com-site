@@ -9,9 +9,19 @@ Anthony often runs **multiple Cursor windows** on Windows 11. This doc keeps loc
 | Surface | URL |
 |--------|-----|
 | **Local dev** | http://localhost:3000 |
+| **CRM (local)** | http://localhost:3000/crm |
 | **Production** | https://998webdesigns.com |
+| **CRM (prod)** | https://998webdesigns.com/crm |
 
 `npm run dev` runs `next dev -p 3000` (see `package.json`). Do not rely on auto-increment to 3001/3002 for this project.
+
+### CRM inside Cursor (Simple Browser)
+
+1. **Run Task:** `Terminal` → `Run Task…` → **`998: dev + CRM tab`** — waits for Next ready, opens `/crm` in the editor browser panel (tab title **CRM**).
+2. **Already on port 3000?** Run Task → **`998: open CRM in Cursor browser`** only.
+3. **Manual:** Command Palette → **`Simple Browser: Show`** → `http://localhost:3000/crm`
+
+Use the in-editor browser for CRM so it stays beside your code. External Chrome is fine for prod checks.
 
 **Sanity check:** Nav/footer show `SITE_VERSION` from `lib/version.ts`. Local and prod should match only after you’ve pulled and restarted dev, or after a deploy (~30–60s on Vercel).
 
