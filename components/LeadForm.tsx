@@ -333,7 +333,7 @@ export function LeadForm() {
                   type="text"
                   value={form.industry}
                   onChange={(e) => set("industry", e.target.value)}
-                  placeholder="e.g. plumbing, dental, retail"
+                  placeholder="e.g. service, retail, trades"
                   className={inputCls(errors.industry)}
                 />
               </Field>
