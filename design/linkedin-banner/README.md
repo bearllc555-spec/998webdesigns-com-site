@@ -18,8 +18,12 @@ Design aligned with the live site:
 
 ## Export for LinkedIn
 
-1. Open `linkedin-banner-v3.html` in Chrome (double-click or drag into browser).
-2. Capture **only** the 1584×396 white banner (not the gray page chrome):
+**Live previews** scale to LinkedIn’s desktop cover width (~1128px) and show a profile-photo overlap mockup.
+
+1. Open https://998webdesigns.com/temp or `/temp/2` — preview matches how the cover looks on a LinkedIn profile.
+2. For the upload file, capture or export at **1584×396** (full artboard), or screenshot only the cover strip inside the white card if that matches your workflow.
+3. Legacy HTML: open `linkedin-banner-v3.html` in Chrome (double-click or drag into browser).
+4. Capture **only** the 1584×396 white banner (not the gray page chrome):
    - **Windows:** Snipping Tool / Snip & Sketch — region capture, or DevTools device mode at 1584×396.
    - **Optional:** Print → Save as PDF → crop, or use Figma import at 1584×396.
 3. Upload to LinkedIn → **Profile** → banner image.

@@ -1,77 +1,70 @@
 import Link from "next/link";
+import { LinkedInBannerPreview } from "@/components/temp/LinkedInBannerPreview";
+import "./linkedin-preview.css";
 import "./linkedin-banner.css";
 
 export default function TempPage() {
   return (
     <div className="temp-page">
-      <nav
-        className="fixed left-1/2 top-3 z-10 flex -translate-x-1/2 gap-3 text-[13px] font-medium"
-        aria-label="Banner designs"
-      >
-        <Link
-          href="/temp"
-          aria-current="page"
-          className="rounded-full border border-accent bg-white px-3 py-1.5 text-accent"
-        >
+      <nav aria-label="Banner designs">
+        <Link href="/temp" aria-current="page">
           Design 1
         </Link>
-        <Link
-          href="/temp/2"
-          className="rounded-full border border-rule bg-white px-3 py-1.5 text-ink-soft hover:border-accent/50"
-        >
-          Design 2 — Manhattan
-        </Link>
+        <Link href="/temp/2">Design 2 — Manhattan</Link>
       </nav>
-      <div className="linkedin-banner" id="banner">
-        <div className="bg-glow" aria-hidden="true" />
-        <div className="bg-watermark" aria-hidden="true">
-          998
-        </div>
-        <div className="bg-dots" aria-hidden="true" />
-        <div className="bg-line" aria-hidden="true" />
 
-        <div className="content">
-          <div className="brand-block">
-            <p className="eyebrow">
-              <span className="eyebrow-dot" aria-hidden="true" />
-              Handcrafted for local service businesses
-            </p>
-            <h1 className="logo" aria-label="998 webdesigns">
-              <span className="logo-998">998</span>
-              <span className="logo-rest">webdesigns</span>
-            </h1>
-            <p className="tagline">
-              <strong>High-converting websites</strong> — built in 7 business days, no agency
-              bloat.
-            </p>
+      <LinkedInBannerPreview designLabel="Design 1 — Bricolage display">
+        <div className="linkedin-banner" id="banner">
+          <div className="bg-glow" aria-hidden="true" />
+          <div className="bg-watermark" aria-hidden="true">
+            998
           </div>
+          <div className="bg-dots" aria-hidden="true" />
+          <div className="bg-line" aria-hidden="true" />
 
-          <aside className="offer" aria-label="Offer">
-            <p className="offer-kicker">Flat pricing</p>
-            <p className="offer-main">
-              7-day builds<span className="sep">·</span>$1,998 flat
-            </p>
-            <div className="offer-rule" aria-hidden="true" />
-            <p className="offer-url">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-              998webdesigns.com
-            </p>
-          </aside>
+          <div className="content">
+            <div className="brand-block">
+              <p className="eyebrow">
+                <span className="eyebrow-dot" aria-hidden="true" />
+                Handcrafted for local service businesses
+              </p>
+              <h1 className="logo" aria-label="998 webdesigns">
+                <span className="logo-998">998</span>
+                <span className="logo-rest">webdesigns</span>
+              </h1>
+              <p className="tagline">
+                <strong>High-converting websites</strong> — built in 7 business days, no agency
+                bloat.
+              </p>
+            </div>
+
+            <aside className="offer" aria-label="Offer">
+              <p className="offer-kicker">Flat pricing</p>
+              <p className="offer-main">
+                7-day builds<span className="sep">·</span>$1,998 flat
+              </p>
+              <div className="offer-rule" aria-hidden="true" />
+              <p className="offer-url">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                998webdesigns.com
+              </p>
+            </aside>
+          </div>
         </div>
-      </div>
+      </LinkedInBannerPreview>
 
       <p className="hint">
-        LinkedIn banner 1584×396 — screenshot the white box above. Text is padded clear of the
-        profile photo (bottom-left).
+        Screenshot the cover area inside the white card for a WYSIWYG check. Export/upload at
+        1584×396 for LinkedIn.
       </p>
     </div>
   );
