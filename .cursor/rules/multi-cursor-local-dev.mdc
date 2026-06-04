@@ -1,0 +1,28 @@
+---
+description: Multi-Cursor Windows local dev — port 3000, one server, prod vs local
+alwaysApply: true
+---
+
+# 998 local dev (multi-Cursor Windows)
+
+Read `DEV.md` in this repo for full detail. Enforce these defaults in every session:
+
+## URLs
+
+- **Local:** http://localhost:3000 only (`npm run dev` → `next dev -p 3000` in package.json).
+- **Prod:** https://998webdesigns.com after push to `main` (~30–60s Vercel).
+- Do not assume localhost:3001/3002 is this project.
+
+## One dev server
+
+- At most one `next dev` for this repo. If port 3000 is in use, diagnose with `netstat` / kill stray `node.exe` — do not start a duplicate on another port without Anthony asking.
+
+## Multi-window safety
+
+- Confirm terminal cwd is `998webdesigns-com-site` before `npm run dev` or git push.
+- Do not edit this repo from two Cursor windows simultaneously (OneDrive sync risk).
+- Chat context does not carry across windows; use `CLAUDE.md`, `DEV.md`, and `lib/version.ts` as source of truth.
+
+## Handoff language
+
+When opening local for Anthony, give the Chrome link: http://localhost:3000 (not IDE-only URLs).

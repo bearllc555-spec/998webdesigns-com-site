@@ -119,6 +119,12 @@ Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run i
 
 ---
 
+## Local dev (multi-Cursor Windows)
+
+**Pinned:** http://localhost:3000 · Full practices: **`DEV.md`** · Cursor rule: `.cursor/rules/multi-cursor-local-dev.mdc`
+
+---
+
 ## How to ship a change
 
 ```
