@@ -143,17 +143,17 @@ function InboxRow({
               : "crm-inbox-row-read dark:bg-zinc-900/35"
         }`}
       >
-      <div className="crm-inbox-row-body flex min-w-0 flex-1 gap-3 bg-transparent px-4 py-3.5 text-left">
+      <div className="crm-inbox-row-body flex min-w-0 flex-1 items-center gap-2.5 bg-transparent px-4 py-2 text-left">
         <span
-          className={`mt-2 h-2 w-2 shrink-0 rounded-full ${
+          className={`h-2 w-2 shrink-0 rounded-full ${
             unread ? "bg-accent" : "bg-transparent"
           }`}
           aria-hidden
         />
-        <span className="min-w-0 flex-1">
-          <span className="flex items-baseline justify-between gap-2">
+        <span className="flex min-w-0 flex-1 items-baseline justify-between gap-2">
+          <span className="flex min-w-0 flex-1 items-baseline gap-1.5 overflow-hidden">
             <span
-              className={`truncate text-sm ${
+              className={`max-w-[38%] shrink-0 truncate text-sm ${
                 unread
                   ? "crm-inbox-row-unread-text"
                   : "crm-inbox-row-read-text dark:text-zinc-500"
@@ -161,40 +161,50 @@ function InboxRow({
             >
               {item.title || item.email}
             </span>
+            {!expanded && (company || previewLine(item)) && (
+              <>
+                <span
+                  className={`shrink-0 text-xs ${
+                    unread
+                      ? "crm-inbox-row-unread-text opacity-50"
+                      : "crm-inbox-row-read-text opacity-50 dark:text-zinc-600"
+                  }`}
+                  aria-hidden
+                >
+                  ·
+                </span>
+                <span
+                  className={`min-w-0 truncate text-xs ${
+                    unread
+                      ? "crm-inbox-row-unread-text"
+                      : "crm-inbox-row-read-text dark:text-zinc-600"
+                  }`}
+                >
+                  {company ? `${company} · ` : ""}
+                  {previewLine(item)}
+                </span>
+              </>
+            )}
+          </span>
+          <span
+            className={`flex shrink-0 items-center gap-2 text-xs ${
+              unread
+                ? "crm-inbox-row-unread-text"
+                : "crm-inbox-row-read-text dark:text-zinc-600"
+            }`}
+          >
+            <span>{formatListWhen(item.at)}</span>
             <span
-              className={`flex shrink-0 items-center gap-2 text-xs ${
-                unread
-                  ? "crm-inbox-row-unread-text"
-                  : "crm-inbox-row-read-text dark:text-zinc-600"
-              }`}
+              className={`inline-block transition-transform ${expanded ? "rotate-180" : ""}`}
+              aria-hidden
             >
-              <span>{formatListWhen(item.at)}</span>
-              <span
-                className={`inline-block transition-transform ${expanded ? "rotate-180" : ""}`}
-                aria-hidden
-              >
-                ▾
-              </span>
+              ▾
             </span>
           </span>
-          {!expanded && (
-            <>
-              <span
-                className={`mt-0.5 block truncate text-xs ${
-                  unread
-                    ? "crm-inbox-row-unread-text"
-                    : "crm-inbox-row-read-text dark:text-zinc-600"
-                }`}
-              >
-                {company ? `${company} · ` : ""}
-                {previewLine(item)}
-              </span>
-            </>
-          )}
         </span>
       </div>
       <div
-        className="flex shrink-0 items-center gap-1 self-stretch py-3.5 pr-2"
+        className="flex shrink-0 items-center gap-1 self-stretch py-2 pr-2"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       >
