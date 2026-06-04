@@ -32,6 +32,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 
 ## Deferred / backlog
 
+- **Live checkout E2E (audit #5)** — blocked until bank approves a real-card test charge. Live Stripe + webhook + ACH verified via env-status; paid Checkout → webhook delivery 200 not yet proven. When approved: `node scripts/create-live-checkout-smoke.mjs` ($1), confirm Stripe Event deliveries → 200, refund. On portfolio queue: `whats-next.md` item 13.
 - **Portfolio carousel** — Serenity Spa is live-linked; other slots use placeholder art until real mockups + URLs ship (`data/portfolio.ts`).
 - **Slack** — optional; payment alerts already email `hello@` via Resend on webhook.
 - **Stripe Billing Portal** — optional self-serve cancel for $198/mo (subscription id stored on `wd_leads`).

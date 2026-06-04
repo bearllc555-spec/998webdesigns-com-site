@@ -42,7 +42,7 @@ Secrets live in workspace `.local/` (gitignored). Never commit keys.
 3. Developers → Webhooks → add endpoint `https://998webdesigns.com/api/stripe/webhook`, event `checkout.session.completed`, copy **live** signing secret (`whsec_...`).
 4. Vercel → **998webdesigns-com-site** → Production → update `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
 5. Redeploy Production.
-6. Run one real small-charge test, then refund in Stripe if needed.
+6. Run one real small-charge test, then refund in Stripe if needed. **Blocked 2026-06-04:** bank approval required before Anthony uses a personal card — see workspace `whats-next.md` (998 item 13). Until then, webhook signature probe + `env-status` `stripeOps` probes are the verification baseline.
 
 Server logs warn when Production still has `sk_test_` (`lib/stripe-env.ts`). While sandbox testing, set `STRIPE_EXPECTED_MODE=test` on Production so env-status does not flag a false mismatch.
 
