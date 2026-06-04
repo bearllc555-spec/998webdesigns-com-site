@@ -92,11 +92,11 @@ Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or ask Cursor to fix Supabase
 
 ## Supabase + GitHub
 
-Repo is set up for [Supabase GitHub integration](https://supabase.com/docs/guides/deployment/branching/github-integration): `supabase/config.toml` + `supabase/migrations/`.
+**Day-to-day:** Vercel ↔ helmet integration is enough (env vars + live tables). No dashboard GitHub form required.
 
-**One-time (Anthony):** double-click `slatepress/GO-LINK-SUPABASE-GITHUB-998.cmd` → authorize GitHub → connect repo `bearllc555-spec/998webdesigns-com-site` → production branch `main` → enable **Deploy to production**. Details: `supabase/README.md`.
+**Optional:** Supabase Integrations → GitHub → repo `998webdesigns-com-site`, working directory `.`, **Deploy to production** ON. Or ignore — Cursor can run SQL in the editor when schema changes.
 
-**Baseline repair (once, after connect):** helmet already has tables — run `npx supabase migration repair --status applied 20260604140000` after `supabase link --project-ref xwldbxburzqryxlzocck` so history matches live DB.
+**Optional auto-migrations:** `.github/workflows/supabase-migrations.yml` + `slatepress/GO-FINISH-SUPABASE-GITHUB-998.cmd` (sets GitHub secrets; may prompt once for a Supabase access token).
 
 ## Supabase tables
 

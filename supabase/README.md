@@ -1,49 +1,29 @@
-# Supabase + GitHub (998webdesigns.com)
+# Supabase (998webdesigns.com)
 
-**Remote project:** `supabase-998webdesigns-helmet` · ref `xwldbxburzqryxlzocck`
+**Project:** helmet · `xwldbxburzqryxlzocck`
 
-Schema changes belong in **`supabase/migrations/`** (versioned). `schema.sql` is a human-readable mirror — keep it aligned when you add migrations.
+## You are already set up for day-to-day use
 
-## 1. Connect GitHub in Supabase (one-time)
+- **Vercel** ↔ Supabase helmet (env vars) — connected in Integrations
+- **Tables** on production: `wd_leads`, `contact_submissions`, `api_rate_limits`
+- **App** reads/writes via API routes — no GitHub required
 
-1. Open [Integrations](https://supabase.com/dashboard/project/xwldbxburzqryxlzocck/settings/integrations) for helmet.
-2. Under **GitHub**, click **Authorize GitHub** → approve **Supabase** on GitHub.
-3. **Repository:** `bearllc555-spec/998webdesigns-com-site`
-4. **Working directory:** leave empty (repo root; `supabase/` is at top level).
-5. **Production branch:** `main`
-6. Turn on **Deploy to production** (applies new migrations on push/merge to `main`).
-7. Optional: **Automatic branching** (preview DB per PR).
-8. Click **Enable integration**.
+## Supabase dashboard “GitHub” form — optional
 
-## 2. Baseline already on production
+You can **ignore** it or leave as-is (repo + working directory `.` + **Deploy to production** ON).
 
-Helmet already has these tables (manual SQL). After GitHub is connected, mark the baseline migration as applied **once** so Supabase does not treat history as out of sync:
+Claude can also apply schema via the SQL editor when you ask for a DB change.
 
-```bash
-npx supabase login
-npx supabase link --project-ref xwldbxburzqryxlzocck
-npx supabase migration repair --status applied 20260604140000
-```
+## Automatic migrations from Git (handled for you)
 
-(DB password or access token when prompted — from [Account tokens](https://supabase.com/dashboard/account/tokens) and project **Database** settings.)
+Repo includes `.github/workflows/supabase-migrations.yml`.
 
-## 3. Day-to-day workflow
+**One double-click** (only if you want push-to-main to auto-apply migrations):
 
-```bash
-npx supabase migration new describe_your_change
-# edit supabase/migrations/<timestamp>_describe_your_change.sql
-git add supabase/migrations/
-git commit -m "db: describe your change"
-git push origin main
-```
+`slatepress/GO-FINISH-SUPABASE-GITHUB-998.cmd`
 
-With **Deploy to production** enabled, Supabase runs new migrations on `main` automatically.
+That script sets GitHub secrets. If it asks for a token, paste it into `.local/supabase-access-token.txt` and run again.
 
-## Local only (optional)
+## If you need a manual SQL change
 
-```bash
-npx supabase start   # Docker local stack
-npx supabase db reset
-```
-
-Not required for production; Vercel app uses hosted helmet + env vars.
+Edit `supabase/schema.sql` and/or add `supabase/migrations/<timestamp>_name.sql`, or ask Cursor to run SQL in the Supabase SQL editor.
