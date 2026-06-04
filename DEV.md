@@ -23,6 +23,20 @@ Anthony often runs **multiple Cursor windows** on Windows 11. This doc keeps loc
 
 Use the in-editor browser for CRM so it stays beside your code. External Chrome is fine for prod checks.
 
+### CRM shows no messages locally (empty inbox)
+
+The feed reads **helmet** (`xwldbxburzqryxlzocck`), same as production. If `.env.local` still points at the old Slatepress project (`jxthwtflrzudepxysgje`), the API returns **200 with zero rows** — not a browser bug.
+
+**Fix:** Sync Supabase vars from `slatepress/.local/supabase-998-helmet-notes.txt` into repo `.env.local`:
+
+- `NEXT_PUBLIC_SUPABASE_URL` → `https://xwldbxburzqryxlzocck.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` → `sb_publishable_...` from that file
+- `SUPABASE_SERVICE_ROLE_KEY` → `sb_secret_...` from that file
+
+Then **restart** `npm run dev` (Next only loads `.env.local` at startup).
+
+**Still empty after that?** Sign in again at `/crm/login` (session cookie is fine; the DB was wrong). If the UI shows a red error, run CRM migrations (`read_at`, `inbox_flag`) per `DEPLOYMENT.md`.
+
 **Sanity check:** Nav/footer show `SITE_VERSION` from `lib/version.ts`. Local and prod should match only after you’ve pulled and restarted dev, or after a deploy (~30–60s on Vercel).
 
 ---

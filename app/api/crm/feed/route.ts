@@ -22,5 +22,6 @@ export async function GET(req: NextRequest) {
     Math.max(10, Number(req.nextUrl.searchParams.get("limit") ?? "80") || 80)
   );
 
-  return NextResponse.json({ items: await fetchCrmFeed(limit) });
+  const { items, error } = await fetchCrmFeed(limit);
+  return NextResponse.json({ items, error: error ?? null });
 }

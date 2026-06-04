@@ -21,8 +21,13 @@ export function CrmDashboard() {
         return;
       }
       if (!res.ok) throw new Error("Failed to load feed");
-      const data = (await res.json()) as { items: CrmFeedItem[] };
-      setItems(data.items);
+      const data = (await res.json()) as { items: CrmFeedItem[]; error?: string | null };
+      if (data.error) {
+        setError(data.error);
+        setItems([]);
+        return;
+      }
+      setItems(data.items ?? []);
     } catch {
       setError("Could not load activity.");
     } finally {

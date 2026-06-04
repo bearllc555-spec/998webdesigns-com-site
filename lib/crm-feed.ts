@@ -30,9 +30,21 @@ export function isCrmFeedItemUnread(item: CrmFeedItem): boolean {
   return item.readAt == null;
 }
 
-export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
+export type CrmFeedResult = {
+  items: CrmFeedItem[];
+  /** Set when Supabase is misconfigured or the schema query failed. */
+  error?: string;
+};
+
+export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   const supa = supabaseAdmin();
-  if (!supa) return [];
+  if (!supa) {
+    return {
+      items: [],
+      error:
+        "Supabase not configured locally. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local (helmet: xwldbxburzqryxlzocck — see DEV.md).",
+    };
+  }
 
   const [leadsRes, contactsRes] = await Promise.all([
     supa
@@ -48,6 +60,22 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
       .order("submitted_at", { ascending: false })
       .limit(limit),
   ]);
+
+  const errors: string[] = [];
+  if (leadsRes.error) {
+    console.warn("[crm-feed] wd_leads:", leadsRes.error.message);
+    errors.push(`leads: ${leadsRes.error.message}`);
+  }
+  if (contactsRes.error) {
+    console.warn("[crm-feed] contact_submissions:", contactsRes.error.message);
+    errors.push(`contacts: ${contactsRes.error.message}`);
+  }
+  if (errors.length) {
+    const hint = /inbox_flag|read_at|does not exist/i.test(errors.join(" "))
+      ? " Run CRM migrations in Supabase (read_at, inbox_flag) or POST /api/admin/migrate-crm-read and migrate-crm-inbox-flag."
+      : "";
+    return { items: [], error: errors.join("; ") + hint };
+  }
 
   const items: CrmFeedItem[] = [];
 
@@ -90,5 +118,5 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedItem[]> {
   }
 
   items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
-  return items.slice(0, limit);
+  return { items: items.slice(0, limit) };
 }
