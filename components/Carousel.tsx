@@ -95,7 +95,7 @@ export function Carousel() {
       <div className="relative overflow-hidden">
         <ul
           ref={trackRef}
-          className="flex gap-4 overflow-x-hidden pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
+          className="flex w-full max-w-full gap-4 overflow-x-scroll pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
           style={{ scrollBehavior: "auto" }}
           aria-label="Recent client websites"
         >
