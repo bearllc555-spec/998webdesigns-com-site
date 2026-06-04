@@ -126,8 +126,8 @@ function InboxRow({
           expanded
             ? "bg-accent/[0.08]"
             : unread
-              ? "bg-bg hover:bg-rule-soft/80"
-              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-rule-soft/30 dark:text-ink-soft dark:hover:bg-rule-soft/60"
+              ? "bg-bg hover:bg-rule-soft/80 dark:bg-rule-soft/35 dark:hover:bg-rule-soft/50"
+              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-rule-soft/15 dark:hover:bg-rule-soft/25"
         }`}
       >
         <span
@@ -141,8 +141,8 @@ function InboxRow({
             <span
               className={`truncate text-sm ${
                 unread
-                  ? "font-semibold text-ink"
-                  : "font-medium text-zinc-700 dark:text-ink-soft"
+                  ? "font-semibold text-ink dark:text-zinc-200"
+                  : "font-medium text-zinc-700 dark:text-zinc-500"
               }`}
             >
               {item.title || item.email}
@@ -165,7 +165,7 @@ function InboxRow({
             <>
               <span
                 className={`mt-0.5 block truncate text-xs ${
-                  unread ? "text-ink-soft" : "text-slate"
+                  unread ? "text-ink-soft" : "text-zinc-600 dark:text-slate"
                 }`}
               >
                 {company ? `${company} · ` : ""}
@@ -174,7 +174,9 @@ function InboxRow({
               <span className="mt-1.5 inline-block">
                 <span
                   className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                    unread ? "bg-accent/15 text-accent" : "bg-rule text-slate"
+                    unread
+                      ? "bg-accent/15 text-accent"
+                      : "bg-zinc-300/80 text-zinc-700 dark:bg-rule dark:text-slate"
                   }`}
                 >
                   {unread ? "Unread" : "Read"}
