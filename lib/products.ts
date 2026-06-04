@@ -23,3 +23,12 @@ export const HOSTING_TEN_YEAR_PRODUCT: Product = {
   description: 'One-time hosting for ten years, including domain (com, net, org).',
   priceInCents: 134900,
 }
+
+/** Recurring line in subscription Checkout when lead selects month-to-month hosting. */
+export const HOSTING_MONTHLY_PRODUCT: Product = {
+  id: 'hosting-monthly',
+  name: 'Month-to-month hosting',
+  description:
+    'Managed hosting for your site. Billed monthly; cancel anytime per your agreement.',
+  priceInCents: 19800, // $198.00 / month
+}

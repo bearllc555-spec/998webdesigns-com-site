@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import {
-  checkoutTotalCents,
+  checkoutDueTodayCents,
   formatCheckoutUsd,
   paymentChannelLabel,
 } from "@/lib/checkout-pricing";
@@ -51,7 +51,7 @@ export async function sendInternalLeadSubmittedEmail(
         <h2 style="margin: 0 0 12px;">New lead — payment not completed yet</h2>
         <p><strong>Plan:</strong> $1,998 pay in full (selected)</p>
         <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(lead.paymentChannel))}</p>
-        <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutTotalCents(lead.hostingChoice, lead.paymentChannel)))}</p>
+        <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel)))}</p>
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
         <p><strong>Business:</strong> ${escapeHtml(lead.businessName)}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>

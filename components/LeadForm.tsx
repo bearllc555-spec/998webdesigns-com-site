@@ -9,10 +9,7 @@ import {
   isAddonVisuallySelected,
   isGrowthPackMember,
 } from "@/lib/addons";
-import {
-  checkoutTotalCents,
-  formatCheckoutUsd,
-} from "@/lib/checkout-pricing";
+import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
 import type { PaymentChannel } from "@/lib/validate-lead";
 
 type ContactPref = "email" | "phone" | "text" | "";
@@ -58,7 +55,7 @@ const initial: FormState = {
   projectType: "", visitorActions: [], pages: [], pagesOther: "", brandAssets: [],
   inspirationUrls: "", avoidances: "",
   startDate: "", hostingChoice: "", notes: "", paymentOption: "full",
-  paymentChannel: "ach",
+  paymentChannel: "card",
   addons: [],
   website: "",
 };
@@ -519,18 +516,26 @@ export function LeadForm() {
                     {form.hostingChoice === "ten_year" ? " (+ $1,349 ten-year hosting at checkout)" : ""}
                   </span>
                   <span className="mt-1 block text-xs text-ink-soft">
-                    Full payment before your project enters the queue (after bank transfer clears for ACH).
+                    Full payment before your project enters the queue. Card payments include a 3%
+                    processing fee on the design fee
+                    {form.hostingChoice === "ten_year" ? " and ten-year hosting" : ""}
+                    {form.hostingChoice === "monthly"
+                      ? "; month-to-month hosting is list price"
+                      : ""}
+                    .
                   </span>
                 </div>
                 <div className="mt-4 grid gap-2 md:grid-cols-2">
                   {([
-                    ["ach", "Bank account (ACH)", "List price — no card fee"],
-                    ["card", "Credit or debit card", "Includes 3% processing on your total"],
+                    ["card", "Credit or debit card", "Includes 3% processing on eligible items"],
+                    ["ach", "Pay by bank instead", "List price — no 3% processing fee"],
                   ] as const).map(([val, title, hint]) => {
                     const channel = val as PaymentChannel;
                     const total =
                       form.hostingChoice &&
-                      formatCheckoutUsd(checkoutTotalCents(form.hostingChoice, channel));
+                      formatCheckoutUsd(
+                        checkoutDueTodayCents(form.hostingChoice, channel)
+                      );
                     return (
                       <label
                         key={val}
@@ -647,7 +652,7 @@ export function LeadForm() {
                   ? "Redirecting to payment..."
                   : form.hostingChoice
                     ? `Continue to pay ${formatCheckoutUsd(
-                        checkoutTotalCents(form.hostingChoice, form.paymentChannel)
+                        checkoutDueTodayCents(form.hostingChoice, form.paymentChannel)
                       )}`
                     : "Continue to payment"}
               </button>
@@ -657,9 +662,8 @@ export function LeadForm() {
 
         {step === 4 && (
           <p className="mt-6 text-center text-xs text-slate">
-            You&rsquo;ll be redirected to Stripe to pay by bank or card. Card payments include a 3%
-            processing fee on your checkout total. Bank (ACH) is list price. Sales tax is not
-            collected at checkout.
+            You&rsquo;ll be redirected to Stripe. Card is the default; bank transfer is available if
+            you prefer list price with no 3% fee. Sales tax is not collected at checkout.
           </p>
         )}
       </div>

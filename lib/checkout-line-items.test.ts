@@ -25,7 +25,7 @@ function lead(overrides: Partial<ValidatedLead>): ValidatedLead {
     hostingChoice: "later",
     notes: "",
     paymentOption: "full",
-    paymentChannel: "ach",
+    paymentChannel: "card",
     addons: [],
     ...overrides,
   };
@@ -54,5 +54,18 @@ describe("buildCheckoutLineItems", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "card");
     expect(items).toHaveLength(3);
     expect(items[2].price_data?.unit_amount).toBe(10041);
+  });
+
+  it("adds monthly hosting subscription line (ACH, no card fee)", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "monthly" }), "ach");
+    expect(items).toHaveLength(2);
+    expect(items[1].price_data?.recurring?.interval).toBe("month");
+    expect(items[1].price_data?.unit_amount).toBe(19800);
+  });
+
+  it("monthly + card: design fee, hosting sub, 3% on design only", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "monthly" }), "card");
+    expect(items).toHaveLength(3);
+    expect(items[2].price_data?.unit_amount).toBe(5994);
   });
 });

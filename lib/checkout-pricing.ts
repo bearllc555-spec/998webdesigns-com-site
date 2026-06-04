@@ -1,4 +1,8 @@
-import { FULL_PRODUCT, HOSTING_TEN_YEAR_PRODUCT } from "@/lib/products";
+import {
+  FULL_PRODUCT,
+  HOSTING_MONTHLY_PRODUCT,
+  HOSTING_TEN_YEAR_PRODUCT,
+} from "@/lib/products";
 import type { HostingChoice } from "@/lib/validate-lead";
 
 export type PaymentChannel = "ach" | "card";
@@ -32,6 +36,18 @@ export function checkoutTotalCents(
     return subtotal + cardProcessingFeeCents(subtotal);
   }
   return subtotal;
+}
+
+/** First Checkout charge: design (+ ten-year) + card fee; monthly adds first month at checkout. */
+export function checkoutDueTodayCents(
+  hostingChoice: HostingChoice,
+  channel: PaymentChannel
+): number {
+  let due = checkoutTotalCents(hostingChoice, channel);
+  if (hostingChoice === "monthly") {
+    due += HOSTING_MONTHLY_PRODUCT.priceInCents;
+  }
+  return due;
 }
 
 /** Human-readable USD for buttons and emails (no cents when whole dollars). */

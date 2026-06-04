@@ -12,6 +12,11 @@ __v0_jsx-dev-runtime.ts
 
 # Environment variables
 .env*.local
+.env.vercel.prod
+.env.prod
+.env.prod.*
+.env.tmp
+.env.helmet-check
 
 # Common ignores
 node_modules

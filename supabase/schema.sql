@@ -16,6 +16,7 @@ create table if not exists public.wd_leads (
   stripe_customer_id text,
   stripe_deposit_invoice_id text,  -- Stripe Checkout session id (legacy column name)
   stripe_balance_invoice_id text,  -- legacy balance-hold PaymentIntent id (pre pay-in-full-only)
+  stripe_subscription_id text,     -- month-to-month hosting Subscription id (when applicable)
   notes text
 );
 

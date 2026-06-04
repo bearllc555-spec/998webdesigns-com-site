@@ -8,7 +8,7 @@ const steps = [
   {
     n: "02",
     title: "Pay through Stripe",
-    body: "On the last form step, choose bank (ACH) at list price or card (+3% processing on your checkout total). Pay in full through secure Stripe checkout — the design clock starts when payment clears (bank transfers may take a few business days).",
+    body: "On the last form step, pay by card (default) or switch to bank transfer to avoid the 3% processing fee on your design fee. Pay in full through secure Stripe checkout — month-to-month hosting ($198/mo) starts in the same session if you select it. The design clock starts when payment clears (bank transfers may take a few business days).",
   },
   {
     n: "03",

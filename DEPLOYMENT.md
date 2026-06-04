@@ -80,7 +80,7 @@ Stripe Checkout charges (separate sessions by payment channel):
 - **Ten-year hosting:** +$1,349 when lead selects ten-year hosting on the form
 - **Card only:** +3% processing on the checkout subtotal (design + ten-year hosting if selected)
 - **Bank (ACH):** list price; settlement async — webhook `checkout.session.async_payment_succeeded` marks paid
-- **Month-to-month hosting:** not in Checkout yet ($198/mo billed after launch — metadata + emails only)
+- **Month-to-month hosting:** $198/mo in Stripe Checkout (subscription mode + first month on the initial invoice). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
 - **Sales tax:** not collected (no Stripe Tax)
 
 **Stripe Dashboard (required for ACH):** Enable ACH Direct Debit; webhook must include `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed`. See `STRIPE-SETUP.md`. `GET /api/admin/env-status` lists reminders when Stripe keys are present.

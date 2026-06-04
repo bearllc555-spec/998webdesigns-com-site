@@ -5,8 +5,12 @@ import {
   checkoutSubtotalCents,
   type PaymentChannel,
 } from "@/lib/checkout-pricing";
-import { FULL_PRODUCT, HOSTING_TEN_YEAR_PRODUCT } from "@/lib/products";
-import type { ValidatedLead } from "@/lib/validate-lead";
+import {
+  FULL_PRODUCT,
+  HOSTING_MONTHLY_PRODUCT,
+  HOSTING_TEN_YEAR_PRODUCT,
+} from "@/lib/products";
+import type { HostingChoice, ValidatedLead } from "@/lib/validate-lead";
 
 function designLineItem(): Stripe.Checkout.SessionCreateParams.LineItem {
   return {
@@ -22,7 +26,43 @@ function designLineItem(): Stripe.Checkout.SessionCreateParams.LineItem {
   };
 }
 
-/** Stripe Checkout line items for design + optional ten-year hosting + optional card fee. */
+function monthlyHostingLineItem(): Stripe.Checkout.SessionCreateParams.LineItem {
+  return {
+    price_data: {
+      currency: "usd",
+      product_data: {
+        name: HOSTING_MONTHLY_PRODUCT.name,
+        description: HOSTING_MONTHLY_PRODUCT.description,
+      },
+      unit_amount: HOSTING_MONTHLY_PRODUCT.priceInCents,
+      recurring: { interval: "month" },
+    },
+    quantity: 1,
+  };
+}
+
+function cardFeeLineItem(
+  hostingChoice: HostingChoice
+): Stripe.Checkout.SessionCreateParams.LineItem {
+  const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(hostingChoice));
+  return {
+    price_data: {
+      currency: "usd",
+      product_data: {
+        name: CARD_PROCESSING_PRODUCT.name,
+        description: CARD_PROCESSING_PRODUCT.description,
+      },
+      unit_amount: feeCents,
+    },
+    quantity: 1,
+  };
+}
+
+export function checkoutUsesSubscriptionMode(hostingChoice: HostingChoice): boolean {
+  return hostingChoice === "monthly";
+}
+
+/** Stripe Checkout line items for design + optional hosting + optional card fee. */
 export function buildCheckoutLineItems(
   lead: ValidatedLead,
   channel: PaymentChannel
@@ -43,19 +83,12 @@ export function buildCheckoutLineItems(
     });
   }
 
+  if (lead.hostingChoice === "monthly") {
+    items.push(monthlyHostingLineItem());
+  }
+
   if (channel === "card") {
-    const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(lead.hostingChoice));
-    items.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: CARD_PROCESSING_PRODUCT.name,
-          description: CARD_PROCESSING_PRODUCT.description,
-        },
-        unit_amount: feeCents,
-      },
-      quantity: 1,
-    });
+    items.push(cardFeeLineItem(lead.hostingChoice));
   }
 
   return items;

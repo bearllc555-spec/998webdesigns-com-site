@@ -31,6 +31,7 @@ export async function syncWdLeadAwaitingBankSettlement(
     stripe_customer_id: customerId ?? null,
     stripe_deposit_invoice_id: session.id,
     stripe_balance_invoice_id: null,
+    stripe_subscription_id: subscriptionIdFromSession(session),
   };
 
   const leadId = session.metadata?.wdLeadId;
@@ -60,6 +61,14 @@ export async function syncWdLeadBankPaymentFailed(
   if (email) await updateLatestWdLeadByEmail(email, patch);
 }
 
+function subscriptionIdFromSession(
+  session: Stripe.Checkout.Session
+): string | null {
+  const sub = session.subscription;
+  if (!sub) return null;
+  return typeof sub === "string" ? sub : sub.id;
+}
+
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
   const email = session.metadata?.email ?? session.customer_email;
   const customerId =
@@ -70,6 +79,7 @@ export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Pr
     stripe_customer_id: customerId ?? null,
     stripe_deposit_invoice_id: session.id,
     stripe_balance_invoice_id: null,
+    stripe_subscription_id: subscriptionIdFromSession(session),
   };
 
   const leadId = session.metadata?.wdLeadId;

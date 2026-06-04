@@ -34,7 +34,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 
 - **Portfolio carousel** — Serenity Spa is live-linked; other slots use placeholder art until real mockups + URLs ship (`data/portfolio.ts`).
 - **Slack** — optional; payment alerts already email `hello@` via Resend on webhook.
-- **$198/mo hosting subscription** — Stripe Subscription not built.
+- **Stripe Billing Portal** — optional self-serve cancel for $198/mo (subscription id stored on `wd_leads`).
 - **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
 - **SendGrid** — not used; transactional email is **Resend**.
 - **Supabase tables** — run `supabase/schema.sql` once if `wd_leads` / `api_rate_limits` / `contact_submissions` are missing; or `supabase/contact-submissions.sql` if only contact table is new.

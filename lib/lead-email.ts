@@ -1,5 +1,5 @@
 import {
-  checkoutTotalCents,
+  checkoutDueTodayCents,
   formatCheckoutUsd,
   paymentChannelLabel,
 } from "@/lib/checkout-pricing";
@@ -30,7 +30,7 @@ export async function sendLeadCheckoutEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const totalLabel = formatCheckoutUsd(
-    checkoutTotalCents(lead.hostingChoice, lead.paymentChannel)
+    checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel)
   );
   const methodLabel = paymentChannelLabel(lead.paymentChannel);
   const achNote =
@@ -48,8 +48,7 @@ export async function sendLeadCheckoutEmail(
         <p>Thanks for submitting your project brief for <strong>${escapeHtml(lead.businessName)}</strong>. We received everything.</p>
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
-        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)}${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}</p>
-        ${lead.hostingChoice === "monthly" ? `<p style="font-size: 14px; color: #52525b;">Month-to-month hosting ($198/mo) is set up after your site launches — it is not charged in this checkout.</p>` : ""}
+        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)}${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}${lead.hostingChoice === "monthly" ? " (includes your first month of hosting; $198/mo renews automatically)" : ""}</p>
         ${achNote}
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Continue to payment</a>

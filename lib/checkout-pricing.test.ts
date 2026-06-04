@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cardProcessingFeeCents,
+  checkoutDueTodayCents,
   checkoutSubtotalCents,
   checkoutTotalCents,
 } from "@/lib/checkout-pricing";
@@ -22,5 +23,10 @@ describe("checkout pricing", () => {
 
   it("ACH stays at list subtotal", () => {
     expect(checkoutTotalCents("ten_year", "ach")).toBe(334700);
+  });
+
+  it("due today includes first month of hosting", () => {
+    expect(checkoutDueTodayCents("monthly", "ach")).toBe(219600);
+    expect(checkoutDueTodayCents("monthly", "card")).toBe(225594);
   });
 });
