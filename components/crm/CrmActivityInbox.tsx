@@ -176,7 +176,9 @@ function InboxRow({
             <>
               <span
                 className={`mt-0.5 block truncate text-xs ${
-                  unread ? "text-ink-soft dark:text-zinc-400" : "text-zinc-600 dark:text-zinc-600"
+                  unread
+                    ? "font-semibold text-ink-soft dark:text-zinc-400"
+                    : "font-normal text-zinc-600 dark:text-zinc-600"
                 }`}
               >
                 {company ? `${company} · ` : ""}
