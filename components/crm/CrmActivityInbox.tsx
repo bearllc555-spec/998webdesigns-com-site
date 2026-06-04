@@ -125,7 +125,17 @@ function InboxRow({
   return (
     <li className={expanded ? "bg-accent/[0.04]" : undefined}>
       <div
-        className={`flex w-full items-stretch transition ${
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
+        className={`crm-inbox-row-interactive flex w-full items-stretch ${
           expanded
             ? "bg-accent/[0.08]"
             : unread
@@ -133,16 +143,9 @@ function InboxRow({
               : "crm-inbox-row-read dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
         }`}
       >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={expanded}
-        className={`flex min-w-0 flex-1 gap-3 px-4 py-3.5 text-left transition ${
-          expanded
-            ? "bg-accent/[0.08] dark:bg-transparent"
-            : unread
-              ? "dark:bg-transparent dark:hover:bg-transparent"
-              : "dark:bg-transparent dark:hover:bg-transparent"
+      <div
+        className={`crm-inbox-row-body flex min-w-0 flex-1 gap-3 px-4 py-3.5 text-left ${
+          expanded ? "bg-accent/[0.08] dark:bg-transparent" : ""
         }`}
       >
         <span
@@ -193,8 +196,12 @@ function InboxRow({
             </>
           )}
         </span>
-      </button>
-      <div className="flex shrink-0 items-center gap-1 self-start pt-3 pr-2">
+      </div>
+      <div
+        className="flex shrink-0 items-center gap-1 self-stretch py-3.5 pr-2"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         {!expanded && unread && (
           <span className="crm-inbox-row-unread-text rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wider dark:bg-accent/15">
             Unread

@@ -157,9 +157,25 @@ body {
 /* Body copy max-width helper */
 .prose-cap { max-width: 62ch; }
 
+/* CRM inbox row — full-width hover (badge + star included) */
+.crm-inbox-row-interactive {
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.crm-inbox-row-interactive:hover {
+  box-shadow: var(--shadow-md);
+}
+
+html.dark .crm-inbox-row-interactive:hover {
+  box-shadow: var(--shadow-md);
+}
+
 /* CRM inbox — unread row (light theme only; dark theme untouched) */
 html:not(.dark) .crm-inbox-row-unread,
-html:not(.dark) .crm-inbox-row-unread > button {
+html:not(.dark) .crm-inbox-row-unread > .crm-inbox-row-body {
   background-color: var(--c-white) !important;
 }
 
@@ -175,8 +191,12 @@ html.dark .crm-inbox-row-unread .crm-inbox-row-unread-text {
 
 /* CRM inbox — read row (light theme only) */
 html:not(.dark) .crm-inbox-row-read,
-html:not(.dark) .crm-inbox-row-read > button {
+html:not(.dark) .crm-inbox-row-read > .crm-inbox-row-body {
   background-color: var(--c-rule-soft) !important;
+}
+
+html:not(.dark) .crm-inbox-row-read.crm-inbox-row-interactive:hover {
+  background-color: var(--c-rule) !important;
 }
 
 html:not(.dark) .crm-inbox-row-read .crm-inbox-row-read-text {
