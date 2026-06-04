@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CrmAdminMenu } from "@/components/crm/CrmAdminMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CRM_VERSION } from "@/lib/crm-version";
 
 type CrmHeaderProps = {
   title: string;
   subtitle?: string;
-  /** Extra controls before Telegram (e.g. Admin, back). */
+  /** Extra controls before Admin (e.g. back links on subpages). */
   actions?: React.ReactNode;
   /** Renders Refresh in the nav row beside Activity. */
   onRefresh?: () => void;
@@ -27,7 +28,6 @@ export function CrmHeader({
 }: CrmHeaderProps) {
   const pathname = usePathname();
   const onActivity = pathname === "/crm";
-  const onTelegram = pathname?.startsWith("/crm/telegram") ?? false;
 
   async function logout() {
     await fetch("/api/crm/session", { method: "DELETE", credentials: "include" });
@@ -55,16 +55,7 @@ export function CrmHeader({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {actions}
-            <Link
-              href="/crm/telegram"
-              className={`${pillBase} border px-4 py-2 ${
-                onTelegram
-                  ? "border-accent bg-accent text-white"
-                  : "border-rule text-ink-soft hover:border-accent/50"
-              }`}
-            >
-              Telegram
-            </Link>
+            <CrmAdminMenu />
             <ThemeToggle />
             <button
               type="button"

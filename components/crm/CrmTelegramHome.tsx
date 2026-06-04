@@ -50,14 +50,6 @@ export function CrmTelegramHome() {
       error={error}
       message={message}
       onRefresh={load}
-      actions={
-        <Link
-          href="/crm/telegram/admin"
-          className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-deep"
-        >
-          Admin
-        </Link>
-      }
     >
       {status && (
         <div className="space-y-8">
