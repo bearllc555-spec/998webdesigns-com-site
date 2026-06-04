@@ -8,7 +8,7 @@ export default async function CrmLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-5">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-12">
       <div className="mb-8 text-center">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
           998 web designs

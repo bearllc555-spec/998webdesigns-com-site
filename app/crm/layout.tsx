@@ -4,5 +4,9 @@ export const metadata = {
 };
 
 export default function CrmLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <div className="fixed inset-0 z-40 overflow-y-auto overscroll-y-auto bg-bg text-ink">
+      {children}
+    </div>
+  );
 }

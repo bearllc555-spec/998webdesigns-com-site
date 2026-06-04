@@ -3,6 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CrmFeedItem } from "@/lib/crm-feed";
 
+type PendingDelete = {
+  source: "lead" | "contact";
+  id: string;
+  label: string;
+  step: 1 | 2;
+};
+
 function formatWhen(iso: string): string {
   try {
     return new Date(iso).toLocaleString("en-US", {
@@ -32,6 +39,8 @@ export function CrmDashboard() {
   const [filter, setFilter] = useState<"all" | "lead" | "contact">("all");
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -73,17 +82,57 @@ export function CrmDashboard() {
     await load();
   }
 
+  function startDelete(item: CrmFeedItem) {
+    setEditingNotes(null);
+    setPendingDelete({
+      source: item.source,
+      id: item.id,
+      label: item.businessName || item.title || item.email,
+      step: 1,
+    });
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    if (pendingDelete.step === 1) {
+      setPendingDelete({ ...pendingDelete, step: 2 });
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const res = await fetch(
+        `/api/crm/items/${pendingDelete.source}/${pendingDelete.id}`,
+        { method: "DELETE", credentials: "include" }
+      );
+      if (res.status === 401) {
+        window.location.href = "/crm/login";
+        return;
+      }
+      if (!res.ok) throw new Error("Delete failed");
+      setPendingDelete(null);
+      await load();
+    } catch {
+      setError("Could not delete record.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   const visible = items.filter((i) => filter === "all" || i.source === filter);
 
   return (
-    <div className="min-h-screen bg-bg text-ink">
-      <header className="border-b border-rule bg-bg">
+    <div className="flex min-h-dvh flex-col bg-bg text-ink">
+      <header className="shrink-0 border-b border-rule bg-bg">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-5 py-4 md:px-8">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
               998 CRM
             </p>
             <h1 className="font-display text-2xl font-medium">Activity</h1>
+            <p className="mt-1 text-sm text-ink-soft">
+              {visible.length} {filter === "all" ? "records" : filter === "lead" ? "leads" : "contacts"}
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -104,7 +153,7 @@ export function CrmDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-5 py-8 md:px-8">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-8 pb-24 md:px-8">
         <div className="mb-6 flex flex-wrap gap-2">
           {(["all", "lead", "contact"] as const).map((f) => (
             <button
@@ -130,92 +179,157 @@ export function CrmDashboard() {
         )}
 
         <ul className="space-y-4">
-          {visible.map((item) => (
-            <li
-              key={`${item.source}-${item.id}`}
-              className="rounded-2xl border border-rule bg-bg p-5 shadow-sm"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-slate">
-                    {item.source === "lead" ? "Lead" : "Contact"} · {formatWhen(item.at)}
-                  </p>
-                  <p className="mt-1 font-display text-lg font-medium">{item.title}</p>
-                  <p className="text-sm text-ink-soft">
-                    {item.businessName ? `${item.businessName} · ` : ""}
-                    {item.email}
-                  </p>
-                </div>
-                {item.status && (
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${statusClass(item.status)}`}
-                  >
-                    {item.status.replace(/_/g, " ")}
-                  </span>
-                )}
-              </div>
+          {visible.map((item) => {
+            const isDeletingThis =
+              pendingDelete?.source === item.source && pendingDelete.id === item.id;
 
-              {item.message && (
-                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">
-                  {item.message}
-                </p>
-              )}
-
-              {item.source === "lead" && (
-                <div className="mt-4 border-t border-rule pt-4">
-                  {editingNotes === item.id ? (
-                    <div className="grid gap-2">
-                      <textarea
-                        value={notesDraft}
-                        onChange={(e) => setNotesDraft(e.target.value)}
-                        rows={3}
-                        className="w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
-                        placeholder="Internal notes…"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => saveNotes(item.id)}
-                          className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingNotes(null)}
-                          className="rounded-full border border-rule px-4 py-2 text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingNotes(item.id);
-                        setNotesDraft(item.notes ?? "");
-                      }}
-                      className="text-sm text-accent hover:underline"
-                    >
-                      {item.notes ? "Edit notes" : "Add notes"}
-                    </button>
-                  )}
-                  {item.notes && editingNotes !== item.id && (
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">
-                      {item.notes}
+            return (
+              <li
+                key={`${item.source}-${item.id}`}
+                className="rounded-2xl border border-rule bg-bg p-5 shadow-sm"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium uppercase tracking-wider text-slate">
+                      {item.source === "lead" ? "Lead" : "Contact"} · {formatWhen(item.at)}
                     </p>
-                  )}
+                    <p className="mt-1 font-display text-lg font-medium">{item.title}</p>
+                    <p className="text-sm text-ink-soft">
+                      {item.businessName ? `${item.businessName} · ` : ""}
+                      {item.email}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {item.status && (
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${statusClass(item.status)}`}
+                      >
+                        {item.status.replace(/_/g, " ")}
+                      </span>
+                    )}
+                    {!isDeletingThis && (
+                      <button
+                        type="button"
+                        onClick={() => startDelete(item)}
+                        className="rounded-full border border-warn/40 px-3 py-1 text-xs font-medium text-warn hover:bg-warn-soft/40"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
 
-              {item.stripeSessionId && (
-                <p className="mt-2 text-xs text-ink-soft">
-                  Stripe session: {item.stripeSessionId}
-                </p>
-              )}
-            </li>
-          ))}
+                {isDeletingThis && pendingDelete && (
+                  <div className="mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4">
+                    {pendingDelete.step === 1 ? (
+                      <>
+                        <p className="text-sm font-medium text-ink">
+                          Delete this {item.source === "lead" ? "lead" : "contact"}?
+                        </p>
+                        <p className="mt-1 text-sm text-ink-soft">
+                          <span className="font-medium text-ink">{pendingDelete.label}</span>{" "}
+                          will be removed from the CRM database.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-warn">
+                          Final confirmation — this cannot be undone
+                        </p>
+                        <p className="mt-1 text-sm text-ink-soft">
+                          Permanently delete{" "}
+                          <span className="font-medium text-ink">{pendingDelete.label}</span>?
+                        </p>
+                      </>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={deleting}
+                        onClick={confirmDelete}
+                        className="rounded-full bg-warn px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                      >
+                        {deleting
+                          ? "Deleting…"
+                          : pendingDelete.step === 1
+                            ? "Continue"
+                            : "Delete permanently"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={deleting}
+                        onClick={() => setPendingDelete(null)}
+                        className="rounded-full border border-rule px-4 py-2 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {item.message && (
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">
+                    {item.message}
+                  </p>
+                )}
+
+                {item.source === "lead" && !isDeletingThis && (
+                  <div className="mt-4 border-t border-rule pt-4">
+                    {editingNotes === item.id ? (
+                      <div className="grid gap-2">
+                        <textarea
+                          value={notesDraft}
+                          onChange={(e) => setNotesDraft(e.target.value)}
+                          rows={3}
+                          className="w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
+                          placeholder="Internal notes…"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveNotes(item.id)}
+                            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingNotes(null)}
+                            className="rounded-full border border-rule px-4 py-2 text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPendingDelete(null);
+                          setEditingNotes(item.id);
+                          setNotesDraft(item.notes ?? "");
+                        }}
+                        className="text-sm text-accent hover:underline"
+                      >
+                        {item.notes ? "Edit notes" : "Add notes"}
+                      </button>
+                    )}
+                    {item.notes && editingNotes !== item.id && (
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">
+                        {item.notes}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {item.stripeSessionId && (
+                  <p className="mt-2 break-all text-xs text-ink-soft">
+                    Stripe session: {item.stripeSessionId}
+                  </p>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </main>
     </div>

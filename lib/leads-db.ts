@@ -84,6 +84,18 @@ export async function updateLatestWdLeadByEmail(
   return updateWdLead(data.id, patch);
 }
 
+export async function deleteWdLead(leadId: string): Promise<boolean> {
+  const supa = supabaseAdmin();
+  if (!supa) return false;
+
+  const { error } = await supa.from("wd_leads").delete().eq("id", leadId);
+  if (error) {
+    console.warn("[leads] wd_leads delete failed:", error.message);
+    return false;
+  }
+  return true;
+}
+
 /** Latest row tied to a Stripe subscription (month-to-month hosting). */
 export async function updateLatestWdLeadBySubscriptionId(
   subscriptionId: string,

@@ -51,6 +51,18 @@ export async function insertContactSubmission(
   }
 }
 
+export async function deleteContactSubmission(id: string): Promise<boolean> {
+  const supa = supabaseAdmin();
+  if (!supa) return false;
+
+  const { error } = await supa.from("contact_submissions").delete().eq("id", id);
+  if (error) {
+    console.warn("[contact] contact_submissions delete failed:", error.message);
+    return false;
+  }
+  return true;
+}
+
 function isMissingContactTable(error: { code?: string; message?: string }): boolean {
   const code = error.code ?? "";
   const msg = error.message ?? "";

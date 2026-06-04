@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { getSelectedAddons } from "@/lib/addons";
 
 const ADDON_DATA: Record<string, { name: string; setup: number; monthly: number }> = {
@@ -16,6 +17,7 @@ const ADDON_DATA: Record<string, { name: string; setup: number; monthly: number 
 };
 
 export function AddonSummaryBar() {
+  const pathname = usePathname();
   const [selected, setSelected] = useState<string[]>([]);
   const [visible, setVisible] = useState(false);
 
@@ -46,7 +48,7 @@ export function AddonSummaryBar() {
   );
   const count = selected.length;
 
-  if (count === 0) return null;
+  if (pathname?.startsWith("/crm") || count === 0) return null;
 
   return (
     <div
