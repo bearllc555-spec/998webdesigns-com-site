@@ -124,7 +124,7 @@ Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run i
 ```
 cd repos/998webdesigns-com-site
 git checkout -b fix/<name>   # or polish/feat — preview on Vercel branch deploy
-npm run dev
+npm run dev   # http://localhost:3000 (pinned in package.json)
 npm run build
 git commit -m "v27.x: description"   # ASCII-only
 git push -u origin fix/<name>
