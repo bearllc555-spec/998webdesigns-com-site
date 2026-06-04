@@ -1,5 +1,12 @@
 # LinkedIn banner — 998 webdesigns
 
+## Live previews
+
+| Design | URL | Fonts |
+|--------|-----|-------|
+| 1 | https://998webdesigns.com/temp | Bricolage Grotesque + Inter |
+| 2 | https://998webdesigns.com/temp/2 | **Geist + Inter** (site fonts), Manhattan skyline |
+
 ## v3 (`linkedin-banner-v3.html`)
 
 Design aligned with the live site:

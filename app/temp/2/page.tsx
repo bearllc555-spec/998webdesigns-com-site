@@ -1,33 +1,22 @@
 import Link from "next/link";
-import "./linkedin-banner.css";
+import { ManhattanSilhouette } from "@/components/temp/ManhattanSilhouette";
+import "./linkedin-banner-manhattan.css";
 
-export default function TempPage() {
+export default function TempV2Page() {
   return (
-    <div className="temp-page">
-      <nav
-        className="fixed left-1/2 top-3 z-10 flex -translate-x-1/2 gap-3 text-[13px] font-medium"
-        aria-label="Banner designs"
-      >
-        <Link
-          href="/temp"
-          aria-current="page"
-          className="rounded-full border border-accent bg-white px-3 py-1.5 text-accent"
-        >
-          Design 1
-        </Link>
-        <Link
-          href="/temp/2"
-          className="rounded-full border border-rule bg-white px-3 py-1.5 text-ink-soft hover:border-accent/50"
-        >
+    <div className="temp-page-v2">
+      <nav className="temp-switcher" aria-label="Banner designs">
+        <Link href="/temp">Design 1</Link>
+        <Link href="/temp/2" aria-current="page">
           Design 2 — Manhattan
         </Link>
       </nav>
+
       <div className="linkedin-banner" id="banner">
-        <div className="bg-glow" aria-hidden="true" />
-        <div className="bg-watermark" aria-hidden="true">
-          998
+        <div className="skyline-wrap">
+          <ManhattanSilhouette />
         </div>
-        <div className="bg-dots" aria-hidden="true" />
+        <div className="sky-fade" aria-hidden="true" />
         <div className="bg-line" aria-hidden="true" />
 
         <div className="content">
@@ -70,8 +59,8 @@ export default function TempPage() {
       </div>
 
       <p className="hint">
-        LinkedIn banner 1584×396 — screenshot the white box above. Text is padded clear of the
-        profile photo (bottom-left).
+        Design 2 — site fonts (Geist + Inter), Manhattan skyline. Screenshot the 1584×396 banner
+        above for LinkedIn.
       </p>
     </div>
   );
