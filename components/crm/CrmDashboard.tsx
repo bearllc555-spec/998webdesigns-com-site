@@ -54,7 +54,7 @@ export function CrmDashboard() {
         refreshDisabled={loading}
       />
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 pb-24 md:px-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 pb-24 md:px-8">
         {loading && <p className="text-sm text-ink-soft">Loading…</p>}
         {error && (
           <p className="text-sm text-warn">
