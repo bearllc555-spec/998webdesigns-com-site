@@ -8,83 +8,140 @@ import {
   type PortfolioItem,
 } from "@/data/portfolio";
 
-/** Duplicate slides so scrollLeft can loop without a visible jump. */
 const LOOP_COPIES = 2;
 const loopPortfolio = Array.from({ length: LOOP_COPIES }, () => portfolio).flat();
 
-/** Pixels per second — slow continuous drift to the right. */
-const SCROLL_SPEED_PX_S = 28;
+/** Target drift speed — duration is derived from one copy width ÷ this. */
+const MARQUEE_SPEED_PX_S = 28;
+
+const CARD_WIDTH =
+  "w-[78vw] shrink-0 sm:w-[46vw] md:w-[32vw] lg:w-[26vw] lg:max-w-[320px]";
 
 // Pan duration for static JPEG fallbacks (no previewVideo).
 const HOVER_REVEAL_S = 6;
 
+function getTranslateX(el: HTMLElement): number {
+  const t = getComputedStyle(el).transform;
+  if (!t || t === "none") return 0;
+  return new DOMMatrix(t).m41;
+}
+
 export function Carousel() {
   const trackRef = useRef<HTMLUListElement>(null);
+  const scrollRef = useRef<HTMLUListElement>(null);
+  const manualXRef = useRef<number | null>(null);
   const [paused, setPaused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
-  const scrollByCard = useCallback((direction: 1 | -1) => {
-    const track = trackRef.current;
-    if (!track) return;
-    const card = track.querySelector<HTMLLIElement>("li");
-    if (!card) return;
-    const gap = parseFloat(getComputedStyle(track).columnGap || "0");
-    const step = card.offsetWidth + gap;
-    track.scrollBy({ left: step * direction, behavior: "smooth" });
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduceMotion(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
+
+  const syncMarqueeDuration = useCallback(() => {
+    const track = trackRef.current;
+    if (!track || reduceMotion) return;
+    const setWidth = track.offsetWidth / LOOP_COPIES;
+    if (setWidth <= 0) return;
+    const seconds = setWidth / MARQUEE_SPEED_PX_S;
+    track.style.setProperty("--marquee-duration", `${seconds}s`);
+  }, [reduceMotion]);
 
   useEffect(() => {
     const track = trackRef.current;
-    if (!track) return;
-
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mq.matches) return;
-
-    let raf = 0;
-    let last = performance.now();
-    let setWidth = track.scrollWidth / LOOP_COPIES;
-
-    const remeasure = () => {
-      setWidth = track.scrollWidth / LOOP_COPIES;
-      if (setWidth > 0 && track.scrollLeft >= setWidth) {
-        track.scrollLeft %= setWidth;
-      }
-    };
-
-    const ro = new ResizeObserver(remeasure);
+    if (!track || reduceMotion) return;
+    syncMarqueeDuration();
+    const ro = new ResizeObserver(syncMarqueeDuration);
     ro.observe(track);
+    return () => ro.disconnect();
+  }, [reduceMotion, syncMarqueeDuration]);
 
-    const tick = (now: number) => {
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
+  const resumeMarqueeAnimation = useCallback(() => {
+    const track = trackRef.current;
+    if (!track || reduceMotion) return;
 
-      if (!paused && setWidth > 0) {
-        track.scrollLeft += SCROLL_SPEED_PX_S * dt;
-        if (track.scrollLeft >= setWidth) {
-          track.scrollLeft -= setWidth;
-        }
+    const setWidth = track.offsetWidth / LOOP_COPIES;
+    if (setWidth <= 0) return;
+
+    const x = manualXRef.current ?? getTranslateX(track);
+    manualXRef.current = null;
+
+    track.style.animation = "";
+    track.style.transform = "";
+
+    const progress = ((-x % setWidth) + setWidth) % setWidth / setWidth;
+    const durationSec =
+      parseFloat(getComputedStyle(track).getPropertyValue("--marquee-duration")) || 100;
+    track.style.animationDelay = `${-progress * durationSec}s`;
+  }, [reduceMotion]);
+
+  const scrollByCard = useCallback(
+    (direction: 1 | -1) => {
+      if (reduceMotion) {
+        const track = scrollRef.current;
+        if (!track) return;
+        const card = track.querySelector<HTMLLIElement>("li");
+        if (!card) return;
+        const gap = parseFloat(getComputedStyle(track).columnGap || "0");
+        const step = card.offsetWidth + gap;
+        track.scrollBy({ left: step * direction, behavior: "smooth" });
+        return;
       }
 
-      raf = requestAnimationFrame(tick);
-    };
+      const track = trackRef.current;
+      if (!track) return;
+      const card = track.querySelector<HTMLLIElement>("li");
+      if (!card) return;
+      const gap = parseFloat(getComputedStyle(track).gap || "0");
+      const step = card.offsetWidth + gap;
+      const setWidth = track.offsetWidth / LOOP_COPIES;
+      if (setWidth <= 0) return;
 
-    raf = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-    };
-  }, [paused]);
+      let x = manualXRef.current ?? getTranslateX(track);
+      x -= direction * step;
+
+      while (x < -setWidth) x += setWidth;
+      while (x > 0) x -= setWidth;
+
+      manualXRef.current = x;
+      track.style.animation = "none";
+      track.style.transform = `translate3d(${x}px, 0, 0)`;
+      setPaused(true);
+    },
+    [reduceMotion]
+  );
+
+  const handlePointerLeave = () => {
+    setPaused(false);
+    if (manualXRef.current !== null) {
+      resumeMarqueeAnimation();
+    }
+  };
 
   const hoverHint = hasPortfolioVideoPreviews
     ? "Hover any thumbnail to preview the site"
     : "Hover any thumbnail to scroll through the page";
 
+  const cards = loopPortfolio.map((p, index) => (
+    <li
+      key={`${p.slug}-${index}`}
+      className={CARD_WIDTH}
+      aria-hidden={index >= portfolio.length ? true : undefined}
+    >
+      <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
+    </li>
+  ));
+
   return (
     <div
       className="relative pt-16 pb-14 md:pt-24 md:pb-20"
       onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseLeave={handlePointerLeave}
       onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
+      onBlur={handlePointerLeave}
     >
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
@@ -92,23 +149,30 @@ export function Carousel() {
         </p>
       </div>
 
-      <div className="relative overflow-hidden">
-        <ul
-          ref={trackRef}
-          className="flex w-full max-w-full gap-4 overflow-x-scroll pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
-          style={{ scrollBehavior: "auto" }}
-          aria-label="Recent client websites"
-        >
-          {loopPortfolio.map((p, index) => (
-            <li
-              key={`${p.slug}-${index}`}
-              className="shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
-              aria-hidden={index >= portfolio.length ? true : undefined}
-            >
-              <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
-            </li>
-          ))}
-        </ul>
+      <div
+        className={`relative overflow-hidden ${!reduceMotion && paused ? "portfolio-marquee--paused" : ""}`}
+      >
+        {reduceMotion ? (
+          <ul
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto scroll-smooth pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
+            aria-label="Recent client websites"
+          >
+            {portfolio.map((p) => (
+              <li key={p.slug} className={CARD_WIDTH}>
+                <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ul
+            ref={trackRef}
+            className="portfolio-marquee-track list-none gap-4 pb-14 pl-0 md:gap-5 md:pb-16"
+            aria-label="Recent client websites"
+          >
+            {cards}
+          </ul>
+        )}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-2 md:pb-3">
           <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-rule bg-bg/95 px-1.5 py-1 shadow-sm backdrop-blur">

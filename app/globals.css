@@ -241,6 +241,35 @@ html.dark .crm-inbox-row-read-badge {
   display: none;
 }
 
+/* Portfolio carousel — transform marquee (seamless infinite loop) */
+@keyframes portfolio-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.portfolio-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: portfolio-marquee var(--marquee-duration, 100s) linear infinite;
+}
+
+.portfolio-marquee--paused .portfolio-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-marquee-track {
+    animation: none !important;
+    transform: none !important;
+    width: auto;
+  }
+}
+
 /* Hero headline — letter-by-letter reveal (opacity only, no blur) */
 @keyframes hero-letter-in {
   from {
