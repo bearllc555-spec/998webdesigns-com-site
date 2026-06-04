@@ -30,6 +30,7 @@ export function Carousel() {
   const trackRef = useRef<HTMLUListElement>(null);
   const scrollRef = useRef<HTMLUListElement>(null);
   const manualXRef = useRef<number | null>(null);
+  const thumbnailHoverCountRef = useRef(0);
   const [hoverPaused, setHoverPaused] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -126,12 +127,22 @@ export function Carousel() {
     });
   };
 
-  const handlePointerLeave = () => {
-    setHoverPaused(false);
-    if (!userPaused && manualXRef.current !== null) {
-      resumeMarqueeAnimation();
+  const handleThumbnailEnter = useCallback(() => {
+    thumbnailHoverCountRef.current += 1;
+    if (thumbnailHoverCountRef.current === 1) {
+      setHoverPaused(true);
     }
-  };
+  }, []);
+
+  const handleThumbnailLeave = useCallback(() => {
+    thumbnailHoverCountRef.current = Math.max(0, thumbnailHoverCountRef.current - 1);
+    if (thumbnailHoverCountRef.current === 0) {
+      setHoverPaused(false);
+      if (!userPaused && manualXRef.current !== null) {
+        resumeMarqueeAnimation();
+      }
+    }
+  }, [userPaused, resumeMarqueeAnimation]);
 
   const hoverHint = hasPortfolioVideoPreviews
     ? "Hover any thumbnail to preview the site"
