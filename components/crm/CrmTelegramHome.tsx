@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { CrmTelegramShell } from "@/components/crm/telegram/CrmTelegramShell";
+import { TelegramEntityCard } from "@/components/crm/telegram/TelegramEntityCard";
 import { cardTitle } from "@/components/crm/telegram/types";
 import { useCrmTelegramStatus } from "@/components/crm/telegram/useCrmTelegramStatus";
-import { useState } from "react";
 
 export function CrmTelegramHome() {
   const { status, loading, message, error, setMessage, setError, load } = useCrmTelegramStatus();
@@ -33,6 +34,9 @@ export function CrmTelegramHome() {
   }
 
   const destCount = status?.destinations.length ?? 0;
+  const botName = status?.bot
+    ? `@${status.bot.username ?? status.bot.displayName}`
+    : null;
 
   return (
     <CrmTelegramShell
@@ -64,75 +68,100 @@ export function CrmTelegramHome() {
       }
     >
       {status && (
-        <div className="space-y-6">
-          {status.bot && (
-            <p className="text-sm text-ink-soft">
-              Bot:{" "}
-              <a
-                href={status.bot.link ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-accent hover:underline"
+        <div className="space-y-8">
+          <section>
+            <h2 className="font-display text-lg font-medium">Bot.</h2>
+            <ul className="mt-4 grid gap-4">
+              <TelegramEntityCard
+                kind="bot"
+                title={status.bot?.displayName ?? "Not configured"}
               >
-                @{status.bot.username ?? status.bot.displayName}
-              </a>
-            </p>
-          )}
+                {status.bot ? (
+                  <>
+                    {botName && (
+                      <p>
+                        <a
+                          href={status.bot.link ?? "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-accent hover:underline"
+                        >
+                          {botName}
+                        </a>
+                      </p>
+                    )}
+                    {status.settings.hasStoredToken && status.settings.botTokenMasked && (
+                      <p className="font-mono text-xs">Token {status.settings.botTokenMasked}</p>
+                    )}
+                    {status.bot.link && (
+                      <a
+                        href={status.bot.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block text-sm text-accent hover:underline"
+                      >
+                        Open in Telegram
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <p>
+                    <Link href="/crm/telegram/admin/bot" className="text-accent hover:underline">
+                      Configure bot in Admin
+                    </Link>
+                  </p>
+                )}
+              </TelegramEntityCard>
+            </ul>
+          </section>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-lg font-medium">Recipients</h2>
-            <button
-              type="button"
-              disabled={testing || !status.configured}
-              onClick={sendTest}
-              className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50 disabled:opacity-60"
-            >
-              {testing ? "Sending…" : "Send test alert"}
-            </button>
-          </div>
-
-          {!status.configured && status.setupHint && (
-            <p className="text-sm text-ink-soft">{status.setupHint}</p>
-          )}
-
-          {destCount === 0 && (
-            <p className="text-sm text-ink-soft">
-              No recipients yet.{" "}
-              <Link href="/crm/telegram/admin/users" className="text-accent hover:underline">
-                Add users in Admin
-              </Link>
-              .
-            </p>
-          )}
-
-          <ul className="grid gap-4">
-            {status.destinations.map((d) => (
-              <li
-                key={d.chatId}
-                className="rounded-2xl border border-rule bg-bg p-5 shadow-sm"
+          <section>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-lg font-medium">Recipients.</h2>
+              <button
+                type="button"
+                disabled={testing || !status.configured}
+                onClick={sendTest}
+                className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50 disabled:opacity-60"
               >
-                <p className="text-xs font-medium uppercase tracking-wider text-slate">
-                  {d.type ?? "recipient"}
-                </p>
-                <p className="mt-1 font-display text-xl font-medium text-ink">{cardTitle(d)}</p>
-                {d.label && d.displayName !== d.label && (
-                  <p className="mt-1 text-sm text-ink-soft">Telegram: {d.displayName}</p>
-                )}
-                {d.username && <p className="mt-1 text-sm text-ink-soft">@{d.username}</p>}
-                <p className="mt-2 break-all font-mono text-xs text-ink-soft">Chat ID: {d.chatId}</p>
-                {d.link && (
-                  <a
-                    href={d.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-block text-sm text-accent hover:underline"
-                  >
-                    Open in Telegram
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
+                {testing ? "Sending…" : "Send test alert"}
+              </button>
+            </div>
+
+            {!status.configured && status.setupHint && (
+              <p className="mt-3 text-sm text-ink-soft">{status.setupHint}</p>
+            )}
+
+            {destCount === 0 && (
+              <p className="mt-3 text-sm text-ink-soft">
+                No recipients yet.{" "}
+                <Link href="/crm/telegram/admin/users" className="text-accent hover:underline">
+                  Add users in Admin
+                </Link>
+                .
+              </p>
+            )}
+
+            <ul className="mt-4 grid gap-4">
+              {status.destinations.map((d) => (
+                <TelegramEntityCard key={d.chatId} kind={d.type ?? "recipient"} title={cardTitle(d)}>
+                  {d.label && d.displayName !== d.label && <p>Telegram: {d.displayName}</p>}
+                  {d.username && <p>@{d.username}</p>}
+                  <p className="break-all font-mono text-xs">Chat ID: {d.chatId}</p>
+                  {d.link && (
+                    <a
+                      href={d.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-sm text-accent hover:underline"
+                    >
+                      Open in Telegram
+                    </a>
+                  )}
+                </TelegramEntityCard>
+              ))}
+            </ul>
+          </section>
         </div>
       )}
     </CrmTelegramShell>
