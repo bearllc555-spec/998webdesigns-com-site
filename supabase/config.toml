@@ -1,8 +1,11 @@
 # For detailed configuration reference documentation, visit:
 # https://supabase.com/docs/guides/local-development/cli/config
-# A string used to distinguish different Supabase projects on the same host. Defaults to the
-# working directory name when running `supabase init`.
+# Local CLI slug (not the cloud project ref).
 project_id = "998webdesigns-com-site"
+
+# Helmet production — required for GitHub integration / config-as-code.
+[remotes.production]
+project_id = "xwldbxburzqryxlzocck"
 
 [api]
 enabled = true
