@@ -196,7 +196,7 @@ export function CrmTelegramAdminUsers() {
                   type="text"
                   value={formLabel}
                   onChange={(e) => setFormLabel(e.target.value)}
-                  placeholder="Anthony"
+                  placeholder="your name"
                   className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
                 />
               </label>
