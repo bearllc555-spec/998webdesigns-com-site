@@ -157,6 +157,45 @@ body {
 /* Body copy max-width helper */
 .prose-cap { max-width: 62ch; }
 
+/* CRM inbox — unread row (light theme only; dark theme untouched) */
+html:not(.dark) .crm-inbox-row-unread,
+html:not(.dark) .crm-inbox-row-unread > button {
+  background-color: var(--c-white) !important;
+}
+
+html:not(.dark) .crm-inbox-row-unread .crm-inbox-row-unread-text {
+  color: var(--c-ink-900) !important;
+  font-weight: 700 !important;
+}
+
+html.dark .crm-inbox-row-unread .crm-inbox-row-unread-text {
+  color: var(--ink) !important;
+  font-weight: 700 !important;
+}
+
+/* CRM inbox — read row (light theme only) */
+html:not(.dark) .crm-inbox-row-read,
+html:not(.dark) .crm-inbox-row-read > button {
+  background-color: var(--c-rule-soft) !important;
+}
+
+html:not(.dark) .crm-inbox-row-read .crm-inbox-row-read-text {
+  color: var(--c-ink-900) !important;
+  font-weight: 400 !important;
+}
+
+html:not(.dark) .crm-inbox-row-read-badge {
+  background-color: var(--c-white) !important;
+  border: 1px solid var(--c-rule);
+}
+
+html.dark .crm-inbox-row-read-badge {
+  background-color: #52525b !important;
+  color: #f4f4f5 !important;
+  border: 1px solid var(--rule);
+  font-weight: 600 !important;
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .scrollbar-hide {
   -ms-overflow-style: none;

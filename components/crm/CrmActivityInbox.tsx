@@ -129,8 +129,8 @@ function InboxRow({
           expanded
             ? "bg-accent/[0.08]"
             : unread
-              ? "dark:bg-zinc-700/50 dark:hover:bg-zinc-600/45"
-              : "dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
+              ? "crm-inbox-row-unread dark:bg-zinc-700/50 dark:hover:bg-zinc-600/45"
+              : "crm-inbox-row-read dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
         }`}
       >
       <button
@@ -141,8 +141,8 @@ function InboxRow({
           expanded
             ? "bg-accent/[0.08] dark:bg-transparent"
             : unread
-              ? "bg-bg hover:bg-rule-soft/80 dark:bg-transparent dark:hover:bg-transparent"
-              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-transparent dark:hover:bg-transparent"
+              ? "dark:bg-transparent dark:hover:bg-transparent"
+              : "dark:bg-transparent dark:hover:bg-transparent"
         }`}
       >
         <span
@@ -156,15 +156,17 @@ function InboxRow({
             <span
               className={`truncate text-sm ${
                 unread
-                  ? "font-semibold text-ink dark:text-zinc-200"
-                  : "font-medium text-zinc-700 dark:text-zinc-500"
+                  ? "crm-inbox-row-unread-text"
+                  : "crm-inbox-row-read-text dark:text-zinc-500"
               }`}
             >
               {item.title || item.email}
             </span>
             <span
               className={`flex shrink-0 items-center gap-2 text-xs ${
-                unread ? "text-slate dark:text-zinc-400" : "text-zinc-600 dark:text-zinc-600"
+                unread
+                  ? "crm-inbox-row-unread-text"
+                  : "crm-inbox-row-read-text dark:text-zinc-600"
               }`}
             >
               <span>{formatListWhen(item.at)}</span>
@@ -181,34 +183,34 @@ function InboxRow({
               <span
                 className={`mt-0.5 block truncate text-xs ${
                   unread
-                    ? "font-semibold text-ink-soft dark:text-zinc-400"
-                    : "font-normal text-zinc-600 dark:text-zinc-600"
+                    ? "crm-inbox-row-unread-text"
+                    : "crm-inbox-row-read-text dark:text-zinc-600"
                 }`}
               >
                 {company ? `${company} · ` : ""}
                 {previewLine(item)}
               </span>
-              <span className="mt-1.5 inline-block">
-                <span
-                  className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                    unread
-                      ? "bg-accent/15 text-accent"
-                      : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800/80 dark:text-zinc-600"
-                  }`}
-                >
-                  {unread ? "Unread" : "Read"}
-                </span>
-              </span>
             </>
           )}
         </span>
       </button>
-      <CrmInboxFlagButton
-        flag={item.inboxFlag}
-        disabled={flagBusy}
-        onCycle={() => onCycleFlag(item)}
-        className="my-1.5 mr-2"
-      />
+      <div className="flex shrink-0 items-center gap-1 self-start pt-3 pr-2">
+        {!expanded && unread && (
+          <span className="crm-inbox-row-unread-text rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wider dark:bg-accent/15">
+            Unread
+          </span>
+        )}
+        {!expanded && !unread && (
+          <span className="crm-inbox-row-read-badge crm-inbox-row-read-text rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider">
+            Read
+          </span>
+        )}
+        <CrmInboxFlagButton
+          flag={item.inboxFlag}
+          disabled={flagBusy}
+          onCycle={() => onCycleFlag(item)}
+        />
+      </div>
       </div>
 
       {expanded && (
