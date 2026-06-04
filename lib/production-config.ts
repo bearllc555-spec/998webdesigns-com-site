@@ -1,4 +1,5 @@
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
+import { probeStripeOps, type StripeOpsSnapshot } from "@/lib/stripe-ops-check";
 import { checkSupabaseHealth, type SupabaseHealth } from "@/lib/supabase-health";
 
 export type ProductionConfigStatus = {
@@ -14,6 +15,7 @@ export type ProductionConfigStatus = {
   resendConfigured: boolean;
   supabaseConfigured: boolean;
   adminAuthConfigured: boolean;
+  stripeOps: StripeOpsSnapshot | null;
   warnings: string[];
   readyForLiveCharges: boolean;
 };
@@ -52,11 +54,9 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   if (vercelEnv === "production" && mode === "live" && !webhookSecretPresent) {
     warnings.push("STRIPE_WEBHOOK_SECRET missing on Production.");
   }
-  if (keyPresent && webhookSecretPresent) {
-    warnings.push(
-      "Stripe Dashboard: enable ACH Direct Debit (Payment methods) and subscribe the webhook to checkout.session.completed, checkout.session.async_payment_succeeded, and checkout.session.async_payment_failed."
-    );
-  }
+
+  const { snapshot: stripeOps, warnings: stripeWarnings } = await probeStripeOps();
+  warnings.push(...stripeWarnings);
   if (!process.env.RESEND_API_KEY?.trim()) {
     warnings.push("RESEND_API_KEY missing — contact and lead emails will fail.");
   }
@@ -73,6 +73,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   } else if (!supabase.contactSubmissionsTable) {
     warnings.push(
       "contact_submissions table missing — run supabase/contact-submissions.sql in Supabase SQL editor."
+    );
+  } else if (!supabase.stripeSubscriptionColumn) {
+    warnings.push(
+      "wd_leads.stripe_subscription_id column missing — run supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql."
     );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
@@ -103,6 +107,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     resendConfigured,
     supabaseConfigured,
     adminAuthConfigured,
+    stripeOps,
     warnings,
     readyForLiveCharges,
   };

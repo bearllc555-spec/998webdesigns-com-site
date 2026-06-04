@@ -5,6 +5,7 @@ export type SupabaseHealth = {
   wdLeadsTable: boolean;
   apiRateLimitsTable: boolean;
   contactSubmissionsTable: boolean;
+  stripeSubscriptionColumn: boolean;
 };
 
 /** Lightweight schema probe (no row data returned). */
@@ -16,10 +17,11 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
       wdLeadsTable: false,
       apiRateLimitsTable: false,
       contactSubmissionsTable: false,
+      stripeSubscriptionColumn: false,
     };
   }
 
-  const [leads, limits, contacts] = await Promise.all([
+  const [leads, limits, contacts, subscriptionCol] = await Promise.all([
     supa.from("wd_leads").select("id", { head: true, count: "exact" }).limit(0),
     supa
       .from("api_rate_limits")
@@ -29,6 +31,10 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
       .from("contact_submissions")
       .select("id", { head: true, count: "exact" })
       .limit(0),
+    supa
+      .from("wd_leads")
+      .select("stripe_subscription_id", { head: true, count: "exact" })
+      .limit(0),
   ]);
 
   return {
@@ -36,6 +42,7 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     wdLeadsTable: !isMissingTable(leads.error),
     apiRateLimitsTable: !isMissingTable(limits.error),
     contactSubmissionsTable: !isMissingTable(contacts.error),
+    stripeSubscriptionColumn: !isMissingColumn(subscriptionCol.error),
   };
 }
 
@@ -49,4 +56,10 @@ function isMissingTable(error: { code?: string; message?: string } | null): bool
     /schema cache/i.test(msg) ||
     /does not exist/i.test(msg)
   );
+}
+
+function isMissingColumn(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  const msg = error.message ?? "";
+  return /column/i.test(msg) && /does not exist/i.test(msg);
 }
