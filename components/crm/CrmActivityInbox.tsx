@@ -129,8 +129,8 @@ function InboxRow({
           expanded
             ? "bg-accent/[0.08]"
             : unread
-              ? "bg-white hover:bg-white dark:bg-zinc-700/50 dark:hover:bg-zinc-600/45"
-              : "bg-zinc-50 hover:bg-zinc-50 dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
+              ? "dark:bg-zinc-700/50 dark:hover:bg-zinc-600/45"
+              : "dark:bg-zinc-900/35 dark:hover:bg-zinc-900/50"
         }`}
       >
       <button
@@ -140,8 +140,10 @@ function InboxRow({
         className={`flex min-w-0 flex-1 gap-3 px-4 py-3.5 text-left transition ${
           expanded
             ? "bg-accent/[0.08] dark:bg-transparent"
-            : "bg-transparent hover:bg-transparent dark:hover:bg-transparent"
-        } ${!expanded && !unread ? "text-zinc-600" : ""}`}
+            : unread
+              ? "bg-bg hover:bg-rule-soft/80 dark:bg-transparent dark:hover:bg-transparent"
+              : "bg-zinc-200/70 text-zinc-700 hover:bg-zinc-200 dark:bg-transparent dark:hover:bg-transparent"
+        }`}
       >
         <span
           className={`mt-2 h-2 w-2 shrink-0 rounded-full ${
@@ -155,7 +157,7 @@ function InboxRow({
               className={`truncate text-sm ${
                 unread
                   ? "font-semibold text-ink dark:text-zinc-200"
-                  : "font-medium text-zinc-600 dark:text-zinc-500"
+                  : "font-medium text-zinc-700 dark:text-zinc-500"
               }`}
             >
               {item.title || item.email}
@@ -191,7 +193,7 @@ function InboxRow({
                   className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                     unread
                       ? "bg-accent/15 text-accent"
-                      : "bg-zinc-300/80 text-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-600"
+                      : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800/80 dark:text-zinc-600"
                   }`}
                 >
                   {unread ? "Unread" : "Read"}
