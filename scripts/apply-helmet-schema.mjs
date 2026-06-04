@@ -33,18 +33,35 @@ function readPasswordFile() {
   return null;
 }
 
-function buildConfig(cred) {
+/** Helmet (Vercel org) resolves on aws-1-us-east-1 pooler. */
+const POOLER_HOSTS = ["aws-1-us-east-1.pooler.supabase.com"];
+
+function buildConfigs(cred) {
   if (cred.mode === "uri") {
-    return { connectionString: cred.value, ssl: { rejectUnauthorized: false } };
+    return [{ connectionString: cred.value, ssl: { rejectUnauthorized: false } }];
   }
-  return {
-    host: `db.${REF}.supabase.co`,
-    port: 5432,
-    database: "postgres",
-    user: "postgres",
-    password: cred.value,
-    ssl: { rejectUnauthorized: false },
-  };
+  const password = cred.value;
+  const configs = [
+    {
+      host: `db.${REF}.supabase.co`,
+      port: 5432,
+      database: "postgres",
+      user: "postgres",
+      password,
+      ssl: { rejectUnauthorized: false },
+    },
+  ];
+  for (const host of POOLER_HOSTS) {
+    configs.push({
+      host,
+      port: 5432,
+      database: "postgres",
+      user: `postgres.${REF}`,
+      password,
+      ssl: { rejectUnauthorized: false },
+    });
+  }
+  return configs;
 }
 
 async function main() {
@@ -63,17 +80,39 @@ async function main() {
   }
 
   const sql = fs.readFileSync(schemaPath, "utf8");
-  const client = new pg.Client(buildConfig(cred));
-  await client.connect();
-  try {
-    await client.query(sql);
-    const tables = await client.query(
-      `select table_name from information_schema.tables where table_schema = 'public' and table_name in ('wd_leads','api_rate_limits') order by 1`
-    );
-    console.log("OK — tables:", tables.rows.map((r) => r.table_name).join(", "));
-  } finally {
-    await client.end();
+  const configs = buildConfigs(cred);
+  let lastErr;
+  for (const config of configs) {
+    const client = new pg.Client(config);
+    try {
+      await client.connect();
+      await client.query(sql);
+      const tables = await client.query(
+        `select table_name from information_schema.tables where table_schema = 'public' and table_name in ('wd_leads','api_rate_limits') order by 1`
+      );
+      console.log(
+        "OK — tables:",
+        tables.rows.map((r) => r.table_name).join(", "),
+        `(via ${config.host ?? "uri"})`
+      );
+      await client.end();
+      return;
+    } catch (err) {
+      lastErr = err;
+      await client.end().catch(() => undefined);
+    }
   }
+  const msg = lastErr?.message ?? "Could not connect to helmet database";
+  console.error(msg);
+  console.error(
+    "\nIf password auth failed: Supabase -> helmet -> Settings -> Database ->\n" +
+      "Connection string -> Session pooler -> URI. Paste that full postgresql:// line into\n" +
+      path.join(workspaceLocal, "supabase-helmet-db-password.txt") (replace the password line), then re-run.\n" +
+      "Or run HELMET-RUN-SQL.sql in the SQL Editor: https://supabase.com/dashboard/project/" +
+      REF +
+      "/sql/new\n"
+  );
+  process.exit(1);
 }
 
 main().catch((err) => {
