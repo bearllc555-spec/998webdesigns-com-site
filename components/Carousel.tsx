@@ -8,7 +8,13 @@ import {
   type PortfolioItem,
 } from "@/data/portfolio";
 
-const AUTOPLAY_MS = 5000;
+/** Duplicate slides so scrollLeft can loop without a visible jump. */
+const LOOP_COPIES = 2;
+const loopPortfolio = Array.from({ length: LOOP_COPIES }, () => portfolio).flat();
+
+/** Pixels per second — slow continuous drift to the right. */
+const SCROLL_SPEED_PX_S = 28;
+
 // Pan duration for static JPEG fallbacks (no previewVideo).
 const HOVER_REVEAL_S = 6;
 
@@ -27,26 +33,46 @@ export function Carousel() {
   }, []);
 
   useEffect(() => {
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-    if (paused) return;
+    const track = trackRef.current;
+    if (!track) return;
 
-    const id = window.setInterval(() => {
-      const track = trackRef.current;
-      if (!track) return;
-      const atEnd =
-        track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-      if (atEnd) {
-        track.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        scrollByCard(1);
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mq.matches) return;
+
+    let raf = 0;
+    let last = performance.now();
+    let setWidth = track.scrollWidth / LOOP_COPIES;
+
+    const remeasure = () => {
+      setWidth = track.scrollWidth / LOOP_COPIES;
+      if (setWidth > 0 && track.scrollLeft >= setWidth) {
+        track.scrollLeft %= setWidth;
       }
-    }, AUTOPLAY_MS);
+    };
 
-    return () => window.clearInterval(id);
-  }, [paused, scrollByCard]);
+    const ro = new ResizeObserver(remeasure);
+    ro.observe(track);
+
+    const tick = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+
+      if (!paused && setWidth > 0) {
+        track.scrollLeft += SCROLL_SPEED_PX_S * dt;
+        if (track.scrollLeft >= setWidth) {
+          track.scrollLeft -= setWidth;
+        }
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [paused]);
 
   const hoverHint = hasPortfolioVideoPreviews
     ? "Hover any thumbnail to preview the site"
@@ -66,16 +92,18 @@ export function Carousel() {
         </p>
       </div>
 
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <ul
           ref={trackRef}
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
+          className="flex gap-4 overflow-x-hidden pl-0 pr-5 pb-14 md:gap-5 md:pr-8 md:pb-16 scrollbar-hide"
+          style={{ scrollBehavior: "auto" }}
           aria-label="Recent client websites"
         >
-          {portfolio.map((p) => (
+          {loopPortfolio.map((p, index) => (
             <li
-              key={p.slug}
-              className="snap-start shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
+              key={`${p.slug}-${index}`}
+              className="shrink-0 basis-[78%] sm:basis-[46%] md:basis-[32%] lg:basis-[26%]"
+              aria-hidden={index >= portfolio.length ? true : undefined}
             >
               <PortfolioCard item={p} revealSeconds={HOVER_REVEAL_S} />
             </li>
