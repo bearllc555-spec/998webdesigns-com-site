@@ -85,10 +85,21 @@ Check: `stripe.mode`, `warnings`, `readyForLiveCharges`.
 
 ## Go live (real money)
 
-1. Stripe → **Live** mode
-2. Copy `sk_live_...` and live webhook `whsec_...` for `https://998webdesigns.com/api/stripe/webhook`
-3. Vercel Production → update both + `STRIPE_EXPECTED_MODE=live`
-4. Redeploy → env-status → one small real charge → refund if needed
+**Use your normal Chrome + Google** (not Cursor’s shared browser).
+
+1. Stripe → turn **Test mode OFF** (Live).
+2. **API keys:** https://dashboard.stripe.com/apikeys → copy **Secret key** (`sk_live_...`) → paste into  
+   `slatepress/.local/stripe-live-secret-key.txt` (line below comments).
+3. **Webhooks:** https://dashboard.stripe.com/webhooks → Add endpoint  
+   `https://998webdesigns.com/api/stripe/webhook` → event `checkout.session.completed` → copy **Signing secret** → paste into  
+   `slatepress/.local/stripe-live-webhook-secret.txt`.
+4. Double-click **`GO-LIVE-STRIPE-998.cmd`** in the slatepress workspace root (updates Vercel Production + redeploys).
+
+Or ask Cursor in Agent mode after the two `.local` files are filled.
+
+5. env-status → one small real charge on https://998webdesigns.com → refund in Stripe if needed.
+
+**Local `.env.local` stays on test keys** — do not use live keys for `npm run dev`.
 
 ---
 
