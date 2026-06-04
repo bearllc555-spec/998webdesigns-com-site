@@ -5,6 +5,7 @@ import { CrmActivityInbox } from "@/components/crm/CrmActivityInbox";
 import { CrmHeader } from "@/components/crm/CrmHeader";
 import type { CrmFeedItem } from "@/lib/crm-feed";
 import { isCrmFeedItemUnread } from "@/lib/crm-feed";
+import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
 
 export function CrmDashboard() {
   const [items, setItems] = useState<CrmFeedItem[]>([]);
@@ -59,7 +60,7 @@ export function CrmDashboard() {
         refreshDisabled={loading}
       />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8 pb-24 md:px-8">
+      <main className={`${CRM_PAGE_CONTAINER} flex-1 py-8 pb-24`}>
         {loading && <p className="text-sm text-ink-soft">Loading…</p>}
         {error && (
           <p className="text-sm text-warn">

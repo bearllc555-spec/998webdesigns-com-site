@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CrmAdminMenu } from "@/components/crm/CrmAdminMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
 import { CRM_VERSION } from "@/lib/crm-version";
 
 type CrmHeaderProps = {
@@ -36,7 +37,7 @@ export function CrmHeader({
 
   return (
     <header className="shrink-0 border-b border-rule bg-bg">
-      <div className="mx-auto max-w-4xl px-5 py-4 md:px-8">
+      <div className={`${CRM_PAGE_CONTAINER} py-4`}>
         <p className="mb-3 flex items-center gap-2">
           <span
             className="rounded-full bg-rule-soft px-2 py-0.5 text-[10px] font-medium tracking-wider text-slate"
