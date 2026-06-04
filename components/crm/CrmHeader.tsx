@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { CRM_VERSION } from "@/lib/crm-version";
 
 type CrmHeaderProps = {
@@ -44,6 +45,7 @@ export function CrmHeader({ title, subtitle, actions }: CrmHeaderProps) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {actions}
+            <ThemeToggle />
             <button
               type="button"
               onClick={logout}
