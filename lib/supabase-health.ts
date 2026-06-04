@@ -4,20 +4,30 @@ export type SupabaseHealth = {
   configured: boolean;
   wdLeadsTable: boolean;
   apiRateLimitsTable: boolean;
+  contactSubmissionsTable: boolean;
 };
 
 /** Lightweight schema probe (no row data returned). */
 export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
   const supa = supabaseAdmin();
   if (!supa) {
-    return { configured: false, wdLeadsTable: false, apiRateLimitsTable: false };
+    return {
+      configured: false,
+      wdLeadsTable: false,
+      apiRateLimitsTable: false,
+      contactSubmissionsTable: false,
+    };
   }
 
-  const [leads, limits] = await Promise.all([
+  const [leads, limits, contacts] = await Promise.all([
     supa.from("wd_leads").select("id", { head: true, count: "exact" }).limit(0),
     supa
       .from("api_rate_limits")
       .select("rate_key", { head: true, count: "exact" })
+      .limit(0),
+    supa
+      .from("contact_submissions")
+      .select("id", { head: true, count: "exact" })
       .limit(0),
   ]);
 
@@ -25,6 +35,7 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     configured: true,
     wdLeadsTable: !isMissingTable(leads.error),
     apiRateLimitsTable: !isMissingTable(limits.error),
+    contactSubmissionsTable: !isMissingTable(contacts.error),
   };
 }
 

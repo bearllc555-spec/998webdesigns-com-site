@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { insertContactSubmission } from "@/lib/contact-db";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { isValidEmail } from "@/lib/validate-email";
 
@@ -48,6 +49,28 @@ export async function POST(req: NextRequest) {
   }
   if (!message) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  }
+
+  const submittedAt = new Date().toISOString();
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    null;
+
+  const dbResult = await insertContactSubmission({
+    name,
+    email,
+    business_name: businessName || null,
+    message,
+    submitted_at: submittedAt,
+    ip,
+  });
+
+  if (!dbResult.ok) {
+    console.warn(
+      `[contact] contact_submissions persist skipped (${dbResult.reason}):`,
+      dbResult.detail
+    );
   }
 
   if (!process.env.RESEND_API_KEY) {

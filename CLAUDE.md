@@ -18,7 +18,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
 - `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout ($1,998 pay-in-full only), Resend checkout-link email.
-- `/api/contact` — POST: honeypot, Resend to hello@998webdesigns.com.
+- `/api/contact` — POST: honeypot, Supabase `contact_submissions` insert, Resend to hello@998webdesigns.com.
 - `/api/stripe/webhook` — signed webhook; `checkout.session.completed` syncs `paid_in_full` + internal payment email.
 - `/api/admin/env-status` — GET with `BALANCE_CAPTURE_SECRET` bearer; production wiring snapshot.
 - **Checkout origins** — `lib/checkout-origin.ts` allowlist (no open redirect via `Origin`).
@@ -37,7 +37,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **$198/mo hosting subscription** — Stripe Subscription not built.
 - **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
 - **SendGrid** — not used; transactional email is **Resend**.
-- **Supabase tables** — run `supabase/schema.sql` once if `wd_leads` / `api_rate_limits` are missing.
+- **Supabase tables** — run `supabase/schema.sql` once if `wd_leads` / `api_rate_limits` / `contact_submissions` are missing; or `supabase/contact-submissions.sql` if only contact table is new.
 - **Lighthouse / security review** — manual pass still recommended.
 - **Lawyer review** — Terms/Privacy are operator-drafted.
 

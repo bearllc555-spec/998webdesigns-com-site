@@ -65,6 +65,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "api_rate_limits table missing — run supabase/schema.sql for global rate limits."
     );
+  } else if (!supabase.contactSubmissionsTable) {
+    warnings.push(
+      "contact_submissions table missing — run supabase/contact-submissions.sql in Supabase SQL editor."
+    );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
     warnings.push("BALANCE_CAPTURE_SECRET missing — env-status API returns 503.");

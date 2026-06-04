@@ -34,5 +34,22 @@ create index if not exists api_rate_limits_window_idx on public.api_rate_limits 
 
 alter table public.api_rate_limits enable row level security;
 
+-- Contact modal /api/contact (email + Supabase log)
+create table if not exists public.contact_submissions (
+  id uuid primary key default gen_random_uuid(),
+  submitted_at timestamptz not null default now(),
+  name text not null,
+  email text not null,
+  business_name text,
+  message text not null,
+  ip text
+);
+
+create index if not exists contact_submissions_submitted_at_idx
+  on public.contact_submissions (submitted_at desc);
+create index if not exists contact_submissions_email_idx on public.contact_submissions (email);
+
+alter table public.contact_submissions enable row level security;
+
 -- Optional: purge stale rate-limit rows (run via cron or manually)
 -- delete from public.api_rate_limits where window_ends_at < now() - interval '1 day';
