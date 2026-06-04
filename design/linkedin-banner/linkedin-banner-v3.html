@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>998 webdesigns — LinkedIn banner v3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #e4e4e7;
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      /* LinkedIn personal profile banner */
+      .banner {
+        position: relative;
+        width: 1584px;
+        height: 396px;
+        overflow: hidden;
+        background: #ffffff;
+        color: #0a0a0a;
+      }
+
+      /* Decorative — safe in avatar overlap zone (bottom-left) */
+      .bg-glow {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 720px 320px at 88% 42%, rgba(37, 99, 235, 0.14), transparent 68%),
+          radial-gradient(ellipse 480px 280px at 12% 88%, rgba(37, 99, 235, 0.06), transparent 70%),
+          linear-gradient(105deg, transparent 62%, rgba(239, 243, 255, 0.9) 100%);
+        pointer-events: none;
+      }
+
+      .bg-watermark {
+        position: absolute;
+        right: -40px;
+        top: 50%;
+        transform: translateY(-52%);
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 800;
+        font-size: 280px;
+        line-height: 0.85;
+        letter-spacing: -0.06em;
+        color: rgba(37, 99, 235, 0.04);
+        user-select: none;
+        pointer-events: none;
+      }
+
+      .bg-dots {
+        position: absolute;
+        left: 48px;
+        bottom: 36px;
+        width: 140px;
+        height: 100px;
+        opacity: 0.35;
+        background-image: radial-gradient(circle, #2563eb 1.2px, transparent 1.2px);
+        background-size: 14px 14px;
+        mask-image: radial-gradient(ellipse at 30% 70%, black 20%, transparent 72%);
+        pointer-events: none;
+      }
+
+      .bg-line {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 55%, transparent 100%);
+        opacity: 0.85;
+      }
+
+      .content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 48px;
+        padding: 0 72px 0 300px; /* left pad clears LinkedIn profile photo */
+      }
+
+      .brand-block {
+        max-width: 720px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+        padding: 6px 14px 6px 10px;
+        border: 1px solid #e4e4e7;
+        border-radius: 999px;
+        background: #f4f4f5;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #52525b;
+      }
+
+      .eyebrow-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+      }
+
+      .logo {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 800;
+        font-size: 72px;
+        line-height: 0.95;
+        letter-spacing: -0.045em;
+      }
+
+      .logo-998 {
+        color: #2563eb;
+      }
+
+      .logo-rest {
+        color: #0a0a0a;
+        font-weight: 700;
+      }
+
+      .tagline {
+        margin-top: 16px;
+        max-width: 560px;
+        font-size: 20px;
+        font-weight: 500;
+        line-height: 1.35;
+        letter-spacing: -0.02em;
+        color: #27272a;
+      }
+
+      .tagline strong {
+        font-weight: 700;
+        color: #0a0a0a;
+      }
+
+      /* Offer panel */
+      .offer {
+        position: relative;
+        min-width: 340px;
+        padding: 22px 28px 20px;
+        border-radius: 20px;
+        background: linear-gradient(145deg, #0f172a 0%, #1e3a5f 48%, #1d4ed8 100%);
+        box-shadow:
+          0 1px 2px rgba(10, 10, 10, 0.08),
+          0 18px 40px rgba(29, 78, 216, 0.28),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      }
+
+      .offer::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: 21px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(96, 165, 250, 0.7), rgba(255, 255, 255, 0.15));
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      .offer-kicker {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(191, 219, 254, 0.85);
+        margin-bottom: 8px;
+      }
+
+      .offer-main {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 800;
+        font-size: 30px;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        color: #ffffff;
+      }
+
+      .offer-main .sep {
+        margin: 0 0.35em;
+        opacity: 0.45;
+        font-weight: 500;
+      }
+
+      .offer-rule {
+        height: 1px;
+        margin: 14px 0 12px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      }
+
+      .offer-url {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .offer-url svg {
+        width: 16px;
+        height: 16px;
+        opacity: 0.85;
+      }
+
+      .hint {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 13px;
+        color: #52525b;
+        background: #fff;
+        border: 1px solid #e4e4e7;
+        padding: 10px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+        .hint {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner" id="banner">
+      <div class="bg-glow" aria-hidden="true"></div>
+      <div class="bg-watermark" aria-hidden="true">998</div>
+      <div class="bg-dots" aria-hidden="true"></div>
+      <div class="bg-line" aria-hidden="true"></div>
+
+      <div class="content">
+        <div class="brand-block">
+          <p class="eyebrow">
+            <span class="eyebrow-dot" aria-hidden="true"></span>
+            Handcrafted for local service businesses
+          </p>
+          <h1 class="logo" aria-label="998 webdesigns">
+            <span class="logo-998">998</span><span class="logo-rest">webdesigns</span>
+          </h1>
+          <p class="tagline">
+            <strong>High-converting websites</strong> — built in 7 business days, no agency bloat.
+          </p>
+        </div>
+
+        <aside class="offer" aria-label="Offer">
+          <p class="offer-kicker">Flat pricing</p>
+          <p class="offer-main">
+            7-day builds<span class="sep">·</span>$1,998 flat
+          </p>
+          <div class="offer-rule" aria-hidden="true"></div>
+          <p class="offer-url">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            998webdesigns.com
+          </p>
+        </aside>
+      </div>
+    </div>
+
+    <p class="hint">
+      Export: screenshot the white box at exactly 1584×396 (use browser zoom or a capture tool). LinkedIn
+      profile photo covers the bottom-left — text is padded clear.
+    </p>
+  </body>
+</html>
