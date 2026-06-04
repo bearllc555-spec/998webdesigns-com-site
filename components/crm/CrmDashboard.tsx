@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CrmActivityInbox } from "@/components/crm/CrmActivityInbox";
 import { CrmHeader } from "@/components/crm/CrmHeader";
 import type { CrmFeedItem } from "@/lib/crm-feed";
@@ -10,7 +10,6 @@ export function CrmDashboard() {
   const [items, setItems] = useState<CrmFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "lead" | "contact">("all");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,8 +34,12 @@ export function CrmDashboard() {
     load();
   }, [load]);
 
-  const visible = items.filter((i) => filter === "all" || i.source === filter);
-  const unreadCount = visible.filter(isCrmFeedItemUnread).length;
+  const contactItems = useMemo(
+    () => items.filter((i) => i.source === "contact"),
+    [items]
+  );
+  const leadItems = useMemo(() => items.filter((i) => i.source === "lead"), [items]);
+  const unreadCount = items.filter(isCrmFeedItemUnread).length;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
@@ -44,8 +47,8 @@ export function CrmDashboard() {
         title="Activity"
         subtitle={
           unreadCount > 0
-            ? `${unreadCount} unread · ${visible.length} total`
-            : `${visible.length} ${filter === "all" ? "messages" : filter === "lead" ? "leads" : "contacts"}`
+            ? `${unreadCount} unread · ${contactItems.length} contacts · ${leadItems.length} leads`
+            : `${contactItems.length} contacts · ${leadItems.length} leads`
         }
         actions={
           <button
@@ -59,23 +62,6 @@ export function CrmDashboard() {
       />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-8 pb-24 md:px-8">
-        <div className="mb-6 flex flex-wrap gap-2">
-          {(["all", "lead", "contact"] as const).map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize ${
-                filter === f
-                  ? "bg-accent text-white"
-                  : "border border-rule text-ink-soft hover:border-accent/50"
-              }`}
-            >
-              {f === "all" ? "All" : f === "lead" ? "Leads" : "Contact"}
-            </button>
-          ))}
-        </div>
-
         {loading && <p className="text-sm text-ink-soft">Loading…</p>}
         {error && (
           <p className="text-sm text-warn">
@@ -87,24 +73,15 @@ export function CrmDashboard() {
           </p>
         )}
 
-        {!loading && !error && visible.length === 0 && (
+        {!loading && !error && items.length === 0 && (
           <p className="text-sm text-ink-soft">No activity yet.</p>
         )}
 
-        {!loading && !error && visible.length > 0 && (
+        {!loading && !error && items.length > 0 && (
           <CrmActivityInbox
-            items={visible}
-            onItemsChange={(updater) => {
-              setItems((prev) => {
-                const vis =
-                  filter === "all" ? prev : prev.filter((i) => i.source === filter);
-                const nextVisible = updater(vis);
-                const byKey = new Map(
-                  nextVisible.map((i) => [`${i.source}-${i.id}`, i] as const)
-                );
-                return prev.map((i) => byKey.get(`${i.source}-${i.id}`) ?? i);
-              });
-            }}
+            contactItems={contactItems}
+            leadItems={leadItems}
+            onItemsChange={(updater) => setItems((prev) => updater(prev))}
             onReload={load}
           />
         )}

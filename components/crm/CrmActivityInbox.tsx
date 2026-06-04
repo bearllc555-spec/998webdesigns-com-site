@@ -70,12 +70,125 @@ function previewLine(item: CrmFeedItem): string {
 }
 
 type CrmActivityInboxProps = {
-  items: CrmFeedItem[];
+  contactItems: CrmFeedItem[];
+  leadItems: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
 };
 
-export function CrmActivityInbox({ items, onItemsChange, onReload }: CrmActivityInboxProps) {
+function InboxRow({
+  item,
+  active,
+  onSelect,
+}: {
+  item: CrmFeedItem;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const unread = isCrmFeedItemUnread(item);
+  const company = item.businessName.trim();
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onSelect}
+        className={`flex w-full gap-3 px-4 py-3.5 text-left transition ${
+          active
+            ? "bg-accent/[0.08] ring-1 ring-inset ring-accent/25"
+            : unread
+              ? "bg-bg hover:bg-rule-soft/80"
+              : "bg-rule-soft/30 text-ink-soft hover:bg-rule-soft/60"
+        }`}
+      >
+        <span
+          className={`mt-2 h-2 w-2 shrink-0 rounded-full ${
+            unread ? "bg-accent" : "bg-transparent"
+          }`}
+          aria-hidden
+        />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-2">
+            <span
+              className={`truncate text-sm ${
+                unread ? "font-semibold text-ink" : "font-medium text-ink-soft"
+              }`}
+            >
+              {item.title || item.email}
+            </span>
+            <span className="shrink-0 text-xs text-slate">{formatListWhen(item.at)}</span>
+          </span>
+          <span
+            className={`mt-0.5 block truncate text-xs ${
+              unread ? "text-ink-soft" : "text-slate"
+            }`}
+          >
+            {company ? `${company} · ` : ""}
+            {previewLine(item)}
+          </span>
+          <span className="mt-1.5 inline-block">
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                unread ? "bg-accent/15 text-accent" : "bg-rule text-slate"
+              }`}
+            >
+              {unread ? "Unread" : "Read"}
+            </span>
+          </span>
+        </span>
+      </button>
+    </li>
+  );
+}
+
+function InboxSection({
+  title,
+  items,
+  selectedKey,
+  onSelect,
+  emptyLabel,
+}: {
+  title: string;
+  items: CrmFeedItem[];
+  selectedKey: string | null;
+  onSelect: (item: CrmFeedItem) => void;
+  emptyLabel: string;
+}) {
+  const unread = items.filter(isCrmFeedItemUnread).length;
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm">
+      <div className="flex items-center justify-between border-b border-rule px-4 py-3">
+        <h2 className="font-display text-base font-medium text-ink">{title}</h2>
+        <span className="text-xs text-ink-soft">
+          {unread > 0 ? `${unread} unread · ` : ""}
+          {items.length} total
+        </span>
+      </div>
+      {items.length === 0 ? (
+        <p className="px-4 py-6 text-sm text-ink-soft">{emptyLabel}</p>
+      ) : (
+        <ul className="max-h-[min(32vh,16rem)] divide-y divide-rule overflow-y-auto">
+          {items.map((item) => (
+            <InboxRow
+              key={itemKey(item)}
+              item={item}
+              active={selectedKey === itemKey(item)}
+              onSelect={() => onSelect(item)}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function CrmActivityInbox({
+  contactItems,
+  leadItems,
+  onItemsChange,
+  onReload,
+}: CrmActivityInboxProps) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesDraft, setNotesDraft] = useState("");
@@ -83,9 +196,14 @@ export function CrmActivityInbox({ items, onItemsChange, onReload }: CrmActivity
   const [deleting, setDeleting] = useState(false);
   const [readBusy, setReadBusy] = useState(false);
 
+  const allItems = useMemo(
+    () => [...contactItems, ...leadItems],
+    [contactItems, leadItems]
+  );
+
   const selected = useMemo(
-    () => items.find((i) => itemKey(i) === selectedKey) ?? null,
-    [items, selectedKey]
+    () => allItems.find((i) => itemKey(i) === selectedKey) ?? null,
+    [allItems, selectedKey]
   );
 
   const patchItemRead = useCallback(
@@ -194,78 +312,25 @@ export function CrmActivityInbox({ items, onItemsChange, onReload }: CrmActivity
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-rule bg-bg shadow-sm md:flex md:min-h-[28rem]">
-      <div className="md:w-[min(22rem,38%)] md:shrink-0 md:border-r md:border-rule">
-        <ul className="max-h-[min(50vh,28rem)] divide-y divide-rule overflow-y-auto md:max-h-none md:min-h-[28rem]">
-          {items.map((item) => {
-            const key = itemKey(item);
-            const unread = isCrmFeedItemUnread(item);
-            const active = selectedKey === key;
-            const company = item.businessName.trim();
-
-            return (
-              <li key={key}>
-                <button
-                  type="button"
-                  onClick={() => selectItem(item)}
-                  className={`flex w-full gap-3 px-4 py-3.5 text-left transition ${
-                    active
-                      ? "bg-accent/[0.08] ring-1 ring-inset ring-accent/25"
-                      : unread
-                        ? "bg-bg hover:bg-rule-soft/80"
-                        : "bg-rule-soft/30 text-ink-soft hover:bg-rule-soft/60"
-                  }`}
-                >
-                  <span
-                    className={`mt-2 h-2 w-2 shrink-0 rounded-full ${
-                      unread ? "bg-accent" : "bg-transparent"
-                    }`}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-baseline justify-between gap-2">
-                      <span
-                        className={`truncate text-sm ${
-                          unread ? "font-semibold text-ink" : "font-medium text-ink-soft"
-                        }`}
-                      >
-                        {item.title || item.email}
-                      </span>
-                      <span className="shrink-0 text-xs text-slate">
-                        {formatListWhen(item.at)}
-                      </span>
-                    </span>
-                    <span
-                      className={`mt-0.5 block truncate text-xs ${
-                        unread ? "text-ink-soft" : "text-slate"
-                      }`}
-                    >
-                      {company ? `${company} · ` : ""}
-                      {previewLine(item)}
-                    </span>
-                    <span className="mt-1.5 inline-flex items-center gap-2">
-                      <span
-                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                          unread
-                            ? "bg-accent/15 text-accent"
-                            : "bg-rule text-slate"
-                        }`}
-                      >
-                        {unread ? "Unread" : "Read"}
-                      </span>
-                      <span className="text-[10px] uppercase tracking-wider text-slate">
-                        {item.source === "lead" ? "Lead" : "Contact"}
-                      </span>
-                    </span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+    <div className="md:flex md:min-h-[32rem] md:gap-0">
+      <div className="space-y-4 md:w-[min(22rem,38%)] md:shrink-0 md:pr-4">
+        <InboxSection
+          title="Contacts"
+          items={contactItems}
+          selectedKey={selectedKey}
+          onSelect={selectItem}
+          emptyLabel="No contacts yet."
+        />
+        <InboxSection
+          title="Leads"
+          items={leadItems}
+          selectedKey={selectedKey}
+          onSelect={selectItem}
+          emptyLabel="No leads yet."
+        />
       </div>
 
-      <div className="min-h-[16rem] flex-1 p-5 md:min-h-[28rem] md:overflow-y-auto">
+      <div className="mt-4 min-h-[16rem] flex-1 overflow-hidden rounded-2xl border border-rule bg-bg p-5 shadow-sm md:mt-0 md:min-h-[32rem] md:overflow-y-auto">
         {!selected && (
           <p className="py-12 text-center text-sm text-ink-soft">
             Select a message to read the full details.
