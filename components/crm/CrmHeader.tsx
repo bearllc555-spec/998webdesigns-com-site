@@ -11,7 +11,7 @@ type CrmHeaderProps = {
   subtitle?: string;
   /** Extra controls before Admin (e.g. back links on subpages). */
   actions?: React.ReactNode;
-  /** Renders Refresh in the nav row beside Activity. */
+  /** Renders Refresh in the nav row beside Messages. */
   onRefresh?: () => void;
   refreshDisabled?: boolean;
 };
@@ -75,7 +75,7 @@ export function CrmHeader({
                 : "border border-rule text-ink-soft hover:border-accent/50"
             }`}
           >
-            Activity
+            Messages
           </Link>
           {onRefresh && (
             <button

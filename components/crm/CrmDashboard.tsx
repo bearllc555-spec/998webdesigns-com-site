@@ -44,7 +44,7 @@ export function CrmDashboard() {
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <CrmHeader
-        title="Activity"
+        title="Messages"
         subtitle={
           unreadCount > 0
             ? `${unreadCount} unread · ${contactItems.length} contacts · ${leadItems.length} leads`
