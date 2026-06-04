@@ -27,7 +27,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - OG image — `app/opengraph-image.tsx`.
 - Rate limiting — `proxy.ts` (in-memory) + Supabase `api_rate_limits` on API routes when tables exist (`lib/api-rate-limit.ts`).
 - Analytics — `@vercel/analytics` in root layout.
-- **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` or `BALANCE_CAPTURE_SECRET`), feed from `wd_leads` + `contact_submissions`, Telegram via `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`.
+- **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` or `BALANCE_CAPTURE_SECRET`), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` shows forward-to destinations, Telegram via `TELEGRAM_BOT_TOKEN` + comma-separated `TELEGRAM_CHAT_ID` (optional `TELEGRAM_CHAT_IDS`, `TELEGRAM_CHAT_LABELS`).
 
 ---
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { CrmHeader } from "@/components/crm/CrmHeader";
 import type { CrmFeedItem } from "@/lib/crm-feed";
 
 type PendingDelete = {
@@ -65,11 +66,6 @@ export function CrmDashboard() {
     load();
   }, [load]);
 
-  async function logout() {
-    await fetch("/api/crm/session", { method: "DELETE", credentials: "include" });
-    window.location.href = "/crm/login";
-  }
-
   async function saveNotes(leadId: string) {
     const res = await fetch(`/api/crm/leads/${leadId}/notes`, {
       method: "PATCH",
@@ -123,35 +119,19 @@ export function CrmDashboard() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
-      <header className="shrink-0 border-b border-rule bg-bg">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4 px-5 py-4 md:px-8">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-              998 CRM
-            </p>
-            <h1 className="font-display text-2xl font-medium">Activity</h1>
-            <p className="mt-1 text-sm text-ink-soft">
-              {visible.length} {filter === "all" ? "records" : filter === "lead" ? "leads" : "contacts"}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={load}
-              className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
-            >
-              Refresh
-            </button>
-            <button
-              type="button"
-              onClick={logout}
-              className="rounded-full border border-rule px-4 py-2 text-sm text-ink-soft hover:border-accent/50"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+      <CrmHeader
+        title="Activity"
+        subtitle={`${visible.length} ${filter === "all" ? "records" : filter === "lead" ? "leads" : "contacts"}`}
+        actions={
+          <button
+            type="button"
+            onClick={load}
+            className="rounded-full border border-rule px-4 py-2 text-sm font-medium hover:border-accent/50"
+          >
+            Refresh
+          </button>
+        }
+      />
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-5 py-8 pb-24 md:px-8">
         <div className="mb-6 flex flex-wrap gap-2">

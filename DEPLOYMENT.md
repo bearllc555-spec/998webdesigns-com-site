@@ -144,10 +144,14 @@ Private mini-CRM at **https://998webdesigns.com/crm** (also works after you add 
 | Variable | Purpose |
 |----------|---------|
 | `TELEGRAM_BOT_TOKEN` | From [@BotFather](https://t.me/BotFather) |
-| `TELEGRAM_CHAT_ID` | Your user or group chat id (message `@userinfobot` or add bot to a group) |
+| `TELEGRAM_CHAT_ID` | One or more chat ids, **comma-separated** — each destination gets every alert |
+| `TELEGRAM_CHAT_IDS` | Optional extra chat ids (merged with `TELEGRAM_CHAT_ID`) |
+| `TELEGRAM_CHAT_LABELS` | Optional display names, same order as ids (e.g. `Anthony,Ops group`) |
 | `CRM_ADMIN_SECRET` | Sign-in password for `/crm` (optional — falls back to `BALANCE_CAPTURE_SECRET`) |
 
-**Telegram alerts** fire on: lead form submit, checkout link created, paid, ACH pending/failed, hosting renewal fail/cancel, contact form.
+**Telegram alerts** fire on: lead form submit, checkout link created, paid, ACH pending/failed, hosting renewal fail/cancel, contact form. Each event is sent to **all** configured chat ids in parallel.
+
+**CRM:** https://998webdesigns.com/crm/telegram lists the bot and forward-to destinations (resolved via Telegram API when possible).
 
 **Sign in:** https://998webdesigns.com/crm/login — paste the same secret you use for `GET /api/admin/env-status` if `CRM_ADMIN_SECRET` is unset.
 
