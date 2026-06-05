@@ -150,7 +150,7 @@ Private mini-CRM at **https://998webdesigns.com/crm** (also works after you add 
 | `TELEGRAM_CHAT_ID` | Optional fallback (comma-separated chat ids) |
 | `TELEGRAM_CHAT_IDS` | Optional extra env chat ids |
 | `TELEGRAM_CHAT_LABELS` | Optional env labels |
-| `CRM_ADMIN_SECRET` | Sign-in password for `/crm` (optional — falls back to `BALANCE_CAPTURE_SECRET`) |
+| `CRM_ADMIN_SECRET` | Sign-in password for `/crm` (**required in production** — no fallback to `BALANCE_CAPTURE_SECRET`) |
 
 **Telegram (recommended):** configure at **https://998webdesigns.com/crm/telegram** — bot token, chat ids, labels saved to Supabase table `crm_telegram_settings`. Use **Discover recent chats** after messaging your bot, then **Save** and **Send test alert**. Env vars apply only until CRM settings are saved.
 
@@ -165,7 +165,7 @@ Returns `{"ok":true,"via":"..."}` when the table exists. Also runnable via `node
 
 **Telegram alerts** fire on: lead form submit, checkout link created, paid, ACH pending/failed, hosting renewal fail/cancel, contact form. Each event is sent to **all** configured chat ids in parallel.
 
-**Sign in:** https://998webdesigns.com/crm/login — paste the same secret you use for `GET /api/admin/env-status` if `CRM_ADMIN_SECRET` is unset.
+**Sign in:** https://998webdesigns.com/crm/login — use `CRM_ADMIN_SECRET` in production. `GET /api/admin/env-status` still uses `BALANCE_CAPTURE_SECRET` for ops checks.
 
 **Subdomain (optional):** In Vercel → **998webdesigns-com-site** → Settings → Domains → add `crm.998webdesigns.com` to the same project. In Cloudflare DNS, `CNAME crm` → `cname.vercel-dns.com`. The app route stays `/crm`; for root-on-subdomain you would add a redirect rule later.
 

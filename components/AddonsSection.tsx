@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSelectedAddons } from "@/hooks/use-selected-addons";
 import {
   GROWTH_PACK_ID,
-  getSelectedAddons,
   hasGrowthPack,
   isAddonVisuallySelected,
   isGrowthPackMember,
@@ -261,24 +260,10 @@ function AddonCardCta({
 }
 
 export function AddonsSection() {
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
-
-  useEffect(() => {
-    setSelectedAddons(getSelectedAddons());
-  }, []);
-
-  useEffect(() => {
-    function handleUpdate(e: Event) {
-      const detail = (e as CustomEvent<string[]>).detail;
-      setSelectedAddons(detail);
-    }
-    window.addEventListener("addons-updated", handleUpdate);
-    return () => window.removeEventListener("addons-updated", handleUpdate);
-  }, []);
+  const selectedAddons = useSelectedAddons();
 
   function handleToggle(value: string) {
-    const updated = toggleAddon(value);
-    setSelectedAddons(updated);
+    toggleAddon(value);
   }
 
   const growthSelected = hasGrowthPack(selectedAddons);

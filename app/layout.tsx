@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AddonSummaryBar } from "@/components/AddonSummaryBar";
+import { SkipLink } from "@/components/SkipLink";
 import "./globals.css";
 
 const inter = Inter({
@@ -69,6 +70,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-bg text-ink">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <SkipLink />
           {children}
           <AddonSummaryBar />
           <Toaster />

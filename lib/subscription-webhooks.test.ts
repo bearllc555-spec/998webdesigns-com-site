@@ -1,9 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import type Stripe from "stripe";
 
-const updateLatestWdLeadBySubscriptionId = vi.fn();
-const sendInternalHostingRenewalFailedEmail = vi.fn();
-const sendInternalHostingCanceledEmail = vi.fn();
+const {
+  updateLatestWdLeadBySubscriptionId,
+  sendInternalHostingRenewalFailedEmail,
+  sendInternalHostingCanceledEmail,
+} = vi.hoisted(() => ({
+  updateLatestWdLeadBySubscriptionId: vi.fn(),
+  sendInternalHostingRenewalFailedEmail: vi.fn(),
+  sendInternalHostingCanceledEmail: vi.fn(),
+}));
 
 vi.mock("@/lib/leads-db", () => ({
   updateLatestWdLeadBySubscriptionId,
@@ -14,13 +20,25 @@ vi.mock("@/lib/internal-lead-email", () => ({
   sendInternalHostingCanceledEmail,
 }));
 
+vi.mock("@/lib/crm-notify-stripe", () => ({
+  notifyHostingRenewalFailed: vi.fn(),
+  notifyHostingCanceled: vi.fn(),
+}));
+
+import {
+  handleInvoicePaymentFailed,
+  handleSubscriptionDeleted,
+} from "@/lib/subscription-webhooks";
+
 describe("subscription webhooks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    updateLatestWdLeadBySubscriptionId.mockResolvedValue(undefined);
+    sendInternalHostingRenewalFailedEmail.mockResolvedValue(undefined);
+    sendInternalHostingCanceledEmail.mockResolvedValue(undefined);
   });
 
   it("ignores invoice.payment_failed without a subscription", async () => {
-    const { handleInvoicePaymentFailed } = await import("@/lib/subscription-webhooks");
     await handleInvoicePaymentFailed({
       id: "in_1",
       parent: null,
@@ -31,7 +49,6 @@ describe("subscription webhooks", () => {
   });
 
   it("syncs and emails on subscription invoice failure", async () => {
-    const { handleInvoicePaymentFailed } = await import("@/lib/subscription-webhooks");
     await handleInvoicePaymentFailed({
       id: "in_1",
       amount_due: 19800,
@@ -49,7 +66,6 @@ describe("subscription webhooks", () => {
   });
 
   it("marks hosting canceled on subscription.deleted", async () => {
-    const { handleSubscriptionDeleted } = await import("@/lib/subscription-webhooks");
     await handleSubscriptionDeleted({
       id: "sub_123",
       status: "canceled",

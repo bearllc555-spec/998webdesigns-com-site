@@ -27,7 +27,8 @@ describe("validateLeadPayload", () => {
   });
 
   it("defaults to full when paymentOption omitted", () => {
-    const { paymentOption: _, ...withoutPayment } = validBase;
+    const { paymentOption, ...withoutPayment } = validBase;
+    void paymentOption;
     const result = validateLeadPayload(withoutPayment);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.data.paymentOption).toBe("full");
@@ -51,7 +52,8 @@ describe("validateLeadPayload", () => {
   });
 
   it("rejects missing paymentChannel", () => {
-    const { paymentChannel: _, ...withoutChannel } = validBase;
+    const { paymentChannel, ...withoutChannel } = validBase;
+    void paymentChannel;
     const result = validateLeadPayload(withoutChannel);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/paymentChannel/i);

@@ -21,12 +21,15 @@ export function FAQ() {
         <ul className="mt-12 divide-y divide-rule rounded-2xl border border-rule bg-bg">
           {faq.map((item, i) => {
             const isOpen = open === i;
+            const panelId = `faq-panel-${i}`;
             return (
               <li key={item.q}>
                 <button
                   type="button"
+                  id={`faq-trigger-${i}`}
                   onClick={() => setOpen(isOpen ? null : i)}
                   aria-expanded={isOpen}
+                  aria-controls={panelId}
                   className="flex w-full items-start justify-between gap-6 px-6 py-5 text-left transition hover:bg-rule-soft/60"
                 >
                   <span className="font-display text-lg font-medium text-ink">
@@ -42,7 +45,12 @@ export function FAQ() {
                   </span>
                 </button>
                 {isOpen && (
-                  <div className="px-6 pb-6 text-base leading-relaxed text-ink-soft">
+                  <div
+                    id={panelId}
+                    role="region"
+                    aria-labelledby={`faq-trigger-${i}`}
+                    className="px-6 pb-6 text-base leading-relaxed text-ink-soft"
+                  >
                     {item.a}
                   </div>
                 )}

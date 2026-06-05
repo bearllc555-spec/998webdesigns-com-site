@@ -14,6 +14,8 @@ vi.mock("@/lib/crm-notify", () => ({
   notifyCrmActivity: vi.fn(),
 }));
 
+import { POST } from "./route";
+
 function contactRequest(body: unknown) {
   return new NextRequest("http://localhost/api/contact", {
     method: "POST",
@@ -29,7 +31,6 @@ describe("POST /api/contact", () => {
   });
 
   it("silently accepts honeypot submissions", async () => {
-    const { POST } = await import("./route");
     const res = await POST(
       contactRequest({
         name: "Bot",
@@ -43,14 +44,12 @@ describe("POST /api/contact", () => {
   });
 
   it("returns 400 when required fields are missing", async () => {
-    const { POST } = await import("./route");
     const res = await POST(contactRequest({ email: "a@example.com", message: "hi" }));
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/name/i);
   });
 
   it("returns 400 for invalid email", async () => {
-    const { POST } = await import("./route");
     const res = await POST(
       contactRequest({ name: "Ann", email: "not-an-email", message: "hello" })
     );
@@ -59,7 +58,6 @@ describe("POST /api/contact", () => {
   });
 
   it("returns 500 when Resend is not configured", async () => {
-    const { POST } = await import("./route");
     const res = await POST(
       contactRequest({ name: "Ann", email: "ann@example.com", message: "hello" })
     );

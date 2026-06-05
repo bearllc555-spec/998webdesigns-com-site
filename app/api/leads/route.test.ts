@@ -36,6 +36,8 @@ vi.mock("@/lib/stripe", () => ({
   },
 }));
 
+import { POST } from "./route";
+
 function leadsRequest(body: unknown) {
   return new NextRequest("http://localhost/api/leads", {
     method: "POST",
@@ -65,14 +67,12 @@ describe("POST /api/leads", () => {
   });
 
   it("silently accepts honeypot submissions", async () => {
-    const { POST } = await import("./route");
     const res = await POST(leadsRequest({ ...validLead, website: "https://spam.test" }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, ignored: true });
   });
 
   it("returns 400 for invalid JSON", async () => {
-    const { POST } = await import("./route");
     const res = await POST(
       new NextRequest("http://localhost/api/leads", {
         method: "POST",
@@ -84,7 +84,6 @@ describe("POST /api/leads", () => {
   });
 
   it("returns 400 when validation fails", async () => {
-    const { POST } = await import("./route");
     const res = await POST(leadsRequest({ email: "bad" }));
     expect(res.status).toBe(400);
     expect((await res.json()).error).toBeTruthy();

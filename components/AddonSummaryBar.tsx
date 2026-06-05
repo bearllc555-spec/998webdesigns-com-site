@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { getSelectedAddons } from "@/lib/addons";
+import { useSelectedAddons } from "@/hooks/use-selected-addons";
 
 const ADDON_DATA: Record<string, { name: string; setup: number; monthly: number }> = {
   "ai-chatbot": { name: "AI Chatbot", setup: 299, monthly: 79 },
@@ -18,25 +17,7 @@ const ADDON_DATA: Record<string, { name: string; setup: number; monthly: number 
 
 export function AddonSummaryBar() {
   const pathname = usePathname();
-  const [selected, setSelected] = useState<string[]>([]);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    setSelected(getSelectedAddons());
-  }, []);
-
-  useEffect(() => {
-    setVisible(selected.length > 0);
-  }, [selected]);
-
-  useEffect(() => {
-    function handleUpdate(e: Event) {
-      const detail = (e as CustomEvent<string[]>).detail;
-      setSelected(detail);
-    }
-    window.addEventListener("addons-updated", handleUpdate);
-    return () => window.removeEventListener("addons-updated", handleUpdate);
-  }, []);
+  const selected = useSelectedAddons();
 
   const totalSetup = selected.reduce(
     (sum, key) => sum + (ADDON_DATA[key]?.setup ?? 0),
@@ -47,6 +28,7 @@ export function AddonSummaryBar() {
     0
   );
   const count = selected.length;
+  const visible = count > 0;
 
   if (pathname?.startsWith("/crm") || count === 0) return null;
 

@@ -10,7 +10,7 @@ export function Pricing() {
           </p>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $1,998 design fee. The pricing below is the whole list — no
-            tiers, no add-ons we don't tell you about, no &ldquo;starting at.&rdquo;
+            tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;
           </p>
         </div>
 

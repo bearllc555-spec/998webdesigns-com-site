@@ -5,13 +5,29 @@ import {
   clientIp,
   rateLimitResponse,
 } from "@/lib/api-rate-limit";
-import { checkRateLimit, pruneRateLimitStore } from "@/lib/rate-limit";
+import { checkRateLimit, pruneRateLimitStore, type RateLimitConfig } from "@/lib/rate-limit";
+
+function resolveRateLimitConfig(path: string): RateLimitConfig | null {
+  if (path in API_RATE_LIMITS) {
+    return API_RATE_LIMITS[path as keyof typeof API_RATE_LIMITS];
+  }
+  if (path.startsWith("/api/admin/")) {
+    return API_RATE_LIMITS["/api/admin/env-status"];
+  }
+  if (path.startsWith("/api/crm/")) {
+    if (path === "/api/crm/feed") return API_RATE_LIMITS["/api/crm/feed"];
+    return API_RATE_LIMITS["/api/crm/session"];
+  }
+  return null;
+}
 
 function shouldApplyEdgeRateLimit(req: NextRequest): boolean {
   const path = req.nextUrl.pathname;
-  if (!(path in API_RATE_LIMITS)) return false;
+  const config = resolveRateLimitConfig(path);
+  if (!config) return false;
   if (req.method === "POST") return true;
   if (req.method === "GET" && path === "/api/admin/env-status") return true;
+  if (req.method === "GET" && path === "/api/crm/feed") return true;
   return false;
 }
 
@@ -25,7 +41,9 @@ export function proxy(req: NextRequest) {
 
   pruneRateLimitStore();
 
-  const config = API_RATE_LIMITS[path as keyof typeof API_RATE_LIMITS];
+  const config = resolveRateLimitConfig(path);
+  if (!config) return NextResponse.next();
+
   const key = `${path}:${clientIp(req)}`;
   const { allowed, retryAfterSec } = checkRateLimit(key, config);
 
@@ -41,8 +59,7 @@ export const config = {
   matcher: [
     "/api/leads",
     "/api/contact",
-    "/api/admin/env-status",
-    "/api/crm/session",
-    "/api/crm/feed",
+    "/api/admin/:path*",
+    "/api/crm/:path*",
   ],
 };

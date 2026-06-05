@@ -6,7 +6,7 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production — 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`** only. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v27.x).
+**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`** only. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v32.x).
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
 
@@ -14,7 +14,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 
 ## What ships today
 
-- Home (`/`) — Hero, add-ons, portfolio carousel, value props, how it works, pricing, FAQ, 4-step lead form, footer. Light/dark theme toggle.
+- Home (`/`) — Hero, add-ons, portfolio carousel, value props, how it works, pricing, FAQ, 5-step lead form, footer. Light/dark theme toggle.
 - `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
 - `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout ($1,998 pay-in-full only), Resend checkout-link email.
@@ -27,7 +27,8 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - OG image — `app/opengraph-image.tsx`.
 - Rate limiting — `proxy.ts` (in-memory) + Supabase `api_rate_limits` on API routes when tables exist (`lib/api-rate-limit.ts`).
 - Analytics — `@vercel/analytics` in root layout.
-- **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` or `BALANCE_CAPTURE_SECRET`), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` configures bot token + chat ids (Supabase `crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` — bump on every CRM change.
+- **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` required in production; no `BALANCE_CAPTURE_SECRET` fallback), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` configures bot token + chat ids (Supabase `crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` — bump on every CRM change.
+- **Webhook idempotency** — `processed_stripe_events` table + `lib/stripe-webhook-idempotency.ts`.
 
 ---
 

@@ -15,8 +15,9 @@ const props = [
 
 export function ValueProps() {
   return (
-    <section className="border-b border-rule bg-rule-soft/60">
+    <section id="why" className="border-b border-rule bg-rule-soft/60">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+        <h2 className="sr-only">Why 998 web designs</h2>
         <div className="grid gap-6 md:grid-cols-3 md:gap-7">
           {props.map((p) => (
             <article
