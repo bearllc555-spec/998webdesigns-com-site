@@ -1,13 +1,15 @@
 /**
- * Creates a Stripe Coupon + Promotion Code for LAUNCH20 (documentation / Dashboard mirror).
- * Checkout uses server-side line-item discount in lib/design-promo.ts — this does NOT
- * auto-apply at Stripe Checkout unless you migrate to fixed Price IDs.
+ * Sync Stripe Coupons + Promotion Codes from lib/design-promo-codes.ts (keep in sync).
+ * App checkout applies discounts server-side in lib/design-promo.ts.
  *
  * Usage: node scripts/ensure-design-promo-stripe.mjs [.env.local]
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Stripe from "stripe";
+
+/** Mirror of lib/design-promo-codes.ts — update both when adding codes. */
+const DESIGN_PROMO_CODES = [{ code: "LINKEDIN20", percentOff: 20 }];
 
 function loadEnv(file) {
   try {
@@ -31,12 +33,24 @@ if (!key) {
 }
 
 const stripe = new Stripe(key);
-const PROMO_CODE = process.env.DESIGN_PROMO_CODE?.trim() || "LAUNCH20";
+
+async function ensurePromotionCode(couponId, code) {
+  const existing = await stripe.promotionCodes.list({ code, limit: 1 });
+  if (existing.data.length > 0) {
+    console.log("Promotion code exists:", code, existing.data[0].id);
+    return;
+  }
+  const promo = await stripe.promotionCodes.create({
+    promotion: { type: "coupon", coupon: couponId },
+    code,
+  });
+  console.log("Created promotion code:", promo.code, promo.id);
+}
 
 async function main() {
   const product = await stripe.products.create({
     name: "Website Design (998)",
-    description: "$5,998 design fee — promo LAUNCH20 is 20% off design only in app checkout",
+    description: "$5,998 design fee — promo codes discount design line only in app checkout",
     metadata: { site: "998webdesigns.com", line: "design_fee" },
   });
   console.log("Product:", product.id);
@@ -48,35 +62,24 @@ async function main() {
     metadata: { list_price: "5998" },
   });
 
-  const coupon = await stripe.coupons.create({
-    percent_off: 20,
-    duration: "forever",
-    name: "Design fee 20% off (LAUNCH20)",
-    metadata: {
-      applies_to: "design_fee_only",
-      note: "Enforced in app checkout line items — not hosting",
-    },
-  });
-  console.log("Coupon:", coupon.id);
-
-  try {
-    const promo = await stripe.promotionCodes.create({
-      promotion: { type: "coupon", coupon: coupon.id },
-      code: PROMO_CODE,
+  for (const entry of DESIGN_PROMO_CODES) {
+    const coupon = await stripe.coupons.create({
+      percent_off: entry.percentOff,
+      duration: "forever",
+      name: `Design fee ${entry.percentOff}% off (${entry.code})`,
+      metadata: {
+        applies_to: "design_fee_only",
+        promo_code: entry.code,
+      },
     });
-    console.log("Promotion code:", promo.code, promo.id);
-  } catch (err) {
-    if (err?.code === "promotion_code_already_exists") {
-      console.log("Promotion code already exists:", PROMO_CODE);
-    } else {
-      throw err;
-    }
+    console.log("Coupon:", entry.code, coupon.id);
+    await ensurePromotionCode(coupon.id, entry.code);
   }
 
-  console.log("Done. App checkout applies LAUNCH20 via lib/design-promo.ts on lead form submit.");
+  console.log("Done. App checkout reads lib/design-promo-codes.ts on lead form submit.");
 }
 
 main().catch((err) => {
   console.error(err);
-  process.exit(1);
+  throw err;
 });

@@ -11,10 +11,10 @@ import {
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
 import {
-  DESIGN_PROMO_CODE,
-  DESIGN_PROMO_PERCENT_OFF,
   designFeeCents,
+  designPromoSummary,
   isValidDesignPromoCode,
+  listedPromoCodes,
 } from "@/lib/design-promo";
 import type { PaymentChannel } from "@/lib/validate-lead";
 import { FixedFormField } from "@/components/form-field-stack";
@@ -524,7 +524,7 @@ export function LeadForm() {
                 value={form.promoCode}
                 onChange={(v) => set("promoCode", v)}
                 optionalHint
-                placeholder={DESIGN_PROMO_CODE}
+                placeholder="LINKEDIN20"
                 autoComplete="off"
               />
               {form.promoCode.trim() && (
@@ -532,8 +532,8 @@ export function LeadForm() {
                   className={`text-sm ${isValidDesignPromoCode(form.promoCode) ? "text-success" : "text-warn"}`}
                 >
                   {isValidDesignPromoCode(form.promoCode)
-                    ? `${DESIGN_PROMO_PERCENT_OFF}% off design fee applied — ${formatCheckoutUsd(designFeeCents(form.promoCode))} design (hosting unchanged)`
-                    : `Code not recognized. Use ${DESIGN_PROMO_CODE} for ${DESIGN_PROMO_PERCENT_OFF}% off the design fee only.`}
+                    ? `${designPromoSummary(form.promoCode)} — ${formatCheckoutUsd(designFeeCents(form.promoCode))} design (hosting unchanged)`
+                    : `Code not recognized. Valid codes: ${listedPromoCodes().join(", ")}.`}
                 </p>
               )}
 

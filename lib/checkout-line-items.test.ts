@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DESIGN_PROMO_CODE } from "@/lib/design-promo";
+const LINKEDIN20 = "LINKEDIN20";
 import { buildCheckoutLineItems } from "@/lib/checkout-line-items";
 import type { ValidatedLead } from "@/lib/validate-lead";
 
@@ -71,9 +71,9 @@ describe("buildCheckoutLineItems", () => {
     expect(items[2].price_data?.unit_amount).toBe(17994);
   });
 
-  it("LAUNCH20 reduces design line only", () => {
+  it("LINKEDIN20 reduces design line only", () => {
     const items = buildCheckoutLineItems(
-      lead({ hostingChoice: "ten_year", promoCode: DESIGN_PROMO_CODE }),
+      lead({ hostingChoice: "ten_year", promoCode: LINKEDIN20 }),
       "card"
     );
     expect(items[0].price_data?.unit_amount).toBe(479840);

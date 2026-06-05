@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DESIGN_PROMO_CODE } from "@/lib/design-promo";
+const LINKEDIN20 = "LINKEDIN20";
 import {
   cardProcessingFeeCents,
   checkoutDueTodayCents,
@@ -36,9 +36,9 @@ describe("checkout pricing", () => {
     expect(checkoutDueTodayCents("monthly", "card")).toBe(637594);
   });
 
-  it("LAUNCH20 discounts design fee only in subtotal", () => {
-    expect(checkoutSubtotalCents("later", DESIGN_PROMO_CODE)).toBe(479840);
-    expect(checkoutSubtotalCents("ten_year", DESIGN_PROMO_CODE)).toBe(614740);
-    expect(checkoutDueTodayCents("monthly", "card", DESIGN_PROMO_CODE)).toBe(514035);
+  it("LINKEDIN20 discounts design fee only in subtotal", () => {
+    expect(checkoutSubtotalCents("later", LINKEDIN20)).toBe(479840);
+    expect(checkoutSubtotalCents("ten_year", LINKEDIN20)).toBe(614740);
+    expect(checkoutDueTodayCents("monthly", "card", LINKEDIN20)).toBe(514035);
   });
 });

@@ -3,6 +3,7 @@ import {
   formatCheckoutUsd,
   paymentChannelLabel,
 } from "@/lib/checkout-pricing";
+import { designPromoSummary } from "@/lib/design-promo";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "./validate-lead";
 
@@ -32,9 +33,11 @@ export async function sendLeadCheckoutEmail(
   const totalLabel = formatCheckoutUsd(
     checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel, lead.promoCode)
   );
-  const promoNote = lead.promoCode.trim()
-    ? `<p><strong>Promo:</strong> ${escapeHtml(lead.promoCode.trim().toUpperCase())} (20% off design fee only)</p>`
-    : "";
+  const promoLabel = designPromoSummary(lead.promoCode);
+  const promoNote =
+    lead.promoCode.trim() && promoLabel
+      ? `<p><strong>Promo:</strong> ${escapeHtml(lead.promoCode.trim().toUpperCase())} (${escapeHtml(promoLabel)})</p>`
+      : "";
   const methodLabel = paymentChannelLabel(lead.paymentChannel);
   const achNote =
     lead.paymentChannel === "ach"

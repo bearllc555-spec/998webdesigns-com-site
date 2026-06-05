@@ -43,6 +43,6 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Is there a promo code?",
-    a: "Yes — LAUNCH20 takes 20% off the $5,998 design fee only ($4,798 design). It does not apply to ten-year hosting ($1,349), month-to-month hosting ($198/mo), or the 3% card processing fee. Enter LAUNCH20 on the last step of the lead form before checkout.",
+    a: "Yes — LINKEDIN20 takes 20% off the $5,998 design fee only ($4,798 design). It does not apply to ten-year hosting ($1,349), month-to-month hosting ($198/mo), or the 3% card processing fee. Enter your code on the last step of the lead form before checkout.",
   },
 ];

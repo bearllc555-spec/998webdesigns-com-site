@@ -29,9 +29,9 @@ export function Pricing() {
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
               We collect full payment before your project enters the queue. This keeps things simple
-              for both sides — no holds, no follow-up invoices. Promo code{" "}
-              <span className="font-medium text-ink">LAUNCH20</span> takes 20% off the design fee
-              only ($4,798 design) — not hosting or other services. Enter it on the lead form.
+              for both sides — no holds, no follow-up invoices. Promo codes (e.g.{" "}
+              <span className="font-medium text-ink">LINKEDIN20</span>) take a percentage off the
+              design fee only — not hosting or other services. Enter yours on the lead form.
             </p>
           </article>
 

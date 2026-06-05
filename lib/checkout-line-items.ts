@@ -5,7 +5,7 @@ import {
   checkoutSubtotalCents,
   type PaymentChannel,
 } from "@/lib/checkout-pricing";
-import { designFeeCents, isValidDesignPromoCode } from "@/lib/design-promo";
+import { designFeeCents, designPromoSummary, resolveDesignPromo } from "@/lib/design-promo";
 import {
   FULL_PRODUCT,
   HOSTING_MONTHLY_PRODUCT,
@@ -14,10 +14,11 @@ import {
 import type { HostingChoice, ValidatedLead } from "@/lib/validate-lead";
 
 function designLineItem(lead: ValidatedLead): Stripe.Checkout.SessionCreateParams.LineItem {
-  const promoApplied = isValidDesignPromoCode(lead.promoCode);
+  const promo = resolveDesignPromo(lead.promoCode);
   const amount = designFeeCents(lead.promoCode);
-  const description = promoApplied
-    ? `${FULL_PRODUCT.description} (${lead.promoCode!.trim().toUpperCase()} — 20% off design fee only)`
+  const promoLabel = designPromoSummary(lead.promoCode);
+  const description = promo
+    ? `${FULL_PRODUCT.description} (${promo.code} — ${promoLabel})`
     : FULL_PRODUCT.description;
 
   return {

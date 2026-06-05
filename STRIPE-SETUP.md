@@ -120,7 +120,7 @@ Or ask Cursor in Agent mode after the two `.local` files are filled.
 ## Checkout amounts (code)
 
 - Design: **$5,998** pay-in-full (`lib/products.ts` → Checkout `price_data`)
-- Promo **LAUNCH20**: 20% off design fee only → **$4,798** design line (server-side in `lib/design-promo.ts`; hosting unchanged)
+- Promo codes: `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design → **$4,798** line). Server-side in `lib/design-promo.ts`; hosting unchanged.
 - Optional ten-year hosting: **+$1,349** when selected on lead form
 
 See `lib/checkout-line-items.ts`.
