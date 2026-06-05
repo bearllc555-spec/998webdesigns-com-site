@@ -8,6 +8,7 @@ export const BANNER_DESIGNS = [
   { href: "/temp", label: "Design 1" },
   { href: "/temp/2", label: "Design 2" },
   { href: "/temp/3", label: "Design 3" },
+  { href: "/temp/4", label: "Design 4" },
 ] as const;
 
 export function BannerDesignNav() {

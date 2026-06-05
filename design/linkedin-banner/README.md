@@ -7,8 +7,9 @@
 | 1 | https://998webdesigns.com/temp | Bricolage + Inter |
 | 2 | https://998webdesigns.com/temp/2 | Geist + Inter, Manhattan, **blue gradient offer** (locked) |
 | 3 | https://998webdesigns.com/temp/3 | Same as 2 + **frosted glass offer** |
+| 4 | https://998webdesigns.com/temp/4 | Wireframe UI deco, slanted navy offer (from live LinkedIn reference) |
 
-New iterations → `/temp/4`, `/temp/5`, … Add a row in `components/temp/BannerDesignNav.tsx`.
+New iterations → `/temp/5`, … Add a row in `components/temp/BannerDesignNav.tsx`.
 
 ## v3 (`linkedin-banner-v3.html`)
 
