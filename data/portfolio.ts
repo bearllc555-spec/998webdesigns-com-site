@@ -69,7 +69,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "pocono-vacation-homes",
     name: "Pocono Vacation Homes",
     industry: "Vacation rentals",
-    url: "https://vacation-homes.pages.dev/",
+    url: "https://dev.vacation-homes.pages.dev/",
     thumbnail: "/portfolio/pocono-vacation-homes.jpg",
     previewVideo: "/portfolio/pocono-vacation-homes.mp4",
   },
