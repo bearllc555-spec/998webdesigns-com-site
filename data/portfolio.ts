@@ -2,7 +2,6 @@
 // Poster: public/portfolio/<slug>.jpg
 // Hover preview (preferred): public/portfolio/<slug>-strip.jpg — scripts/capture-portfolio-strip.mjs
 // Legacy video: public/portfolio/<slug>.mp4 — scripts/capture-portfolio-preview.mjs
-//   (splices ~5s from the page hero <video> MP4, then a viewport scroll recording)
 // URLs: apex pages.dev or client production domains. Branch previews (dev.*) only when no apex exists yet.
 
 export type PortfolioItem = {
@@ -21,17 +20,65 @@ export type PortfolioItem = {
   previewStripFrames?: number;
   /** Optional poster override; defaults to thumbnail. */
   previewPoster?: string;
+  /**
+   * When false, carousel shows poster pan only (no strip/MP4 on hover).
+   * Use to break up adjacent motion cards when static-only sites are scarce.
+   */
+  carouselHoverPreview?: boolean;
 };
 
-// Order: interleave static-only cards between motion previews (strip / MP4).
-export const portfolio: PortfolioItem[] = [
+export function hasMotionPreview(item: PortfolioItem): boolean {
+  return Boolean(item.previewStrip || item.previewVideo);
+}
+
+export function hasCarouselMotionPreview(item: PortfolioItem): boolean {
+  return hasMotionPreview(item) && item.carouselHoverPreview !== false;
+}
+
+/**
+ * Carousel order: static-only + poster-pan slots between motion hovers so no two
+ * strip previews sit adjacent (until more static-only portfolio sites ship).
+ */
+export function buildCarouselPortfolio(items: PortfolioItem[]): PortfolioItem[] {
+  const motion = items.filter(hasCarouselMotionPreview);
+  const staticSlot = items.filter((p) => !hasCarouselMotionPreview(p));
+
+  const out: PortfolioItem[] = [];
+  let mi = 0;
+  let si = 0;
+
+  while (mi < motion.length || si < staticSlot.length) {
+    if (
+      out.length > 0 &&
+      hasCarouselMotionPreview(out[out.length - 1]!) &&
+      mi < motion.length &&
+      si < staticSlot.length
+    ) {
+      out.push(staticSlot[si++]!);
+      continue;
+    }
+    if (mi < motion.length) {
+      out.push(motion[mi++]!);
+      continue;
+    }
+    if (si < staticSlot.length) {
+      out.push(staticSlot[si++]!);
+    }
+  }
+
+  return out;
+}
+
+/** Source list — edit slugs/assets here; carousel uses buildCarouselPortfolio(). */
+const portfolioItems: PortfolioItem[] = [
   {
     slug: "serenity-spa",
     name: "Serenity Spa",
     industry: "Spa & wellness",
     url: "https://serenity-spa-3r8.pages.dev/",
     thumbnail: "/portfolio/serenity-spa.jpg",
-    previewVideo: "/portfolio/serenity-spa.mp4",
+    previewStrip: "/portfolio/serenity-spa-strip.jpg",
+    previewStripFrames: 24,
   },
   {
     slug: "tuscano-excavating",
@@ -39,15 +86,17 @@ export const portfolio: PortfolioItem[] = [
     industry: "Excavation & site work",
     url: "https://tuscano-excavating.pages.dev/",
     thumbnail: "/portfolio/tuscano-excavating.jpg",
-    previewVideo: "/portfolio/tuscano-excavating.mp4",
+    previewStrip: "/portfolio/tuscano-excavating-strip.jpg",
+    previewStripFrames: 36,
   },
   {
     slug: "jetvip-charter",
     name: "VIP Charters",
     industry: "Private aviation",
-    url: "https://jetvipcharter.pages.dev/",
+    url: "https://jetvipcharter-dev.pages.dev/",
     thumbnail: "/portfolio/jetvip-charter.jpg",
-    previewVideo: "/portfolio/jetvip-charter.mp4",
+    previewStrip: "/portfolio/jetvip-charter-strip.jpg",
+    previewStripFrames: 36,
   },
   {
     slug: "borst-landscape",
@@ -71,7 +120,9 @@ export const portfolio: PortfolioItem[] = [
     industry: "Corporate & design",
     url: "https://nyc-design.pages.dev/",
     thumbnail: "/portfolio/new-empire-corp.jpg",
-    previewVideo: "/portfolio/new-empire-corp.mp4",
+    previewStrip: "/portfolio/new-empire-corp-strip.jpg",
+    previewStripFrames: 24,
+    carouselHoverPreview: false,
   },
   {
     slug: "pocono-vacation-homes",
@@ -79,7 +130,9 @@ export const portfolio: PortfolioItem[] = [
     industry: "Vacation rentals",
     url: "https://dev.vacation-homes.pages.dev/",
     thumbnail: "/portfolio/pocono-vacation-homes.jpg",
-    previewVideo: "/portfolio/pocono-vacation-homes.mp4",
+    previewStrip: "/portfolio/pocono-vacation-homes-strip.jpg",
+    previewStripFrames: 24,
+    carouselHoverPreview: false,
   },
   {
     slug: "legally-design",
@@ -87,14 +140,18 @@ export const portfolio: PortfolioItem[] = [
     industry: "Legal services",
     url: "https://legally-design.pages.dev/",
     thumbnail: "/portfolio/legally-design.jpg",
-    previewVideo: "/portfolio/legally-design.mp4",
+    previewStrip: "/portfolio/legally-design-strip.jpg",
+    previewStripFrames: 24,
+    carouselHoverPreview: false,
   },
 ];
 
+export const portfolio = buildCarouselPortfolio(portfolioItems);
+
 export const industries = Array.from(
-  new Set(portfolio.map((p) => p.industry))
+  new Set(portfolioItems.map((p) => p.industry))
 ).sort();
 
-export const hasPortfolioVideoPreviews = portfolio.some(
+export const hasPortfolioVideoPreviews = portfolioItems.some(
   (p) => p.previewStrip || p.previewVideo
 );

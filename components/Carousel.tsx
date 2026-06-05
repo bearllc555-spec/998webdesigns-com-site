@@ -280,9 +280,13 @@ function PortfolioPreview({
   const [stripLoaded, setStripLoaded] = useState(false);
 
   const poster = item.previewPoster ?? item.thumbnail;
+  const motionAllowed = item.carouselHoverPreview !== false;
   const useStrip =
-    Boolean(item.previewStrip && item.previewStripFrames) && !reduceMotion;
-  const useVideo = Boolean(item.previewVideo) && !reduceMotion && !useStrip;
+    Boolean(item.previewStrip && item.previewStripFrames) &&
+    !reduceMotion &&
+    motionAllowed;
+  const useVideo =
+    Boolean(item.previewVideo) && !reduceMotion && !useStrip && motionAllowed;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
