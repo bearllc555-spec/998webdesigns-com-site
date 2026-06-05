@@ -9,6 +9,7 @@ import {
   LINKEDIN_AVATAR_OVERLAP_PX,
   LINKEDIN_COVER_DISPLAY_H,
   LINKEDIN_COVER_DISPLAY_W,
+  LINKEDIN_AVATAR_IMAGE_SRC,
   LINKEDIN_COVER_UPLOAD_H,
   LINKEDIN_COVER_UPLOAD_W,
   LINKEDIN_PROFILE_CARD_W,
@@ -66,9 +67,9 @@ export function LinkedInBannerPreview({
         <h2>{designLabel}</h2>
         <p>
           Preview matches your live profile card ({LINKEDIN_COVER_DISPLAY_W}×
-          {LINKEDIN_COVER_DISPLAY_H}px cover, measured on linkedin.com). Gray circle = photo
-          overlap. <strong>Click the cover</strong> for the {LINKEDIN_COVER_UPLOAD_W}×
-          {LINKEDIN_COVER_UPLOAD_H}px PNG.
+          {LINKEDIN_COVER_DISPLAY_H}px cover, measured on linkedin.com), including your
+          profile photo overlap. <strong>Click the cover</strong> for the{" "}
+          {LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px PNG.
         </p>
       </div>
 
@@ -95,7 +96,16 @@ export function LinkedInBannerPreview({
           <div
             className="linkedin-avatar"
             title="Profile photo — overlaps bottom-left of cover on LinkedIn"
-          />
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={LINKEDIN_AVATAR_IMAGE_SRC}
+              alt="Anthony De Meo"
+              width={LINKEDIN_AVATAR_FRAME_SIZE - LINKEDIN_AVATAR_BORDER * 2}
+              height={LINKEDIN_AVATAR_FRAME_SIZE - LINKEDIN_AVATAR_BORDER * 2}
+              decoding="async"
+            />
+          </div>
           <div className="linkedin-stub-body">
             <div className="linkedin-stub-lines">
               <div className="linkedin-stub-line linkedin-stub-line--name" />
