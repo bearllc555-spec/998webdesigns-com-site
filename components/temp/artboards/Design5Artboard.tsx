@@ -1,5 +1,5 @@
-/** Manhattan skyline photo — Unsplash (see design/linkedin-banner/README.md). */
-const MANHATTAN_SKYLINE_SRC = "/linkedin-banner/manhattan-skyline.jpg";
+/** Night Lower Manhattan skyline — operator photo (see design/linkedin-banner/README.md). */
+const MANHATTAN_SKYLINE_SRC = "/linkedin-banner/manhattan-skyline-night.png";
 
 export function Design5Artboard() {
   return (

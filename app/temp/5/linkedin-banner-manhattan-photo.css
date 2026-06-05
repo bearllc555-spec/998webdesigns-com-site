@@ -7,13 +7,13 @@
   color: #0a0a0a;
 }
 
-/* Design 5 — faded Manhattan photo (replaces SVG silhouette) */
+/* Design 5 — faded night Manhattan photo, zoomed on mid skyline */
 .temp-page-v5 .linkedin-banner .skyline-wrap {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 72%;
+  height: 82%;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
@@ -23,10 +23,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 68%;
+  object-position: 44% 78%;
   display: block;
-  opacity: 0.32;
-  filter: saturate(0.7) contrast(1.02) brightness(1.08);
+  transform: scale(1.58);
+  transform-origin: 44% 100%;
+  opacity: 0.36;
+  filter: saturate(0.82) contrast(1.04) brightness(1.14);
 }
 
 .temp-page-v5 .linkedin-banner .skyline-wrap::after {
@@ -35,9 +37,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.72) 0%,
-    rgba(248, 250, 252, 0.35) 45%,
-    rgba(239, 246, 255, 0.2) 100%
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(248, 250, 252, 0.42) 42%,
+    rgba(239, 246, 255, 0.22) 100%
   );
   pointer-events: none;
 }
