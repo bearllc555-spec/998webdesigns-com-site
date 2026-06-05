@@ -32,3 +32,8 @@ pnpm-workspace.yaml
 public/portfolio/.capture-tmp/
 
 .env.prod2
+
+# Local Lighthouse audit artifacts
+lighthouse-*.json
+lighthouse-*.html
+998webdesigns.com_*.report.html
