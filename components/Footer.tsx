@@ -26,7 +26,7 @@ export function Footer() {
                 <span className="text-accent font-bold">998</span>
                 <span className="text-ink">webdesigns</span>
               </span>
-              <span className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-slate">
+              <span className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-ink-soft">
                 {SITE_VERSION}
               </span>
             </Link>

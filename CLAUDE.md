@@ -60,7 +60,6 @@ curl -s https://998webdesigns.com/api/admin/env-status \
 - **Live checkout E2E (ops #3)** — blocked until bank approves real-card test (see ops table above).
 - **Portfolio polish** — Yogacentric hover video not captured yet; Borst Landscape has poster only (no preview mp4); Pocono still on `dev.vacation-homes.pages.dev` until apex ships (`data/portfolio.ts`).
 - **Stripe Billing Portal** — optional self-serve cancel for $198/mo (subscription id stored on `wd_leads`).
-- **Lighthouse tuning** — v32.94 pass: home/performance 90+, portfolio video weight is main LCP risk; see session QA notes in git log for v32.94.
 - **Lawyer review** — Terms/Privacy are operator-drafted.
 
 ---
@@ -205,3 +204,4 @@ npm run dev
 | 2026-05-21 | v0.1 scaffold (Next.js + Supabase + home + leads stub). |
 | 2026-06 | Vercel production, Stripe Checkout, Resend, legal, SEO, rate limits, CRM, vitest. |
 | 2026-06-02 | Hosting policy shipped: 30-day free trial, monthly $198/mo, lifetime $2,996 day-31 cron, lifetime paid alerts, FAQ hosting limits + promo cleanup, env-status hosting column probe, ops 1–5 documented (E2E blocked on bank). |
+| 2026-06-02 | v32.94–95: `/portfolio`, `/pricing`, `/start` standalone routes + sitemap; Lighthouse/security QA pass (HSTS, CSP, admin 401, robots/sitemap); a11y contrast + heading-order fixes on add-ons + version pill. |

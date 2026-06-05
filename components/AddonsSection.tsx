@@ -146,7 +146,7 @@ function GrowthPackBanner({
         <div className="min-w-0 flex-1 pr-6 sm:pr-0">
           <p
             className={`text-[10px] font-semibold uppercase tracking-widest ${
-              growthSelected ? "text-accent" : "text-white/70"
+              growthSelected ? "text-accent" : "text-white/90"
             }`}
           >
             Most Popular Bundle
@@ -166,7 +166,7 @@ function GrowthPackBanner({
             >
               <span className="font-medium">$647</span> setup
               <span className="mx-1.5 opacity-50">·</span>
-              <span className="line-through opacity-60">$527/mo</span>{" "}
+              <span className="line-through text-white/80">$527/mo</span>{" "}
               <span className={growthSelected ? "font-semibold text-accent" : "font-semibold"}>
                 $399/mo
               </span>
@@ -174,7 +174,7 @@ function GrowthPackBanner({
           </div>
           <p
             className={`mt-0.5 text-xs leading-snug ${
-              growthSelected ? "text-ink-soft" : "text-white/75"
+              growthSelected ? "text-ink-soft" : "text-white/85"
             }`}
           >
             Hyper-Local SEO, Google Profile Optimization, and Blog Writing — bundled at a
@@ -320,6 +320,7 @@ export function AddonsSection() {
   return (
     <div id="addons" className="border-t border-rule">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+        <h2 className="sr-only">Growth add-ons</h2>
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
           High‑value add‑ons
         </p>
