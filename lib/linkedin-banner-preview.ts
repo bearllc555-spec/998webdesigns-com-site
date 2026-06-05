@@ -23,6 +23,11 @@ export const LINKEDIN_AVATAR_OVERLAP_PX = 96;
 /** LinkedIn scales 1584-wide upload to 792 display (exactly 50%). */
 export const LINKEDIN_DISPLAY_SCALE = LINKEDIN_COVER_DISPLAY_W / LINKEDIN_COVER_UPLOAD_W;
 
+/** 32px gap after photo frame right edge — brand/logo safe on 1584×396 artboard. */
+export const LINKEDIN_ARTBOARD_CONTENT_PAD_LEFT = Math.ceil(
+  (LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_FRAME_SIZE + 32) / LINKEDIN_DISPLAY_SCALE
+);
+
 export const BANNER_DESIGN_ROUTES = [
   { previewHref: "/temp", exportHref: "/temp/export", label: "Design 1" },
   { previewHref: "/temp/2", exportHref: "/temp/2/export", label: "Design 2" },

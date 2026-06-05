@@ -63,7 +63,8 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 48px;
-  padding: 0 72px 0 300px;
+  /* Clear profile photo: 440px = (28+160+32)÷0.5 on artboard — lib/linkedin-banner-preview.ts */
+  padding: 0 72px 0 440px;
 }
 
 .temp-page .linkedin-banner .brand-block {
