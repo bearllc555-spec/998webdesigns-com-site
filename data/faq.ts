@@ -30,6 +30,10 @@ export const faq: FAQItem[] = [
     a: "On edge cloud hosting — the same enterprise-grade infrastructure that powers Stripe, OpenAI, Shopify, DoorDash, and Discord. In plain English: your site loads fast for visitors anywhere in the world (it's served from the data center closest to them), HTTPS encryption is automatic and renewed for free for the life of the site, and the site scales itself if you get a sudden rush — a local news mention, a viral post, a holiday surge. Bot floods and DDoS attacks get filtered before they hit your site, pages cache at the edge for snappy repeat visits, and there are no servers to maintain or IT person to call. We handle every piece of it.",
   },
   {
+    q: "What are the hosting limits?",
+    a: "Built for a standard small-business website — not a media server or app platform.\n\n• Pages: Up to 6 (same as your design package)\n• Storage: ~500 MB for site files — enough for a full local business site with optimized photos\n• Bandwidth: Unmetered for normal business traffic (forms, calls, maps, everyday browsing)\n• Traffic spikes: Local news mentions, busy seasons, viral posts — included; the site scales automatically\n• SSL & security: HTTPS included and auto-renewed; DDoS protection at the edge\n• Domain: .com, .net, or .org included with hosting\n\nFair use: Hosting covers your business website. It is not for large file downloads, video streaming, heavy e-commerce catalogs, or custom software. If your needs grow beyond this, we'll talk before anything changes — routine growth and traffic spikes are already covered in your hosting fee.",
+  },
+  {
     q: "What if I want to leave?",
     a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us for life — and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
   },

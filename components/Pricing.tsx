@@ -64,6 +64,11 @@ export function Pricing() {
             </p>
           </article>
 
+          <p className="text-sm leading-relaxed text-ink-soft md:col-span-2">
+            Standard package: 6 pages · ~500 MB storage · unmetered business traffic · domain
+            included
+          </p>
+
           {/* Edits */}
           <article className="card-lift rounded-2xl border border-rule bg-bg p-8 shadow-sm md:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">

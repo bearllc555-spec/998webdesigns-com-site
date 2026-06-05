@@ -49,7 +49,7 @@ export function FAQ() {
                     id={panelId}
                     role="region"
                     aria-labelledby={`faq-trigger-${i}`}
-                    className="px-6 pb-6 text-base leading-relaxed text-ink-soft"
+                    className="whitespace-pre-line px-6 pb-6 text-base leading-relaxed text-ink-soft"
                   >
                     {item.a}
                   </div>
