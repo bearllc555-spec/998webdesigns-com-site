@@ -28,6 +28,10 @@ export const LINKEDIN_ARTBOARD_CONTENT_PAD_LEFT = Math.ceil(
   (LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_FRAME_SIZE + 32) / LINKEDIN_DISPLAY_SCALE
 );
 
+/** Offer panel copy — keep in sync across /temp banner artboards. */
+export const LINKEDIN_BANNER_OFFER_KICKER = "20% off";
+export const LINKEDIN_BANNER_OFFER_CODE = "use code LINKEDIN20";
+
 export const BANNER_DESIGN_ROUTES = [
   { previewHref: "/temp", exportHref: "/temp/export", label: "Design 1" },
   { previewHref: "/temp/2", exportHref: "/temp/2/export", label: "Design 2" },

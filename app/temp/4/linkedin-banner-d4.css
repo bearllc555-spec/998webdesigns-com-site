@@ -182,6 +182,16 @@
   z-index: 3;
 }
 
+.temp-page-v4 .linkedin-banner .offer-kicker {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(191, 219, 254, 0.9);
+  margin-bottom: 8px;
+}
+
 .temp-page-v4 .linkedin-banner .offer-main {
   font-family: var(--font-geist), system-ui, sans-serif;
   font-weight: 800;
@@ -189,6 +199,15 @@
   line-height: 1.15;
   letter-spacing: -0.025em;
   color: #ffffff;
+}
+
+.temp-page-v4 .linkedin-banner .offer-promo {
+  margin-top: 6px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(191, 219, 254, 0.95);
 }
 
 .temp-page-v4 .linkedin-banner .offer-main .sep {

@@ -1,3 +1,8 @@
+import {
+  LINKEDIN_BANNER_OFFER_CODE,
+  LINKEDIN_BANNER_OFFER_KICKER,
+} from "@/lib/linkedin-banner-preview";
+
 function DecoChartIcon() {
   return (
     <svg viewBox="0 0 48 32" fill="none" aria-hidden="true">
@@ -92,9 +97,11 @@ export function Design4Artboard() {
         </div>
 
         <aside className="offer-slate" aria-label="Offer">
+          <p className="offer-kicker">{LINKEDIN_BANNER_OFFER_KICKER}</p>
           <p className="offer-main">
             7-Day Builds<span className="sep">•</span>$5,998 Flat
           </p>
+          <p className="offer-promo">{LINKEDIN_BANNER_OFFER_CODE}</p>
           <div className="offer-rule" aria-hidden="true" />
           <p className="offer-url">
             <svg

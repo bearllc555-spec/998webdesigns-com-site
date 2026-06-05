@@ -1,4 +1,8 @@
 import { ManhattanSilhouette } from "@/components/temp/ManhattanSilhouette";
+import {
+  LINKEDIN_BANNER_OFFER_CODE,
+  LINKEDIN_BANNER_OFFER_KICKER,
+} from "@/lib/linkedin-banner-preview";
 
 export function Design3Artboard() {
   return (
@@ -25,7 +29,7 @@ export function Design3Artboard() {
         </div>
 
         <aside className="offer offer--glass" aria-label="Offer">
-          <p className="offer-kicker">Flat pricing</p>
+          <p className="offer-kicker">{LINKEDIN_BANNER_OFFER_KICKER}</p>
           <p className="offer-main">
             <span className="offer-line">7-day builds</span>
             <span className="offer-sep" aria-hidden="true">
@@ -33,6 +37,7 @@ export function Design3Artboard() {
             </span>
             <span className="offer-highlight">$5,998 flat</span>
           </p>
+          <p className="offer-promo">{LINKEDIN_BANNER_OFFER_CODE}</p>
           <div className="offer-rule" aria-hidden="true" />
           <p className="offer-url">
             <svg

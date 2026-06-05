@@ -180,6 +180,14 @@
   font-weight: 500;
 }
 
+.temp-page-v2 .linkedin-banner .offer-promo {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(191, 219, 254, 0.95);
+}
+
 .temp-page-v2 .linkedin-banner .offer-rule {
   height: 1px;
   margin: 14px 0 12px;
