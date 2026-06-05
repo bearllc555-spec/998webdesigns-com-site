@@ -212,6 +212,18 @@
   border-color: #2563eb;
 }
 
+.temp-switcher-linkedin {
+  color: #0a66c2;
+  border-color: #0a66c2;
+  background: #f0f7ff;
+}
+
+.temp-switcher-linkedin[aria-current="page"] {
+  color: #ffffff;
+  background: #0a66c2;
+  border-color: #0a66c2;
+}
+
 .temp-page .hint,
 .temp-page-v2 .hint,
 .temp-page-v3 .hint,
