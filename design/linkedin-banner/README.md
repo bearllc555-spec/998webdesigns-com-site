@@ -2,10 +2,13 @@
 
 ## Live previews
 
-| Design | URL | Fonts |
+| Design | URL | Notes |
 |--------|-----|-------|
-| 1 | https://998webdesigns.com/temp | Bricolage Grotesque + Inter |
-| 2 | https://998webdesigns.com/temp/2 | **Geist + Inter** (site fonts), Manhattan skyline |
+| 1 | https://998webdesigns.com/temp | Bricolage + Inter |
+| 2 | https://998webdesigns.com/temp/2 | Geist + Inter, Manhattan, **blue gradient offer** (locked) |
+| 3 | https://998webdesigns.com/temp/3 | Same as 2 + **frosted glass offer** |
+
+New iterations → `/temp/4`, `/temp/5`, … Add a row in `components/temp/BannerDesignNav.tsx`.
 
 ## v3 (`linkedin-banner-v3.html`)
 

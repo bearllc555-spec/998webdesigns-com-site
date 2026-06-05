@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BannerDesignNav } from "@/components/temp/BannerDesignNav";
 import { LinkedInBannerPreview } from "@/components/temp/LinkedInBannerPreview";
 import { ManhattanSilhouette } from "@/components/temp/ManhattanSilhouette";
 import "../linkedin-preview.css";
@@ -7,14 +7,9 @@ import "./linkedin-banner-manhattan.css";
 export default function TempV2Page() {
   return (
     <div className="temp-page-v2">
-      <nav className="temp-switcher" aria-label="Banner designs">
-        <Link href="/temp">Design 1</Link>
-        <Link href="/temp/2" aria-current="page">
-          Design 2 — Manhattan
-        </Link>
-      </nav>
+      <BannerDesignNav />
 
-      <LinkedInBannerPreview designLabel="Design 2 — Manhattan · frosted offer">
+      <LinkedInBannerPreview designLabel="Design 2 — Manhattan · Geist + Inter">
         <div className="linkedin-banner" id="banner">
           <div className="skyline-wrap">
             <ManhattanSilhouette />
@@ -38,14 +33,10 @@ export default function TempV2Page() {
               </p>
             </div>
 
-            <aside className="offer offer--glass" aria-label="Offer">
+            <aside className="offer" aria-label="Offer">
               <p className="offer-kicker">Flat pricing</p>
               <p className="offer-main">
-                <span className="offer-line">7-day builds</span>
-                <span className="offer-sep" aria-hidden="true">
-                  ·
-                </span>
-                <span className="offer-highlight">$1,998 flat</span>
+                7-day builds<span className="sep">·</span>$1,998 flat
               </p>
               <div className="offer-rule" aria-hidden="true" />
               <p className="offer-url">

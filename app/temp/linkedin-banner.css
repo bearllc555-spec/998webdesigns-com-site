@@ -202,24 +202,3 @@
   opacity: 0.85;
 }
 
-.temp-page .hint {
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 13px;
-  color: #52525b;
-  background: #fff;
-  border: 1px solid #e4e4e7;
-  padding: 10px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-@media (max-width: 1584px) {
-  .temp-page .linkedin-banner {
-    transform: scale(calc(100vw / 1584));
-    transform-origin: top center;
-    margin-bottom: calc(396px * (100vw / 1584 - 1));
-  }
-}

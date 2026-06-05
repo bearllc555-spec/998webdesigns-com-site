@@ -1,20 +1,20 @@
 import { BannerDesignNav } from "@/components/temp/BannerDesignNav";
 import { LinkedInBannerPreview } from "@/components/temp/LinkedInBannerPreview";
-import "./linkedin-preview.css";
-import "./linkedin-banner.css";
+import { ManhattanSilhouette } from "@/components/temp/ManhattanSilhouette";
+import "../linkedin-preview.css";
+import "./linkedin-banner-manhattan.css";
 
-export default function TempPage() {
+export default function TempV3Page() {
   return (
-    <div className="temp-page">
+    <div className="temp-page-v3">
       <BannerDesignNav />
 
-      <LinkedInBannerPreview designLabel="Design 1 — Bricolage display">
+      <LinkedInBannerPreview designLabel="Design 3 — Manhattan · frosted offer">
         <div className="linkedin-banner" id="banner">
-          <div className="bg-glow" aria-hidden="true" />
-          <div className="bg-watermark" aria-hidden="true">
-            998
+          <div className="skyline-wrap">
+            <ManhattanSilhouette />
           </div>
-          <div className="bg-dots" aria-hidden="true" />
+          <div className="sky-fade" aria-hidden="true" />
           <div className="bg-line" aria-hidden="true" />
 
           <div className="content">
@@ -33,10 +33,14 @@ export default function TempPage() {
               </p>
             </div>
 
-            <aside className="offer" aria-label="Offer">
+            <aside className="offer offer--glass" aria-label="Offer">
               <p className="offer-kicker">Flat pricing</p>
               <p className="offer-main">
-                7-day builds<span className="sep">·</span>$1,998 flat
+                <span className="offer-line">7-day builds</span>
+                <span className="offer-sep" aria-hidden="true">
+                  ·
+                </span>
+                <span className="offer-highlight">$1,998 flat</span>
               </p>
               <div className="offer-rule" aria-hidden="true" />
               <p className="offer-url">
@@ -58,8 +62,7 @@ export default function TempPage() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Screenshot the cover area inside the white card for a WYSIWYG check. Export/upload at
-        1584×396 for LinkedIn.
+        Design 3 — frosted offer variant. Screenshot the cover in the card; upload 1584×396.
       </p>
     </div>
   );
