@@ -61,7 +61,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "new-empire-corp",
     name: "New Empire Corp",
     industry: "Corporate & design",
-    url: "https://nyc-design.pages.dev/",
+    url: "https://dev.nyc-design.pages.dev/",
     thumbnail: "/portfolio/new-empire-corp.jpg",
     previewVideo: "/portfolio/new-empire-corp.mp4",
   },
