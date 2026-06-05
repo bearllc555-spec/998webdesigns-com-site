@@ -65,6 +65,16 @@ describe("validateLeadPayload", () => {
     if (result.ok) expect(result.data.businessName).toBe("");
   });
 
+  it("requires hearAboutOther when Other is selected", () => {
+    const result = validateLeadPayload({
+      ...validBase,
+      hearAboutSources: ["Other"],
+      hearAboutOther: "",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/specify/i);
+  });
+
   it("filters hearAboutSources to allowed values", () => {
     const result = validateLeadPayload({
       ...validBase,

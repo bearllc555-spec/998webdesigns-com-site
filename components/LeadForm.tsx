@@ -122,7 +122,11 @@ export function LeadForm() {
   ) => {
     setForm((f) => {
       const has = f[k].includes(v);
-      return { ...f, [k]: has ? f[k].filter((x) => x !== v) : [...f[k], v] };
+      const next = has ? f[k].filter((x) => x !== v) : [...f[k], v];
+      if (k === "hearAboutSources" && v === "Other" && has) {
+        return { ...f, hearAboutSources: next, hearAboutOther: "" };
+      }
+      return { ...f, [k]: next };
     });
   };
 
@@ -176,6 +180,9 @@ export function LeadForm() {
     if (step === 4) {
       if (form.hearAboutSources.length === 0) {
         e.hearAboutSources = "Pick at least one.";
+      }
+      if (form.hearAboutSources.includes("Other") && !form.hearAboutOther.trim()) {
+        e.hearAboutOther = "Please tell us where.";
       }
       if (!form.hostingChoice) e.hostingChoice = "Pick a hosting preference.";
       if (!form.paymentChannel) e.paymentChannel = "Pick how you want to pay.";
@@ -539,18 +546,21 @@ export function LeadForm() {
                   value={form.hearAboutSources}
                   onToggle={(v) => toggle("hearAboutSources", v)}
                 />
+                {form.hearAboutSources.includes("Other") && (
+                  <div className="mt-3">
+                    <FixedFormField
+                      id="lead-hear-about-other"
+                      label="Please specify"
+                      value={form.hearAboutOther}
+                      onChange={(v) => set("hearAboutOther", v)}
+                      required
+                      placeholder="Where did you hear about us?"
+                      error={errors.hearAboutOther}
+                      autoComplete="off"
+                    />
+                  </div>
+                )}
               </Field>
-
-              {form.hearAboutSources.includes("Other") && (
-                <FixedFormField
-                  id="lead-hear-about-other"
-                  label="Other (please specify)"
-                  value={form.hearAboutOther}
-                  onChange={(v) => set("hearAboutOther", v)}
-                  optionalHint
-                  autoComplete="off"
-                />
-              )}
 
               <FixedFormField
                 id="lead-promo"

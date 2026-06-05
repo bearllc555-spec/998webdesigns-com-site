@@ -100,6 +100,12 @@ export function validateLeadPayload(
     return { ok: false, error: "Missing or invalid paymentChannel (ach or card)" };
   }
 
+  const hearAboutSources = filterHearAboutSources(body.hearAboutSources);
+  const hearAboutOther = str(body.hearAboutOther) ?? "";
+  if (hearAboutSources.includes("Other") && !hearAboutOther) {
+    return { ok: false, error: "Please specify where you heard about us when Other is selected" };
+  }
+
   return {
     ok: true,
     data: {
@@ -127,8 +133,8 @@ export function validateLeadPayload(
       paymentChannel: paymentChannel as PaymentChannel,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
       promoCode: str(body.promoCode) ?? "",
-      hearAboutSources: filterHearAboutSources(body.hearAboutSources),
-      hearAboutOther: str(body.hearAboutOther) ?? "",
+      hearAboutSources,
+      hearAboutOther,
     },
   };
 }
