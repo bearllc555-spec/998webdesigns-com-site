@@ -127,8 +127,8 @@
 
 .temp-page-v2 .linkedin-banner .offer {
   position: relative;
-  min-width: 340px;
-  padding: 22px 28px 20px;
+  min-width: 420px;
+  padding: 24px 36px 22px;
   border-radius: 20px;
   background: linear-gradient(145deg, #0f172a 0%, #1e3a5f 48%, #1d4ed8 100%);
   box-shadow:
@@ -162,6 +162,29 @@
   line-height: 1.1;
   letter-spacing: -0.03em;
   color: #ffffff;
+}
+
+.temp-page-v2 .linkedin-banner .offer-builds {
+  font-size: 20px;
+  opacity: 0.88;
+}
+
+.temp-page-v2 .linkedin-banner .offer-price-row {
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.temp-page-v2 .linkedin-banner .offer-price-was {
+  font-size: 0.88em;
+}
+
+.temp-page-v2 .linkedin-banner .offer-price-now {
+  font-size: 1em;
+}
+
+.temp-page-v2 .linkedin-banner .offer-price-flat {
+  font-size: 0.72em;
 }
 
 .temp-page-v2 .linkedin-banner .offer-rule {
