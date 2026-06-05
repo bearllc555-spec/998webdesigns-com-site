@@ -6,10 +6,12 @@ import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { LeadForm } from "@/components/LeadForm";
 import { Footer } from "@/components/Footer";
+import { JsonLd } from "@/components/JsonLd";
 
 export default function Home() {
   return (
     <>
+      <JsonLd />
       <Nav />
       <main>
         <Hero />

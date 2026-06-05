@@ -19,14 +19,14 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "998 web designs — handcrafted websites for small businesses. $1,998 once.",
+  title: "998 web designs — growth systems for local businesses. Sites from $1,998.",
   description:
-    "A handcrafted custom website for small businesses. $1,998 once. Delivered in 7 business days. No agencies, no retainers, no surprises.",
+    "We build growth systems for local service businesses — handcrafted websites from $1,998, delivered in 7 business days. Stack SEO, automation, and AI add-ons when you are ready.",
   metadataBase: new URL("https://998webdesigns.com"),
   openGraph: {
-    title: "998 web designs — handcrafted websites for small businesses",
+    title: "998 web designs — growth systems for local businesses",
     description:
-      "A handcrafted custom website for $1,998. Delivered in 7 business days. No agencies, no retainers, no surprises.",
+      "Handcrafted websites from $1,998. Delivered in 7 business days. Stack SEO, chatbot, email automation, and content add-ons as you grow.",
     url: "https://998webdesigns.com",
     siteName: "998 web designs",
     type: "website",
@@ -35,15 +35,15 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "998 web designs — handcrafted websites for small businesses",
+        alt: "998 web designs — growth systems for local businesses",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "998 web designs — handcrafted websites for small businesses",
+    title: "998 web designs — growth systems for local businesses",
     description:
-      "A handcrafted custom website for $1,998. Delivered in 7 business days. No agencies, no retainers, no surprises.",
+      "Handcrafted websites from $1,998. Delivered in 7 business days. Stack SEO, automation, and AI add-ons as you grow.",
     images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },

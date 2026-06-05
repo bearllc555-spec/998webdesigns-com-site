@@ -19,6 +19,7 @@ import {
   syncWdLeadBankPaymentFailed,
   syncWdLeadPaidInFull,
 } from "@/lib/wd-leads-sync";
+import { claimStripeWebhookEvent } from "@/lib/stripe-webhook-idempotency";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -83,6 +84,11 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[webhook] Signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  const claim = await claimStripeWebhookEvent(event.id);
+  if (claim === "duplicate") {
+    return NextResponse.json({ received: true, duplicate: true });
   }
 
   try {

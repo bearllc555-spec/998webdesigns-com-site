@@ -14,8 +14,8 @@ export const faq: FAQItem[] = [
     a: "Checkout defaults to credit or debit card. Before you pay, you can switch to bank transfer (ACH) if you want list price with no 3% processing fee on the design fee and on ten-year hosting if selected. The 3% card fee never applies to month-to-month hosting. Bank payments may take a few business days to settle; the design clock starts when Stripe confirms cleared funds.",
   },
   {
-    q: "What happens if I go quiet during the design process?",
-    a: "Life happens. If we don't hear back within 14 days of sending a draft, we'll mark the project complete and deliver the best version we have. Your files are held for 90 days — come back any time in that window and we'll jump back in under normal edit terms. After 90 days, a $349 re-engagement fee applies to reopen the project.",
+    q: "What happens if I go quiet during the design or approval process?",
+    a: "Life happens. If we send a draft and don't hear back within 14 days, we'll mark the project complete and deliver the best version we have. You've already paid in full — there is no further charge at approval. Your files are held for 90 days; come back any time in that window and we'll jump back in under normal edit terms. After 90 days, a $349 re-engagement fee applies to reopen the project. We say this up front because surprise late fees are agency behavior and we don't do that.",
   },
   {
     q: "How is this so much cheaper than an agency?",
@@ -40,9 +40,5 @@ export const faq: FAQItem[] = [
   {
     q: "Do you do logos, copywriting, or SEO?",
     a: "Logos and full copywriting are not part of the $1,998 design fee — we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional — priced clearly if you want them.",
-  },
-  {
-    q: "What happens if I don't respond during the approval window?",
-    a: "If we send you a design draft and don't hear back within 14 days, we'll mark the project complete and deliver the best version we have. You've already paid in full — there is no further charge. Your files are held for 90 days; after that, a $349 re-engagement fee applies to reopen the project. We say this up front because surprise late fees are agency behavior and we don't do that.",
   },
 ];

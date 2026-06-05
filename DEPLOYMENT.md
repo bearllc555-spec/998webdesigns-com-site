@@ -23,7 +23,8 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
 | `RESEND_API_KEY` | Contact form + lead emails + internal lead/payment alerts |
-| `BALANCE_CAPTURE_SECRET` | Bearer token for `GET /api/admin/env-status` |
+| `BALANCE_CAPTURE_SECRET` | Bearer token for `GET /api/admin/env-status` and admin migrate routes |
+| `CRM_ADMIN_SECRET` | **Required in Production** — `/crm` login and `/api/crm/*` (do not reuse `BALANCE_CAPTURE_SECRET`) |
 | `STRIPE_EXPECTED_MODE` | Optional `test` or `live` — must match `STRIPE_SECRET_KEY` prefix |
 | `NEXT_PUBLIC_SUPABASE_URL` | Lead storage |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (if used client-side) |
@@ -125,6 +126,8 @@ Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or ask Cursor to fix Supabase
 - **`api_rate_limits`** — distributed API rate limits
 
 Apply via GitHub push (migrations) or run **`supabase/schema.sql`** once in the SQL editor.
+
+**Webhook idempotency:** `processed_stripe_events` — migration `supabase/migrations/20260605140000_processed_stripe_events.sql`. `env-status` warns if missing; webhook still works but duplicate Stripe retries may re-send emails until the table exists.
 
 If tables are missing, leads still reach Stripe; contact email still sends; logs note missing tables.
 

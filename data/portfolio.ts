@@ -2,6 +2,7 @@
 // Poster: public/portfolio/<slug>.jpg
 // Hover preview: public/portfolio/<slug>.mp4 — scripts/capture-portfolio-preview.mjs
 //   (splices ~5s from the page hero <video> MP4, then a viewport scroll recording)
+// URLs: apex pages.dev / production domains only — no dev.* or *-dev.* branches.
 
 export type PortfolioItem = {
   slug: string;
@@ -22,7 +23,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "serenity-spa",
     name: "Serenity Spa",
     industry: "Spa & wellness",
-    url: "https://dev.serenity-spa-3r8.pages.dev/",
+    url: "https://serenity-spa-3r8.pages.dev/",
     thumbnail: "/portfolio/serenity-spa.jpg",
     previewVideo: "/portfolio/serenity-spa.mp4",
   },
@@ -38,7 +39,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "jetvip-charter",
     name: "VIP Charters",
     industry: "Private aviation",
-    url: "https://jetvipcharter-dev.pages.dev/",
+    url: "https://jetvipcharter.pages.dev/",
     thumbnail: "/portfolio/jetvip-charter.jpg",
     previewVideo: "/portfolio/jetvip-charter.mp4",
   },
@@ -60,7 +61,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "new-empire-corp",
     name: "New Empire Corp",
     industry: "Corporate & design",
-    url: "https://dev.nyc-design.pages.dev/",
+    url: "https://nyc-design.pages.dev/",
     thumbnail: "/portfolio/new-empire-corp.jpg",
     previewVideo: "/portfolio/new-empire-corp.mp4",
   },
@@ -68,21 +69,9 @@ export const portfolio: PortfolioItem[] = [
     slug: "pocono-vacation-homes",
     name: "Pocono Vacation Homes",
     industry: "Vacation rentals",
-    url: "https://dev.vacation-homes.pages.dev/",
+    url: "https://vacation-homes.pages.dev/",
     thumbnail: "/portfolio/pocono-vacation-homes.jpg",
     previewVideo: "/portfolio/pocono-vacation-homes.mp4",
-  },
-  {
-    slug: "field-books-cpa",
-    name: "Field Books CPA",
-    industry: "Professional services",
-    thumbnail: "/portfolio/placeholder.svg",
-  },
-  {
-    slug: "north-branch-roofing",
-    name: "North Branch Roofing",
-    industry: "Trades",
-    thumbnail: "/portfolio/placeholder.svg",
   },
 ];
 

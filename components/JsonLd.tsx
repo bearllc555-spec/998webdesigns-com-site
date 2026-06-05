@@ -1,0 +1,42 @@
+import { faq } from "@/data/faq";
+
+const ORGANIZATION = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "998 web designs",
+  url: "https://998webdesigns.com",
+  description:
+    "Growth systems for local service businesses — handcrafted websites from $1,998, optional SEO, automation, and AI add-ons.",
+  email: "hello@998webdesigns.com",
+};
+
+function faqPageJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+}
+
+export function JsonLd() {
+  const faqLd = faqPageJsonLd();
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
+    </>
+  );
+}

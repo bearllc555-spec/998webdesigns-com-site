@@ -199,7 +199,7 @@ async function insertWithClient(
   if (error) {
     if (isMissingWdLeadsTable(error)) {
       console.error(
-        "[leads] wd_leads table missing — run supabase/schema.sql in the Supabase SQL editor (project jxthwtflrzudepxysgje)"
+        "[leads] wd_leads table missing — run supabase/schema.sql in the Supabase SQL editor (project xwldbxburzqryxlzocck)"
       );
       return {
         ok: false,

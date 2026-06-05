@@ -68,5 +68,16 @@ create table if not exists public.crm_telegram_settings (
 
 alter table public.crm_telegram_settings enable row level security;
 
+-- Stripe webhook idempotency (/api/stripe/webhook)
+create table if not exists public.processed_stripe_events (
+  event_id text primary key,
+  processed_at timestamptz not null default now()
+);
+
+create index if not exists processed_stripe_events_processed_at_idx
+  on public.processed_stripe_events (processed_at desc);
+
+alter table public.processed_stripe_events enable row level security;
+
 -- Optional: purge stale rate-limit rows (run via cron or manually)
 -- delete from public.api_rate_limits where window_ends_at < now() - interval '1 day';

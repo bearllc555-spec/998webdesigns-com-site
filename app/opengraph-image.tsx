@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt =
-  "998 web designs — handcrafted websites for small businesses";
+export const alt = "998 web designs — growth systems for local businesses";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -40,7 +39,7 @@ export default function Image() {
             maxWidth: 900,
           }}
         >
-          Handcrafted websites for small businesses. $1,998 once. Delivered in 7
+          Growth systems for local businesses. Sites from $1,998. Delivered in 7
           business days.
         </div>
       </div>

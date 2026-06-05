@@ -1,3 +1,4 @@
+import { crmAdminSecretSource } from "@/lib/crm-admin-secret";
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
 import { probeStripeOps, type StripeOpsSnapshot } from "@/lib/stripe-ops-check";
 import { checkSupabaseHealth, type SupabaseHealth } from "@/lib/supabase-health";
@@ -15,6 +16,7 @@ export type ProductionConfigStatus = {
   resendConfigured: boolean;
   supabaseConfigured: boolean;
   adminAuthConfigured: boolean;
+  crmAdminSecretSource: "dedicated" | "balance_fallback" | "missing";
   stripeOps: StripeOpsSnapshot | null;
   warnings: string[];
   readyForLiveCharges: boolean;
@@ -82,6 +84,16 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "crm_telegram_settings table missing — POST /api/admin/migrate-crm-telegram with BALANCE_CAPTURE_SECRET."
     );
+  } else if (!supabase.processedStripeEventsTable) {
+    warnings.push(
+      "processed_stripe_events table missing — run supabase/migrations/20260605140000_processed_stripe_events.sql."
+    );
+  }
+  const crmSecretSource = crmAdminSecretSource();
+  if (vercelEnv === "production" && crmSecretSource !== "dedicated") {
+    warnings.push(
+      "CRM_ADMIN_SECRET missing on Production — /crm login disabled until set (do not reuse BALANCE_CAPTURE_SECRET)."
+    );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
     warnings.push("BALANCE_CAPTURE_SECRET missing — env-status API returns 503.");
@@ -113,6 +125,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     resendConfigured,
     supabaseConfigured,
     adminAuthConfigured,
+    crmAdminSecretSource: crmSecretSource,
     stripeOps,
     warnings,
     readyForLiveCharges,

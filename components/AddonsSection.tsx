@@ -341,7 +341,7 @@ export function AddonsSection() {
         <div className="max-w-2xl">
           <p className="mt-4 text-base leading-relaxed text-ink">
             Every build includes options for blog writing & local posts, hyper‑local SEO, Google
-            Profile Optimization, review generation, email/SMS follow‑ups, social media management,
+            Profile Optimization (including review requests), email/SMS follow‑ups, social media management,
             booking calendar, an AI receptionist, and an on‑site AI chatbot so you get more calls,
             more bookings, and
             more repeat clients.

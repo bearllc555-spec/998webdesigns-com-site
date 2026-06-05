@@ -214,7 +214,7 @@ export function LeadForm() {
             tell us about your business.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-ink-soft">
-            Detailed by design. The better the brief, the better the site. Four short steps.
+            Detailed by design. The better the brief, the better the site. Five short steps.
           </p>
         </div>
 
