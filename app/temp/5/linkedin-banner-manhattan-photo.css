@@ -1,0 +1,253 @@
+.temp-page-v5 .linkedin-banner {
+  position: relative;
+  width: 1584px;
+  height: 396px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 55%, #eff6ff 100%);
+  color: #0a0a0a;
+}
+
+/* Design 5 — faded Manhattan photo (replaces SVG silhouette) */
+.temp-page-v5 .linkedin-banner .skyline-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.temp-page-v5 .linkedin-banner .skyline-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 68%;
+  display: block;
+  opacity: 0.32;
+  filter: saturate(0.7) contrast(1.02) brightness(1.08);
+}
+
+.temp-page-v5 .linkedin-banner .skyline-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(248, 250, 252, 0.35) 45%,
+    rgba(239, 246, 255, 0.2) 100%
+  );
+  pointer-events: none;
+}
+
+.temp-page-v5 .linkedin-banner .sky-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.45) 38%,
+    rgba(255, 255, 255, 0.08) 58%,
+    transparent 78%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.temp-page-v5 .linkedin-banner .bg-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 55%, transparent 100%);
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.temp-page-v5 .linkedin-banner .content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 48px;
+  padding: 0 72px 0 440px;
+}
+
+.temp-page-v5 .linkedin-banner .brand-block {
+  max-width: 720px;
+}
+
+.temp-page-v5 .linkedin-banner .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 6px 14px 6px 10px;
+  border: 1px solid #e4e4e7;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #52525b;
+}
+
+.temp-page-v5 .linkedin-banner .eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+}
+
+.temp-page-v5 .linkedin-banner .logo {
+  font-family: var(--font-geist), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 72px;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.temp-page-v5 .linkedin-banner .logo-998 {
+  color: #2563eb;
+  font-weight: 800;
+}
+
+.temp-page-v5 .linkedin-banner .logo-rest {
+  color: #0a0a0a;
+}
+
+.temp-page-v5 .linkedin-banner .tagline {
+  margin-top: 16px;
+  max-width: 560px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: #27272a;
+}
+
+.temp-page-v5 .linkedin-banner .tagline strong {
+  font-weight: 700;
+  color: #0a0a0a;
+}
+
+.temp-page-v5 .linkedin-banner .offer--glass {
+  position: relative;
+  min-width: 280px;
+  padding: 18px 22px 16px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  box-shadow:
+    0 1px 2px rgba(10, 10, 10, 0.03),
+    0 10px 28px rgba(37, 99, 235, 0.08);
+  overflow: hidden;
+}
+
+.temp-page-v5 .linkedin-banner .offer--glass::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, #2563eb 0%, #93c5fd 100%);
+  pointer-events: none;
+}
+
+.temp-page-v5 .linkedin-banner .offer--glass::after {
+  content: "";
+  position: absolute;
+  right: -30%;
+  top: -50%;
+  width: 75%;
+  height: 120%;
+  background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.09), transparent 68%);
+  pointer-events: none;
+}
+
+.temp-page-v5 .linkedin-banner .offer-kicker {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+.temp-page-v5 .linkedin-banner .offer-main {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-geist), system-ui, sans-serif;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.temp-page-v5 .linkedin-banner .offer-line {
+  display: block;
+  font-weight: 600;
+  font-size: 17px;
+  color: #52525b;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.temp-page-v5 .linkedin-banner .offer-sep {
+  display: none;
+}
+
+.temp-page-v5 .linkedin-banner .offer-highlight {
+  display: block;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.035em;
+  background: linear-gradient(120deg, #0a0a0a 0%, #1d4ed8 55%, #2563eb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.temp-page-v5 .linkedin-banner .offer-rule {
+  position: relative;
+  z-index: 1;
+  height: 1px;
+  margin: 12px 0 10px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.35), rgba(228, 228, 231, 0.9));
+}
+
+.temp-page-v5 .linkedin-banner .offer-url {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #52525b;
+}
+
+.temp-page-v5 .linkedin-banner .offer-url svg {
+  width: 14px;
+  height: 14px;
+  color: #2563eb;
+  opacity: 0.75;
+}
