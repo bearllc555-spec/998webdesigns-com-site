@@ -86,10 +86,7 @@ const ASSETS = ["Logo", "Photos", "Brand colors", "Existing copy"];
 export function LeadForm() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(() => ({
-    ...initial,
-    addons: getSelectedAddons(),
-  }));
+  const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -185,7 +182,7 @@ export function LeadForm() {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, addons: getSelectedAddons() }),
       });
       if (!res.ok) throw new Error(`Submit failed (${res.status})`);
       const data = await res.json();
