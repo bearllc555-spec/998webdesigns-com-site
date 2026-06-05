@@ -1,4 +1,4 @@
-/* LinkedIn desktop profile intro — card ~804px wide, cover 4:1 (~201px tall) */
+/* LinkedIn desktop intro — measured 792×198 cover @ anthony-de-meo profile */
 
 .temp-page,
 .temp-page-v2,
@@ -16,7 +16,7 @@
 }
 
 .linkedin-preview-wrap {
-  width: var(--li-card-w, 804px);
+  width: var(--li-card-w, 792px);
   max-width: calc(100vw - 32px);
   margin: 0 auto;
 }
@@ -46,9 +46,8 @@
   color: #27272a;
 }
 
-/* White intro card — same width as linkedin.com/in/… main column */
 .linkedin-mockup {
-  width: var(--li-card-w, 804px);
+  width: var(--li-card-w, 792px);
   max-width: 100%;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -59,10 +58,9 @@
   overflow: visible;
 }
 
-/* Cover slot = how LinkedIn displays the uploaded 1584×396 image */
 .linkedin-cover-slot {
   width: 100%;
-  height: var(--li-cover-h, 201px);
+  height: var(--li-cover-h, 198px);
   overflow: hidden;
   position: relative;
   background: #ffffff;
@@ -98,19 +96,18 @@
 .linkedin-profile-stub {
   position: relative;
   padding: 0 24px 20px;
-  min-height: calc(var(--li-stub-pad-top, 84px) + 88px);
+  min-height: calc(var(--li-stub-pad-top, 76px) + 96px);
   background: #ffffff;
   border-radius: 0 0 8px 8px;
 }
 
-/* 152px photo: center on bottom edge of cover (matches LinkedIn) */
+/* 160×160 frame, 28px from card left, 96px overlap into cover (live profile) */
 .linkedin-avatar {
   position: absolute;
-  left: var(--li-avatar-left, 24px);
-  top: 0;
-  width: var(--li-avatar-size, 152px);
-  height: var(--li-avatar-size, 152px);
-  transform: translateY(-50%);
+  left: var(--li-avatar-left, 28px);
+  top: calc(-1 * var(--li-avatar-overlap, 96px));
+  width: var(--li-avatar-frame, 160px);
+  height: var(--li-avatar-frame, 160px);
   border-radius: 50%;
   border: var(--li-avatar-border, 4px) solid #ffffff;
   background: linear-gradient(145deg, #d4d4d8 0%, #a1a1aa 45%, #71717a 100%);
@@ -130,8 +127,8 @@
 }
 
 .linkedin-stub-body {
-  margin-left: var(--li-stub-body-left, 192px);
-  padding-top: var(--li-stub-pad-top, 84px);
+  margin-left: var(--li-stub-body-left, 200px);
+  padding-top: var(--li-stub-pad-top, 76px);
 }
 
 .linkedin-stub-lines {
@@ -235,7 +232,7 @@
   z-index: 20;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 828px) {
   .linkedin-preview-wrap,
   .linkedin-mockup {
     width: 100%;

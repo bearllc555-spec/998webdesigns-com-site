@@ -14,7 +14,7 @@ export default function TempPage() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Preview matches your live LinkedIn card (~804px wide). Keep logo and offer right of the gray
+        Preview matches your live LinkedIn card (792×198). Keep logo and offer right of the gray
         photo circle. Click cover for upload PNG.
       </p>
     </div>

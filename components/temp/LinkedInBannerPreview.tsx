@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import {
   LINKEDIN_AVATAR_BORDER,
+  LINKEDIN_AVATAR_FRAME_SIZE,
   LINKEDIN_AVATAR_LEFT,
-  LINKEDIN_AVATAR_SIZE,
+  LINKEDIN_AVATAR_OVERLAP_PX,
   LINKEDIN_COVER_DISPLAY_H,
   LINKEDIN_COVER_DISPLAY_W,
   LINKEDIN_COVER_UPLOAD_H,
@@ -20,8 +21,8 @@ type LinkedInBannerPreviewProps = {
 };
 
 /**
- * Scales the 1584×396 upload artboard into LinkedIn’s desktop profile card cover
- * (~804×201) with a 152px photo overlapping the bottom-left — matches live profile.
+ * Scales the 1584×396 upload into Anthony's live LinkedIn card (792×198 cover,
+ * 160px photo overlapping 96px into the cover from the bottom-left).
  */
 export function LinkedInBannerPreview({
   children,
@@ -50,13 +51,13 @@ export function LinkedInBannerPreview({
 
   const mockupStyle = {
     "--li-card-w": `${LINKEDIN_PROFILE_CARD_W}px`,
-    "--li-cover-w": `${LINKEDIN_COVER_DISPLAY_W}px`,
     "--li-cover-h": `${LINKEDIN_COVER_DISPLAY_H}px`,
-    "--li-avatar-size": `${LINKEDIN_AVATAR_SIZE}px`,
+    "--li-avatar-frame": `${LINKEDIN_AVATAR_FRAME_SIZE}px`,
     "--li-avatar-left": `${LINKEDIN_AVATAR_LEFT}px`,
     "--li-avatar-border": `${LINKEDIN_AVATAR_BORDER}px`,
-    "--li-stub-pad-top": `${LINKEDIN_AVATAR_SIZE / 2 + 8}px`,
-    "--li-stub-body-left": `${LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_SIZE + 16}px`,
+    "--li-avatar-overlap": `${LINKEDIN_AVATAR_OVERLAP_PX}px`,
+    "--li-stub-pad-top": `${LINKEDIN_AVATAR_FRAME_SIZE - LINKEDIN_AVATAR_OVERLAP_PX + 12}px`,
+    "--li-stub-body-left": `${LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_FRAME_SIZE + 12}px`,
   } as CSSProperties;
 
   return (
@@ -64,10 +65,9 @@ export function LinkedInBannerPreview({
       <div className="linkedin-preview-meta">
         <h2>{designLabel}</h2>
         <p>
-          Preview is <strong>LinkedIn desktop profile card</strong> ({LINKEDIN_COVER_DISPLAY_W}×
-          {LINKEDIN_COVER_DISPLAY_H}px cover — how your upload appears after LinkedIn scales it).
-          Gray circle = your profile photo overlap.{" "}
-          <strong>Click the cover</strong> for the {LINKEDIN_COVER_UPLOAD_W}×
+          Preview matches your live profile card ({LINKEDIN_COVER_DISPLAY_W}×
+          {LINKEDIN_COVER_DISPLAY_H}px cover, measured on linkedin.com). Gray circle = photo
+          overlap. <strong>Click the cover</strong> for the {LINKEDIN_COVER_UPLOAD_W}×
           {LINKEDIN_COVER_UPLOAD_H}px PNG.
         </p>
       </div>
