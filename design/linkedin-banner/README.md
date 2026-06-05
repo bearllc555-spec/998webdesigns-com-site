@@ -9,7 +9,9 @@
 | 3 | https://998webdesigns.com/temp/3 | Same as 2 + **frosted glass offer** |
 | 4 | https://998webdesigns.com/temp/4 | Wireframe UI deco, slanted navy offer (from live LinkedIn reference) |
 
-New iterations → `/temp/5`, … Add a row in `components/temp/BannerDesignNav.tsx`.
+**Upload export (1584×396):** click the cover on any preview page, or open `/temp/export`, `/temp/2/export`, `/temp/3/export`, `/temp/4/export` directly.
+
+New iterations → `/temp/5` + `/temp/5/export`. Add a row in `lib/linkedin-banner-preview.ts` (`BANNER_DESIGN_ROUTES`).
 
 ## v3 (`linkedin-banner-v3.html`)
 

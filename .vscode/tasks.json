@@ -22,8 +22,19 @@
       }
     },
     {
+      "label": "998: open home in Cursor browser",
+      "command": "${input:openHomeSimpleBrowser}",
+      "problemMatcher": []
+    },
+    {
       "label": "998: open CRM in Cursor browser",
       "command": "${input:openCrmSimpleBrowser}",
+      "problemMatcher": []
+    },
+    {
+      "label": "998: dev + home tab",
+      "dependsOn": ["998: dev server", "998: open home in Cursor browser"],
+      "dependsOrder": "sequence",
       "problemMatcher": []
     },
     {
@@ -34,6 +45,12 @@
     }
   ],
   "inputs": [
+    {
+      "id": "openHomeSimpleBrowser",
+      "type": "command",
+      "command": "simpleBrowser.show",
+      "args": ["http://localhost:3000/"]
+    },
     {
       "id": "openCrmSimpleBrowser",
       "type": "command",

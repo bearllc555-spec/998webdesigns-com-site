@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import {
   LINKEDIN_COVER_DISPLAY_H,
@@ -11,13 +12,18 @@ import {
 type LinkedInBannerPreviewProps = {
   children: ReactNode;
   designLabel: string;
+  exportHref: string;
 };
 
 /**
  * Renders the 1584×396 artboard inside a fixed LinkedIn desktop cover rectangle
  * (1128×282) with profile-photo overlap — WYSIWYG for what you see on your profile.
  */
-export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerPreviewProps) {
+export function LinkedInBannerPreview({
+  children,
+  designLabel,
+  exportHref,
+}: LinkedInBannerPreviewProps) {
   const slotRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef<HTMLDivElement>(null);
 
@@ -43,12 +49,9 @@ export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerP
       <div className="linkedin-preview-meta">
         <h2>{designLabel}</h2>
         <p>
-          Gray box below is the <strong>LinkedIn desktop cover</strong> (
-          {LINKEDIN_COVER_DISPLAY_W}×{LINKEDIN_COVER_DISPLAY_H}px). Upload your export at{" "}
-          <strong>
-            {LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px
-          </strong>
-          .
+          <strong>Click the cover</strong> to open the upload-ready banner (
+          {LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px) in a new tab. Preview below
+          matches LinkedIn desktop ({LINKEDIN_COVER_DISPLAY_W}×{LINKEDIN_COVER_DISPLAY_H}px).
         </p>
       </div>
 
@@ -62,21 +65,23 @@ export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerP
         }
         aria-label="LinkedIn profile intro card preview"
       >
-        <div ref={slotRef} className="linkedin-cover-slot">
-          <button
-            type="button"
-            className="linkedin-cover-edit"
-            tabIndex={-1}
-            aria-hidden="true"
-          />
-          <div
-            ref={scaleRef}
-            className="linkedin-cover-scale"
-            style={{ width: LINKEDIN_COVER_UPLOAD_W, height: LINKEDIN_COVER_UPLOAD_H }}
-          >
-            {children}
+        <Link
+          href={exportHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="linkedin-cover-link"
+          title={`Open full-size banner (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H}) in a new tab`}
+        >
+          <div ref={slotRef} className="linkedin-cover-slot">
+            <div
+              ref={scaleRef}
+              className="linkedin-cover-scale"
+              style={{ width: LINKEDIN_COVER_UPLOAD_W, height: LINKEDIN_COVER_UPLOAD_H }}
+            >
+              {children}
+            </div>
           </div>
-        </div>
+        </Link>
 
         <div className="linkedin-profile-stub" aria-hidden="true">
           <div className="linkedin-avatar" title="Profile photo — overlaps bottom of cover" />

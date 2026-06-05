@@ -2,25 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-/** Add { href: "/temp/N", label: "Design N" } for each new iteration. */
-export const BANNER_DESIGNS = [
-  { href: "/temp", label: "Design 1" },
-  { href: "/temp/2", label: "Design 2" },
-  { href: "/temp/3", label: "Design 3" },
-  { href: "/temp/4", label: "Design 4" },
-] as const;
+import { BANNER_DESIGN_ROUTES } from "@/lib/linkedin-banner-preview";
 
 export function BannerDesignNav() {
   const pathname = usePathname();
 
   return (
     <nav className="temp-switcher" aria-label="Banner designs">
-      {BANNER_DESIGNS.map((design) => (
+      {BANNER_DESIGN_ROUTES.map((design) => (
         <Link
-          key={design.href}
-          href={design.href}
-          aria-current={pathname === design.href ? "page" : undefined}
+          key={design.previewHref}
+          href={design.previewHref}
+          aria-current={pathname === design.previewHref ? "page" : undefined}
         >
           {design.label}
         </Link>
