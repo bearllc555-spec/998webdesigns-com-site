@@ -73,6 +73,14 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/pocono-vacation-homes.jpg",
     previewVideo: "/portfolio/pocono-vacation-homes.mp4",
   },
+  {
+    slug: "legally-design",
+    name: "Legally",
+    industry: "Legal services",
+    url: "https://dev.legally-design.pages.dev/",
+    thumbnail: "/portfolio/legally-design.jpg",
+    previewVideo: "/portfolio/legally-design.mp4",
+  },
 ];
 
 export const industries = Array.from(
