@@ -3,8 +3,9 @@
  *
  *   node scripts/capture-portfolio-strip.mjs <slug> <url>
  *
- * When the page has a hero <video>, the first frames are extracted from that
- * video file via ffmpeg (real motion). Remaining frames are viewport scroll shots.
+ * Hero hold: full viewport screenshots while hero video plays and page
+ * animations run (nav, headline, etc.). Falls back to ffmpeg-on-MP4 if that fails.
+ * Scroll phase: stepped viewport screenshots while scrolling.
  *
  * Outputs:
  *   public/portfolio/<slug>-strip.jpg   (JPEG — tall stacks exceed WebP 16k px limit)
@@ -38,11 +39,19 @@ const VIEWPORT = { width: 960, height: 720 };
 const SCROLL_FRACTION = 0.68;
 const HERO_CLIP_S = 5;
 const HERO_FRAME_COUNT = 12;
+const HERO_WARMUP_MS = 600;
 const POSTER_OFFSET_S = 2.5;
 const SCROLL_FRAME_COUNT = 24;
 const SCROLL_MS = 7_500;
 
 const SCALE_CROP = `scale=${VIEWPORT.width}:${VIEWPORT.height}:force_original_aspect_ratio=increase,crop=${VIEWPORT.width}:${VIEWPORT.height}`;
+
+const POSTER_FRAME_INDEX = Math.round(
+  (POSTER_OFFSET_S / HERO_CLIP_S) * (HERO_FRAME_COUNT - 1)
+);
+const HERO_INTERVAL_MS = Math.round(
+  (HERO_CLIP_S * 1000) / (HERO_FRAME_COUNT - 1)
+);
 
 fs.mkdirSync(tmpDir, { recursive: true });
 
@@ -77,6 +86,55 @@ async function detectHeroVideoSrc(page) {
   });
 }
 
+async function startHeroVideo(page) {
+  await page.evaluate(() => {
+    const videos = [...document.querySelectorAll("video")].filter((v) => {
+      const r = v.getBoundingClientRect();
+      return r.width > 200 && r.height > 200 && r.top < window.innerHeight * 0.85;
+    });
+    if (!videos.length) return;
+    const v = videos[0];
+    v.muted = true;
+    v.loop = true;
+    v.currentTime = 0;
+    void v.play();
+  });
+}
+
+/**
+ * Full viewport hero hold — video motion + on-page text/CSS animations.
+ * @returns {{ framePaths: string[], posterTmp: string | null }}
+ */
+async function captureHeroViewportFrames(page) {
+  const framePaths = [];
+  let posterTmp = null;
+
+  console.log(
+    `Hero viewport — ${HERO_FRAME_COUNT} frames (${HERO_CLIP_S}s, text + video)`
+  );
+
+  await startHeroVideo(page);
+  await page.waitForTimeout(HERO_WARMUP_MS);
+
+  for (let i = 0; i < HERO_FRAME_COUNT; i++) {
+    const fp = path.join(tmpDir, `hero-${String(i).padStart(3, "0")}.png`);
+    await page.screenshot({ path: fp, type: "png", timeout: 60_000 });
+    framePaths.push(fp);
+    console.log(`  hero frame ${i + 1}/${HERO_FRAME_COUNT}`);
+
+    if (i === POSTER_FRAME_INDEX) {
+      posterTmp = path.join(tmpDir, "poster.png");
+      fs.copyFileSync(fp, posterTmp);
+    }
+
+    if (i < HERO_FRAME_COUNT - 1) {
+      await page.waitForTimeout(HERO_INTERVAL_MS);
+    }
+  }
+
+  return { framePaths, posterTmp };
+}
+
 function extractHeroFrame(heroSrc, timestampS, outputPath) {
   runFfmpeg([
     "-ss",
@@ -91,11 +149,11 @@ function extractHeroFrame(heroSrc, timestampS, outputPath) {
   ]);
 }
 
-/** @returns {string[]} frame paths */
-function extractHeroFrames(heroSrc) {
+/** ffmpeg fallback — video crop only, no page chrome. */
+function extractHeroFramesFromFile(heroSrc) {
   const framePaths = [];
   console.log(
-    `Hero video — ${HERO_FRAME_COUNT} frames from source (${HERO_CLIP_S}s clip)`
+    `Hero ffmpeg fallback — ${HERO_FRAME_COUNT} frames (${HERO_CLIP_S}s clip)`
   );
 
   for (let i = 0; i < HERO_FRAME_COUNT; i++) {
@@ -106,24 +164,15 @@ function extractHeroFrames(heroSrc) {
     const fp = path.join(tmpDir, `hero-${String(i).padStart(3, "0")}.png`);
     extractHeroFrame(heroSrc, t, fp);
     framePaths.push(fp);
-    console.log(`  hero frame ${i + 1}/${HERO_FRAME_COUNT} @ ${t.toFixed(2)}s`);
   }
 
-  return framePaths;
+  const posterTmp = path.join(tmpDir, "poster.png");
+  extractHeroFrame(heroSrc, POSTER_OFFSET_S, posterTmp);
+  return { framePaths, posterTmp };
 }
 
-/** @returns {Promise<string[]>} scroll frame paths */
-async function captureScrollFrames(pageUrl) {
-  const browser = await chromium.launch({
-    args: ["--autoplay-policy=no-user-gesture-required"],
-  });
-  const page = await browser.newPage({ viewport: VIEWPORT });
+async function captureScrollFrames(page) {
   const framePaths = [];
-
-  console.log(`Loading ${pageUrl}`);
-  await page.goto(pageUrl, { waitUntil: "domcontentloaded", timeout: 90_000 });
-  await page.waitForTimeout(1_500);
-  await page.evaluate(() => window.scrollTo(0, 0));
 
   const scrollMax = await page.evaluate((fraction) => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -135,15 +184,11 @@ async function captureScrollFrames(pageUrl) {
     const y = Math.round((scrollMax * i) / SCROLL_FRAME_COUNT);
     await page.evaluate((top) => window.scrollTo(0, top), y);
     await page.waitForTimeout(Math.round(SCROLL_MS / SCROLL_FRAME_COUNT));
-    const fp = path.join(
-      tmpDir,
-      `scroll-${String(i).padStart(3, "0")}.png`
-    );
-    await page.screenshot({ path: fp, type: "png" });
+    const fp = path.join(tmpDir, `scroll-${String(i).padStart(3, "0")}.png`);
+    await page.screenshot({ path: fp, type: "png", timeout: 60_000 });
     framePaths.push(fp);
   }
 
-  await browser.close();
   return framePaths;
 }
 
@@ -195,29 +240,41 @@ const browser = await chromium.launch({
   args: ["--autoplay-policy=no-user-gesture-required"],
 });
 const page = await browser.newPage({ viewport: VIEWPORT });
-console.log(`Detecting hero video on ${url}`);
+
+console.log(`Loading ${url}`);
 await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
 await page.waitForTimeout(1_500);
+await page.evaluate(() => window.scrollTo(0, 0));
+
 const heroSrc = await detectHeroVideoSrc(page);
-await browser.close();
 
 let heroFramePaths = [];
 let posterSourcePath = null;
 
 if (heroSrc) {
   try {
-    const localHero = await downloadHeroVideo(heroSrc);
-    heroFramePaths = extractHeroFrames(localHero);
-    const posterTmp = path.join(tmpDir, "poster.png");
-    extractHeroFrame(localHero, POSTER_OFFSET_S, posterTmp);
-    posterSourcePath = posterTmp;
+    ({ framePaths: heroFramePaths, posterTmp: posterSourcePath } =
+      await captureHeroViewportFrames(page));
   } catch (err) {
-    console.warn("Hero frame extraction failed:", err);
+    console.warn("Hero viewport capture failed, trying ffmpeg fallback:", err);
     heroFramePaths = [];
+    posterSourcePath = null;
+  }
+
+  if (!heroFramePaths.length) {
+    try {
+      const localHero = await downloadHeroVideo(heroSrc);
+      ({ framePaths: heroFramePaths, posterTmp: posterSourcePath } =
+        extractHeroFramesFromFile(localHero));
+    } catch (err) {
+      console.warn("Hero ffmpeg fallback failed:", err);
+    }
   }
 }
 
-const scrollFramePaths = await captureScrollFrames(url);
+const scrollFramePaths = await captureScrollFrames(page);
+await browser.close();
+
 const allFrames = [...heroFramePaths, ...scrollFramePaths];
 
 if (!posterSourcePath) {

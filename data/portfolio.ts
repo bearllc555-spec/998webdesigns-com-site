@@ -23,6 +23,7 @@ export type PortfolioItem = {
   previewPoster?: string;
 };
 
+// Order: interleave static-only cards between motion previews (strip / MP4).
 export const portfolio: PortfolioItem[] = [
   {
     slug: "serenity-spa",
@@ -49,6 +50,13 @@ export const portfolio: PortfolioItem[] = [
     previewVideo: "/portfolio/jetvip-charter.mp4",
   },
   {
+    slug: "borst-landscape",
+    name: "Borst Landscape & Design",
+    industry: "Landscaping",
+    url: "https://landscape-design-site-cui.pages.dev/",
+    thumbnail: "/portfolio/borst-landscape.jpg",
+  },
+  {
     slug: "yogacentric",
     name: "YogaCentric",
     industry: "Yoga & wellness",
@@ -56,13 +64,6 @@ export const portfolio: PortfolioItem[] = [
     thumbnail: "/portfolio/yogacentric.jpg",
     previewStrip: "/portfolio/yogacentric-strip.jpg",
     previewStripFrames: 36,
-  },
-  {
-    slug: "borst-landscape",
-    name: "Borst Landscape & Design",
-    industry: "Landscaping",
-    url: "https://landscape-design-site-cui.pages.dev/",
-    thumbnail: "/portfolio/borst-landscape.jpg",
   },
   {
     slug: "new-empire-corp",
