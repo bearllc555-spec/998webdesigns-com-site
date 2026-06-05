@@ -49,7 +49,7 @@ type FormState = {
   avoidances: string;
   // Step 4
   startDate: string;
-  hostingChoice: "ten_year" | "monthly" | "";
+  hostingChoice: "lifetime" | "monthly" | "";
   notes: string;
   paymentOption: PaymentOption;
   paymentChannel: PaymentChannel;
@@ -560,7 +560,7 @@ export function LeadForm() {
               <Field label="Hosting (select one)" required error={errors.hostingChoice}>
                 <div className="grid gap-2 md:grid-cols-2">
                   {([
-                    ["ten_year", "Ten-year — $1,349 after free month"],
+                    ["lifetime", "Lifetime — $2,996 after free month"],
                     ["monthly", "Month-to-month — $198/mo after free month"],
                   ] as const).map(([val, label]) => (
                     <label
@@ -590,10 +590,10 @@ export function LeadForm() {
                 <p className="mt-2 text-xs leading-relaxed text-ink-soft">
                   {form.hostingChoice === "monthly" &&
                     `You pay the design fee today only. $198/mo hosting starts on day ${HOSTING_TRIAL_DAYS + 1}. Cancel before then and you will not be charged for hosting.`}
-                  {form.hostingChoice === "ten_year" &&
-                    `You pay the design fee today only. We email a secure link for the $1,349 ten-year hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Your 10-year term begins when that payment clears.`}
+                  {form.hostingChoice === "lifetime" &&
+                    `You pay the design fee today only. We email a secure link for the $2,996 lifetime hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Lifetime hosting begins when that payment clears.`}
                   {!form.hostingChoice &&
-                    "Pick monthly or ten-year hosting above. Either way, your first 30 days of hosting are on us."}
+                    "Pick monthly or lifetime hosting above. Either way, your first 30 days of hosting are on us."}
                 </p>
               </div>
 
@@ -602,7 +602,7 @@ export function LeadForm() {
                   <span className="block text-sm font-medium text-ink">
                     {formatCheckoutUsd(designFeeCents(form.promoCode))} design — paid in full today
                     {form.hostingChoice
-                      ? ` (${hostingChoiceShortLabel(form.hostingChoice as "ten_year" | "monthly")} billed after free month)`
+                      ? ` (${hostingChoiceShortLabel(form.hostingChoice as "lifetime" | "monthly")} billed after free month)`
                       : ""}
                   </span>
                   <span className="mt-1 block text-xs text-ink-soft">

@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import { findTenYearHostingDueLeads, updateWdLead, type TenYearDueLead } from "@/lib/leads-db";
 import { sendTenYearHostingCheckoutEmail } from "@/lib/ten-year-hosting-email";
-import { HOSTING_TEN_YEAR_DEFERRED_PRODUCT } from "@/lib/products";
+import { HOSTING_LIFETIME_DEFERRED_PRODUCT } from "@/lib/products";
 import { stripe } from "@/lib/stripe";
 
 export type TenYearBillingResult = {
@@ -24,21 +24,21 @@ export function buildTenYearHostingCheckoutParams(
         price_data: {
           currency: "usd",
           product_data: {
-            name: HOSTING_TEN_YEAR_DEFERRED_PRODUCT.name,
-            description: HOSTING_TEN_YEAR_DEFERRED_PRODUCT.description,
+            name: HOSTING_LIFETIME_DEFERRED_PRODUCT.name,
+            description: HOSTING_LIFETIME_DEFERRED_PRODUCT.description,
           },
-          unit_amount: HOSTING_TEN_YEAR_DEFERRED_PRODUCT.priceInCents,
+          unit_amount: HOSTING_LIFETIME_DEFERRED_PRODUCT.priceInCents,
         },
         quantity: 1,
       },
     ],
     metadata: {
-      paymentType: "ten_year_hosting",
+      paymentType: "lifetime_hosting",
       wdLeadId: lead.id,
       fullName: lead.full_name,
       businessName: lead.business_name,
       email: lead.email,
-      hostingChoice: "ten_year",
+      hostingChoice: "lifetime",
     },
     success_url: `${origin}/thanks?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/#pricing`,
@@ -63,7 +63,7 @@ export async function processDueTenYearHostingBillings(
       }
 
       const updated = await updateWdLead(lead.id, {
-        status: "awaiting_ten_year_hosting",
+        status: "awaiting_lifetime_hosting",
         stripe_ten_year_session_id: session.id,
       });
       if (!updated) {

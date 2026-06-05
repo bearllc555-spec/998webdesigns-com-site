@@ -19,7 +19,7 @@ export type WdLeadPatch = {
   stripe_balance_invoice_id?: string | null;
   /** Month-to-month hosting subscription id (when applicable). */
   stripe_subscription_id?: string | null;
-  /** Day-31 ten-year hosting Checkout session id (when sent). */
+  /** Day-31 lifetime hosting Checkout session id (when sent). */
   stripe_ten_year_session_id?: string | null;
   /** When paid hosting billing begins (30 days after design payment cleared). */
   hosting_billing_starts_at?: string | null;
@@ -136,7 +136,7 @@ export type TenYearDueLead = {
   payload: Record<string, unknown>;
 };
 
-/** Ten-year hosting: design paid, free period ended, day-31 Checkout not yet sent. */
+/** Lifetime hosting: design paid, free period ended, day-31 Checkout not yet sent. */
 export async function findTenYearHostingDueLeads(limit = 20): Promise<TenYearDueLead[]> {
   const supa = supabaseAdmin();
   if (!supa) return [];
@@ -153,13 +153,14 @@ export async function findTenYearHostingDueLeads(limit = 20): Promise<TenYearDue
     .limit(limit);
 
   if (error) {
-    console.warn("[leads] ten-year due query failed:", error.message);
+    console.warn("[leads] lifetime hosting due query failed:", error.message);
     return [];
   }
 
   return (data ?? []).filter((row) => {
     const payload = row.payload as Record<string, unknown> | null;
-    return payload?.hostingChoice === "ten_year";
+    const choice = payload?.hostingChoice;
+    return choice === "lifetime" || choice === "ten_year";
   }) as TenYearDueLead[];
 }
 

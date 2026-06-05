@@ -70,14 +70,15 @@ function subscriptionIdFromSession(
   return typeof sub === "string" ? sub : sub.id;
 }
 
-function isTenYearHostingCheckout(session: Stripe.Checkout.Session): boolean {
-  return session.metadata?.paymentType === "ten_year_hosting";
+function isLifetimeHostingCheckout(session: Stripe.Checkout.Session): boolean {
+  const type = session.metadata?.paymentType;
+  return type === "lifetime_hosting" || type === "ten_year_hosting";
 }
 
 /** Design fee paid — starts 30-day free hosting window. */
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
-  if (isTenYearHostingCheckout(session)) {
-    await syncWdLeadTenYearHostingPaid(session);
+  if (isLifetimeHostingCheckout(session)) {
+    await syncWdLeadLifetimeHostingPaid(session);
     return;
   }
 
@@ -103,15 +104,15 @@ export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Pr
   if (email) await updateLatestWdLeadByEmail(email, patch);
 }
 
-/** Ten-year hosting $1,349 collected on day 31. */
-export async function syncWdLeadTenYearHostingPaid(
+/** Lifetime hosting $2,996 collected on day 31. */
+export async function syncWdLeadLifetimeHostingPaid(
   session: Stripe.Checkout.Session
 ): Promise<void> {
   const email = session.metadata?.email ?? session.customer_email;
   const paidAt = new Date().toISOString();
 
   const patch = {
-    status: "ten_year_hosting_active",
+    status: "lifetime_hosting_active",
     stripe_ten_year_session_id: session.id,
     ten_year_hosting_paid_at: paidAt,
   };

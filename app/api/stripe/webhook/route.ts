@@ -31,7 +31,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const isTenYearHosting = session.metadata?.paymentType === "ten_year_hosting";
+  const paymentType = session.metadata?.paymentType;
+  const isLifetimeHosting =
+    paymentType === "lifetime_hosting" || paymentType === "ten_year_hosting";
 
   if (session.metadata?.paymentType === "deposit") {
     console.info(
@@ -41,7 +43,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   if (session.payment_status === "paid") {
     await syncWdLeadPaidInFull(session);
-    if (!isTenYearHosting) {
+    if (!isLifetimeHosting) {
       await sendInternalPaymentEmail(session);
       notifyLeadPaid(session);
     }

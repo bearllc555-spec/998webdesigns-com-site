@@ -5,7 +5,7 @@ import {
 import { isValidDesignPromoCode } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 
-export type HostingChoice = "ten_year" | "monthly";
+export type HostingChoice = "lifetime" | "monthly";
 export type PaymentOption = "full";
 export type PaymentChannel = "ach" | "card";
 export type ContactPref = "email" | "phone" | "text";
@@ -92,8 +92,8 @@ export function validateLeadPayload(
   if (!projectType || !["new", "redesign"].includes(projectType)) {
     return { ok: false, error: "Missing or invalid projectType" };
   }
-  if (!hostingChoice || !["ten_year", "monthly"].includes(hostingChoice)) {
-    return { ok: false, error: "Missing or invalid hostingChoice (ten_year or monthly)" };
+  if (!hostingChoice || !["lifetime", "monthly"].includes(hostingChoice)) {
+    return { ok: false, error: "Missing or invalid hostingChoice (lifetime or monthly)" };
   }
   if (paymentOption && paymentOption !== "full") {
     return {

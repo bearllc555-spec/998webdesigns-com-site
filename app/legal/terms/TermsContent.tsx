@@ -47,7 +47,7 @@ export function TermsContent() {
                 — not hosting or card-processing fees — when entered on the lead form at checkout.
               </li>
               <li>
-                <strong>Hosting:</strong> You choose ten-year hosting ($1,349 one-time) or
+                <strong>Hosting:</strong> You choose lifetime hosting ($2,996 one-time) or
                 month-to-month ($198/month) on the lead form. Your first 30 days of hosting are
                 free after your design payment clears. Paid hosting begins on day 31. Terms for
                 switching between options are stated in pricing on the site.
@@ -93,7 +93,7 @@ export function TermsContent() {
             <p className="text-ink-soft">
               You own your site and your domain. We do not claim ownership of your business content.
               If you leave, we provide a clean export. Month-to-month hosting can be canceled
-              anytime. Ten-year hosting runs for the purchased term; you may migrate files and
+              anytime. Lifetime hosting continues for the life of your site with us; you may migrate files and
               transfer your domain elsewhere, subject to any registrar transfer fees you owe.
             </p>
           </section>
@@ -107,7 +107,7 @@ export function TermsContent() {
               pay by U.S. bank account (ACH) at list price instead. Card payments include a 3%
               processing fee on the design fee only at the initial design Checkout; hosting is not
               charged there. Month-to-month hosting ($198/month) begins after your 30-day free
-              period via Stripe subscription. Ten-year hosting ($1,349) is collected via a separate
+              period via Stripe subscription. Lifetime hosting ($2,996) is collected via a separate
               Checkout link we send on day 31. We do not store full card or
               bank account numbers on our servers.
               We do not collect sales tax at checkout unless we state otherwise in writing for your

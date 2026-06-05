@@ -68,7 +68,7 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
   - `invoice.payment_failed` → hello@ + lead status `hosting_payment_failed`
   - `customer.subscription.deleted` → hello@ + lead status `hosting_canceled`
 
-All new checkouts are **$5,998 pay-in-full** (plus optional ten-year or monthly hosting). Promo codes in `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design fee only). No deposit or balance-hold flow on new leads.
+All new checkouts are **$5,998 pay-in-full** (plus optional lifetime or monthly hosting). Promo codes in `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design fee only). No deposit or balance-hold flow on new leads.
 
 **Legacy:** Old deposit checkouts in Stripe still complete the webhook and sync as `paid_in_full`. Any open balance holds from before this change must be captured or released in the [Stripe Dashboard](https://dashboard.stripe.com) manually.
 
@@ -91,11 +91,11 @@ Uses `RESEND_API_KEY`.
 Stripe Checkout charges (separate sessions by payment channel):
 
 - Design: **$5,998 pay-in-full** (required; promo codes in `lib/design-promo-codes.ts`)
-- **Ten-year hosting:** +$1,349 when lead selects ten-year hosting on the form
-- **Card only:** +3% processing on the checkout subtotal (design + ten-year hosting if selected)
+- **Lifetime hosting:** $2,996 on day 31 (not at signup)
+- **Card only:** +3% processing on the design fee at initial Checkout
 - **Bank (ACH):** list price; settlement async — webhook `checkout.session.async_payment_succeeded` marks paid
 - **Month-to-month hosting:** $198/mo after a 30-day free trial (subscription Checkout at signup; design fee only today). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
-- **Ten-year hosting:** $1,349 on day 31 via automated cron (`/api/cron/ten-year-hosting`, daily 14:00 UTC). Run `supabase/migrations/20260605180000_wd_leads_hosting_billing.sql` for `hosting_billing_starts_at` columns. Cron auth: `Authorization: Bearer` with `CRON_SECRET` or `BALANCE_CAPTURE_SECRET`.
+- **Lifetime hosting:** $2,996 on day 31 via automated cron (`/api/cron/ten-year-hosting`, daily 14:00 UTC). Run `supabase/migrations/20260605180000_wd_leads_hosting_billing.sql` for `hosting_billing_starts_at` columns. Cron auth: `Authorization: Bearer` with `CRON_SECRET` or `BALANCE_CAPTURE_SECRET`.
 - **Sales tax:** not collected (no Stripe Tax)
 
 **Hero add-ons (lead form):** Google Profile Optimization, blogging strategies, hyper-local SEO, etc. are **scope flags only** — they do not add Stripe line items or change the checkout amount. Ops uses them when scoping the build.

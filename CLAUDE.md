@@ -63,7 +63,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Fonts** — Inter (body) + Geist (display via `font-display`)
 - **Supabase** — Postgres; service-role inserts for leads
 - **Vercel** — production host, Hobby plan, Git push to `main` auto-deploys
-- **Stripe** — Checkout ($5,998 pay-in-full + optional ten-year hosting line item; `lib/design-promo-codes.ts`)
+- **Stripe** — Checkout ($5,998 pay-in-full; lifetime hosting $2,996 on day 31; `lib/design-promo-codes.ts`)
 - **Resend** — contact form + lead checkout-link email (`RESEND_API_KEY`)
 
 ---

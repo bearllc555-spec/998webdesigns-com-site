@@ -16,12 +16,12 @@ export const PRODUCTS: Product[] = [
 
 export const FULL_PRODUCT = PRODUCTS[0]!
 
-/** Billed in Checkout when lead selects ten-year hosting (pricing page: $1,349 one-time). */
-export const HOSTING_TEN_YEAR_PRODUCT: Product = {
-  id: 'hosting-ten-year',
-  name: 'Ten Years of Hosting',
-  description: 'One-time hosting for ten years, including domain (com, net, org).',
-  priceInCents: 134900,
+/** Lifetime hosting (pricing page: $2,996 one-time). */
+export const HOSTING_LIFETIME_PRODUCT: Product = {
+  id: 'hosting-lifetime',
+  name: 'Lifetime Hosting',
+  description: 'One-time lifetime hosting, including domain (com, net, org).',
+  priceInCents: 299600,
 }
 
 /** Recurring line in subscription Checkout when lead selects month-to-month hosting. */
@@ -33,11 +33,11 @@ export const HOSTING_MONTHLY_PRODUCT: Product = {
   priceInCents: 19800, // $198.00 / month
 }
 
-/** Billed in a separate Checkout 30 days after design payment (ten-year path). */
-export const HOSTING_TEN_YEAR_DEFERRED_PRODUCT: Product = {
-  id: 'hosting-ten-year-deferred',
-  name: 'Ten Years of Hosting',
+/** Billed in a separate Checkout 30 days after design payment (lifetime path). */
+export const HOSTING_LIFETIME_DEFERRED_PRODUCT: Product = {
+  id: 'hosting-lifetime-deferred',
+  name: 'Lifetime Hosting',
   description:
-    'One-time hosting for ten years, including domain registration (com, net, org). Term starts when this payment clears.',
-  priceInCents: 134900,
+    'One-time lifetime hosting, including domain registration (com, net, org). Hosting begins when this payment clears.',
+  priceInCents: 299600,
 }

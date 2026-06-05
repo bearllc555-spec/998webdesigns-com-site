@@ -57,6 +57,11 @@ describe("validateLeadPayload", () => {
     expect(result.ok).toBe(false);
   });
 
+  it("rejects legacy ten_year hostingChoice", () => {
+    const result = validateLeadPayload({ ...validBase, hostingChoice: "ten_year" });
+    expect(result.ok).toBe(false);
+  });
+
   it("rejects missing paymentChannel", () => {
     const { paymentChannel, ...withoutChannel } = validBase;
     void paymentChannel;

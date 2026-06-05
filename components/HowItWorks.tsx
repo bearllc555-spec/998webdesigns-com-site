@@ -8,7 +8,7 @@ const steps = [
   {
     n: "02",
     title: "Pay through Stripe",
-    body: "On the last form step, pick monthly or ten-year hosting, then pay the design fee only — your first 30 days of hosting are free. Card is default; bank transfer avoids the 3% fee on the design fee. Hosting billing starts 30 days after payment clears ($198/mo or $1,349 ten-year). The design clock starts when payment clears (bank transfers may take a few business days).",
+    body: "On the last form step, pick monthly or lifetime hosting, then pay the design fee only — your first 30 days of hosting are free. Card is default; bank transfer avoids the 3% fee on the design fee. Hosting billing starts 30 days after payment clears ($198/mo or $2,996 lifetime). The design clock starts when payment clears (bank transfers may take a few business days).",
   },
   {
     n: "03",

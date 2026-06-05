@@ -7,7 +7,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Do I have to pay the full $5,998 upfront?",
-    a: "Yes — we collect the full $5,998 design fee before your project enters the queue. Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from cleared payment, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or ten-year hosting is a one-time $1,349 (we email a secure payment link on day 31). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design fee only. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
+    a: "Yes — we collect the full $5,998 design fee before your project enters the queue. Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from cleared payment, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or lifetime hosting is a one-time $2,996 (we email a secure payment link on day 31). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design fee only. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
   },
   {
     q: "Can I pay by card or bank?",
@@ -31,7 +31,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What if I want to leave?",
-    a: "Month-to-month hosting: cancel anytime. Ten year hosting: your site stays hosted with us for ten years— and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
+    a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us for life — and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
   },
   {
     q: "What's the edit policy after month three?",
@@ -43,6 +43,6 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Is there a promo code?",
-    a: "Yes — LINKEDIN20 takes 20% off the $5,998 design fee only ($4,798 design). It does not apply to ten-year hosting ($1,349), month-to-month hosting ($198/mo), or the 3% card processing fee. Enter your code on the last step of the lead form before checkout.",
+    a: "Yes — LINKEDIN20 takes 20% off the $5,998 design fee only ($4,798 design). It does not apply to lifetime hosting ($2,996), month-to-month hosting ($198/mo), or the 3% card processing fee. Enter your code on the last step of the lead form before checkout.",
   },
 ];

@@ -18,8 +18,8 @@ create table if not exists public.wd_leads (
   stripe_balance_invoice_id text,  -- legacy balance-hold PaymentIntent id (pre pay-in-full-only)
   stripe_subscription_id text,     -- month-to-month hosting Subscription id (when applicable)
   hosting_billing_starts_at timestamptz,  -- day 31 hosting charge (30 days after design paid)
-  stripe_ten_year_session_id text,        -- day-31 ten-year Checkout session id
-  ten_year_hosting_paid_at timestamptz,
+  stripe_ten_year_session_id text,        -- day-31 lifetime hosting Checkout session id
+  ten_year_hosting_paid_at timestamptz,   -- when lifetime hosting payment cleared
   notes text,
   read_at timestamptz,
   inbox_flag text check (inbox_flag is null or inbox_flag in ('star', 'check', 'alert'))
