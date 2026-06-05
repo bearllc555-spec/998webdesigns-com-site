@@ -39,7 +39,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "jetvip-charter",
     name: "VIP Charters",
     industry: "Private aviation",
-    url: "https://jetvipcharter.pages.dev/",
+    url: "https://jetvipcharter-dev.pages.dev/",
     thumbnail: "/portfolio/jetvip-charter.jpg",
     previewVideo: "/portfolio/jetvip-charter.mp4",
   },
