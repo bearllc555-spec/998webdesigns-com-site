@@ -70,7 +70,7 @@ function subscriptionIdFromSession(
   return typeof sub === "string" ? sub : sub.id;
 }
 
-function isLifetimeHostingCheckout(session: Stripe.Checkout.Session): boolean {
+export function isLifetimeHostingCheckout(session: Stripe.Checkout.Session): boolean {
   const type = session.metadata?.paymentType;
   return type === "lifetime_hosting" || type === "ten_year_hosting";
 }

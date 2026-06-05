@@ -75,3 +75,19 @@ export function notifyHostingCanceled(subscription: Stripe.Subscription): void {
     stripeSubscriptionId: subscription.id,
   });
 }
+
+export function notifyLifetimeHostingPaid(session: Stripe.Checkout.Session): void {
+  void notifyCrmActivity({
+    kind: "lifetime_hosting_paid",
+    status: "lifetime_hosting_active",
+    ...sessionContext(session),
+  });
+}
+
+export function notifyLifetimeHostingAchPending(session: Stripe.Checkout.Session): void {
+  void notifyCrmActivity({
+    kind: "lifetime_hosting_ach_pending",
+    status: "awaiting_lifetime_hosting_settlement",
+    ...sessionContext(session),
+  });
+}

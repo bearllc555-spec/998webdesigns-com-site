@@ -80,6 +80,7 @@ All new checkouts are **$5,998 pay-in-full** (plus optional lifetime or monthly 
 |------|-------------------------------------|
 | Form submitted, Checkout link created | **New lead — awaiting payment** (checkout URL + session link) |
 | Checkout completed (card or ACH settled) | **Paid in full** (amount + Stripe session link) |
+| Lifetime hosting Checkout completed (day 31) | **Lifetime hosting paid** (amount + Stripe session link) |
 | ACH failed after Checkout | **ACH payment failed** |
 | $198/mo renewal failed | **Hosting renewal failed** |
 | Subscription canceled | **Hosting subscription ended** |

@@ -9,6 +9,8 @@ export type CrmNotifyKind =
   | "lead_ach_failed"
   | "lead_hosting_payment_failed"
   | "lead_hosting_canceled"
+  | "lifetime_hosting_paid"
+  | "lifetime_hosting_ach_pending"
   | "contact";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
@@ -19,6 +21,8 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_ach_failed: "Lead — ACH failed",
   lead_hosting_payment_failed: "Hosting — renewal failed",
   lead_hosting_canceled: "Hosting — subscription ended",
+  lifetime_hosting_paid: "Lifetime hosting — paid",
+  lifetime_hosting_ach_pending: "Lifetime hosting — ACH pending",
   contact: "Contact form",
 };
 

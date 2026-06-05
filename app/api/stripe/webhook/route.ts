@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import {
   sendInternalAchFailedEmail,
+  sendInternalLifetimeHostingPaidEmail,
   sendInternalPaymentEmail,
 } from "@/lib/internal-lead-email";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
@@ -9,12 +10,15 @@ import {
   notifyLeadAchFailed,
   notifyLeadAchPending,
   notifyLeadPaid,
+  notifyLifetimeHostingAchPending,
+  notifyLifetimeHostingPaid,
 } from "@/lib/crm-notify-stripe";
 import {
   handleInvoicePaymentFailed,
   handleSubscriptionDeleted,
 } from "@/lib/subscription-webhooks";
 import {
+  isLifetimeHostingCheckout,
   syncWdLeadAwaitingBankSettlement,
   syncWdLeadBankPaymentFailed,
   syncWdLeadPaidInFull,
@@ -30,10 +34,25 @@ export const runtime = "nodejs";
 
 export const dynamic = "force-dynamic";
 
+function isDesignAchPending(session: Stripe.Checkout.Session): boolean {
+  return (
+    session.metadata?.paymentChannel === "ach" &&
+    session.payment_status === "unpaid" &&
+    session.status === "complete"
+  );
+}
+
+function isLifetimeAchPending(session: Stripe.Checkout.Session): boolean {
+  return (
+    isLifetimeHostingCheckout(session) &&
+    session.payment_status === "unpaid" &&
+    session.status === "complete" &&
+    (session.payment_method_types?.includes("us_bank_account") ?? false)
+  );
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const paymentType = session.metadata?.paymentType;
-  const isLifetimeHosting =
-    paymentType === "lifetime_hosting" || paymentType === "ten_year_hosting";
+  const lifetime = isLifetimeHostingCheckout(session);
 
   if (session.metadata?.paymentType === "deposit") {
     console.info(
@@ -43,19 +62,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   if (session.payment_status === "paid") {
     await syncWdLeadPaidInFull(session);
-    if (!isLifetimeHosting) {
+    if (lifetime) {
+      await sendInternalLifetimeHostingPaidEmail(session);
+      notifyLifetimeHostingPaid(session);
+    } else {
       await sendInternalPaymentEmail(session);
       notifyLeadPaid(session);
     }
     return;
   }
 
-  // ACH: customer finished Checkout; funds settle asynchronously.
-  if (
-    session.metadata?.paymentChannel === "ach" &&
-    session.payment_status === "unpaid" &&
-    session.status === "complete"
-  ) {
+  if (isLifetimeAchPending(session)) {
+    notifyLifetimeHostingAchPending(session);
+    return;
+  }
+
+  if (isDesignAchPending(session)) {
     await syncWdLeadAwaitingBankSettlement(session);
     notifyLeadAchPending(session);
     return;
@@ -68,6 +90,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
 async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
   await syncWdLeadPaidInFull(session);
+  if (isLifetimeHostingCheckout(session)) {
+    await sendInternalLifetimeHostingPaidEmail(session, { settledAfterAch: true });
+    notifyLifetimeHostingPaid(session);
+    return;
+  }
   await sendInternalPaymentEmail(session, { settledAfterAch: true });
   notifyLeadPaid(session);
 }

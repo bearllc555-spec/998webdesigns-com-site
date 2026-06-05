@@ -19,14 +19,19 @@ vi.mock("@/lib/stripe-webhook-idempotency", () => ({
   markStripeWebhookProcessedInMemory: vi.fn(),
 }));
 
-vi.mock("@/lib/wd-leads-sync", () => ({
-  syncWdLeadPaidInFull: vi.fn(async () => {}),
-  syncWdLeadAwaitingBankSettlement: vi.fn(async () => {}),
-  syncWdLeadBankPaymentFailed: vi.fn(async () => {}),
-}));
+vi.mock("@/lib/wd-leads-sync", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/wd-leads-sync")>();
+  return {
+    ...actual,
+    syncWdLeadPaidInFull: vi.fn(async () => {}),
+    syncWdLeadAwaitingBankSettlement: vi.fn(async () => {}),
+    syncWdLeadBankPaymentFailed: vi.fn(async () => {}),
+  };
+});
 
 vi.mock("@/lib/internal-lead-email", () => ({
   sendInternalPaymentEmail: vi.fn(async () => {}),
+  sendInternalLifetimeHostingPaidEmail: vi.fn(async () => {}),
   sendInternalAchFailedEmail: vi.fn(async () => {}),
 }));
 
@@ -34,6 +39,8 @@ vi.mock("@/lib/crm-notify-stripe", () => ({
   notifyLeadPaid: vi.fn(),
   notifyLeadAchPending: vi.fn(),
   notifyLeadAchFailed: vi.fn(),
+  notifyLifetimeHostingPaid: vi.fn(),
+  notifyLifetimeHostingAchPending: vi.fn(),
 }));
 
 vi.mock("@/lib/subscription-webhooks", () => ({
@@ -103,5 +110,48 @@ describe("POST /api/stripe/webhook", () => {
 
     const { syncWdLeadPaidInFull } = await import("@/lib/wd-leads-sync");
     expect(syncWdLeadPaidInFull).not.toHaveBeenCalled();
+  });
+
+  it("alerts lifetime hosting paid without design-fee alerts", async () => {
+    constructEvent.mockReturnValue({
+      id: "evt_lifetime",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_lifetime",
+          payment_status: "paid",
+          metadata: {
+            paymentType: "lifetime_hosting",
+            businessName: "Acme Plumbing",
+            fullName: "Jane Doe",
+            email: "jane@example.com",
+          },
+        },
+      },
+    });
+
+    const { POST } = await import("./route");
+    const req = new NextRequest("http://localhost/api/stripe/webhook", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "stripe-signature": "sig",
+      },
+      body: "{}",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const { syncWdLeadPaidInFull } = await import("@/lib/wd-leads-sync");
+    const { sendInternalPaymentEmail, sendInternalLifetimeHostingPaidEmail } =
+      await import("@/lib/internal-lead-email");
+    const { notifyLeadPaid, notifyLifetimeHostingPaid } =
+      await import("@/lib/crm-notify-stripe");
+
+    expect(syncWdLeadPaidInFull).toHaveBeenCalled();
+    expect(sendInternalLifetimeHostingPaidEmail).toHaveBeenCalled();
+    expect(notifyLifetimeHostingPaid).toHaveBeenCalled();
+    expect(sendInternalPaymentEmail).not.toHaveBeenCalled();
+    expect(notifyLeadPaid).not.toHaveBeenCalled();
   });
 });

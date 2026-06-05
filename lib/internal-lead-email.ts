@@ -165,6 +165,64 @@ export async function sendInternalAchFailedEmail(
   }
 }
 
+function paymentChannelLabel(session: Stripe.Checkout.Session): string {
+  const meta = session.metadata ?? {};
+  if (meta.paymentChannel === "ach") return "Bank (ACH)";
+  if (meta.paymentChannel === "card") return "Card";
+  if (session.payment_method_types?.includes("us_bank_account")) return "Bank (ACH)";
+  return "Card";
+}
+
+/** Day-31 lifetime hosting Checkout cleared ($2,996). */
+export async function sendInternalLifetimeHostingPaidEmail(
+  session: Stripe.Checkout.Session,
+  options?: { settledAfterAch?: boolean }
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[webhook] RESEND_API_KEY not set, skipping lifetime hosting paid alert");
+    return;
+  }
+
+  const meta = session.metadata ?? {};
+  const email =
+    session.customer_details?.email ?? meta.email ?? session.customer_email ?? "(unknown)";
+  const amount =
+    session.amount_total != null
+      ? `$${(session.amount_total / 100).toFixed(2)} ${(session.currency ?? "usd").toUpperCase()}`
+      : "—";
+
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const dashboardBase = stripeDashboardBase();
+  const achNote = options?.settledAfterAch
+    ? '<p style="font-size: 14px; color: #52525b;">ACH settlement completed (async payment succeeded).</p>'
+    : "";
+
+  const { error } = await resend.emails.send({
+    from: "998 web designs <website@998webdesigns.com>",
+    to: NOTIFY_TO,
+    subject: `[998] Lifetime hosting paid — ${meta.businessName || email}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+        <h2 style="margin: 0 0 12px;">Lifetime hosting payment cleared</h2>
+        <p><strong>Status:</strong> Lifetime hosting active</p>
+        <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(session))}</p>
+        ${achNote}
+        <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
+        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
+        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+        <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
+        <p style="font-size: 14px; color: #52525b;">Day-31 lifetime hosting payment. Hosting is active for life.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("[webhook] Lifetime hosting paid alert failed:", error);
+  }
+}
+
 /** Month-to-month hosting renewal failed (Stripe subscription invoice). */
 export async function sendInternalHostingRenewalFailedEmail(
   invoice: Stripe.Invoice,
