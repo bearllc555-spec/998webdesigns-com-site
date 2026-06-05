@@ -1,29 +1,22 @@
 import { designFeeCents } from "@/lib/design-promo";
-import {
-  HOSTING_MONTHLY_PRODUCT,
-  HOSTING_TEN_YEAR_PRODUCT,
-} from "@/lib/products";
 import type { HostingChoice } from "@/lib/validate-lead";
 
 export type PaymentChannel = "ach" | "card";
 
-/** Card surcharge on design + in-checkout hosting subtotal (not month-to-month). */
+/** Card surcharge on design fee only (hosting is not charged at initial checkout). */
 export const CARD_PROCESSING_RATE = 0.03;
 
 export const CARD_PROCESSING_PRODUCT = {
   name: "Card processing (3%)",
-  description: "Processing fee for credit/debit card payments.",
+  description: "Processing fee for credit/debit card payments on the design fee.",
 } as const;
 
+/** Design fee subtotal at signup — hosting is billed after the 30-day free period. */
 export function checkoutSubtotalCents(
-  hostingChoice: HostingChoice,
+  _hostingChoice?: HostingChoice,
   promoCode?: string
 ): number {
-  let total = designFeeCents(promoCode);
-  if (hostingChoice === "ten_year") {
-    total += HOSTING_TEN_YEAR_PRODUCT.priceInCents;
-  }
-  return total;
+  return designFeeCents(promoCode);
 }
 
 export function cardProcessingFeeCents(subtotalCents: number): number {
@@ -42,17 +35,13 @@ export function checkoutTotalCents(
   return subtotal;
 }
 
-/** First Checkout charge: design (+ ten-year) + card fee; monthly adds first month at checkout. */
+/** Initial Checkout: design fee (+ 3% card fee on design). No hosting charges today. */
 export function checkoutDueTodayCents(
   hostingChoice: HostingChoice,
   channel: PaymentChannel,
   promoCode?: string
 ): number {
-  let due = checkoutTotalCents(hostingChoice, channel, promoCode);
-  if (hostingChoice === "monthly") {
-    due += HOSTING_MONTHLY_PRODUCT.priceInCents;
-  }
-  return due;
+  return checkoutTotalCents(hostingChoice, channel, promoCode);
 }
 
 /** Human-readable USD for buttons and emails (no cents when whole dollars). */

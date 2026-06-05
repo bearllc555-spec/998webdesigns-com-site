@@ -117,10 +117,9 @@ export default async function Thanks({
               <span className="text-success">Paid in full — you&apos;re all set</span>
             </p>
             <p className="mt-2 text-sm text-ink-soft">
-              No follow-up invoices for the design fee. If you added ten-year hosting, it was
-              included in this payment. If you chose month-to-month hosting, your first month was
-              charged in this Checkout and renews at $198/month until you cancel. If you chose
-              hosting later, we will set that up with you separately.
+              No follow-up invoices for the design fee. Your first 30 days of hosting are free.
+              Month-to-month hosting ($198/mo) or ten-year hosting ($1,349) is billed starting 30
+              days after your design payment cleared — not in this Checkout.
             </p>
           </div>
 

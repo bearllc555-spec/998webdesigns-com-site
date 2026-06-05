@@ -9,7 +9,8 @@ export function Pricing() {
             Pricing
           </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
-            Every site starts at a flat $5,998 design fee. The pricing below is the whole list — no
+            Every site starts at a flat $5,998 design fee. Your first 30 days of hosting are free —
+            monthly or ten-year billing starts on day 31. The pricing below is the whole list — no
             tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;
           </p>
         </div>
@@ -44,7 +45,9 @@ export function Pricing() {
               $1,349 <span className="text-xl text-ink-soft">/one-time-ten-years</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Pay once. We host your site for ten years, including domain registration (com, net, org). No monthly bills.
+              Pay once after your first 30 days of free hosting. We host your site for ten years,
+              including domain registration (com, net, org). Your 10-year term starts when that
+              payment clears.
             </p>
           </article>
 
@@ -56,7 +59,8 @@ export function Pricing() {
               $198 <span className="text-xl text-ink-soft">/month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Cancel anytime. Upgrade to ten-year hosting whenever you want for $1,349.
+              First 30 days free, then $198/mo. Cancel anytime before day 31 and you will not be
+              charged for hosting. Upgrade to ten-year hosting whenever you want for $1,349.
             </p>
           </article>
 

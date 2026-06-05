@@ -29,6 +29,15 @@ export const HOSTING_MONTHLY_PRODUCT: Product = {
   id: 'hosting-monthly',
   name: 'Month-to-month hosting',
   description:
-    'Managed hosting for your site. Billed monthly; cancel anytime per your agreement.',
+    'Managed hosting for your site. First 30 days free; $198/mo starting day 31. Cancel anytime.',
   priceInCents: 19800, // $198.00 / month
+}
+
+/** Billed in a separate Checkout 30 days after design payment (ten-year path). */
+export const HOSTING_TEN_YEAR_DEFERRED_PRODUCT: Product = {
+  id: 'hosting-ten-year-deferred',
+  name: 'Ten Years of Hosting',
+  description:
+    'One-time hosting for ten years, including domain registration (com, net, org). Term starts when this payment clears.',
+  priceInCents: 134900,
 }

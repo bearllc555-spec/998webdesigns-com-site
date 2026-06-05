@@ -47,9 +47,10 @@ export function TermsContent() {
                 — not hosting or card-processing fees — when entered on the lead form at checkout.
               </li>
               <li>
-                <strong>Hosting:</strong> You choose ten-year hosting ($1,349 one-time), month-to-month
-                ($198/month), or decide later. Terms for switching between options are stated in
-                pricing on the site.
+                <strong>Hosting:</strong> You choose ten-year hosting ($1,349 one-time) or
+                month-to-month ($198/month) on the lead form. Your first 30 days of hosting are
+                free after your design payment clears. Paid hosting begins on day 31. Terms for
+                switching between options are stated in pricing on the site.
               </li>
               <li>
                 <strong>Edits:</strong> Free for the first three months after launch; afterward,
@@ -104,10 +105,10 @@ export function TermsContent() {
             <p className="text-ink-soft">
               Payments are processed by Stripe. Checkout defaults to credit or debit card. You may
               pay by U.S. bank account (ACH) at list price instead. Card payments include a 3%
-              processing fee on the design fee and on ten-year hosting if selected at checkout; that
-              fee does not apply to month-to-month hosting. If you select month-to-month hosting
-              ($198/month), it is charged in the same Checkout session — first month due at checkout,
-              then recurring monthly through Stripe until you cancel. We do not store full card or
+              processing fee on the design fee only at the initial design Checkout; hosting is not
+              charged there. Month-to-month hosting ($198/month) begins after your 30-day free
+              period via Stripe subscription. Ten-year hosting ($1,349) is collected via a separate
+              Checkout link we send on day 31. We do not store full card or
               bank account numbers on our servers.
               We do not collect sales tax at checkout unless we state otherwise in writing for your
               jurisdiction. Bank payments may take several business days to settle; work on your

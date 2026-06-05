@@ -10,7 +10,7 @@ const validBase = {
   whatYouDo: "Residential plumbing",
   whoYouServe: "Homeowners",
   projectType: "new",
-  hostingChoice: "later",
+  hostingChoice: "monthly",
   paymentOption: "full",
   paymentChannel: "ach",
   addons: [],
@@ -49,6 +49,11 @@ describe("validateLeadPayload", () => {
 
   it("rejects invalid hostingChoice", () => {
     const result = validateLeadPayload({ ...validBase, hostingChoice: "weekly" });
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects removed later hostingChoice", () => {
+    const result = validateLeadPayload({ ...validBase, hostingChoice: "later" });
     expect(result.ok).toBe(false);
   });
 

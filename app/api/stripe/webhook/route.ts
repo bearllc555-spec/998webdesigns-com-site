@@ -31,6 +31,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  const isTenYearHosting = session.metadata?.paymentType === "ten_year_hosting";
+
   if (session.metadata?.paymentType === "deposit") {
     console.info(
       `[webhook] Legacy deposit checkout ${session.id} — treating as paid in full (no balance capture)`
@@ -39,8 +41,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   if (session.payment_status === "paid") {
     await syncWdLeadPaidInFull(session);
-    await sendInternalPaymentEmail(session);
-    notifyLeadPaid(session);
+    if (!isTenYearHosting) {
+      await sendInternalPaymentEmail(session);
+      notifyLeadPaid(session);
+    }
     return;
   }
 

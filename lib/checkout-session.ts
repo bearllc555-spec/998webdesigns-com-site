@@ -3,6 +3,7 @@ import {
   buildCheckoutLineItems,
   checkoutUsesSubscriptionMode,
 } from "@/lib/checkout-line-items";
+import { HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import type { PaymentChannel } from "@/lib/checkout-pricing";
 import { formatHearAboutSources } from "@/lib/hear-about-sources";
 import type { ValidatedLead } from "@/lib/validate-lead";
@@ -59,6 +60,7 @@ export function buildCheckoutSessionParams(
       ...shared,
       mode: "subscription",
       subscription_data: {
+        trial_period_days: HOSTING_TRIAL_DAYS,
         metadata: {
           fullName: lead.fullName,
           businessName: lead.businessName,

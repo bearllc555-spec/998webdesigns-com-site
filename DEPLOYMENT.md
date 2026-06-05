@@ -94,7 +94,8 @@ Stripe Checkout charges (separate sessions by payment channel):
 - **Ten-year hosting:** +$1,349 when lead selects ten-year hosting on the form
 - **Card only:** +3% processing on the checkout subtotal (design + ten-year hosting if selected)
 - **Bank (ACH):** list price; settlement async — webhook `checkout.session.async_payment_succeeded` marks paid
-- **Month-to-month hosting:** $198/mo in Stripe Checkout (subscription mode + first month on the initial invoice). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
+- **Month-to-month hosting:** $198/mo after a 30-day free trial (subscription Checkout at signup; design fee only today). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
+- **Ten-year hosting:** $1,349 on day 31 via automated cron (`/api/cron/ten-year-hosting`, daily 14:00 UTC). Run `supabase/migrations/20260605180000_wd_leads_hosting_billing.sql` for `hosting_billing_starts_at` columns. Cron auth: `Authorization: Bearer` with `CRON_SECRET` or `BALANCE_CAPTURE_SECRET`.
 - **Sales tax:** not collected (no Stripe Tax)
 
 **Hero add-ons (lead form):** Google Profile Optimization, blogging strategies, hyper-local SEO, etc. are **scope flags only** — they do not add Stripe line items or change the checkout amount. Ops uses them when scoping the build.

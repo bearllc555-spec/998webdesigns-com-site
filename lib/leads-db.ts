@@ -19,6 +19,11 @@ export type WdLeadPatch = {
   stripe_balance_invoice_id?: string | null;
   /** Month-to-month hosting subscription id (when applicable). */
   stripe_subscription_id?: string | null;
+  /** Day-31 ten-year hosting Checkout session id (when sent). */
+  stripe_ten_year_session_id?: string | null;
+  /** When paid hosting billing begins (30 days after design payment cleared). */
+  hosting_billing_starts_at?: string | null;
+  ten_year_hosting_paid_at?: string | null;
   notes?: string | null;
 };
 
@@ -120,6 +125,42 @@ export async function updateLatestWdLeadBySubscriptionId(
   }
 
   return updateWdLead(data.id, patch);
+}
+
+export type TenYearDueLead = {
+  id: string;
+  email: string;
+  full_name: string;
+  business_name: string;
+  stripe_customer_id: string | null;
+  payload: Record<string, unknown>;
+};
+
+/** Ten-year hosting: design paid, free period ended, day-31 Checkout not yet sent. */
+export async function findTenYearHostingDueLeads(limit = 20): Promise<TenYearDueLead[]> {
+  const supa = supabaseAdmin();
+  if (!supa) return [];
+
+  const now = new Date().toISOString();
+  const { data, error } = await supa
+    .from("wd_leads")
+    .select("id, email, full_name, business_name, stripe_customer_id, payload")
+    .eq("status", "paid_in_full")
+    .is("ten_year_hosting_paid_at", null)
+    .is("stripe_ten_year_session_id", null)
+    .lte("hosting_billing_starts_at", now)
+    .order("hosting_billing_starts_at", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.warn("[leads] ten-year due query failed:", error.message);
+    return [];
+  }
+
+  return (data ?? []).filter((row) => {
+    const payload = row.payload as Record<string, unknown> | null;
+    return payload?.hostingChoice === "ten_year";
+  }) as TenYearDueLead[];
 }
 
 export async function countWdLeadsByEmail(email: string): Promise<number> {

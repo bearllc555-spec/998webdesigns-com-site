@@ -1,3 +1,9 @@
 {
-  "installCommand": "npm ci"
+  "installCommand": "npm ci",
+  "crons": [
+    {
+      "path": "/api/cron/ten-year-hosting",
+      "schedule": "0 14 * * *"
+    }
+  ]
 }

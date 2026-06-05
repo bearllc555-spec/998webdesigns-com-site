@@ -6,11 +6,7 @@ import {
   type PaymentChannel,
 } from "@/lib/checkout-pricing";
 import { designFeeCents, designPromoSummary, resolveDesignPromo } from "@/lib/design-promo";
-import {
-  FULL_PRODUCT,
-  HOSTING_MONTHLY_PRODUCT,
-  HOSTING_TEN_YEAR_PRODUCT,
-} from "@/lib/products";
+import { FULL_PRODUCT, HOSTING_MONTHLY_PRODUCT } from "@/lib/products";
 import type { HostingChoice, ValidatedLead } from "@/lib/validate-lead";
 
 function designLineItem(lead: ValidatedLead): Stripe.Checkout.SessionCreateParams.LineItem {
@@ -49,11 +45,8 @@ function monthlyHostingLineItem(): Stripe.Checkout.SessionCreateParams.LineItem 
   };
 }
 
-function cardFeeLineItem(
-  hostingChoice: HostingChoice,
-  promoCode?: string
-): Stripe.Checkout.SessionCreateParams.LineItem {
-  const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(hostingChoice, promoCode));
+function cardFeeLineItem(promoCode?: string): Stripe.Checkout.SessionCreateParams.LineItem {
+  const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(undefined, promoCode));
   return {
     price_data: {
       currency: "usd",
@@ -71,33 +64,19 @@ export function checkoutUsesSubscriptionMode(hostingChoice: HostingChoice): bool
   return hostingChoice === "monthly";
 }
 
-/** Stripe Checkout line items for design + optional hosting + optional card fee. */
+/** Stripe Checkout line items: design today; monthly adds $0-trial subscription line. */
 export function buildCheckoutLineItems(
   lead: ValidatedLead,
   channel: PaymentChannel
 ): Stripe.Checkout.SessionCreateParams.LineItem[] {
   const items: Stripe.Checkout.SessionCreateParams.LineItem[] = [designLineItem(lead)];
 
-  if (lead.hostingChoice === "ten_year") {
-    items.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: HOSTING_TEN_YEAR_PRODUCT.name,
-          description: HOSTING_TEN_YEAR_PRODUCT.description,
-        },
-        unit_amount: HOSTING_TEN_YEAR_PRODUCT.priceInCents,
-      },
-      quantity: 1,
-    });
-  }
-
   if (lead.hostingChoice === "monthly") {
     items.push(monthlyHostingLineItem());
   }
 
   if (channel === "card") {
-    items.push(cardFeeLineItem(lead.hostingChoice, lead.promoCode));
+    items.push(cardFeeLineItem(lead.promoCode));
   }
 
   return items;

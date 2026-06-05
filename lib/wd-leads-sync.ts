@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { hostingBillingStartsAt } from "@/lib/hosting-policy";
 import { updateLatestWdLeadByEmail, updateWdLead } from "@/lib/leads-db";
 
 /** After Checkout session is created — checkout link sent, payment pending. */
@@ -69,10 +70,21 @@ function subscriptionIdFromSession(
   return typeof sub === "string" ? sub : sub.id;
 }
 
+function isTenYearHostingCheckout(session: Stripe.Checkout.Session): boolean {
+  return session.metadata?.paymentType === "ten_year_hosting";
+}
+
+/** Design fee paid — starts 30-day free hosting window. */
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
+  if (isTenYearHostingCheckout(session)) {
+    await syncWdLeadTenYearHostingPaid(session);
+    return;
+  }
+
   const email = session.metadata?.email ?? session.customer_email;
   const customerId =
     typeof session.customer === "string" ? session.customer : session.customer?.id;
+  const billingStarts = hostingBillingStartsAt(new Date()).toISOString();
 
   const patch = {
     status: "paid_in_full",
@@ -80,6 +92,28 @@ export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Pr
     stripe_deposit_invoice_id: session.id,
     stripe_balance_invoice_id: null,
     stripe_subscription_id: subscriptionIdFromSession(session),
+    hosting_billing_starts_at: billingStarts,
+  };
+
+  const leadId = session.metadata?.wdLeadId;
+  if (leadId) {
+    await updateWdLead(leadId, patch);
+    return;
+  }
+  if (email) await updateLatestWdLeadByEmail(email, patch);
+}
+
+/** Ten-year hosting $1,349 collected on day 31. */
+export async function syncWdLeadTenYearHostingPaid(
+  session: Stripe.Checkout.Session
+): Promise<void> {
+  const email = session.metadata?.email ?? session.customer_email;
+  const paidAt = new Date().toISOString();
+
+  const patch = {
+    status: "ten_year_hosting_active",
+    stripe_ten_year_session_id: session.id,
+    ten_year_hosting_paid_at: paidAt,
   };
 
   const leadId = session.metadata?.wdLeadId;

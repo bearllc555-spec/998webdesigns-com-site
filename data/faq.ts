@@ -7,11 +7,11 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Do I have to pay the full $5,998 upfront?",
-    a: "Yes — we collect full payment before your project enters the queue. Checkout defaults to card; you can switch to bank transfer for list price with no 3% processing fee on the design fee (and on ten-year hosting if you add it). That 3% fee does not apply to the $198/month hosting line. Month-to-month hosting, if you select it, is charged in the same Checkout — first month due there, then $198/month renews automatically until you cancel. Ten-year hosting ($1,349) is a one-time add-on in Checkout when you choose it. There's no deposit-then-balance structure. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
+    a: "Yes — we collect the full $5,998 design fee before your project enters the queue. Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from cleared payment, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or ten-year hosting is a one-time $1,349 (we email a secure payment link on day 31). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design fee only. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
   },
   {
     q: "Can I pay by card or bank?",
-    a: "Checkout defaults to credit or debit card. Before you pay, you can switch to bank transfer (ACH) if you want list price with no 3% processing fee on the design fee and on ten-year hosting if selected. The 3% card fee never applies to month-to-month hosting. Bank payments may take a few business days to settle; the design clock starts when Stripe confirms cleared funds.",
+    a: "Checkout defaults to credit or debit card. Before you pay, you can switch to bank transfer (ACH) for list price with no 3% processing fee on the design fee. The 3% card fee applies to the design fee only — not to hosting, which is billed after your 30-day free period. Bank payments may take a few business days to settle; the design clock starts when Stripe confirms cleared funds.",
   },
   {
     q: "What happens if I go quiet during the design or approval process?",

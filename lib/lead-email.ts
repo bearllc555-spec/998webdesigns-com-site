@@ -55,7 +55,8 @@ export async function sendLeadCheckoutEmail(
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
         ${promoNote}
-        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)}${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}${lead.hostingChoice === "monthly" ? " (includes your first month of hosting; $198/mo renews automatically)" : ""}</p>
+        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)} (design fee only — first 30 days of hosting are free)</p>
+        <p style="font-size: 14px; color: #52525b;">Hosting billing starts 30 days after payment clears: ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}.</p>
         ${achNote}
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Continue to payment</a>

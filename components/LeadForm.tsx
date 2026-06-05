@@ -9,6 +9,8 @@ import {
   toggleAddon as toggleStoredAddon,
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
+import { HOSTING_FREE_MONTH_SUMMARY, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
+import { hostingChoiceShortLabel } from "@/lib/hosting";
 import {
   designFeeCents,
   designPromoSummary,
@@ -47,7 +49,7 @@ type FormState = {
   avoidances: string;
   // Step 4
   startDate: string;
-  hostingChoice: "ten_year" | "monthly" | "later" | "";
+  hostingChoice: "ten_year" | "monthly" | "";
   notes: string;
   paymentOption: PaymentOption;
   paymentChannel: PaymentChannel;
@@ -555,26 +557,63 @@ export function LeadForm() {
                 </p>
               )}
 
+              <Field label="Hosting (select one)" required error={errors.hostingChoice}>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {([
+                    ["ten_year", "Ten-year — $1,349 after free month"],
+                    ["monthly", "Month-to-month — $198/mo after free month"],
+                  ] as const).map(([val, label]) => (
+                    <label
+                      key={val}
+                      className={`cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium transition ${
+                        form.hostingChoice === val
+                          ? "border-accent bg-accent text-on-accent"
+                          : "border-rule bg-bg text-ink-soft hover:border-accent/50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="hostingChoice"
+                        value={val}
+                        checked={form.hostingChoice === val}
+                        onChange={() => set("hostingChoice", val)}
+                        className="sr-only"
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
+              <div className="rounded-xl border border-accent/30 bg-accent/[0.06] px-4 py-4">
+                <p className="text-sm font-medium text-ink">{HOSTING_FREE_MONTH_SUMMARY}</p>
+                <p className="mt-2 text-xs leading-relaxed text-ink-soft">
+                  {form.hostingChoice === "monthly" &&
+                    `You pay the design fee today only. $198/mo hosting starts on day ${HOSTING_TRIAL_DAYS + 1}. Cancel before then and you will not be charged for hosting.`}
+                  {form.hostingChoice === "ten_year" &&
+                    `You pay the design fee today only. We email a secure link for the $1,349 ten-year hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Your 10-year term begins when that payment clears.`}
+                  {!form.hostingChoice &&
+                    "Pick monthly or ten-year hosting above. Either way, your first 30 days of hosting are on us."}
+                </p>
+              </div>
+
               <Field label="Payment" required error={errors.paymentChannel}>
                 <div className="rounded-xl border border-rule bg-bg px-4 py-4">
                   <span className="block text-sm font-medium text-ink">
-                    {formatCheckoutUsd(designFeeCents(form.promoCode))} design — paid in full to start
-                    {form.hostingChoice === "ten_year" ? " (+ $1,349 ten-year hosting at checkout)" : ""}
+                    {formatCheckoutUsd(designFeeCents(form.promoCode))} design — paid in full today
+                    {form.hostingChoice
+                      ? ` (${hostingChoiceShortLabel(form.hostingChoice as "ten_year" | "monthly")} billed after free month)`
+                      : ""}
                   </span>
                   <span className="mt-1 block text-xs text-ink-soft">
-                    Full payment before your project enters the queue. Card payments include a 3%
-                    processing fee on the design fee
-                    {form.hostingChoice === "ten_year" ? " and ten-year hosting" : ""}
-                    {form.hostingChoice === "monthly"
-                      ? "; month-to-month hosting is list price"
-                      : ""}
-                    .
+                    Design fee only at checkout. Card payments include a 3% processing fee on the
+                    design fee. Hosting is not charged today.
                   </span>
                 </div>
                 <div className="mt-4 grid gap-2 md:grid-cols-2">
                   {([
-                    ["card", "Credit or debit card", "Includes 3% processing on eligible items"],
-                    ["ach", "Pay by bank instead", "List price — no 3% processing fee"],
+                    ["card", "Credit or debit card", "3% processing fee on design fee only"],
+                    ["ach", "Pay by bank instead", "List price on design — no 3% fee"],
                   ] as const).map(([val, title, hint]) => {
                     const channel = val as PaymentChannel;
                     const total =
@@ -619,35 +658,6 @@ export function LeadForm() {
                   onChange={(e) => set("startDate", e.target.value)}
                   className={inputCls()}
                 />
-              </Field>
-
-              <Field label="Hosting preference (select one)" required error={errors.hostingChoice}>
-                <div className="grid gap-2 md:grid-cols-3">
-                  {([
-                    ["ten_year", "Ten Year $1,349"],
-                    ["monthly", "Month-to-month $198"],
-                    ["later", "Decide later"],
-                  ] as const).map(([val, label]) => (
-                    <label
-                      key={val}
-                      className={`cursor-pointer rounded-xl border px-4 py-3 text-sm font-medium transition ${
-                        form.hostingChoice === val
-                          ? "border-accent bg-accent text-on-accent"
-                          : "border-rule bg-bg text-ink-soft hover:border-accent/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="hostingChoice"
-                        value={val}
-                        checked={form.hostingChoice === val}
-                        onChange={() => set("hostingChoice", val)}
-                        className="sr-only"
-                      />
-                      {label}
-                    </label>
-                  ))}
-                </div>
               </Field>
 
               <Field label="Anything else we should know?">
