@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import {
   GROWTH_PACK_ID,
   getSelectedAddons,
-  hasGrowthPack,
   isAddonVisuallySelected,
-  isGrowthPackMember,
+  toggleAddon as toggleStoredAddon,
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
 import {
@@ -131,33 +130,8 @@ export function LeadForm() {
   };
 
   const toggleAddon = (value: string) => {
-    setForm((f) => {
-      let addons = f.addons;
-
-      if (value === GROWTH_PACK_ID) {
-        if (addons.includes(GROWTH_PACK_ID)) {
-          addons = addons.filter((x) => x !== GROWTH_PACK_ID);
-        } else {
-          addons = [
-            ...addons.filter((x) => !isGrowthPackMember(x)),
-            GROWTH_PACK_ID,
-          ];
-        }
-      } else if (addons.includes(value)) {
-        addons = addons.filter((x) => x !== value);
-      } else if (isGrowthPackMember(value) && hasGrowthPack(addons)) {
-        addons = addons.filter((x) => x !== GROWTH_PACK_ID);
-      } else if (isGrowthPackMember(value)) {
-        addons = [
-          ...addons.filter((x) => x !== GROWTH_PACK_ID),
-          value,
-        ];
-      } else {
-        addons = [...addons, value];
-      }
-
-      return { ...f, addons };
-    });
+    const next = toggleStoredAddon(value);
+    setForm((f) => ({ ...f, addons: next }));
   };
 
   const validateStep = () => {
@@ -208,7 +182,7 @@ export function LeadForm() {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, addons: getSelectedAddons() }),
+        body: JSON.stringify({ ...form, addons: form.addons }),
       });
       if (!res.ok) throw new Error(`Submit failed (${res.status})`);
       const data = await res.json();
@@ -724,7 +698,11 @@ export function LeadForm() {
                   ? "Redirecting to payment..."
                   : form.hostingChoice
                     ? `Continue to pay ${formatCheckoutUsd(
-                        checkoutDueTodayCents(form.hostingChoice, form.paymentChannel)
+                        checkoutDueTodayCents(
+                          form.hostingChoice,
+                          form.paymentChannel,
+                          form.promoCode
+                        )
                       )}`
                     : "Continue to payment"}
               </button>

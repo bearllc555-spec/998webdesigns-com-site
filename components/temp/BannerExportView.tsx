@@ -82,6 +82,7 @@ export function BannerExportView({
 
       {pngUrl && (
         <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- data URL from html-to-image; next/image does not optimize inline PNG blobs */}
           <img
             src={pngUrl}
             width={LINKEDIN_COVER_UPLOAD_W}

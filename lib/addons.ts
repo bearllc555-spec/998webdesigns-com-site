@@ -80,6 +80,10 @@ export function toggleAddon(value: string): string[] {
   return persist([...current, value]);
 }
 
+export function setSelectedAddons(addons: string[]): string[] {
+  return persist([...addons]);
+}
+
 export function clearAddons(): void {
   localStorage.removeItem(STORAGE_KEY);
   if (typeof window !== "undefined") {

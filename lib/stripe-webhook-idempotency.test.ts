@@ -5,7 +5,10 @@ vi.mock("@/lib/supabase", () => ({
 }));
 
 import { supabaseAdmin } from "@/lib/supabase";
-import { claimStripeWebhookEvent } from "@/lib/stripe-webhook-idempotency";
+import {
+  claimStripeWebhookEvent,
+  markStripeWebhookProcessedInMemory,
+} from "@/lib/stripe-webhook-idempotency";
 
 const mockedSupabaseAdmin = vi.mocked(supabaseAdmin);
 
@@ -37,6 +40,12 @@ describe("claimStripeWebhookEvent", () => {
     } as never);
 
     await expect(claimStripeWebhookEvent("evt_test_3")).resolves.toBe("duplicate");
+  });
+
+  it("returns duplicate for in-memory events when Supabase is unavailable", async () => {
+    mockedSupabaseAdmin.mockReturnValue(null);
+    markStripeWebhookProcessedInMemory("evt_memory_1");
+    await expect(claimStripeWebhookEvent("evt_memory_1")).resolves.toBe("duplicate");
   });
 
   it("returns unavailable when table is missing", async () => {

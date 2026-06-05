@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   clearLinkedInInspirationProfiles,
   defaultLinkedInInspirationProfiles,
@@ -14,24 +14,21 @@ import {
   type ProfileFormValues,
 } from "@/lib/linkedin-inspiration-profiles";
 import { LINKEDIN_INSPIRATION_INTRO } from "@/data/linkedin-inspiration";
-import { useClientMounted } from "@/hooks/use-client-mounted";
-
 const emptyForm: ProfileFormValues = { name: "", href: "", summary: "" };
 
+function initialProfiles(): LinkedInInspirationProfile[] {
+  if (typeof window === "undefined") return defaultLinkedInInspirationProfiles();
+  return loadLinkedInInspirationProfiles();
+}
+
 export function LinkedInInspirationBoard() {
-  const mounted = useClientMounted();
-  const [profiles, setProfiles] = useState<LinkedInInspirationProfile[]>(
-    defaultLinkedInInspirationProfiles
+  const [profiles, setProfiles] = useState<LinkedInInspirationProfile[]>(() =>
+    initialProfiles()
   );
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ProfileFormValues>(emptyForm);
   const [formError, setFormError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!mounted) return;
-    setProfiles(loadLinkedInInspirationProfiles());
-  }, [mounted]);
 
   const persist = useCallback((next: LinkedInInspirationProfile[]) => {
     setProfiles(next);

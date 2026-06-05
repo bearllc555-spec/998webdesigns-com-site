@@ -19,7 +19,11 @@ import {
   syncWdLeadBankPaymentFailed,
   syncWdLeadPaidInFull,
 } from "@/lib/wd-leads-sync";
-import { claimStripeWebhookEvent } from "@/lib/stripe-webhook-idempotency";
+import {
+  claimStripeWebhookEvent,
+  markStripeWebhookProcessedInMemory,
+  releaseStripeWebhookClaim,
+} from "@/lib/stripe-webhook-idempotency";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -28,7 +32,7 @@ export const dynamic = "force-dynamic";
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   if (session.metadata?.paymentType === "deposit") {
-    console.warn(
+    console.info(
       `[webhook] Legacy deposit checkout ${session.id} — treating as paid in full (no balance capture)`
     );
   }
@@ -110,8 +114,15 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       await handleSubscriptionDeleted(subscription);
     }
+
+    if (claim === "unavailable") {
+      markStripeWebhookProcessedInMemory(event.id);
+    }
   } catch (err) {
     console.error(`[webhook] ${event.type} handler failed:`, err);
+    if (claim === "new") {
+      await releaseStripeWebhookClaim(event.id);
+    }
     return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
 

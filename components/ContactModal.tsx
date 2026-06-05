@@ -10,6 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FixedFormField, MessageFormField } from "@/components/form-field-stack";
+import type { ContactPrefill } from "@/lib/contact-prefill";
+
+export type { ContactPrefill } from "@/lib/contact-prefill";
 
 type ContactFormState = {
   name: string;
@@ -17,13 +20,6 @@ type ContactFormState = {
   businessName: string;
   message: string;
   website: string;
-};
-
-export type ContactPrefill = {
-  name?: string;
-  email?: string;
-  businessName?: string;
-  message?: string;
 };
 
 type ContactModalProps = {

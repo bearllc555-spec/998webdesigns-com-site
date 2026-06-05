@@ -43,7 +43,8 @@ export function TermsContent() {
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
                 <strong>Design fee:</strong> $5,998 paid in full at checkout before your project
-                enters the queue.
+                enters the queue. Published promo codes (e.g. LINKEDIN20) reduce the design fee only
+                — not hosting or card-processing fees — when entered on the lead form at checkout.
               </li>
               <li>
                 <strong>Hosting:</strong> You choose ten-year hosting ($1,349 one-time), month-to-month

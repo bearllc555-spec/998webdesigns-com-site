@@ -14,6 +14,7 @@ const validBase = {
   paymentOption: "full",
   paymentChannel: "ach",
   addons: [],
+  hearAboutSources: ["Google search"],
 };
 
 describe("validateLeadPayload", () => {
@@ -73,6 +74,24 @@ describe("validateLeadPayload", () => {
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/specify/i);
+  });
+
+  it("requires at least one hearAboutSources", () => {
+    const result = validateLeadPayload({ ...validBase, hearAboutSources: [] });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/heard about us/i);
+  });
+
+  it("rejects invalid promo codes", () => {
+    const result = validateLeadPayload({ ...validBase, promoCode: "NOTREAL" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/promo/i);
+  });
+
+  it("requires phone when contactPref is phone", () => {
+    const result = validateLeadPayload({ ...validBase, contactPref: "phone", phone: "" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/phone/i);
   });
 
   it("filters hearAboutSources to allowed values", () => {

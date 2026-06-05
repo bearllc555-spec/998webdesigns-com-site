@@ -5,9 +5,9 @@ export function Pricing() {
     <section id="pricing" className="border-b border-rule bg-rule-soft/60">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
         <div className="max-w-2xl">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+          <h2 className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
             Pricing
-          </p>
+          </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $5,998 design fee. The pricing below is the whole list — no
             tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;

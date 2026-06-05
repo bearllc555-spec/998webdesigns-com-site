@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 const constructEvent = vi.fn();
 const claimStripeWebhookEvent = vi.fn();
+const releaseStripeWebhookClaim = vi.fn();
 
 vi.mock("@/lib/stripe", () => ({
   stripe: {
@@ -14,6 +15,8 @@ vi.mock("@/lib/stripe", () => ({
 
 vi.mock("@/lib/stripe-webhook-idempotency", () => ({
   claimStripeWebhookEvent,
+  releaseStripeWebhookClaim,
+  markStripeWebhookProcessedInMemory: vi.fn(),
 }));
 
 vi.mock("@/lib/wd-leads-sync", () => ({
@@ -51,6 +54,7 @@ describe("POST /api/stripe/webhook", () => {
     vi.clearAllMocks();
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
     claimStripeWebhookEvent.mockResolvedValue("new");
+    releaseStripeWebhookClaim.mockResolvedValue(undefined);
   });
 
   it("returns 400 when stripe-signature header is missing", async () => {

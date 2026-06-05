@@ -3,6 +3,7 @@ import { insertContactSubmission } from "@/lib/contact-db";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import { isValidEmail } from "@/lib/validate-email";
+import { readJsonBody } from "@/lib/read-json-body";
 
 export const runtime = "nodejs";
 
@@ -21,12 +22,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
   }
 
-  let body: ContactPayload;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) {
+    const status = parsed.error === "Request body too large" ? 413 : 400;
+    return NextResponse.json({ error: parsed.error }, { status });
   }
+  const body = parsed.body as ContactPayload;
 
   // Honeypot — silently accept and discard
   if (body.website && typeof body.website === "string" && body.website.length > 0) {

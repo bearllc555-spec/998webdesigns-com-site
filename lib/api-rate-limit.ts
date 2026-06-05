@@ -35,6 +35,11 @@ export async function enforceApiRateLimit(
 
   pruneRateLimitStore();
 
+  const memory = checkRateLimit(key, config);
+  if (!memory.allowed) {
+    return memory;
+  }
+
   const distributed = await checkRateLimitSupabase(key, config);
   if (distributed.usedDatabase) {
     return {
@@ -43,7 +48,6 @@ export async function enforceApiRateLimit(
     };
   }
 
-  const memory = checkRateLimit(key, config);
   return memory;
 }
 

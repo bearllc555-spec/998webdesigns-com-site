@@ -7,6 +7,7 @@ import { checkoutOrigin } from "@/lib/checkout-origin";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { insertWdLead } from "@/lib/leads-db";
+import { readJsonBody } from "@/lib/read-json-body";
 import { sendInternalLeadSubmittedEmail } from "@/lib/internal-lead-email";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import { syncWdLeadCheckoutCreated } from "@/lib/wd-leads-sync";
@@ -22,12 +23,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
   }
 
-  let body: LeadPayload;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  const parsed = await readJsonBody(req);
+  if (!parsed.ok) {
+    const status = parsed.error === "Request body too large" ? 413 : 400;
+    return NextResponse.json({ error: parsed.error }, { status });
   }
+  const body = parsed.body as LeadPayload;
 
   // Honeypot — silently accept and discard
   if (body.website && typeof body.website === "string" && body.website.length > 0) {

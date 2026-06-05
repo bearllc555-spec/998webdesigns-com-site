@@ -2,7 +2,7 @@
 // Poster: public/portfolio/<slug>.jpg
 // Hover preview: public/portfolio/<slug>.mp4 — scripts/capture-portfolio-preview.mjs
 //   (splices ~5s from the page hero <video> MP4, then a viewport scroll recording)
-// URLs: apex pages.dev / production domains only — no dev.* or *-dev.* branches.
+// URLs: apex pages.dev or client production domains. Branch previews (dev.*) only when no apex exists yet.
 
 export type PortfolioItem = {
   slug: string;
@@ -39,7 +39,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "jetvip-charter",
     name: "VIP Charters",
     industry: "Private aviation",
-    url: "https://jetvipcharter-dev.pages.dev/",
+    url: "https://jetvipcharter.pages.dev/",
     thumbnail: "/portfolio/jetvip-charter.jpg",
     previewVideo: "/portfolio/jetvip-charter.mp4",
   },
@@ -61,7 +61,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "new-empire-corp",
     name: "New Empire Corp",
     industry: "Corporate & design",
-    url: "https://dev.nyc-design.pages.dev/",
+    url: "https://nyc-design.pages.dev/",
     thumbnail: "/portfolio/new-empire-corp.jpg",
     previewVideo: "/portfolio/new-empire-corp.mp4",
   },
@@ -77,7 +77,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "legally-design",
     name: "Legally",
     industry: "Legal services",
-    url: "https://dev.legally-design.pages.dev/",
+    url: "https://legally-design.pages.dev/",
     thumbnail: "/portfolio/legally-design.jpg",
     previewVideo: "/portfolio/legally-design.mp4",
   },

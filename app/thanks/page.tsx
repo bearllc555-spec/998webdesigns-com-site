@@ -24,29 +24,18 @@ export default async function Thanks({
   }
 
   let view: ThanksView = "paid";
-  let contactPrefill = {
-    name: "",
-    email: "",
-    businessName: "",
-    message: "I just paid in full and have a question:\n\n",
-  };
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status === "paid") {
       view = "paid";
-      contactPrefill = prefillFromSession(session, "I just paid in full and have a question:\n\n");
     } else if (
       session.metadata?.paymentChannel === "ach" &&
       session.payment_status === "unpaid" &&
       session.status === "complete"
     ) {
       view = "ach_processing";
-      contactPrefill = prefillFromSession(
-        session,
-        "I submitted a bank payment and have a question:\n\n"
-      );
     } else {
       redirect("/#start");
     }
@@ -99,7 +88,7 @@ export default async function Thanks({
               />
             </ol>
 
-            <ThanksActions prefill={contactPrefill} />
+            <ThanksActions sessionId={sessionId} />
           </div>
         </main>
         <Footer />
@@ -166,32 +155,12 @@ export default async function Thanks({
             </p>
           </aside>
 
-          <ThanksActions prefill={contactPrefill} />
+          <ThanksActions sessionId={sessionId} />
         </div>
       </main>
       <Footer />
     </>
   );
-}
-
-function prefillFromSession(
-  session: {
-    metadata?: Record<string, string> | null;
-    customer_details?: { email?: string | null } | null;
-    customer_email?: string | null;
-  },
-  message: string
-) {
-  return {
-    name: session.metadata?.fullName ?? "",
-    email:
-      session.customer_details?.email ??
-      session.metadata?.email ??
-      session.customer_email ??
-      "",
-    businessName: session.metadata?.businessName ?? "",
-    message,
-  };
 }
 
 function Step({ n, title, body }: { n: string; title: string; body: string }) {

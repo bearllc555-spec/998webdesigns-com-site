@@ -2,6 +2,7 @@ import {
   filterHearAboutSources,
   type HearAboutSource,
 } from "@/lib/hear-about-sources";
+import { isValidDesignPromoCode } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 
 export type HostingChoice = "ten_year" | "monthly" | "later";
@@ -81,6 +82,10 @@ export function validateLeadPayload(
   if (!contactPref || !["email", "phone", "text"].includes(contactPref)) {
     return { ok: false, error: "Missing or invalid contactPref" };
   }
+  const phone = str(body.phone) ?? "";
+  if ((contactPref === "phone" || contactPref === "text") && !phone) {
+    return { ok: false, error: "Phone number is required when contact preference is phone or text" };
+  }
   if (!industry) return { ok: false, error: "Missing required field: industry" };
   if (!whatYouDo) return { ok: false, error: "Missing required field: whatYouDo" };
   if (!whoYouServe) return { ok: false, error: "Missing required field: whoYouServe" };
@@ -102,8 +107,16 @@ export function validateLeadPayload(
 
   const hearAboutSources = filterHearAboutSources(body.hearAboutSources);
   const hearAboutOther = str(body.hearAboutOther) ?? "";
+  if (hearAboutSources.length === 0) {
+    return { ok: false, error: "Please select at least one way you heard about us" };
+  }
   if (hearAboutSources.includes("Other") && !hearAboutOther) {
     return { ok: false, error: "Please specify where you heard about us when Other is selected" };
+  }
+
+  const promoCode = str(body.promoCode) ?? "";
+  if (promoCode && !isValidDesignPromoCode(promoCode)) {
+    return { ok: false, error: "Invalid promo code — remove it or use a listed code (e.g. LINKEDIN20)" };
   }
 
   return {
@@ -112,7 +125,7 @@ export function validateLeadPayload(
       fullName,
       businessName: businessName ?? "",
       email,
-      phone: str(body.phone) ?? "",
+      phone,
       contactPref: contactPref as ContactPref,
       industry,
       yearsInBusiness: str(body.yearsInBusiness) ?? "",
@@ -132,7 +145,7 @@ export function validateLeadPayload(
       paymentOption: "full",
       paymentChannel: paymentChannel as PaymentChannel,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
-      promoCode: str(body.promoCode) ?? "",
+      promoCode,
       hearAboutSources,
       hearAboutOther,
     },
