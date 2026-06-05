@@ -3,6 +3,7 @@ import { BannerDesignNav } from "@/components/temp/BannerDesignNav";
 import { LinkedInBannerPreview } from "@/components/temp/LinkedInBannerPreview";
 import "./linkedin-preview.css";
 import "./linkedin-banner.css";
+import "./linkedin-offer-column.css";
 
 export default function TempPage() {
   return (

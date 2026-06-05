@@ -1,7 +1,4 @@
-import {
-  LINKEDIN_BANNER_OFFER_CODE,
-  LINKEDIN_BANNER_OFFER_KICKER,
-} from "@/lib/linkedin-banner-preview";
+import { LinkedInBannerOfferColumn } from "@/components/temp/LinkedInBannerOfferColumn";
 
 function DecoChartIcon() {
   return (
@@ -96,27 +93,12 @@ export function Design4Artboard() {
           <p className="tagline">High-Converting Websites for Service-Based Businesses</p>
         </div>
 
-        <aside className="offer-slate" aria-label="Offer">
-          <p className="offer-kicker">{LINKEDIN_BANNER_OFFER_KICKER}</p>
-          <p className="offer-main">
-            7-Day Builds<span className="sep">•</span>$5,998 Flat
-          </p>
-          <p className="offer-promo">{LINKEDIN_BANNER_OFFER_CODE}</p>
-          <div className="offer-rule" aria-hidden="true" />
-          <p className="offer-url">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            998WebDesigns.com
-          </p>
-        </aside>
+        <LinkedInBannerOfferColumn
+          variant="slate"
+          buildsLabel="7-Day Builds"
+          flatLabel=" Flat"
+          urlLabel="998WebDesigns.com"
+        />
       </div>
     </div>
   );

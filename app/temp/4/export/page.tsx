@@ -5,6 +5,7 @@ import {
   LINKEDIN_COVER_UPLOAD_H,
   LINKEDIN_COVER_UPLOAD_W,
 } from "@/lib/linkedin-banner-preview";
+import "../../linkedin-offer-column.css";
 import "../linkedin-banner-d4.css";
 import "../../linkedin-export.css";
 

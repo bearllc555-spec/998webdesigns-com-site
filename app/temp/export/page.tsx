@@ -6,6 +6,7 @@ import {
   LINKEDIN_COVER_UPLOAD_W,
 } from "@/lib/linkedin-banner-preview";
 import "../linkedin-banner.css";
+import "../linkedin-offer-column.css";
 import "../linkedin-export.css";
 
 export const metadata: Metadata = {

@@ -1,0 +1,111 @@
+/* Promo callout + pricing — shared across /temp banner designs */
+
+.linkedin-banner .offer-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.linkedin-banner .offer-special {
+  text-align: right;
+  line-height: 1;
+  padding-right: 2px;
+}
+
+.linkedin-banner .offer-special-pct {
+  font-family: var(--font-bricolage), var(--font-geist), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 52px;
+  letter-spacing: -0.04em;
+  color: #2563eb;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.linkedin-banner .offer-special-code {
+  margin-top: 8px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #18181b;
+}
+
+.linkedin-banner .offer-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.linkedin-banner .offer-builds {
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.88;
+}
+
+.linkedin-banner .offer-price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2em 0.35em;
+}
+
+.linkedin-banner .offer-price-was {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  font-weight: 600;
+}
+
+.linkedin-banner .offer-price-now {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.linkedin-banner .offer-price-flat {
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+/* Dark gradient offer box */
+.linkedin-banner .offer .offer-price-was {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.linkedin-banner .offer .offer-price-now {
+  color: #ffffff;
+}
+
+.linkedin-banner .offer .offer-price-flat {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Glass offer box */
+.linkedin-banner .offer--glass .offer-builds {
+  opacity: 1;
+  color: #52525b;
+}
+
+.linkedin-banner .offer--glass .offer-price-was {
+  font-size: 0.92em;
+  color: #a1a1aa;
+}
+
+.linkedin-banner .offer--glass .offer-price-flat {
+  color: #52525b;
+  font-weight: 500;
+}
+
+/* Slanted navy panel (design 4) */
+.linkedin-banner .offer-slate .offer-price-was {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.linkedin-banner .offer-slate .offer-price-now {
+  color: #ffffff;
+}
+
+.linkedin-banner .offer-slate .offer-price-flat {
+  color: rgba(255, 255, 255, 0.92);
+}

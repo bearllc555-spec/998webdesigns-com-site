@@ -2,6 +2,7 @@ import { Design2Artboard } from "@/components/temp/artboards/Design2Artboard";
 import { BannerDesignNav } from "@/components/temp/BannerDesignNav";
 import { LinkedInBannerPreview } from "@/components/temp/LinkedInBannerPreview";
 import "../linkedin-preview.css";
+import "../linkedin-offer-column.css";
 import "./linkedin-banner-manhattan.css";
 
 export default function TempV2Page() {

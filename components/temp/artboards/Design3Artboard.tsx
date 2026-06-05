@@ -1,8 +1,5 @@
 import { ManhattanSilhouette } from "@/components/temp/ManhattanSilhouette";
-import {
-  LINKEDIN_BANNER_OFFER_CODE,
-  LINKEDIN_BANNER_OFFER_KICKER,
-} from "@/lib/linkedin-banner-preview";
+import { LinkedInBannerOfferColumn } from "@/components/temp/LinkedInBannerOfferColumn";
 
 export function Design3Artboard() {
   return (
@@ -28,31 +25,7 @@ export function Design3Artboard() {
           </p>
         </div>
 
-        <aside className="offer offer--glass" aria-label="Offer">
-          <p className="offer-kicker">{LINKEDIN_BANNER_OFFER_KICKER}</p>
-          <p className="offer-main">
-            <span className="offer-line">7-day builds</span>
-            <span className="offer-sep" aria-hidden="true">
-              ·
-            </span>
-            <span className="offer-highlight">$5,998 flat</span>
-          </p>
-          <p className="offer-promo">{LINKEDIN_BANNER_OFFER_CODE}</p>
-          <div className="offer-rule" aria-hidden="true" />
-          <p className="offer-url">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            998webdesigns.com
-          </p>
-        </aside>
+        <LinkedInBannerOfferColumn variant="glass" />
       </div>
     </div>
   );

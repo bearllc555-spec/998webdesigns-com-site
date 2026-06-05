@@ -154,6 +154,33 @@
         color: #0a0a0a;
       }
 
+      .offer-column {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+      }
+
+      .offer-special {
+        text-align: right;
+        line-height: 1;
+      }
+
+      .offer-special-pct {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 800;
+        font-size: 46px;
+        letter-spacing: -0.04em;
+        color: #2563eb;
+      }
+
+      .offer-special-code {
+        margin-top: 6px;
+        font-size: 21px;
+        font-weight: 700;
+        color: #18181b;
+      }
+
       /* Offer panel */
       .offer {
         position: relative;
@@ -185,16 +212,10 @@
         pointer-events: none;
       }
 
-      .offer-kicker {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(191, 219, 254, 0.85);
-        margin-bottom: 8px;
-      }
-
       .offer-main {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
         font-family: "Bricolage Grotesque", sans-serif;
         font-weight: 800;
         font-size: 30px;
@@ -203,18 +224,34 @@
         color: #ffffff;
       }
 
-      .offer-main .sep {
-        margin: 0 0.35em;
-        opacity: 0.45;
-        font-weight: 500;
+      .offer-builds {
+        font-size: 0.72em;
+        font-weight: 600;
+        opacity: 0.88;
       }
 
-      .offer-promo {
-        margin-top: 6px;
-        font-size: 13px;
+      .offer-price-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.2em 0.35em;
+      }
+
+      .offer-price-was {
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
         font-weight: 600;
-        letter-spacing: 0.04em;
-        color: rgba(191, 219, 254, 0.95);
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .offer-price-now {
+        font-weight: 800;
+        color: #ffffff;
+      }
+
+      .offer-price-flat {
+        font-weight: 600;
+        opacity: 0.92;
       }
 
       .offer-rule {
@@ -284,21 +321,30 @@
           </p>
         </div>
 
-        <aside class="offer" aria-label="Offer">
-          <p class="offer-kicker">20% off</p>
-          <p class="offer-main">
-            7-day builds<span class="sep">·</span>$5,998 flat
-          </p>
-          <p class="offer-promo">use code LINKEDIN20</p>
-          <div class="offer-rule" aria-hidden="true"></div>
-          <p class="offer-url">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            998webdesigns.com
-          </p>
-        </aside>
+        <div class="offer-column">
+          <div class="offer-special" aria-label="Limited time offer">
+            <p class="offer-special-pct">20% off</p>
+            <p class="offer-special-code">use code LINKEDIN20</p>
+          </div>
+          <aside class="offer" aria-label="Offer">
+            <p class="offer-main">
+              <span class="offer-builds">7-day builds</span>
+              <span class="offer-price-row">
+                <span class="offer-price-was">$5,998</span>
+                <span class="offer-price-now">$4,798</span>
+                <span class="offer-price-flat"> flat</span>
+              </span>
+            </p>
+            <div class="offer-rule" aria-hidden="true"></div>
+            <p class="offer-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              998webdesigns.com
+            </p>
+          </aside>
+        </div>
       </div>
     </div>
 
