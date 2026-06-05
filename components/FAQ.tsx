@@ -1,7 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { Fragment, useState } from "react";
 import { faq } from "@/data/faq";
+
+const FAQ_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+function renderFaqAnswer(text: string) {
+  const parts: React.ReactNode[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = FAQ_LINK_RE.exec(text)) !== null) {
+    if (match.index > last) {
+      parts.push(text.slice(last, match.index));
+    }
+    const label = match[1];
+    const href = match[2];
+    const isInternal = href.startsWith("/");
+    parts.push(
+      isInternal ? (
+        <Link
+          key={key++}
+          href={href}
+          className="text-accent underline-offset-2 hover:underline"
+        >
+          {label}
+        </Link>
+      ) : (
+        <a
+          key={key++}
+          href={href}
+          className="text-accent underline-offset-2 hover:underline"
+        >
+          {label}
+        </a>
+      )
+    );
+    last = match.index + match[0].length;
+  }
+
+  if (last < text.length) {
+    parts.push(text.slice(last));
+  }
+
+  return parts.map((part, i) =>
+    typeof part === "string" ? <Fragment key={`t-${i}`}>{part}</Fragment> : part
+  );
+}
 
 export function FAQ() {
   const [open, setOpen] = useState<number | null>(0);
@@ -51,7 +98,7 @@ export function FAQ() {
                     aria-labelledby={`faq-trigger-${i}`}
                     className="whitespace-pre-line px-6 pb-6 text-base leading-relaxed text-ink-soft"
                   >
-                    {item.a}
+                    {renderFaqAnswer(item.a)}
                   </div>
                 )}
               </li>

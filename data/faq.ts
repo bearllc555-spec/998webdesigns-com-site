@@ -1,5 +1,15 @@
 export type FAQItem = { q: string; a: string };
 
+const FAQ_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+/** Plain text for JSON-LD — expands [label](/path) to label (full URL). */
+export function faqPlainAnswer(a: string): string {
+  return a.replace(FAQ_LINK_RE, (_, label: string, href: string) => {
+    const url = href.startsWith("/") ? `https://998webdesigns.com${href}` : href;
+    return `${label} (${url})`;
+  });
+}
+
 export const faq: FAQItem[] = [
   {
     q: "What's actually included for $5,998?",
@@ -39,7 +49,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "How do I manage hosting billing?",
-    a: "Month-to-month clients can update a card, view invoices, or cancel hosting anytime. Go to 998webdesigns.com/hosting/manage, enter the email on your account, and we'll email a secure one-time link to Stripe's billing portal. Cancellation takes effect at the end of your current billing period. Lifetime hosting is a one-time charge — there is no recurring subscription to manage.",
+    a: "Month-to-month clients can update a card, view invoices, or cancel hosting anytime. Go to [manage hosting billing](/hosting/manage), enter the email on your account, and we'll email a secure one-time link to Stripe's billing portal. Cancellation takes effect at the end of your current billing period. Lifetime hosting is a one-time charge — there is no recurring subscription to manage.",
   },
   {
     q: "What's the edit policy after month three?",

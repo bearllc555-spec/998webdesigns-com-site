@@ -1,4 +1,4 @@
-import { faq } from "@/data/faq";
+import { faq, faqPlainAnswer } from "@/data/faq";
 
 const ORGANIZATION = {
   "@context": "https://schema.org",
@@ -19,7 +19,7 @@ function faqPageJsonLd() {
       name: item.q,
       acceptedAnswer: {
         "@type": "Answer",
-        text: item.a,
+        text: faqPlainAnswer(item.a),
       },
     })),
   };
