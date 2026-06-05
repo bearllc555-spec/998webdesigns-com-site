@@ -9,7 +9,8 @@ import { fileURLToPath } from "url";
 import Stripe from "stripe";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const keyPath = path.resolve(__dirname, "..", "..", "..", ".local", "stripe-live-secret-key.txt");
+const localDir = path.resolve(__dirname, "..", "..", "..", ".local");
+const keyPath = path.join(localDir, "stripe-live-secret-key.txt");
 
 function readLiveKey() {
   const text = fs.readFileSync(keyPath, "utf8");
@@ -48,6 +49,36 @@ const session = await stripe.checkout.sessions.create({
   cancel_url: "https://998webdesigns.com/start",
 });
 
+const urlFile = path.join(localDir, "smoke-checkout-url.txt");
+const htmlFile = path.join(localDir, "smoke-checkout-open.html");
+const esc = (s) =>
+  s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+const safeUrl = esc(session.url);
+
+fs.writeFileSync(
+  urlFile,
+  `${session.url}\n${session.id}\n`,
+  "utf8"
+);
+fs.writeFileSync(
+  htmlFile,
+  `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>998 live smoke checkout ($1)</title>
+  <meta http-equiv="refresh" content="0;url=${safeUrl}" />
+</head>
+<body>
+  <p>Redirecting to Stripe Checkout ($1)…</p>
+  <p><a href="${safeUrl}">Click here if you are not redirected</a></p>
+</body>
+</html>`,
+  "utf8"
+);
+
 console.log("session_id", session.id);
 console.log("checkout_url", session.url);
 console.log("dashboard", `https://dashboard.stripe.com/checkout/sessions/${session.id}`);
+console.log("open_via_html", htmlFile);
+console.log("note", "Use the HTML launcher or full checkout_url (includes # hash). Bare /pay/cs_live_... URLs fail.");
