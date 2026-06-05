@@ -49,7 +49,7 @@ export async function sendInternalLeadSubmittedEmail(
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">New lead — payment not completed yet</h2>
-        <p><strong>Plan:</strong> $1,998 pay in full (selected)</p>
+        <p><strong>Plan:</strong> $5,998 pay in full (selected)</p>
         <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(lead.paymentChannel))}</p>
         <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel)))}</p>
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>

@@ -30,8 +30,11 @@ export async function sendLeadCheckoutEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const totalLabel = formatCheckoutUsd(
-    checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel)
+    checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel, lead.promoCode)
   );
+  const promoNote = lead.promoCode.trim()
+    ? `<p><strong>Promo:</strong> ${escapeHtml(lead.promoCode.trim().toUpperCase())} (20% off design fee only)</p>`
+    : "";
   const methodLabel = paymentChannelLabel(lead.paymentChannel);
   const achNote =
     lead.paymentChannel === "ach"
@@ -48,6 +51,7 @@ export async function sendLeadCheckoutEmail(
         <p>Thanks for submitting your project brief for <strong>${escapeHtml(lead.businessName)}</strong>. We received everything.</p>
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
+        ${promoNote}
         <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)}${lead.hostingChoice === "ten_year" ? " (includes ten-year hosting)" : ""}${lead.hostingChoice === "monthly" ? " (includes your first month of hosting; $198/mo renews automatically)" : ""}</p>
         ${achNote}
         <p style="margin: 24px 0;">

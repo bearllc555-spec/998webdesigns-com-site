@@ -39,7 +39,7 @@ export default function Image() {
             maxWidth: 900,
           }}
         >
-          Growth systems for local businesses. Sites from $1,998. Delivered in 7
+          Growth systems for local businesses. Sites from $5,998. Delivered in 7
           business days.
         </div>
       </div>

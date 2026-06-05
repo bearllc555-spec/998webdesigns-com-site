@@ -68,7 +68,7 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
   - `invoice.payment_failed` → hello@ + lead status `hosting_payment_failed`
   - `customer.subscription.deleted` → hello@ + lead status `hosting_canceled`
 
-All new checkouts are **$1,998 pay-in-full** (plus optional ten-year or monthly hosting). No deposit or balance-hold flow on new leads.
+All new checkouts are **$5,998 pay-in-full** (plus optional ten-year or monthly hosting). Promo **LAUNCH20** takes 20% off the design fee only ($4,798 design). No deposit or balance-hold flow on new leads.
 
 **Legacy:** Old deposit checkouts in Stripe still complete the webhook and sync as `paid_in_full`. Any open balance holds from before this change must be captured or released in the [Stripe Dashboard](https://dashboard.stripe.com) manually.
 
@@ -90,7 +90,7 @@ Uses `RESEND_API_KEY`.
 
 Stripe Checkout charges (separate sessions by payment channel):
 
-- Design: **$1,998 pay-in-full** (required)
+- Design: **$5,998 pay-in-full** (required; **LAUNCH20** = 20% off design fee only)
 - **Ten-year hosting:** +$1,349 when lead selects ten-year hosting on the form
 - **Card only:** +3% processing on the checkout subtotal (design + ten-year hosting if selected)
 - **Bank (ACH):** list price; settlement async — webhook `checkout.session.async_payment_succeeded` marks paid

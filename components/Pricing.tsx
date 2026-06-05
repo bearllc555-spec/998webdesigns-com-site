@@ -9,7 +9,7 @@ export function Pricing() {
             Pricing
           </p>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
-            Every site starts at a flat $1,998 design fee. The pricing below is the whole list — no
+            Every site starts at a flat $5,998 design fee. The pricing below is the whole list — no
             tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;
           </p>
         </div>
@@ -21,7 +21,7 @@ export function Pricing() {
               Design fee
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $1,998 <span className="text-2xl text-ink-soft">— paid in full to start</span>
+              $5,998 <span className="text-2xl text-ink-soft">— paid in full to start</span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
               A handcrafted custom site, designed around your business. Delivered in 7
@@ -29,7 +29,9 @@ export function Pricing() {
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
               We collect full payment before your project enters the queue. This keeps things simple
-              for both sides — no holds, no follow-up invoices.
+              for both sides — no holds, no follow-up invoices. Promo code{" "}
+              <span className="font-medium text-ink">LAUNCH20</span> takes 20% off the design fee
+              only ($4,798 design) — not hosting or other services. Enter it on the lead form.
             </p>
           </article>
 

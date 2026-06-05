@@ -32,6 +32,7 @@ export function buildCheckoutSessionParams(
     paymentChannel: channel,
     hostingChoice: lead.hostingChoice,
     submittedAt: options.submittedAt,
+    ...(lead.promoCode.trim() ? { promoCode: lead.promoCode.trim().toUpperCase() } : {}),
     ...(options.wdLeadId ? { wdLeadId: options.wdLeadId } : {}),
   };
 

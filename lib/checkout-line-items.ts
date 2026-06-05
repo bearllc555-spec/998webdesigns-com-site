@@ -5,6 +5,7 @@ import {
   checkoutSubtotalCents,
   type PaymentChannel,
 } from "@/lib/checkout-pricing";
+import { designFeeCents, isValidDesignPromoCode } from "@/lib/design-promo";
 import {
   FULL_PRODUCT,
   HOSTING_MONTHLY_PRODUCT,
@@ -12,15 +13,21 @@ import {
 } from "@/lib/products";
 import type { HostingChoice, ValidatedLead } from "@/lib/validate-lead";
 
-function designLineItem(): Stripe.Checkout.SessionCreateParams.LineItem {
+function designLineItem(lead: ValidatedLead): Stripe.Checkout.SessionCreateParams.LineItem {
+  const promoApplied = isValidDesignPromoCode(lead.promoCode);
+  const amount = designFeeCents(lead.promoCode);
+  const description = promoApplied
+    ? `${FULL_PRODUCT.description} (${lead.promoCode!.trim().toUpperCase()} — 20% off design fee only)`
+    : FULL_PRODUCT.description;
+
   return {
     price_data: {
       currency: "usd",
       product_data: {
         name: FULL_PRODUCT.name,
-        description: FULL_PRODUCT.description,
+        description,
       },
-      unit_amount: FULL_PRODUCT.priceInCents,
+      unit_amount: amount,
     },
     quantity: 1,
   };
@@ -42,9 +49,10 @@ function monthlyHostingLineItem(): Stripe.Checkout.SessionCreateParams.LineItem 
 }
 
 function cardFeeLineItem(
-  hostingChoice: HostingChoice
+  hostingChoice: HostingChoice,
+  promoCode?: string
 ): Stripe.Checkout.SessionCreateParams.LineItem {
-  const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(hostingChoice));
+  const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(hostingChoice, promoCode));
   return {
     price_data: {
       currency: "usd",
@@ -67,7 +75,7 @@ export function buildCheckoutLineItems(
   lead: ValidatedLead,
   channel: PaymentChannel
 ): Stripe.Checkout.SessionCreateParams.LineItem[] {
-  const items: Stripe.Checkout.SessionCreateParams.LineItem[] = [designLineItem()];
+  const items: Stripe.Checkout.SessionCreateParams.LineItem[] = [designLineItem(lead)];
 
   if (lead.hostingChoice === "ten_year") {
     items.push({
@@ -88,7 +96,7 @@ export function buildCheckoutLineItems(
   }
 
   if (channel === "card") {
-    items.push(cardFeeLineItem(lead.hostingChoice));
+    items.push(cardFeeLineItem(lead.hostingChoice, lead.promoCode));
   }
 
   return items;

@@ -17,7 +17,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - Home (`/`) — Hero, add-ons, portfolio carousel, value props, how it works, pricing, FAQ, 5-step lead form, footer. Light/dark theme toggle.
 - `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
-- `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout ($1,998 pay-in-full only), Resend checkout-link email.
+- `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout ($5,998 pay-in-full; LAUNCH20 = 20% off design only), Resend checkout-link email.
 - `/api/contact` — POST: honeypot, Supabase `contact_submissions` insert, Resend to hello@998webdesigns.com.
 - `/api/stripe/webhook` — signed webhook; `checkout.session.completed` syncs `paid_in_full` + internal payment email.
 - `/api/admin/env-status` — GET with `BALANCE_CAPTURE_SECRET` bearer; production wiring snapshot.
@@ -63,7 +63,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Fonts** — Inter (body) + Geist (display via `font-display`)
 - **Supabase** — Postgres; service-role inserts for leads
 - **Vercel** — production host, Hobby plan, Git push to `main` auto-deploys
-- **Stripe** — Checkout ($1,998 pay-in-full + optional ten-year hosting line item)
+- **Stripe** — Checkout ($5,998 pay-in-full + optional ten-year hosting line item; LAUNCH20 promo)
 - **Resend** — contact form + lead checkout-link email (`RESEND_API_KEY`)
 
 ---

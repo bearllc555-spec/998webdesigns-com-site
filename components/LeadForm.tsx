@@ -10,6 +10,12 @@ import {
   isGrowthPackMember,
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
+import {
+  DESIGN_PROMO_CODE,
+  DESIGN_PROMO_PERCENT_OFF,
+  designFeeCents,
+  isValidDesignPromoCode,
+} from "@/lib/design-promo";
 import type { PaymentChannel } from "@/lib/validate-lead";
 import { FixedFormField } from "@/components/form-field-stack";
 
@@ -46,6 +52,7 @@ type FormState = {
   paymentOption: PaymentOption;
   paymentChannel: PaymentChannel;
   addons: string[];
+  promoCode: string;
   // Honeypot
   website: string;
 };
@@ -58,6 +65,7 @@ const initial: FormState = {
   startDate: "", hostingChoice: "", notes: "", paymentOption: "full",
   paymentChannel: "card",
   addons: [],
+  promoCode: "",
   website: "",
 };
 
@@ -510,10 +518,29 @@ export function LeadForm() {
 
           {step === 4 && (
             <div className="grid gap-5">
+              <FixedFormField
+                id="lead-promo"
+                label="Promo code"
+                value={form.promoCode}
+                onChange={(v) => set("promoCode", v)}
+                optionalHint
+                placeholder={DESIGN_PROMO_CODE}
+                autoComplete="off"
+              />
+              {form.promoCode.trim() && (
+                <p
+                  className={`text-sm ${isValidDesignPromoCode(form.promoCode) ? "text-success" : "text-warn"}`}
+                >
+                  {isValidDesignPromoCode(form.promoCode)
+                    ? `${DESIGN_PROMO_PERCENT_OFF}% off design fee applied — ${formatCheckoutUsd(designFeeCents(form.promoCode))} design (hosting unchanged)`
+                    : `Code not recognized. Use ${DESIGN_PROMO_CODE} for ${DESIGN_PROMO_PERCENT_OFF}% off the design fee only.`}
+                </p>
+              )}
+
               <Field label="Payment" required error={errors.paymentChannel}>
                 <div className="rounded-xl border border-rule bg-bg px-4 py-4">
                   <span className="block text-sm font-medium text-ink">
-                    $1,998 design — paid in full to start
+                    {formatCheckoutUsd(designFeeCents(form.promoCode))} design — paid in full to start
                     {form.hostingChoice === "ten_year" ? " (+ $1,349 ten-year hosting at checkout)" : ""}
                   </span>
                   <span className="mt-1 block text-xs text-ink-soft">
@@ -535,7 +562,7 @@ export function LeadForm() {
                     const total =
                       form.hostingChoice &&
                       formatCheckoutUsd(
-                        checkoutDueTodayCents(form.hostingChoice, channel)
+                        checkoutDueTodayCents(form.hostingChoice, channel, form.promoCode)
                       );
                     return (
                       <label

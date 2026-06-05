@@ -1,5 +1,5 @@
+import { designFeeCents } from "@/lib/design-promo";
 import {
-  FULL_PRODUCT,
   HOSTING_MONTHLY_PRODUCT,
   HOSTING_TEN_YEAR_PRODUCT,
 } from "@/lib/products";
@@ -15,8 +15,11 @@ export const CARD_PROCESSING_PRODUCT = {
   description: "Processing fee for credit/debit card payments.",
 } as const;
 
-export function checkoutSubtotalCents(hostingChoice: HostingChoice): number {
-  let total = FULL_PRODUCT.priceInCents;
+export function checkoutSubtotalCents(
+  hostingChoice: HostingChoice,
+  promoCode?: string
+): number {
+  let total = designFeeCents(promoCode);
   if (hostingChoice === "ten_year") {
     total += HOSTING_TEN_YEAR_PRODUCT.priceInCents;
   }
@@ -29,9 +32,10 @@ export function cardProcessingFeeCents(subtotalCents: number): number {
 
 export function checkoutTotalCents(
   hostingChoice: HostingChoice,
-  channel: PaymentChannel
+  channel: PaymentChannel,
+  promoCode?: string
 ): number {
-  const subtotal = checkoutSubtotalCents(hostingChoice);
+  const subtotal = checkoutSubtotalCents(hostingChoice, promoCode);
   if (channel === "card") {
     return subtotal + cardProcessingFeeCents(subtotal);
   }
@@ -41,9 +45,10 @@ export function checkoutTotalCents(
 /** First Checkout charge: design (+ ten-year) + card fee; monthly adds first month at checkout. */
 export function checkoutDueTodayCents(
   hostingChoice: HostingChoice,
-  channel: PaymentChannel
+  channel: PaymentChannel,
+  promoCode?: string
 ): number {
-  let due = checkoutTotalCents(hostingChoice, channel);
+  let due = checkoutTotalCents(hostingChoice, channel, promoCode);
   if (hostingChoice === "monthly") {
     due += HOSTING_MONTHLY_PRODUCT.priceInCents;
   }

@@ -2,11 +2,11 @@ export type FAQItem = { q: string; a: string };
 
 export const faq: FAQItem[] = [
   {
-    q: "What's actually included for $1,998?",
+    q: "What's actually included for $5,998?",
     a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 7 business days from the moment payment clears.",
   },
   {
-    q: "Do I have to pay the full $1,998 upfront?",
+    q: "Do I have to pay the full $5,998 upfront?",
     a: "Yes — we collect full payment before your project enters the queue. Checkout defaults to card; you can switch to bank transfer for list price with no 3% processing fee on the design fee (and on ten-year hosting if you add it). That 3% fee does not apply to the $198/month hosting line. Month-to-month hosting, if you select it, is charged in the same Checkout — first month due there, then $198/month renews automatically until you cancel. Ten-year hosting ($1,349) is a one-time add-on in Checkout when you choose it. There's no deposit-then-balance structure. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
   },
   {
@@ -19,7 +19,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "How is this so much cheaper than an agency?",
-    a: "We keep scope tight on purpose. We do one thing — design and host a great-looking, fast small-business website — and we do it without account managers, retainers, or a slide deck full of jargon. The $1,998 covers exactly what's listed; anything beyond it is priced clearly upfront.",
+    a: "We keep scope tight on purpose. We do one thing — design and host a great-looking, fast small-business website — and we do it without account managers, retainers, or a slide deck full of jargon. The $5,998 covers exactly what's listed; anything beyond it is priced clearly upfront.",
   },
   {
     q: "Who owns the site?",
@@ -39,6 +39,10 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Do you do logos, copywriting, or SEO?",
-    a: "Logos and full copywriting are not part of the $1,998 design fee — we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional — priced clearly if you want them.",
+    a: "Logos and full copywriting are not part of the $5,998 design fee — we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional — priced clearly if you want them.",
+  },
+  {
+    q: "Is there a promo code?",
+    a: "Yes — LAUNCH20 takes 20% off the $5,998 design fee only ($4,798 design). It does not apply to ten-year hosting ($1,349), month-to-month hosting ($198/mo), or the 3% card processing fee. Enter LAUNCH20 on the last step of the lead form before checkout.",
   },
 ];

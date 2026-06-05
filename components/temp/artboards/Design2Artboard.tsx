@@ -27,7 +27,7 @@ export function Design2Artboard() {
         <aside className="offer" aria-label="Offer">
           <p className="offer-kicker">Flat pricing</p>
           <p className="offer-main">
-            7-day builds<span className="sep">·</span>$1,998 flat
+            7-day builds<span className="sep">·</span>$5,998 flat
           </p>
           <div className="offer-rule" aria-hidden="true" />
           <p className="offer-url">

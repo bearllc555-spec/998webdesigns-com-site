@@ -28,6 +28,7 @@ export type ValidatedLead = {
   paymentOption: PaymentOption;
   paymentChannel: PaymentChannel;
   addons: string[];
+  promoCode: string;
 };
 
 const ALLOWED_ADDONS = new Set([
@@ -86,7 +87,7 @@ export function validateLeadPayload(
   if (paymentOption && paymentOption !== "full") {
     return {
       ok: false,
-      error: "Invalid paymentOption — $1,998 must be paid in full upfront",
+      error: "Invalid paymentOption — $5,998 design fee must be paid in full upfront",
     };
   }
   if (!paymentChannel || !["ach", "card"].includes(paymentChannel)) {
@@ -119,6 +120,7 @@ export function validateLeadPayload(
       paymentOption: "full",
       paymentChannel: paymentChannel as PaymentChannel,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
+      promoCode: str(body.promoCode) ?? "",
     },
   };
 }

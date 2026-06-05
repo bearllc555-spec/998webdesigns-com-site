@@ -93,7 +93,7 @@ export function Design4Artboard() {
 
         <aside className="offer-slate" aria-label="Offer">
           <p className="offer-main">
-            7-Day Builds<span className="sep">•</span>$1,998 Flat
+            7-Day Builds<span className="sep">•</span>$5,998 Flat
           </p>
           <div className="offer-rule" aria-hidden="true" />
           <p className="offer-url">

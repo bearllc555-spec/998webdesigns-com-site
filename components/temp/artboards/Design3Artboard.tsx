@@ -31,7 +31,7 @@ export function Design3Artboard() {
             <span className="offer-sep" aria-hidden="true">
               ·
             </span>
-            <span className="offer-highlight">$1,998 flat</span>
+            <span className="offer-highlight">$5,998 flat</span>
           </p>
           <div className="offer-rule" aria-hidden="true" />
           <p className="offer-url">
