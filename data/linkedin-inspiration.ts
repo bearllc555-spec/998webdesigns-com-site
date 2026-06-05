@@ -1,4 +1,6 @@
 export type LinkedInInspirationProfile = {
+  /** Stable key for edit/delete; derived from URL slug when seeded. */
+  id?: string;
   name: string;
   href: string;
   summary: string;
