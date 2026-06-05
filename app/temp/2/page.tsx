@@ -17,8 +17,7 @@ export default function TempV2Page() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Click the cover to open the full 1584×396 banner in a new tab — screenshot or save for
-        LinkedIn upload.
+        Click the cover to open the upload-ready PNG in a new tab — right-click → Save image as.
       </p>
     </div>
   );

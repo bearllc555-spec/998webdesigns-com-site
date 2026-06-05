@@ -1,4 +1,4 @@
-/* Full upload size — 1584×396, no LinkedIn mockup chrome */
+/* Full upload size — 1584×396 PNG export */
 
 .linkedin-export-page {
   min-height: 100dvh;
@@ -11,6 +11,20 @@
   box-sizing: border-box;
 }
 
+.linkedin-export-status {
+  margin-bottom: 12px;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #52525b;
+}
+
+.linkedin-export-status--error {
+  color: #b91c1c;
+  max-width: 480px;
+  text-align: center;
+}
+
 .linkedin-export-page .linkedin-export-canvas {
   width: 1584px;
   height: 396px;
@@ -19,12 +33,50 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
+.linkedin-export-canvas--hidden {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.linkedin-export-image {
+  width: 1584px;
+  height: 396px;
+  max-width: calc(100vw - 48px);
+  height: auto;
+  aspect-ratio: 1584 / 396;
+  flex-shrink: 0;
+  display: block;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+}
+
+.linkedin-export-download {
+  margin-top: 14px;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid #2563eb;
+  background: #ffffff;
+}
+
+.linkedin-export-download:hover {
+  background: #eff6ff;
+}
+
 .linkedin-export-caption {
   margin-top: 16px;
   font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 13px;
   color: #52525b;
   text-align: center;
+  max-width: 520px;
 }
 
 .linkedin-export-caption strong {

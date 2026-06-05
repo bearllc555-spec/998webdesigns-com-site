@@ -49,9 +49,9 @@ export function LinkedInBannerPreview({
       <div className="linkedin-preview-meta">
         <h2>{designLabel}</h2>
         <p>
-          <strong>Click the cover</strong> to open the upload-ready banner (
-          {LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px) in a new tab. Preview below
-          matches LinkedIn desktop ({LINKEDIN_COVER_DISPLAY_W}×{LINKEDIN_COVER_DISPLAY_H}px).
+          <strong>Click the cover</strong> to open a PNG in a new tab (right-click → Save image
+          as). Preview below matches LinkedIn desktop ({LINKEDIN_COVER_DISPLAY_W}×
+          {LINKEDIN_COVER_DISPLAY_H}px).
         </p>
       </div>
 

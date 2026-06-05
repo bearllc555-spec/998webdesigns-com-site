@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Design4Artboard } from "@/components/temp/artboards/Design4Artboard";
+import { BannerExportView } from "@/components/temp/BannerExportView";
 import {
   LINKEDIN_COVER_UPLOAD_H,
   LINKEDIN_COVER_UPLOAD_W,
@@ -14,14 +15,12 @@ export const metadata: Metadata = {
 
 export default function TempV4ExportPage() {
   return (
-    <div className="temp-page-v4 linkedin-export-page">
-      <div className="linkedin-export-canvas">
-        <Design4Artboard />
-      </div>
-      <p className="linkedin-export-caption">
-        Design 4 — <strong>{LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px</strong>. Screenshot
-        this rectangle for LinkedIn upload.
-      </p>
-    </div>
+    <BannerExportView
+      designLabel="Design 4"
+      pageClassName="temp-page-v4"
+      fileName="linkedin-banner-design-4.png"
+    >
+      <Design4Artboard />
+    </BannerExportView>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Design1Artboard } from "@/components/temp/artboards/Design1Artboard";
+import { BannerExportView } from "@/components/temp/BannerExportView";
 import {
   LINKEDIN_COVER_UPLOAD_H,
   LINKEDIN_COVER_UPLOAD_W,
@@ -14,14 +15,12 @@ export const metadata: Metadata = {
 
 export default function TempExportPage() {
   return (
-    <div className="temp-page linkedin-export-page">
-      <div className="linkedin-export-canvas">
-        <Design1Artboard />
-      </div>
-      <p className="linkedin-export-caption">
-        Design 1 — <strong>{LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px</strong>. Screenshot
-        this rectangle or use your browser&apos;s full-page capture for LinkedIn upload.
-      </p>
-    </div>
+    <BannerExportView
+      designLabel="Design 1"
+      pageClassName="temp-page"
+      fileName="linkedin-banner-design-1.png"
+    >
+      <Design1Artboard />
+    </BannerExportView>
   );
 }
