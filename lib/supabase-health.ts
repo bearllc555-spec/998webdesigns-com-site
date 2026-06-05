@@ -6,6 +6,7 @@ export type SupabaseHealth = {
   apiRateLimitsTable: boolean;
   contactSubmissionsTable: boolean;
   stripeSubscriptionColumn: boolean;
+  hostingBillingColumns: boolean;
   crmTelegramSettingsTable: boolean;
   processedStripeEventsTable: boolean;
 };
@@ -20,12 +21,14 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
       apiRateLimitsTable: false,
       contactSubmissionsTable: false,
       stripeSubscriptionColumn: false,
+      hostingBillingColumns: false,
       crmTelegramSettingsTable: false,
       processedStripeEventsTable: false,
     };
   }
 
-  const [leads, limits, contacts, subscriptionCol, crmTelegram, stripeEvents] = await Promise.all([
+  const [leads, limits, contacts, subscriptionCol, hostingBillingCol, crmTelegram, stripeEvents] =
+    await Promise.all([
     supa.from("wd_leads").select("id", { head: true, count: "exact" }).limit(0),
     supa
       .from("api_rate_limits")
@@ -38,6 +41,10 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     supa
       .from("wd_leads")
       .select("stripe_subscription_id", { head: true, count: "exact" })
+      .limit(0),
+    supa
+      .from("wd_leads")
+      .select("hosting_billing_starts_at", { head: true, count: "exact" })
       .limit(0),
     supa
       .from("crm_telegram_settings")
@@ -55,6 +62,7 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     apiRateLimitsTable: !isMissingTable(limits.error),
     contactSubmissionsTable: !isMissingTable(contacts.error),
     stripeSubscriptionColumn: !isMissingColumn(subscriptionCol.error),
+    hostingBillingColumns: !isMissingColumn(hostingBillingCol.error),
     crmTelegramSettingsTable: !isMissingTable(crmTelegram.error),
     processedStripeEventsTable: !isMissingTable(stripeEvents.error),
   };

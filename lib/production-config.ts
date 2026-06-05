@@ -80,6 +80,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "wd_leads.stripe_subscription_id column missing — run supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql."
     );
+  } else if (!supabase.hostingBillingColumns) {
+    warnings.push(
+      "wd_leads hosting billing columns missing — POST /api/admin/migrate-hosting-billing with BALANCE_CAPTURE_SECRET."
+    );
   } else if (!supabase.crmTelegramSettingsTable) {
     warnings.push(
       "crm_telegram_settings table missing — POST /api/admin/migrate-crm-telegram with BALANCE_CAPTURE_SECRET."
@@ -110,7 +114,8 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     resendConfigured &&
     !modeMismatch &&
     supabaseConfigured &&
-    supabase.stripeSubscriptionColumn;
+    supabase.stripeSubscriptionColumn &&
+    supabase.hostingBillingColumns;
 
   return {
     vercelEnv,

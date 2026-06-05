@@ -6,7 +6,7 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production — 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`** only. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v32.x).
+**Live on Vercel** at https://998webdesigns.com — project **`998webdesigns-com-site`**. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v32.x).
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval — the pricing language is the product.**
 
@@ -14,33 +14,52 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 
 ## What ships today
 
-- Home (`/`) — Hero, add-ons, portfolio carousel, value props, how it works, pricing, FAQ, 5-step lead form, footer. Light/dark theme toggle.
+- Home (`/`) — Hero, add-ons, portfolio carousel (hover preview videos on most cards), value props, how it works, pricing, FAQ, **5-step lead form** (must pick `monthly` or `lifetime` hosting — no "decide later"), footer. Light/dark theme toggle.
 - `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
-- `/api/leads` — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert (graceful if table missing), Stripe Checkout ($5,998 pay-in-full; promo codes in `lib/design-promo-codes.ts`), Resend checkout-link email.
-- `/api/contact` — POST: honeypot, Supabase `contact_submissions` insert, Resend to hello@998webdesigns.com.
-- `/api/stripe/webhook` — signed webhook; `checkout.session.completed` syncs `paid_in_full` + internal payment email.
-- `/api/admin/env-status` — GET with `BALANCE_CAPTURE_SECRET` bearer; production wiring snapshot.
+- **`/api/leads`** — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert, Stripe Checkout for **design fee only** (+ 3% card surcharge on design), Resend checkout-link email. Promo codes in `lib/design-promo-codes.ts` (channel-specific; **LINKEDIN20 not on public FAQ**).
+- **`/api/contact`** — POST: honeypot, Supabase `contact_submissions` insert, Resend to hello@998webdesigns.com.
+- **`/api/stripe/webhook`** — signed webhook; design `checkout.session.completed` syncs lead + internal email; **lifetime hosting** path on day-31 Checkout + ACH pending alerts (`lib/internal-lead-email.ts`, `lib/crm-notify.ts`). Idempotency via `processed_stripe_events` + `lib/stripe-webhook-idempotency.ts`.
+- **`/api/cron/ten-year-hosting`** — daily 14:00 UTC (`vercel.json`); bills **lifetime hosting $2,996** on day 31 for leads that chose `lifetime`. Auth: `CRON_SECRET` or `BALANCE_CAPTURE_SECRET` bearer.
+- **`/api/admin/env-status`** — GET production wiring snapshot (no secret values). Bearer: `BALANCE_CAPTURE_SECRET`.
+- **`/api/admin/migrate-hosting-billing`** — POST idempotent migration for `hosting_billing_starts_at` columns. Bearer: `BALANCE_CAPTURE_SECRET`.
+- **Hosting policy** (`lib/hosting-policy.ts`, `lib/checkout-session.ts`) — first **30 days hosting free** for everyone; **monthly** = $198/mo after Stripe trial; **lifetime** = $2,996 deferred to day 31 (`lib/ten-year-hosting-billing.ts`).
 - **Checkout origins** — `lib/checkout-origin.ts` allowlist (no open redirect via `Origin`).
 - **Stripe go-live** — `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
 - OG image — `app/opengraph-image.tsx`.
-- Rate limiting — `proxy.ts` (in-memory) + Supabase `api_rate_limits` on API routes when tables exist (`lib/api-rate-limit.ts`).
+- Rate limiting — `proxy.ts` (in-memory) + Supabase `api_rate_limits` when table exists (`lib/api-rate-limit.ts`).
 - Analytics — `@vercel/analytics` in root layout.
-- **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` required in production; no `BALANCE_CAPTURE_SECRET` fallback), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` configures bot token + chat ids (Supabase `crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` — bump on every CRM change.
-- **Webhook idempotency** — `processed_stripe_events` table + `lib/stripe-webhook-idempotency.ts`.
+- **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` required in production), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` for bot token + chat ids (`crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` — bump on every CRM change.
+- **Alerts** — Resend internal emails + Telegram via CRM notify kinds (`lifetime_hosting_paid`, `lifetime_hosting_ach_pending`, design payment, etc.). No Slack.
+
+---
+
+## Production ops checklist (items 1–5)
+
+| # | Task | Status (2026-06-02) |
+|---|---|---|
+| **1** | Supabase migrations on **helmet** (`xwldbxburzqryxlzocck`) | **Verified via env-status** — `wd_leads`, `api_rate_limits`, `contact_submissions`, `stripe_subscription_id`, `crm_telegram_settings`, `processed_stripe_events` all present. **Hosting billing columns** probed by env-status after v32.93 (`hostingBillingColumns`). If missing: `POST /api/admin/migrate-hosting-billing` or `node scripts/apply-hosting-billing-migration.mjs` (needs current DB password in `slatepress/.local/`). |
+| **2** | Stripe webhook subscription events | **Done** — env-status reports `invoice.payment_failed` + `customer.subscription.deleted` on live webhook; `missingSubscriptionWebhookEvents: []`. |
+| **3** | Live checkout E2E | **Blocked** — bank has not approved a real-card live test. When cleared: `node scripts/create-live-checkout-smoke.mjs` ($1), confirm Stripe Event deliveries → 200, refund in Dashboard. |
+| **4** | `env-status` clean | **Done** — `GET /api/admin/env-status` with `BALANCE_CAPTURE_SECRET`: `warnings: []`, `readyForLiveCharges: true`, Stripe mode `live`, CRM `crmAdminSecretSource: dedicated`. Re-check after any Vercel env or schema change. |
+| **5** | `CRON_SECRET` on Vercel | **Optional** — cron route already accepts `BALANCE_CAPTURE_SECRET` as fallback. Set dedicated `CRON_SECRET` only if you want cron auth separate from admin bearer. |
+
+Quick re-check:
+
+```bash
+curl -s https://998webdesigns.com/api/admin/env-status \
+  -H "Authorization: Bearer $BALANCE_CAPTURE_SECRET"
+```
 
 ---
 
 ## Deferred / backlog
 
-- **Live checkout E2E (audit #5)** — blocked until bank approves a real-card test charge. Live Stripe + webhook + ACH verified via env-status; paid Checkout → webhook delivery 200 not yet proven. When approved: `node scripts/create-live-checkout-smoke.mjs` ($1), confirm Stripe Event deliveries → 200, refund. On portfolio queue: `whats-next.md` item 13.
-- **Portfolio carousel** — Serenity Spa is live-linked; other slots use placeholder art until real mockups + URLs ship (`data/portfolio.ts`).
-- **Slack** — optional; payment alerts already email `hello@` via Resend on webhook.
+- **Live checkout E2E (ops #3)** — blocked until bank approves real-card test (see ops table above).
+- **Portfolio polish** — Yogacentric hover video not captured yet; Borst Landscape has poster only (no preview mp4); Pocono still on `dev.vacation-homes.pages.dev` until apex ships (`data/portfolio.ts`).
 - **Stripe Billing Portal** — optional self-serve cancel for $198/mo (subscription id stored on `wd_leads`).
 - **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
-- **SendGrid** — not used; transactional email is **Resend**.
-- **Supabase tables** — run `supabase/schema.sql` once if `wd_leads` / `api_rate_limits` / `contact_submissions` are missing; or `supabase/contact-submissions.sql` if only contact table is new.
 - **Lighthouse / security review** — manual pass still recommended.
 - **Lawyer review** — Terms/Privacy are operator-drafted.
 
@@ -53,7 +72,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
 | Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` |
-| Supabase | **supabase-998webdesigns-helmet** (Vercel org bearllc555-6551's projects) |
+| Supabase | **supabase-998webdesigns-helmet** (ref `xwldbxburzqryxlzocck`) |
 
 ---
 
@@ -61,10 +80,10 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 
 - **Next.js 16** — App Router, TypeScript, `app/` at repo root (no `src/`), Tailwind CSS v4 (`app/globals.css` @theme)
 - **Fonts** — Inter (body) + Geist (display via `font-display`)
-- **Supabase** — Postgres; service-role inserts for leads
+- **Supabase** — Postgres on helmet; service-role for API routes
 - **Vercel** — production host, Hobby plan, Git push to `main` auto-deploys
-- **Stripe** — Checkout ($5,998 pay-in-full; lifetime hosting $2,996 on day 31; `lib/design-promo-codes.ts`)
-- **Resend** — contact form + lead checkout-link email (`RESEND_API_KEY`)
+- **Stripe** — Checkout (design fee); monthly hosting via subscription + 30-day trial; lifetime $2,996 on day 31
+- **Resend** — transactional email (`RESEND_API_KEY`)
 
 ---
 
@@ -75,7 +94,9 @@ app/
 ├── api/leads/route.ts
 ├── api/contact/route.ts
 ├── api/stripe/webhook/route.ts
+├── api/cron/ten-year-hosting/route.ts
 ├── api/admin/env-status/route.ts
+├── api/admin/migrate-hosting-billing/route.ts
 ├── globals.css
 ├── layout.tsx
 ├── page.tsx
@@ -93,9 +114,14 @@ data/
 └── faq.ts
 lib/
 ├── supabase.ts, stripe.ts, products.ts, version.ts
-├── validate-lead.ts, lead-email.ts, rate-limit.ts
+├── hosting-policy.ts, checkout-session.ts, ten-year-hosting-billing.ts
+├── validate-lead.ts, lead-email.ts, internal-lead-email.ts, crm-notify.ts
+├── supabase-health.ts, production-config.ts, stripe-ops-check.ts
 proxy.ts
 public/portfolio/
+scripts/
+├── apply-hosting-billing-migration.mjs
+└── create-live-checkout-smoke.mjs
 ```
 
 ---
@@ -106,11 +132,14 @@ public/portfolio/
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase client |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client |
-| `SUPABASE_SERVICE_ROLE_KEY` | `/api/leads` insert |
+| `SUPABASE_SERVICE_ROLE_KEY` | API routes (leads, CRM, rate limits) |
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
-| `RESEND_API_KEY` | `/api/contact`, `/api/leads` email |
-| `BALANCE_CAPTURE_SECRET` | `/api/admin/env-status` |
+| `RESEND_API_KEY` | Contact + lead + internal alert emails |
+| `BALANCE_CAPTURE_SECRET` | Admin bearer (`env-status`, migrate routes, cron fallback) |
+| `CRM_ADMIN_SECRET` | `/crm` login (required in production; do not reuse balance secret) |
+| `CRON_SECRET` | Optional — `/api/cron/ten-year-hosting` (falls back to balance secret) |
+| `POSTGRES_URL_NON_POOLING` / `POSTGRES_HOST` + `POSTGRES_PASSWORD` | Vercel Postgres integration — server-side DDL migrations |
 
 Set the same keys in Vercel → Project Settings → Environment Variables.
 
@@ -118,7 +147,12 @@ Set the same keys in Vercel → Project Settings → Environment Variables.
 
 ## Supabase schema
 
-Canonical SQL: **`supabase/schema.sql`** (`wd_leads` + `api_rate_limits`). Run once in **helmet** SQL editor. Service-role API routes bypass RLS.
+Canonical SQL: **`supabase/schema.sql`**. Incremental migrations in **`supabase/migrations/`**. Run in helmet SQL editor or via admin migrate POST routes / `scripts/apply-*.mjs`. Service-role API routes bypass RLS.
+
+Key migrations:
+- `20260602120000_wd_leads_stripe_subscription.sql` — `stripe_subscription_id`
+- `20260605140000_processed_stripe_events.sql` — webhook idempotency
+- `20260605180000_wd_leads_hosting_billing.sql` — lifetime day-31 billing columns
 
 ---
 
@@ -139,7 +173,7 @@ cd repos/998webdesigns-com-site
 git checkout -b fix/<name>   # or polish/feat — preview on Vercel branch deploy
 npm run dev   # http://localhost:3000 (pinned in package.json)
 npm run build
-git commit -m "v27.x: description"   # ASCII-only
+git commit -m "v32.x: description"   # ASCII-only
 git push -u origin fix/<name>
 # review preview, merge to main for production
 ```
@@ -169,4 +203,5 @@ npm run dev
 | Date | Event |
 |---|---|
 | 2026-05-21 | v0.1 scaffold (Next.js + Supabase + home + leads stub). |
-| 2026-06 | Vercel production, Stripe Checkout, Resend, legal, SEO, rate limits, v27.x audit fixes, vitest. |
+| 2026-06 | Vercel production, Stripe Checkout, Resend, legal, SEO, rate limits, CRM, vitest. |
+| 2026-06-02 | Hosting policy shipped: 30-day free trial, monthly $198/mo, lifetime $2,996 day-31 cron, lifetime paid alerts, FAQ hosting limits + promo cleanup, env-status hosting column probe, ops 1–5 documented (E2E blocked on bank). |

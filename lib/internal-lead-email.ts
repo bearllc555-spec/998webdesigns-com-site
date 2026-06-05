@@ -165,7 +165,7 @@ export async function sendInternalAchFailedEmail(
   }
 }
 
-function paymentChannelLabel(session: Stripe.Checkout.Session): string {
+function checkoutSessionPaymentLabel(session: Stripe.Checkout.Session): string {
   const meta = session.metadata ?? {};
   if (meta.paymentChannel === "ach") return "Bank (ACH)";
   if (meta.paymentChannel === "card") return "Card";
@@ -206,7 +206,7 @@ export async function sendInternalLifetimeHostingPaidEmail(
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">Lifetime hosting payment cleared</h2>
         <p><strong>Status:</strong> Lifetime hosting active</p>
-        <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(session))}</p>
+        <p><strong>Payment method:</strong> ${escapeHtml(checkoutSessionPaymentLabel(session))}</p>
         ${achNote}
         <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
         <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
