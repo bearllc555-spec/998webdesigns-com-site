@@ -42,7 +42,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 |---|---|---|
 | **1** | Supabase migrations on **helmet** (`xwldbxburzqryxlzocck`) | **Verified via env-status** — `wd_leads`, `api_rate_limits`, `contact_submissions`, `stripe_subscription_id`, `crm_telegram_settings`, `processed_stripe_events` all present. **Hosting billing columns** probed by env-status after v32.93 (`hostingBillingColumns`). If missing: `POST /api/admin/migrate-hosting-billing` or `node scripts/apply-hosting-billing-migration.mjs` (needs current DB password in `slatepress/.local/`). |
 | **2** | Stripe webhook subscription events | **Done** — env-status reports `invoice.payment_failed` + `customer.subscription.deleted` on live webhook; `missingSubscriptionWebhookEvents: []`. |
-| **3** | Live checkout E2E | **Blocked** — bank has not approved a real-card live test. When cleared: `node scripts/create-live-checkout-smoke.mjs` ($1), confirm Stripe Event deliveries → 200, refund in Dashboard. |
+| **3** | Live checkout E2E | **Done** — $1 live smoke (`cs_live_a1md3zcykOuvz5fXJx3RaVfbaxL6fBUe76edhc6BM8sBVPnmr5vXcZqxaB`): Checkout paid, `/thanks` rendered, Resend receipt + hello@ alert, Telegram fired. **Refund $1** in Stripe Dashboard; reset `wd_leads` for `bearllc555@gmail.com` if smoke row was updated. Open checkout via `smoke-checkout-open.html` (URL hash required). |
 | **4** | `env-status` clean | **Done** — `GET /api/admin/env-status` with `BALANCE_CAPTURE_SECRET`: `warnings: []`, `readyForLiveCharges: true`, Stripe mode `live`, CRM `crmAdminSecretSource: dedicated`. Re-check after any Vercel env or schema change. |
 | **5** | `CRON_SECRET` on Vercel | **Optional** — cron route already accepts `BALANCE_CAPTURE_SECRET` as fallback. Set dedicated `CRON_SECRET` only if you want cron auth separate from admin bearer. |
 
@@ -57,7 +57,6 @@ curl -s https://998webdesigns.com/api/admin/env-status \
 
 ## Deferred / backlog
 
-- **Live checkout E2E (ops #3)** — blocked until bank approves real-card test (see ops table above).
 - **Portfolio polish** — Yogacentric hover video not captured yet; Borst Landscape has poster only (no preview mp4); Pocono still on `dev.vacation-homes.pages.dev` until apex ships (`data/portfolio.ts`).
 - **Stripe Billing Portal** — optional self-serve cancel for $198/mo (subscription id stored on `wd_leads`).
 - **Lawyer review** — Terms/Privacy are operator-drafted.
@@ -205,3 +204,4 @@ npm run dev
 | 2026-06 | Vercel production, Stripe Checkout, Resend, legal, SEO, rate limits, CRM, vitest. |
 | 2026-06-02 | Hosting policy shipped: 30-day free trial, monthly $198/mo, lifetime $2,996 day-31 cron, lifetime paid alerts, FAQ hosting limits + promo cleanup, env-status hosting column probe, ops 1–5 documented (E2E blocked on bank). |
 | 2026-06-02 | v32.94–95: `/portfolio`, `/pricing`, `/start` standalone routes + sitemap; Lighthouse/security QA pass (HSTS, CSP, admin 401, robots/sitemap); a11y contrast + heading-order fixes on add-ons + version pill. |
+| 2026-06-02 | Live checkout E2E verified (ops #3): $1 smoke paid end-to-end; smoke script launcher fix (`1dbec4c`). |
