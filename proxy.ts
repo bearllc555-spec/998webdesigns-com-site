@@ -59,6 +59,7 @@ export const config = {
   matcher: [
     "/api/leads",
     "/api/contact",
+    "/api/hosting/portal/request",
     "/api/admin/:path*",
     "/api/crm/:path*",
   ],

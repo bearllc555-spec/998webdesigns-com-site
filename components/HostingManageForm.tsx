@@ -51,7 +51,15 @@ export function HostingManageForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: trimmed, website }),
       });
-      const data = (await res.json()) as { error?: string; message?: string };
+      let data: { error?: string; message?: string } = {};
+      try {
+        data = (await res.json()) as { error?: string; message?: string };
+      } catch {
+        if (!res.ok) {
+          setError("Something went wrong. Try again or email hello@998webdesigns.com.");
+          return;
+        }
+      }
       if (!res.ok) {
         setError(data.error ?? "Something went wrong. Try again or email hello@998webdesigns.com.");
         return;

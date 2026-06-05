@@ -10,6 +10,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/leads": { limit: 5, windowMs: 60_000 },
   "/api/contact": { limit: 10, windowMs: 60_000 },
+  "/api/hosting/portal/request": { limit: 5, windowMs: 60_000 },
   "/api/admin/env-status": { limit: 5, windowMs: 60_000 },
   "/api/crm/session": { limit: 10, windowMs: 60_000 },
   "/api/crm/feed": { limit: 60, windowMs: 60_000 },
