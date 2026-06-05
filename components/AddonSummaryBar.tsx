@@ -62,7 +62,7 @@ export function AddonSummaryBar() {
               /mo
             </p>
             <a
-              href="#start"
+              href="/start"
               className="rounded-full bg-[#2563eb] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#2563eb]/90"
             >
               Get Started →
@@ -86,7 +86,7 @@ export function AddonSummaryBar() {
             /mo
           </p>
           <a
-            href="#start"
+            href="/start"
             className="w-full rounded-full bg-[#2563eb] px-5 py-2 text-center text-sm font-semibold text-white transition-colors hover:bg-[#2563eb]/90"
           >
             Get Started →

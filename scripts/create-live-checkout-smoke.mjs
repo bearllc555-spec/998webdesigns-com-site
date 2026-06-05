@@ -45,7 +45,7 @@ const session = await stripe.checkout.sessions.create({
   },
   success_url:
     "https://998webdesigns.com/thanks?session_id={CHECKOUT_SESSION_ID}",
-  cancel_url: "https://998webdesigns.com/#start",
+  cancel_url: "https://998webdesigns.com/start",
 });
 
 console.log("session_id", session.id);

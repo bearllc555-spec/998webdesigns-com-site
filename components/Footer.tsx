@@ -39,14 +39,17 @@ export function Footer() {
             <Link href="/#addons" className="nav-link transition hover:text-ink">
               Add‑ons
             </Link>
-            <Link href="/#work" className="nav-link transition hover:text-ink">
+            <Link href="/portfolio" className="nav-link transition hover:text-ink">
               Recent Work
             </Link>
             <Link href="/#how" className="nav-link transition hover:text-ink">
               How it works
             </Link>
-            <Link href="/#pricing" className="nav-link transition hover:text-ink">
+            <Link href="/pricing" className="nav-link transition hover:text-ink">
               Pricing
+            </Link>
+            <Link href="/start" className="nav-link transition hover:text-ink">
+              Get started
             </Link>
             <Link href="/#faq" className="nav-link transition hover:text-ink">
               FAQ

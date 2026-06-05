@@ -20,7 +20,7 @@ export default async function Thanks({
   const sessionId = params.session_id;
 
   if (!sessionId) {
-    redirect("/#start");
+    redirect("/start");
   }
 
   let view: ThanksView = "paid";
@@ -37,10 +37,10 @@ export default async function Thanks({
     ) {
       view = "ach_processing";
     } else {
-      redirect("/#start");
+      redirect("/start");
     }
   } catch {
-    redirect("/#start");
+    redirect("/start");
   }
 
   if (view === "ach_processing") {

@@ -20,7 +20,7 @@ export function Hero() {
 
         <div className="mt-9 flex flex-wrap items-center gap-3">
           <a
-            href="#start"
+            href="/start"
             className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-base font-medium text-on-accent transition hover:bg-accent-deep"
           >
             Get started with a new design

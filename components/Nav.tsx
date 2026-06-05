@@ -10,9 +10,9 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/#addons", label: "Add\u2011ons" },
-  { href: "/#work", label: "Recent Work" },
+  { href: "/portfolio", label: "Recent Work" },
   { href: "/#how", label: "How it works" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ] as const;
 
@@ -94,7 +94,7 @@ export function Nav() {
               Contact
             </button>
             <Link
-              href="/#start"
+              href="/start"
               className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
             >
               Get Started

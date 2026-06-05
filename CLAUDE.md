@@ -15,6 +15,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 ## What ships today
 
 - Home (`/`) — Hero, add-ons, portfolio carousel (hover preview videos on most cards), value props, how it works, pricing, FAQ, **5-step lead form** (must pick `monthly` or `lifetime` hosting — no "decide later"), footer. Light/dark theme toggle.
+- `/portfolio`, `/pricing`, `/start` — standalone marketing routes (same components as home sections; canonical nav targets).
 - `/thanks` — post-payment timeline; requires paid Stripe `session_id` (no spoofing via query string).
 - `/legal/terms`, `/legal/privacy` — operator-drafted legal copy aligned to Stripe + lead form flow.
 - **`/api/leads`** — POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert, Stripe Checkout for **design fee only** (+ 3% card surcharge on design), Resend checkout-link email. Promo codes in `lib/design-promo-codes.ts` (channel-specific; **LINKEDIN20 not on public FAQ**).
@@ -59,8 +60,7 @@ curl -s https://998webdesigns.com/api/admin/env-status \
 - **Live checkout E2E (ops #3)** — blocked until bank approves real-card test (see ops table above).
 - **Portfolio polish** — Yogacentric hover video not captured yet; Borst Landscape has poster only (no preview mp4); Pocono still on `dev.vacation-homes.pages.dev` until apex ships (`data/portfolio.ts`).
 - **Stripe Billing Portal** — optional self-serve cancel for $198/mo (subscription id stored on `wd_leads`).
-- **Standalone `/portfolio`, `/pricing`, `/start`** — anchors on home only.
-- **Lighthouse / security review** — manual pass still recommended.
+- **Lighthouse tuning** — v32.94 pass: home/performance 90+, portfolio video weight is main LCP risk; see session QA notes in git log for v32.94.
 - **Lawyer review** — Terms/Privacy are operator-drafted.
 
 ---
