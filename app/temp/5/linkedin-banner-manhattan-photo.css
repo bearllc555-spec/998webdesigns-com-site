@@ -7,7 +7,7 @@
   color: #0a0a0a;
 }
 
-/* Design 5 — faded night Manhattan photo, zoomed on mid skyline */
+/* Design 5 — night Manhattan photo, zoomed on mid skyline (no fade) */
 .temp-page-v5 .linkedin-banner .skyline-wrap {
   position: absolute;
   left: 0;
@@ -25,37 +25,12 @@
   object-fit: cover;
   object-position: 44% 78%;
   display: block;
-  transform: scale(1.58);
+  transform: scale(2.05);
   transform-origin: 44% 100%;
-  opacity: 0.36;
-  filter: saturate(0.82) contrast(1.04) brightness(1.14);
-}
-
-.temp-page-v5 .linkedin-banner .skyline-wrap::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.78) 0%,
-    rgba(248, 250, 252, 0.42) 42%,
-    rgba(239, 246, 255, 0.22) 100%
-  );
-  pointer-events: none;
 }
 
 .temp-page-v5 .linkedin-banner .sky-fade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(255, 255, 255, 0.45) 38%,
-    rgba(255, 255, 255, 0.08) 58%,
-    transparent 78%
-  );
-  pointer-events: none;
-  z-index: 1;
+  display: none;
 }
 
 .temp-page-v5 .linkedin-banner .bg-line {

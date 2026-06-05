@@ -8,7 +8,7 @@
 | 2 | https://998webdesigns.com/temp/2 | Geist + Inter, Manhattan, **blue gradient offer** (locked) |
 | 3 | https://998webdesigns.com/temp/3 | Same as 2 + **frosted glass offer** |
 | 4 | https://998webdesigns.com/temp/4 | Wireframe UI deco, slanted navy offer (from live LinkedIn reference) |
-| 5 | https://998webdesigns.com/temp/5 | Same as 3 + **faded night Manhattan photo** (`public/linkedin-banner/manhattan-skyline-night.png`, zoomed mid skyline) |
+| 5 | https://998webdesigns.com/temp/5 | Same as 3 + **night Manhattan photo** (`public/linkedin-banner/manhattan-skyline-night.png`, zoomed mid skyline, no fade) |
 
 **Upload export (1584×396):** click the cover on any preview page (opens PNG in a new tab — right-click → Save image as), or open `/temp/export` … `/temp/5/export` directly. Each export tab also has a **Download PNG** link.
 
