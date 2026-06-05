@@ -38,6 +38,10 @@ export const faq: FAQItem[] = [
     a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us for life — and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
   },
   {
+    q: "How do I manage hosting billing?",
+    a: "Month-to-month clients can update a card, view invoices, or cancel hosting anytime. Go to 998webdesigns.com/hosting/manage, enter the email on your account, and we'll email a secure one-time link to Stripe's billing portal. Cancellation takes effect at the end of your current billing period. Lifetime hosting is a one-time charge — there is no recurring subscription to manage.",
+  },
+  {
     q: "What's the edit policy after month three?",
     a: "Edits are free for the first three months while we get everything dialed in. After that, submit edits via form for $10 each, with a $50 minimum top-up on your account. You see the balance, you see each deduction. No mystery line items.",
   },

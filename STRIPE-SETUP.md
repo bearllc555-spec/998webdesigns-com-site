@@ -124,3 +124,28 @@ Or ask Cursor in Agent mode after the two `.local` files are filled.
 - Optional lifetime hosting: **$2,996** on day 31 when selected on lead form
 
 See `lib/checkout-line-items.ts`.
+
+---
+
+## Customer billing portal (month-to-month hosting)
+
+Self-serve card updates, invoices, and cancel-at-period-end for $198/mo clients.
+
+| Surface | URL |
+|---------|-----|
+| Email form | https://998webdesigns.com/hosting/manage |
+| Magic link API | `POST /api/hosting/portal/request` |
+| Stripe redirect | `GET /api/hosting/portal/session?token=...` |
+
+**One-time Stripe Dashboard / CLI setup**
+
+1. Run (live account):  
+   `node scripts/configure-stripe-billing-portal.mjs`  
+   Uses `STRIPE_SECRET_KEY` or `slatepress/.local/stripe-live-secret-key.txt`.
+2. Optional: paste printed `STRIPE_BILLING_PORTAL_CONFIGURATION_ID` into Vercel Production env.
+3. Or configure manually: [Stripe Dashboard → Settings → Billing → Customer portal](https://dashboard.stripe.com/settings/billing/portal)  
+   - Enable **payment method update** and **invoice history**  
+   - Enable **subscription cancellation** → **At end of billing period**  
+   - Disable product/plan switching and customer profile edits
+
+Magic links are HMAC-signed with `BALANCE_CAPTURE_SECRET` (15-minute TTL). Eligible leads: `wd_leads` with `stripe_customer_id`, `stripe_subscription_id`, and `hostingChoice: monthly`.

@@ -10,6 +10,7 @@ export const INDEXABLE_ROUTES = [
   { path: "/portfolio", changeFrequency: "weekly" as const, priority: 0.8 },
   { path: "/pricing", changeFrequency: "monthly" as const, priority: 0.9 },
   { path: "/start", changeFrequency: "monthly" as const, priority: 0.9 },
+  { path: "/hosting/manage", changeFrequency: "monthly" as const, priority: 0.4 },
   { path: "/legal/terms", changeFrequency: "monthly" as const, priority: 0.3 },
   { path: "/legal/privacy", changeFrequency: "monthly" as const, priority: 0.3 },
 ];
