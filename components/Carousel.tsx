@@ -242,9 +242,21 @@ export function Carousel() {
 
       <style>{`
         .group:hover .thumb-img--pan { object-position: bottom center !important; }
+        .portfolio-strip-track {
+          transition: transform var(--strip-duration, 6s) steps(var(--strip-steps));
+          transform: translateY(0);
+        }
+        .group:hover .portfolio-strip-track {
+          transform: translateY(calc(-100% * var(--strip-steps) / var(--strip-frames)));
+        }
         @media (prefers-reduced-motion: reduce) {
           .thumb-img--pan { transition: none !important; }
           .group:hover .thumb-img--pan { object-position: top center !important; }
+          .portfolio-strip-track,
+          .group:hover .portfolio-strip-track {
+            transition: none !important;
+            transform: none !important;
+          }
         }
       `}</style>
     </div>
@@ -265,9 +277,12 @@ function PortfolioPreview({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [videoActive, setVideoActive] = useState(false);
+  const [stripLoaded, setStripLoaded] = useState(false);
 
   const poster = item.previewPoster ?? item.thumbnail;
-  const useVideo = Boolean(item.previewVideo) && !reduceMotion;
+  const useStrip =
+    Boolean(item.previewStrip && item.previewStripFrames) && !reduceMotion;
+  const useVideo = Boolean(item.previewVideo) && !reduceMotion && !useStrip;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -279,6 +294,10 @@ function PortfolioPreview({
 
   const handleEnter = () => {
     onThumbnailEnter?.();
+    if (useStrip) {
+      setStripLoaded(true);
+      return;
+    }
     if (!useVideo) return;
     const video = videoRef.current;
     if (!video) return;
@@ -289,6 +308,7 @@ function PortfolioPreview({
 
   const handleLeave = () => {
     onThumbnailLeave?.();
+    if (useStrip) return;
     if (!useVideo) return;
     const video = videoRef.current;
     if (!video) return;
@@ -305,25 +325,62 @@ function PortfolioPreview({
       onFocus={handleEnter}
       onBlur={handleLeave}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={poster}
-        alt={`${item.name} — ${item.industry}`}
-        loading="lazy"
-        decoding="async"
-        className={[
-          "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
-          useVideo ? (videoActive ? "opacity-0" : "opacity-100") : "thumb-img--pan",
-        ].join(" ")}
-        style={
-          useVideo
-            ? { objectPosition: "top center" }
-            : {
-                objectPosition: "top center",
-                transition: `object-position ${revealSeconds}s linear`,
+      {useStrip && item.previewStrip && item.previewStripFrames ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={poster}
+            alt={`${item.name} — ${item.industry}`}
+            loading="lazy"
+            decoding="async"
+            className={[
+              "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300",
+              stripLoaded ? "opacity-0" : "opacity-100",
+            ].join(" ")}
+          />
+          {stripLoaded ? (
+            <div
+              className="portfolio-strip-track w-full"
+              style={
+                {
+                  "--strip-frames": item.previewStripFrames,
+                  "--strip-steps": item.previewStripFrames - 1,
+                  "--strip-duration": `${revealSeconds}s`,
+                } as React.CSSProperties
               }
-        }
-      />
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.previewStrip}
+                alt=""
+                decoding="async"
+                className="block h-auto w-full"
+                aria-hidden
+              />
+            </div>
+          ) : null}
+        </>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={poster}
+          alt={`${item.name} — ${item.industry}`}
+          loading="lazy"
+          decoding="async"
+          className={[
+            "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
+            useVideo ? (videoActive ? "opacity-0" : "opacity-100") : "thumb-img--pan",
+          ].join(" ")}
+          style={
+            useVideo
+              ? { objectPosition: "top center" }
+              : {
+                  objectPosition: "top center",
+                  transition: `object-position ${revealSeconds}s linear`,
+                }
+          }
+        />
+      )}
       {useVideo && item.previewVideo ? (
         <video
           ref={videoRef}

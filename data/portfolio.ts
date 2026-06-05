@@ -1,6 +1,7 @@
 // Portfolio carousel data.
 // Poster: public/portfolio/<slug>.jpg
-// Hover preview: public/portfolio/<slug>.mp4 — scripts/capture-portfolio-preview.mjs
+// Hover preview (preferred): public/portfolio/<slug>-strip.jpg — scripts/capture-portfolio-strip.mjs
+// Legacy video: public/portfolio/<slug>.mp4 — scripts/capture-portfolio-preview.mjs
 //   (splices ~5s from the page hero <video> MP4, then a viewport scroll recording)
 // URLs: apex pages.dev or client production domains. Branch previews (dev.*) only when no apex exists yet.
 
@@ -12,8 +13,12 @@ export type PortfolioItem = {
   url?: string;
   /** Poster / fallback when preview video is absent or reduced-motion. */
   thumbnail: string;
-  /** Muted loop played on card hover (desktop). */
+  /** Muted loop played on card hover (desktop). Superseded by previewStrip when set. */
   previewVideo?: string;
+  /** Vertical frame strip (JPEG) — stepped scroll on hover; preferred over previewVideo. */
+  previewStrip?: string;
+  /** Frame count in previewStrip (for stepped translateY). */
+  previewStripFrames?: number;
   /** Optional poster override; defaults to thumbnail. */
   previewPoster?: string;
 };
@@ -49,6 +54,8 @@ export const portfolio: PortfolioItem[] = [
     industry: "Yoga & wellness",
     url: "https://yogacentric-com-site.pages.dev/",
     thumbnail: "/portfolio/yogacentric.jpg",
+    previewStrip: "/portfolio/yogacentric-strip.jpg",
+    previewStripFrames: 36,
   },
   {
     slug: "borst-landscape",
@@ -87,4 +94,6 @@ export const industries = Array.from(
   new Set(portfolio.map((p) => p.industry))
 ).sort();
 
-export const hasPortfolioVideoPreviews = portfolio.some((p) => p.previewVideo);
+export const hasPortfolioVideoPreviews = portfolio.some(
+  (p) => p.previewStrip || p.previewVideo
+);
