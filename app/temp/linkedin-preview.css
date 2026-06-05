@@ -1,4 +1,4 @@
-/* LinkedIn profile intro — desktop cover display 1128×282 (upload 1584×396) */
+/* LinkedIn desktop profile intro — card ~804px wide, cover 4:1 (~201px tall) */
 
 .temp-page,
 .temp-page-v2,
@@ -16,7 +16,7 @@
 }
 
 .linkedin-preview-wrap {
-  width: var(--li-cover-w, 1128px);
+  width: var(--li-card-w, 804px);
   max-width: calc(100vw - 32px);
   margin: 0 auto;
 }
@@ -24,7 +24,7 @@
 .linkedin-preview-meta {
   width: 100%;
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .linkedin-preview-meta h2 {
@@ -38,7 +38,7 @@
   margin-top: 6px;
   font-size: 12px;
   color: #52525b;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .linkedin-preview-meta strong {
@@ -46,9 +46,9 @@
   color: #27272a;
 }
 
-/* Matches LinkedIn desktop intro card (white panel on #f3f2ef feed) */
+/* White intro card — same width as linkedin.com/in/… main column */
 .linkedin-mockup {
-  width: var(--li-cover-w, 1128px);
+  width: var(--li-card-w, 804px);
   max-width: 100%;
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -59,10 +59,10 @@
   overflow: visible;
 }
 
-/* Exact LinkedIn desktop cover rectangle */
+/* Cover slot = how LinkedIn displays the uploaded 1584×396 image */
 .linkedin-cover-slot {
   width: 100%;
-  height: var(--li-cover-h, 282px);
+  height: var(--li-cover-h, 201px);
   overflow: hidden;
   position: relative;
   background: #ffffff;
@@ -87,7 +87,6 @@
   z-index: 2;
 }
 
-/* 1584×396 artboard — uniform scale only (no typography overrides) */
 .linkedin-cover-scale {
   position: absolute;
   left: 0;
@@ -99,43 +98,44 @@
 .linkedin-profile-stub {
   position: relative;
   padding: 0 24px 20px;
-  min-height: 132px;
+  min-height: calc(var(--li-stub-pad-top, 84px) + 88px);
   background: #ffffff;
   border-radius: 0 0 8px 8px;
 }
 
+/* 152px photo: center on bottom edge of cover (matches LinkedIn) */
 .linkedin-avatar {
   position: absolute;
-  left: 24px;
+  left: var(--li-avatar-left, 24px);
   top: 0;
-  width: 152px;
-  height: 152px;
+  width: var(--li-avatar-size, 152px);
+  height: var(--li-avatar-size, 152px);
   transform: translateY(-50%);
   border-radius: 50%;
-  border: 4px solid #ffffff;
-  background: linear-gradient(145deg, #e4e4e7 0%, #cbd5e1 100%);
+  border: var(--li-avatar-border, 4px) solid #ffffff;
+  background: linear-gradient(145deg, #d4d4d8 0%, #a1a1aa 45%, #71717a 100%);
   box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.06),
-    0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 3;
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 2px 10px rgba(0, 0, 0, 0.12);
+  z-index: 4;
   pointer-events: none;
 }
 
-.linkedin-avatar::after {
+.linkedin-avatar::before {
   content: "";
   position: absolute;
-  inset: 20% 24%;
+  inset: 18% 22%;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.45), transparent 65%);
 }
 
 .linkedin-stub-body {
-  margin-left: 188px;
-  padding-top: 12px;
+  margin-left: var(--li-stub-body-left, 192px);
+  padding-top: var(--li-stub-pad-top, 84px);
 }
 
 .linkedin-stub-lines {
-  max-width: 520px;
+  max-width: 100%;
 }
 
 .linkedin-stub-line {
@@ -144,20 +144,21 @@
 }
 
 .linkedin-stub-line--name {
-  height: 22px;
-  width: 42%;
+  height: 20px;
+  width: 38%;
+  max-width: 200px;
 }
 
 .linkedin-stub-line--headline {
   margin-top: 10px;
-  height: 14px;
-  width: 88%;
+  height: 13px;
+  width: 92%;
 }
 
 .linkedin-stub-line--meta {
   margin-top: 8px;
-  height: 12px;
-  width: 36%;
+  height: 11px;
+  width: 34%;
   background: #f4f4f5;
 }
 
@@ -165,20 +166,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .linkedin-stub-btn {
   display: block;
   height: 32px;
-  width: 108px;
+  width: 100px;
   border-radius: 24px;
   background: #ffffff;
   border: 1px solid #0a66c2;
 }
 
 .linkedin-stub-btn--primary {
-  width: 88px;
+  width: 80px;
   background: #0a66c2;
   border-color: #0a66c2;
 }
@@ -234,7 +235,7 @@
   z-index: 20;
 }
 
-@media (max-width: 1160px) {
+@media (max-width: 840px) {
   .linkedin-preview-wrap,
   .linkedin-mockup {
     width: 100%;

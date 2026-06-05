@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import {
+  LINKEDIN_AVATAR_BORDER,
+  LINKEDIN_AVATAR_LEFT,
+  LINKEDIN_AVATAR_SIZE,
   LINKEDIN_COVER_DISPLAY_H,
   LINKEDIN_COVER_DISPLAY_W,
   LINKEDIN_COVER_UPLOAD_H,
   LINKEDIN_COVER_UPLOAD_W,
+  LINKEDIN_PROFILE_CARD_W,
 } from "@/lib/linkedin-banner-preview";
 
 type LinkedInBannerPreviewProps = {
@@ -16,8 +20,8 @@ type LinkedInBannerPreviewProps = {
 };
 
 /**
- * Renders the 1584×396 artboard inside a fixed LinkedIn desktop cover rectangle
- * (1128×282) with profile-photo overlap — WYSIWYG for what you see on your profile.
+ * Scales the 1584×396 upload artboard into LinkedIn’s desktop profile card cover
+ * (~804×201) with a 152px photo overlapping the bottom-left — matches live profile.
  */
 export function LinkedInBannerPreview({
   children,
@@ -44,33 +48,37 @@ export function LinkedInBannerPreview({
     return () => ro.disconnect();
   }, []);
 
+  const mockupStyle = {
+    "--li-card-w": `${LINKEDIN_PROFILE_CARD_W}px`,
+    "--li-cover-w": `${LINKEDIN_COVER_DISPLAY_W}px`,
+    "--li-cover-h": `${LINKEDIN_COVER_DISPLAY_H}px`,
+    "--li-avatar-size": `${LINKEDIN_AVATAR_SIZE}px`,
+    "--li-avatar-left": `${LINKEDIN_AVATAR_LEFT}px`,
+    "--li-avatar-border": `${LINKEDIN_AVATAR_BORDER}px`,
+    "--li-stub-pad-top": `${LINKEDIN_AVATAR_SIZE / 2 + 8}px`,
+    "--li-stub-body-left": `${LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_SIZE + 16}px`,
+  } as CSSProperties;
+
   return (
     <div className="linkedin-preview-wrap">
       <div className="linkedin-preview-meta">
         <h2>{designLabel}</h2>
         <p>
-          <strong>Click the cover</strong> to open a PNG in a new tab (right-click → Save image
-          as). Preview below matches LinkedIn desktop ({LINKEDIN_COVER_DISPLAY_W}×
-          {LINKEDIN_COVER_DISPLAY_H}px).
+          Preview is <strong>LinkedIn desktop profile card</strong> ({LINKEDIN_COVER_DISPLAY_W}×
+          {LINKEDIN_COVER_DISPLAY_H}px cover — how your upload appears after LinkedIn scales it).
+          Gray circle = your profile photo overlap.{" "}
+          <strong>Click the cover</strong> for the {LINKEDIN_COVER_UPLOAD_W}×
+          {LINKEDIN_COVER_UPLOAD_H}px PNG.
         </p>
       </div>
 
-      <div
-        className="linkedin-mockup"
-        style={
-          {
-            "--li-cover-w": `${LINKEDIN_COVER_DISPLAY_W}px`,
-            "--li-cover-h": `${LINKEDIN_COVER_DISPLAY_H}px`,
-          } as CSSProperties
-        }
-        aria-label="LinkedIn profile intro card preview"
-      >
+      <div className="linkedin-mockup" style={mockupStyle} aria-label="LinkedIn profile intro card preview">
         <Link
           href={exportHref}
           target="_blank"
           rel="noopener noreferrer"
           className="linkedin-cover-link"
-          title={`Open full-size banner (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H}) in a new tab`}
+          title={`Open upload PNG (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H})`}
         >
           <div ref={slotRef} className="linkedin-cover-slot">
             <div
@@ -84,7 +92,10 @@ export function LinkedInBannerPreview({
         </Link>
 
         <div className="linkedin-profile-stub" aria-hidden="true">
-          <div className="linkedin-avatar" title="Profile photo — overlaps bottom of cover" />
+          <div
+            className="linkedin-avatar"
+            title="Profile photo — overlaps bottom-left of cover on LinkedIn"
+          />
           <div className="linkedin-stub-body">
             <div className="linkedin-stub-lines">
               <div className="linkedin-stub-line linkedin-stub-line--name" />

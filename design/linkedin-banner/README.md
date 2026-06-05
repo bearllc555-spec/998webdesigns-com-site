@@ -24,7 +24,7 @@ Design aligned with the live site:
 
 ## Export for LinkedIn
 
-**Live previews** use a fixed **1128×282px** cover rectangle (LinkedIn desktop display) inside a white intro card with **152px** profile-photo overlap — same proportions as your live profile screenshot.
+**Live previews** use LinkedIn’s desktop **profile card width (~804px)** and a **4:1 cover (~201px tall)** — how LinkedIn scales your 1584×396 upload on linkedin.com/in/…, with a **152px** profile photo overlapping the bottom-left (not the wider 1128px feed column).
 
 1. Open https://998webdesigns.com/temp or `/temp/2` — preview matches how the cover looks on a LinkedIn profile.
 2. For the upload file, capture or export at **1584×396** (full artboard), or screenshot only the cover strip inside the white card if that matches your workflow.

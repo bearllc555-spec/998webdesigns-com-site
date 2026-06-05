@@ -14,7 +14,8 @@ export default function TempPage() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Click the cover to open the upload-ready PNG in a new tab — right-click → Save image as.
+        Preview matches your live LinkedIn card (~804px wide). Keep logo and offer right of the gray
+        photo circle. Click cover for upload PNG.
       </p>
     </div>
   );
