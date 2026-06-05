@@ -1,4 +1,4 @@
-/* LinkedIn profile cover preview — desktop display ~1128×282 (upload 1584×396) */
+/* LinkedIn profile intro — desktop cover display 1128×282 (upload 1584×396) */
 
 .temp-page,
 .temp-page-v2,
@@ -9,16 +9,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 56px 16px 88px;
+  gap: 24px;
+  padding: 56px 16px 96px;
   background: #f3f2ef;
   font-family: var(--font-inter), system-ui, sans-serif;
 }
 
+.linkedin-preview-wrap {
+  width: var(--li-cover-w, 1128px);
+  max-width: calc(100vw - 32px);
+  margin: 0 auto;
+}
+
 .linkedin-preview-meta {
   width: 100%;
-  max-width: 1128px;
   text-align: center;
+  margin-bottom: 4px;
 }
 
 .linkedin-preview-meta h2 {
@@ -40,33 +46,46 @@
   color: #27272a;
 }
 
-/* Card mimics LinkedIn profile header width on desktop */
+/* Matches LinkedIn desktop intro card (white panel on #f3f2ef feed) */
 .linkedin-mockup {
-  width: 100%;
-  max-width: 1128px;
+  width: var(--li-cover-w, 1128px);
+  max-width: 100%;
   background: #ffffff;
-  border: 1px solid #d6d6d6;
-  border-radius: 8px 8px 0 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.06);
+    0 4px 16px rgba(0, 0, 0, 0.08);
   overflow: visible;
 }
 
-.linkedin-preview-wrap {
-  width: 100%;
-  max-width: 1128px;
-}
-
+/* Exact LinkedIn desktop cover rectangle */
 .linkedin-cover-slot {
   width: 100%;
-  aspect-ratio: 1584 / 396;
+  height: var(--li-cover-h, 282px);
   overflow: hidden;
   position: relative;
   background: #ffffff;
+  border-radius: 8px 8px 0 0;
 }
 
-/* 1584×396 artboard — scale applied via ResizeObserver in LinkedInBannerPreview */
+.linkedin-cover-edit {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M11 2l1 1-8 8H3v-1l8-8z'/%3E%3C/svg%3E")
+    center / 14px no-repeat;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+
+/* 1584×396 artboard — uniform scale only (no typography overrides) */
 .linkedin-cover-scale {
   position: absolute;
   left: 0;
@@ -75,70 +94,27 @@
   will-change: transform;
 }
 
-/* Shared layout: fits artboard + clears LinkedIn avatar (~24px + 152px) */
-.linkedin-cover-scale .linkedin-banner .content {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 32px;
-  padding: 0 48px 0 200px;
-  box-sizing: border-box;
-}
-
-.linkedin-cover-scale .linkedin-banner .brand-block {
-  min-width: 0;
-  max-width: none;
-}
-
-.linkedin-cover-scale .linkedin-banner .logo {
-  font-size: 58px;
-}
-
-.linkedin-cover-scale .linkedin-banner .tagline {
-  font-size: 18px;
-}
-
-.linkedin-cover-scale .linkedin-banner .offer {
-  flex-shrink: 0;
-  min-width: 280px;
-  max-width: 300px;
-}
-
-.linkedin-cover-scale .linkedin-banner .offer-main {
-  font-size: 24px;
-}
-
-.linkedin-cover-scale .linkedin-banner .offer-highlight {
-  font-size: 28px;
-}
-
-.linkedin-cover-scale .linkedin-banner .offer-line {
-  font-size: 17px;
-}
-
 .linkedin-profile-stub {
   position: relative;
-  padding: 16px 24px 28px;
-  min-height: 108px;
+  padding: 0 24px 20px;
+  min-height: 132px;
   background: #ffffff;
-  border-top: 1px solid #ebebeb;
+  border-radius: 0 0 8px 8px;
 }
 
 .linkedin-avatar {
   position: absolute;
-  left: 2.13%;
+  left: 24px;
   top: 0;
-  width: 13.48%;
-  min-width: 104px;
-  max-width: 152px;
-  aspect-ratio: 1;
-  transform: translateY(-54%);
+  width: 152px;
+  height: 152px;
+  transform: translateY(-50%);
   border-radius: 50%;
   border: 4px solid #ffffff;
-  background: linear-gradient(145deg, #e4e4e7 0%, #d4d4d8 100%);
+  background: linear-gradient(145deg, #e4e4e7 0%, #cbd5e1 100%);
   box-shadow:
     inset 0 0 0 1px rgba(0, 0, 0, 0.06),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+    0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 3;
   pointer-events: none;
 }
@@ -146,45 +122,81 @@
 .linkedin-avatar::after {
   content: "";
   position: absolute;
-  inset: 22% 28%;
+  inset: 20% 24%;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.linkedin-stub-body {
+  margin-left: 188px;
+  padding-top: 12px;
 }
 
 .linkedin-stub-lines {
-  margin-left: calc(2.13% + 13.48% + 20px);
-  max-width: 420px;
-  padding-top: 8px;
+  max-width: 520px;
 }
 
 .linkedin-stub-line {
-  height: 18px;
   border-radius: 4px;
   background: #e4e4e7;
 }
 
-.linkedin-stub-line--short {
+.linkedin-stub-line--name {
+  height: 22px;
+  width: 42%;
+}
+
+.linkedin-stub-line--headline {
   margin-top: 10px;
+  height: 14px;
+  width: 88%;
+}
+
+.linkedin-stub-line--meta {
+  margin-top: 8px;
   height: 12px;
-  width: 72%;
+  width: 36%;
   background: #f4f4f5;
 }
 
-.temp-switcher,
-.temp-page nav[aria-label="Banner designs"] {
+.linkedin-stub-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.linkedin-stub-btn {
+  display: block;
+  height: 32px;
+  width: 108px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #0a66c2;
+}
+
+.linkedin-stub-btn--primary {
+  width: 88px;
+  background: #0a66c2;
+  border-color: #0a66c2;
+}
+
+.temp-switcher {
   position: fixed;
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(100vw - 24px);
   font-size: 13px;
   font-weight: 500;
 }
 
-.temp-switcher a,
-.temp-page nav[aria-label="Banner designs"] a {
+.temp-switcher a {
   color: #52525b;
   text-decoration: none;
   padding: 6px 14px;
@@ -194,8 +206,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.temp-switcher a[aria-current="page"],
-.temp-page nav a[aria-current="page"] {
+.temp-switcher a[aria-current="page"] {
   color: #2563eb;
   border-color: #2563eb;
 }
@@ -208,7 +219,7 @@
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: min(520px, calc(100vw - 32px));
+  max-width: min(560px, calc(100vw - 32px));
   text-align: center;
   font-size: 12px;
   line-height: 1.45;
@@ -219,4 +230,11 @@
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   z-index: 20;
+}
+
+@media (max-width: 1160px) {
+  .linkedin-preview-wrap,
+  .linkedin-mockup {
+    width: 100%;
+  }
 }

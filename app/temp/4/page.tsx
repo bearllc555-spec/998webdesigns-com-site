@@ -126,8 +126,7 @@ export default function TempV4Page() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Design 4 — recreated from live LinkedIn banner reference. Screenshot the cover; upload
-        1584×396.
+        Design 4 — live LinkedIn reference. Preview matches profile cover size; upload 1584×396.
       </p>
     </div>
   );

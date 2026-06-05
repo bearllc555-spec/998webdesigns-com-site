@@ -58,8 +58,8 @@ export default function TempV2Page() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Gray circle shows where your LinkedIn photo covers the banner. Screenshot the cover in the
-        card; upload 1584×396.
+        White card matches LinkedIn desktop intro (1128×282 cover). Screenshot the cover strip;
+        upload 1584×396.
       </p>
     </div>
   );

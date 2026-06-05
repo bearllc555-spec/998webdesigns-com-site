@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
-
-const ARTBOARD_W = 1584;
-const ARTBOARD_H = 396;
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+  LINKEDIN_COVER_DISPLAY_H,
+  LINKEDIN_COVER_DISPLAY_W,
+  LINKEDIN_COVER_UPLOAD_H,
+  LINKEDIN_COVER_UPLOAD_W,
+} from "@/lib/linkedin-banner-preview";
 
 type LinkedInBannerPreviewProps = {
   children: ReactNode;
@@ -11,8 +14,8 @@ type LinkedInBannerPreviewProps = {
 };
 
 /**
- * Wraps a 1584×396 banner artboard in a LinkedIn desktop–sized frame (~1128px wide, 4:1).
- * Profile photo placeholder shows the overlap zone before upload.
+ * Renders the 1584×396 artboard inside a fixed LinkedIn desktop cover rectangle
+ * (1128×282) with profile-photo overlap — WYSIWYG for what you see on your profile.
  */
 export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerPreviewProps) {
   const slotRef = useRef<HTMLDivElement>(null);
@@ -26,7 +29,7 @@ export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerP
     const applyScale = () => {
       const w = slot.clientWidth;
       if (w <= 0) return;
-      scale.style.transform = `scale(${w / ARTBOARD_W})`;
+      scale.style.transform = `scale(${w / LINKEDIN_COVER_UPLOAD_W})`;
     };
 
     applyScale();
@@ -40,26 +43,54 @@ export function LinkedInBannerPreview({ children, designLabel }: LinkedInBannerP
       <div className="linkedin-preview-meta">
         <h2>{designLabel}</h2>
         <p>
-          Preview matches <strong>LinkedIn desktop cover size</strong> (≈1128×282 display). Upload
-          the exported PNG at <strong>1584×396 px</strong> for best quality.
+          Gray box below is the <strong>LinkedIn desktop cover</strong> (
+          {LINKEDIN_COVER_DISPLAY_W}×{LINKEDIN_COVER_DISPLAY_H}px). Upload your export at{" "}
+          <strong>
+            {LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px
+          </strong>
+          .
         </p>
       </div>
 
-      <div className="linkedin-mockup" aria-label="LinkedIn profile header preview">
+      <div
+        className="linkedin-mockup"
+        style={
+          {
+            "--li-cover-w": `${LINKEDIN_COVER_DISPLAY_W}px`,
+            "--li-cover-h": `${LINKEDIN_COVER_DISPLAY_H}px`,
+          } as CSSProperties
+        }
+        aria-label="LinkedIn profile intro card preview"
+      >
         <div ref={slotRef} className="linkedin-cover-slot">
+          <button
+            type="button"
+            className="linkedin-cover-edit"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
           <div
             ref={scaleRef}
             className="linkedin-cover-scale"
-            style={{ width: ARTBOARD_W, height: ARTBOARD_H }}
+            style={{ width: LINKEDIN_COVER_UPLOAD_W, height: LINKEDIN_COVER_UPLOAD_H }}
           >
             {children}
           </div>
         </div>
+
         <div className="linkedin-profile-stub" aria-hidden="true">
-          <div className="linkedin-avatar" title="Profile photo overlap zone" />
-          <div className="linkedin-stub-lines">
-            <div className="linkedin-stub-line" style={{ width: "48%" }} />
-            <div className="linkedin-stub-line linkedin-stub-line--short" />
+          <div className="linkedin-avatar" title="Profile photo — overlaps bottom of cover" />
+          <div className="linkedin-stub-body">
+            <div className="linkedin-stub-lines">
+              <div className="linkedin-stub-line linkedin-stub-line--name" />
+              <div className="linkedin-stub-line linkedin-stub-line--headline" />
+              <div className="linkedin-stub-line linkedin-stub-line--meta" />
+            </div>
+            <div className="linkedin-stub-actions">
+              <span className="linkedin-stub-btn linkedin-stub-btn--primary" />
+              <span className="linkedin-stub-btn" />
+              <span className="linkedin-stub-btn" />
+            </div>
           </div>
         </div>
       </div>

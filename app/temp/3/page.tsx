@@ -62,7 +62,7 @@ export default function TempV3Page() {
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Design 3 — frosted offer variant. Screenshot the cover in the card; upload 1584×396.
+        Design 3 — frosted offer. Preview is LinkedIn desktop size; upload export at 1584×396.
       </p>
     </div>
   );
