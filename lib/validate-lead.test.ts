@@ -64,4 +64,17 @@ describe("validateLeadPayload", () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.data.businessName).toBe("");
   });
+
+  it("filters hearAboutSources to allowed values", () => {
+    const result = validateLeadPayload({
+      ...validBase,
+      hearAboutSources: ["LinkedIn", "spam", "Google search"],
+      hearAboutOther: "Podcast",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.hearAboutSources).toEqual(["LinkedIn", "Google search"]);
+      expect(result.data.hearAboutOther).toBe("Podcast");
+    }
+  });
 });

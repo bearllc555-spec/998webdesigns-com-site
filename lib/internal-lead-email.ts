@@ -4,6 +4,7 @@ import {
   formatCheckoutUsd,
   paymentChannelLabel,
 } from "@/lib/checkout-pricing";
+import { formatHearAboutSources } from "@/lib/hear-about-sources";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "@/lib/validate-lead";
 import { stripeKeyMode } from "@/lib/stripe-env";
@@ -55,6 +56,7 @@ export async function sendInternalLeadSubmittedEmail(
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
         <p><strong>Company:</strong> ${lead.businessName ? escapeHtml(lead.businessName) : "&nbsp;"}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
+        <p><strong>Heard about us:</strong> ${escapeHtml(formatHearAboutSources(lead.hearAboutSources, lead.hearAboutOther) || "—")}</p>
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Checkout link:</strong> <a href="${escapeHtml(checkoutUrl)}">Open Stripe Checkout</a></p>
         <p><strong>Stripe session:</strong> <a href="${dash}/checkout/sessions/${checkoutSessionId}">${escapeHtml(checkoutSessionId)}</a></p>

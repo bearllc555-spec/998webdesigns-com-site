@@ -1,3 +1,9 @@
+import {
+  filterHearAboutSources,
+  type HearAboutSource,
+} from "@/lib/hear-about-sources";
+import { isValidEmail } from "@/lib/validate-email";
+
 export type HostingChoice = "ten_year" | "monthly" | "later";
 export type PaymentOption = "full";
 export type PaymentChannel = "ach" | "card";
@@ -29,6 +35,8 @@ export type ValidatedLead = {
   paymentChannel: PaymentChannel;
   addons: string[];
   promoCode: string;
+  hearAboutSources: HearAboutSource[];
+  hearAboutOther: string;
 };
 
 const ALLOWED_ADDONS = new Set([
@@ -42,8 +50,6 @@ const ALLOWED_ADDONS = new Set([
   "google-profile",
   "booking-calendar",
 ]);
-
-import { isValidEmail } from "@/lib/validate-email";
 
 function str(v: unknown): string | null {
   return typeof v === "string" ? v.trim() : null;
@@ -121,6 +127,8 @@ export function validateLeadPayload(
       paymentChannel: paymentChannel as PaymentChannel,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
       promoCode: str(body.promoCode) ?? "",
+      hearAboutSources: filterHearAboutSources(body.hearAboutSources),
+      hearAboutOther: str(body.hearAboutOther) ?? "",
     },
   };
 }

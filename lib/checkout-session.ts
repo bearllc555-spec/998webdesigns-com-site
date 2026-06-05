@@ -4,6 +4,7 @@ import {
   checkoutUsesSubscriptionMode,
 } from "@/lib/checkout-line-items";
 import type { PaymentChannel } from "@/lib/checkout-pricing";
+import { formatHearAboutSources } from "@/lib/hear-about-sources";
 import type { ValidatedLead } from "@/lib/validate-lead";
 
 export function checkoutPaymentMethodTypes(
@@ -33,6 +34,14 @@ export function buildCheckoutSessionParams(
     hostingChoice: lead.hostingChoice,
     submittedAt: options.submittedAt,
     ...(lead.promoCode.trim() ? { promoCode: lead.promoCode.trim().toUpperCase() } : {}),
+    ...(lead.hearAboutSources.length
+      ? {
+          hearAbout: formatHearAboutSources(lead.hearAboutSources, lead.hearAboutOther).slice(
+            0,
+            500
+          ),
+        }
+      : {}),
     ...(options.wdLeadId ? { wdLeadId: options.wdLeadId } : {}),
   };
 

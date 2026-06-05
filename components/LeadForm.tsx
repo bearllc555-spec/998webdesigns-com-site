@@ -16,6 +16,7 @@ import {
   isValidDesignPromoCode,
   listedPromoCodes,
 } from "@/lib/design-promo";
+import { HEAR_ABOUT_SOURCES } from "@/lib/hear-about-sources";
 import type { PaymentChannel } from "@/lib/validate-lead";
 import { FixedFormField } from "@/components/form-field-stack";
 
@@ -53,6 +54,8 @@ type FormState = {
   paymentChannel: PaymentChannel;
   addons: string[];
   promoCode: string;
+  hearAboutSources: string[];
+  hearAboutOther: string;
   // Honeypot
   website: string;
 };
@@ -66,6 +69,8 @@ const initial: FormState = {
   paymentChannel: "card",
   addons: [],
   promoCode: "",
+  hearAboutSources: [],
+  hearAboutOther: "",
   website: "",
 };
 
@@ -111,7 +116,10 @@ export function LeadForm() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const toggle = (k: "visitorActions" | "pages" | "brandAssets", v: string) => {
+  const toggle = (
+    k: "visitorActions" | "pages" | "brandAssets" | "hearAboutSources",
+    v: string
+  ) => {
     setForm((f) => {
       const has = f[k].includes(v);
       return { ...f, [k]: has ? f[k].filter((x) => x !== v) : [...f[k], v] };
@@ -166,6 +174,9 @@ export function LeadForm() {
       if (!form.projectType) e.projectType = "Pick one.";
     }
     if (step === 4) {
+      if (form.hearAboutSources.length === 0) {
+        e.hearAboutSources = "Pick at least one.";
+      }
       if (!form.hostingChoice) e.hostingChoice = "Pick a hosting preference.";
       if (!form.paymentChannel) e.paymentChannel = "Pick how you want to pay.";
     }
@@ -518,6 +529,29 @@ export function LeadForm() {
 
           {step === 4 && (
             <div className="grid gap-5">
+              <Field
+                label="Where did you hear about us?"
+                required
+                error={errors.hearAboutSources}
+              >
+                <CheckGroup
+                  options={[...HEAR_ABOUT_SOURCES]}
+                  value={form.hearAboutSources}
+                  onToggle={(v) => toggle("hearAboutSources", v)}
+                />
+              </Field>
+
+              {form.hearAboutSources.includes("Other") && (
+                <FixedFormField
+                  id="lead-hear-about-other"
+                  label="Other (please specify)"
+                  value={form.hearAboutOther}
+                  onChange={(v) => set("hearAboutOther", v)}
+                  optionalHint
+                  autoComplete="off"
+                />
+              )}
+
               <FixedFormField
                 id="lead-promo"
                 label="Promo code"
