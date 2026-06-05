@@ -103,7 +103,15 @@
 }
 
 .linkedin-cover-scale .linkedin-banner .offer-main {
-  font-size: 26px;
+  font-size: 24px;
+}
+
+.linkedin-cover-scale .linkedin-banner .offer-highlight {
+  font-size: 28px;
+}
+
+.linkedin-cover-scale .linkedin-banner .offer-line {
+  font-size: 17px;
 }
 
 .linkedin-profile-stub {
@@ -142,7 +150,7 @@
 }
 
 .linkedin-stub-lines {
-  margin-left: calc(13.48% + 24px);
+  margin-left: calc(2.13% + 13.48% + 20px);
   max-width: 420px;
   padding-top: 8px;
 }

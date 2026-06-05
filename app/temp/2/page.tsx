@@ -14,7 +14,7 @@ export default function TempV2Page() {
         </Link>
       </nav>
 
-      <LinkedInBannerPreview designLabel="Design 2 — Geist + Inter (site fonts)">
+      <LinkedInBannerPreview designLabel="Design 2 — Manhattan · frosted offer">
         <div className="linkedin-banner" id="banner">
           <div className="skyline-wrap">
             <ManhattanSilhouette />
@@ -38,10 +38,14 @@ export default function TempV2Page() {
               </p>
             </div>
 
-            <aside className="offer" aria-label="Offer">
+            <aside className="offer offer--glass" aria-label="Offer">
               <p className="offer-kicker">Flat pricing</p>
               <p className="offer-main">
-                7-day builds<span className="sep">·</span>$1,998 flat
+                <span className="offer-line">7-day builds</span>
+                <span className="offer-sep" aria-hidden="true">
+                  ·
+                </span>
+                <span className="offer-highlight">$1,998 flat</span>
               </p>
               <div className="offer-rule" aria-hidden="true" />
               <p className="offer-url">
