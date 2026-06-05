@@ -47,6 +47,6 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Is there a promo code?",
-    a: "Yes — LINKEDIN20 takes 20% off the $5,998 design fee only ($4,798 design). It does not apply to lifetime hosting ($2,996), month-to-month hosting ($198/mo), or the 3% card processing fee. Enter your code on the last step of the lead form before checkout.",
+    a: "We run channel-specific specials from time to time — often tied to where you found us. There isn't a standing public discount on the site. If you saw an offer in an ad, on LinkedIn, or in an email, enter that code on the last step of the lead form before checkout (design fee only — not hosting or the card fee). Otherwise, contact us at hello@998webdesigns.com and we'll tell you what's available.",
   },
 ];

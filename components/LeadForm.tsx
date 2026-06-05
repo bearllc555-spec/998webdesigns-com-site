@@ -15,7 +15,6 @@ import {
   designFeeCents,
   designPromoSummary,
   isValidDesignPromoCode,
-  listedPromoCodes,
 } from "@/lib/design-promo";
 import { HEAR_ABOUT_SOURCES } from "@/lib/hear-about-sources";
 import type { PaymentChannel } from "@/lib/validate-lead";
@@ -544,7 +543,7 @@ export function LeadForm() {
                 value={form.promoCode}
                 onChange={(v) => set("promoCode", v)}
                 optionalHint
-                placeholder="LINKEDIN20"
+                placeholder="If you have a code, enter it here"
                 autoComplete="off"
               />
               {form.promoCode.trim() && (
@@ -553,7 +552,7 @@ export function LeadForm() {
                 >
                   {isValidDesignPromoCode(form.promoCode)
                     ? `${designPromoSummary(form.promoCode)} — ${formatCheckoutUsd(designFeeCents(form.promoCode))} design (hosting unchanged)`
-                    : `Code not recognized. Valid codes: ${listedPromoCodes().join(", ")}.`}
+                    : "Code not recognized. Contact us at hello@998webdesigns.com if you expected a discount."}
                 </p>
               )}
 

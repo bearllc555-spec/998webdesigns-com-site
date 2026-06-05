@@ -30,9 +30,9 @@ export function Pricing() {
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
               We collect full payment before your project enters the queue. This keeps things simple
-              for both sides — no holds, no follow-up invoices. Promo codes (e.g.{" "}
-              <span className="font-medium text-ink">LINKEDIN20</span>) take a percentage off the
-              design fee only — not hosting or other services. Enter yours on the lead form.
+              for both sides — no holds, no follow-up invoices. Channel-specific promo codes take a
+              percentage off the design fee only — not hosting or other services. Enter yours on the
+              lead form if you have one.
             </p>
           </article>
 

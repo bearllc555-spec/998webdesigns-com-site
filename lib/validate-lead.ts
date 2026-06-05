@@ -116,7 +116,7 @@ export function validateLeadPayload(
 
   const promoCode = str(body.promoCode) ?? "";
   if (promoCode && !isValidDesignPromoCode(promoCode)) {
-    return { ok: false, error: "Invalid promo code — remove it or use a listed code (e.g. LINKEDIN20)" };
+    return { ok: false, error: "Invalid promo code — remove it or contact us if you expected a discount" };
   }
 
   return {
