@@ -3,7 +3,9 @@
  *
  *   node scripts/capture-portfolio-poster.mjs <slug> <url>
  *
- * Uses fullPage screenshot (clip does not capture below the viewport).
+ * - fullPage screenshot (clip does not capture below the viewport)
+ * - slow scroll preload for lazy-loaded sections/images
+ * - hero <video> play + seek when present (JetVIP, etc.)
  */
 
 import { chromium } from "playwright";
@@ -25,16 +27,104 @@ if (!slug || !url) {
 const posterPath = path.join(__dirname, "../public/portfolio", `${slug}.jpg`);
 const tmpPath = path.join(os.tmpdir(), "998-portfolio-capture", `${slug}.jpg`);
 const VIEWPORT = { width: 960, height: 720 };
+const SCROLL_STEPS = 28;
+const SCROLL_MS = 9_000;
 
 fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
 
-const browser = await chromium.launch();
+async function primeHeroVideo(page) {
+  try {
+    await page.waitForSelector("video", { timeout: 8_000 });
+  } catch {
+    return false;
+  }
+
+  const hasVideo = await page
+    .evaluate(async () => {
+      const videos = [...document.querySelectorAll("video")].filter((v) => {
+        const r = v.getBoundingClientRect();
+        return r.width > 200 && r.height > 200;
+      });
+      if (!videos.length) return false;
+      const v = videos[0];
+      v.muted = true;
+      v.loop = true;
+      void v.play();
+      await new Promise((r) => setTimeout(r, 400));
+      if (Number.isFinite(v.duration) && v.duration > 0) {
+        v.currentTime = Math.min(2, v.duration * 0.2);
+      } else {
+        v.currentTime = 1.5;
+      }
+      await new Promise((r) => setTimeout(r, 1_200));
+      return true;
+    })
+    .catch(() => false);
+
+  if (hasVideo) {
+    console.log("Hero video primed");
+    await page.waitForTimeout(800);
+  }
+  return hasVideo;
+}
+
+async function preloadLazyContent(page) {
+  await page.evaluate(() => {
+    document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+      img.loading = "eager";
+    });
+  });
+
+  const scrollMax = await page.evaluate(() => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    return Math.max(0, max);
+  });
+
+  console.log(`Slow scroll preload (${SCROLL_STEPS} steps, max ${scrollMax}px)`);
+  for (let i = 1; i <= SCROLL_STEPS; i++) {
+    const y = Math.round((scrollMax * i) / SCROLL_STEPS);
+    await page.evaluate((top) => window.scrollTo(0, top), y);
+    await page.waitForTimeout(Math.round(SCROLL_MS / SCROLL_STEPS));
+  }
+
+  await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    await Promise.race([
+      Promise.all(
+        [...document.images].map(
+          (img) =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise((r) => {
+                  img.onload = img.onerror = r;
+                })
+        )
+      ),
+      wait(8_000),
+    ]);
+  });
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(600);
+}
+
+const browser = await chromium.launch({
+  args: ["--autoplay-policy=no-user-gesture-required"],
+});
 const page = await browser.newPage({ viewport: VIEWPORT });
 
 console.log(`Loading ${url}`);
-await page.goto(url, { waitUntil: "networkidle", timeout: 120_000 });
-await page.waitForTimeout(2_000);
+try {
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+} catch (err) {
+  console.warn("navigation timeout, continuing:", err.message?.slice(0, 80));
+}
+await page.waitForTimeout(2_500);
 await page.evaluate(() => window.scrollTo(0, 0));
+
+await preloadLazyContent(page);
+
+await Promise.race([primeHeroVideo(page), page.waitForTimeout(25_000)]);
 
 const pageHeight = await page.evaluate(() =>
   Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0)

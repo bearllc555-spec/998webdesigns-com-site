@@ -52,7 +52,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "new-empire-corp",
     name: "New Empire Corp",
     industry: "Corporate & design",
-    url: "https://nyc-design.pages.dev/",
+    url: "https://dev.nyc-design.pages.dev/",
     thumbnail: "/portfolio/new-empire-corp.jpg",
   },
   {
@@ -66,7 +66,7 @@ export const portfolio: PortfolioItem[] = [
     slug: "legally-design",
     name: "Legally",
     industry: "Legal services",
-    url: "https://legally-design.pages.dev/",
+    url: "https://dev.legally-design.pages.dev/",
     thumbnail: "/portfolio/legally-design.jpg",
   },
 ];
