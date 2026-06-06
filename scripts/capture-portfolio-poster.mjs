@@ -5,7 +5,8 @@
  *
  * - fullPage screenshot (clip does not capture below the viewport)
  * - slow scroll preload for lazy-loaded sections/images
- * - hero <video> play + seek when present (JetVIP, etc.)
+ * - hero <video>: viewport shot after play/seek, composited over fullPage top
+ *   (fullPage alone renders <video> as blank — JetVIP, New Empire, etc.)
  */
 
 import { chromium } from "playwright";
@@ -25,12 +26,27 @@ if (!slug || !url) {
 }
 
 const posterPath = path.join(__dirname, "../public/portfolio", `${slug}.jpg`);
-const tmpPath = path.join(os.tmpdir(), "998-portfolio-capture", `${slug}.jpg`);
+const tmpDir = path.join(os.tmpdir(), "998-portfolio-capture", slug);
+const tmpPath = path.join(tmpDir, "poster.jpg");
+const fullTmp = path.join(tmpDir, "full.jpg");
+const heroTmp = path.join(tmpDir, "hero.jpg");
 const VIEWPORT = { width: 960, height: 720 };
 const SCROLL_STEPS = 28;
 const SCROLL_MS = 9_000;
 
-fs.mkdirSync(path.dirname(tmpPath), { recursive: true });
+fs.mkdirSync(tmpDir, { recursive: true });
+
+function runFfmpeg(args) {
+  execSync(["ffmpeg", "-y", ...args].join(" "), { stdio: "inherit" });
+}
+
+function imageHeight(filePath) {
+  const out = execSync(
+    `ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "${filePath}"`,
+    { encoding: "utf8" }
+  ).trim();
+  return Number(out);
+}
 
 async function primeHeroVideo(page) {
   try {
@@ -50,22 +66,51 @@ async function primeHeroVideo(page) {
       v.muted = true;
       v.loop = true;
       void v.play();
-      await new Promise((r) => setTimeout(r, 400));
-      if (Number.isFinite(v.duration) && v.duration > 0) {
-        v.currentTime = Math.min(2, v.duration * 0.2);
-      } else {
-        v.currentTime = 1.5;
-      }
-      await new Promise((r) => setTimeout(r, 1_200));
+      await new Promise((resolve) => {
+        if (v.readyState >= 1) resolve();
+        else v.addEventListener("loadedmetadata", () => resolve(), { once: true });
+        setTimeout(resolve, 8_000);
+      });
+      const t =
+        Number.isFinite(v.duration) && v.duration > 0
+          ? Math.min(2.5, v.duration * 0.25)
+          : 1.5;
+      v.currentTime = t;
+      await new Promise((r) => setTimeout(r, 2_000));
       return true;
     })
     .catch(() => false);
 
-  if (hasVideo) {
-    console.log("Hero video primed");
-    await page.waitForTimeout(800);
-  }
+  if (hasVideo) console.log("Hero video primed");
   return hasVideo;
+}
+
+function compositeHeroOverFull(heroPath, fullPath, outPath) {
+  const fullH = imageHeight(fullPath);
+  const heroH = VIEWPORT.height;
+
+  if (fullH <= heroH) {
+    fs.copyFileSync(heroPath, outPath);
+    return;
+  }
+
+  const belowH = fullH - heroH;
+  runFfmpeg([
+    "-i",
+    JSON.stringify(fullPath),
+    "-i",
+    JSON.stringify(heroPath),
+    "-filter_complex",
+    `[0]crop=${VIEWPORT.width}:${belowH}:0:${heroH}[rest];[1]scale=${VIEWPORT.width}:${heroH}:force_original_aspect_ratio=increase,crop=${VIEWPORT.width}:${heroH}[top];[top][rest]vstack=inputs=2`,
+    "-q:v",
+    "3",
+    "-frames:v",
+    "1",
+    "-update",
+    "1",
+    JSON.stringify(outPath),
+  ]);
+  console.log(`Composited hero (${heroH}px) over full page (${fullH}px)`);
 }
 
 async function preloadLazyContent(page) {
@@ -124,20 +169,42 @@ await page.evaluate(() => window.scrollTo(0, 0));
 
 await preloadLazyContent(page);
 
-await Promise.race([primeHeroVideo(page), page.waitForTimeout(25_000)]);
+const hasHeroVideo = await Promise.race([
+  primeHeroVideo(page),
+  page.waitForTimeout(25_000).then(() => false),
+]);
+
+let heroCaptured = false;
+if (hasHeroVideo) {
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(400);
+  await page.screenshot({
+    path: heroTmp,
+    type: "jpeg",
+    quality: 85,
+  });
+  heroCaptured = true;
+  console.log("Hero viewport captured");
+}
 
 const pageHeight = await page.evaluate(() =>
   Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0)
 );
 
 await page.screenshot({
-  path: tmpPath,
+  path: fullTmp,
   type: "jpeg",
   quality: 80,
   fullPage: true,
 });
 
 await browser.close();
+
+if (heroCaptured) {
+  compositeHeroOverFull(heroTmp, fullTmp, tmpPath);
+} else {
+  fs.copyFileSync(fullTmp, tmpPath);
+}
 
 const dims = execSync(
   `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "${tmpPath}"`,
