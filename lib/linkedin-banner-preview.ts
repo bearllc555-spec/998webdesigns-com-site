@@ -23,8 +23,8 @@ export const LINKEDIN_AVATAR_OVERLAP_PX = 96;
 /** LinkedIn scales 1584-wide upload to 792 display (exactly 50%). */
 export const LINKEDIN_DISPLAY_SCALE = LINKEDIN_COVER_DISPLAY_W / LINKEDIN_COVER_UPLOAD_W;
 
-/** Cropped from live profile reference — anthony-de-meo-285999397. */
-export const LINKEDIN_AVATAR_IMAGE_SRC = "/temp/anthony-linkedin-avatar.jpg";
+/** Synced from live profile — anthony-de-meo-285999397 (updated 2026-06-06). */
+export const LINKEDIN_AVATAR_IMAGE_SRC = "/temp/anthony-linkedin-avatar.jpg?v=20260606";
 
 /** 32px gap after photo frame right edge — brand/logo safe on 1584×396 artboard. */
 export const LINKEDIN_ARTBOARD_CONTENT_PAD_LEFT = Math.ceil(
