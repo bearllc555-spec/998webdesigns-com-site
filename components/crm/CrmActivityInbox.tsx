@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { SubmissionFieldStack } from "@/components/form-field-stack";
 import { CrmDiscoveryClosePanel } from "@/components/crm/CrmDiscoveryClosePanel";
+import { CrmMilestoneInvoicePanel } from "@/components/crm/CrmMilestoneInvoicePanel";
 import { CrmSmsThread } from "@/components/crm/CrmSmsThread";
 import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
@@ -64,6 +65,7 @@ function statusClass(status: string | null): string {
   if (!status) return "bg-rule-soft text-ink-soft";
   if (status === "paid_in_full") return "bg-success/15 text-success";
   if (status === "deposit_paid") return "bg-success/15 text-success";
+  if (status === "milestone2_paid") return "bg-success/15 text-success";
   if (status.includes("failed") || status === "bank_payment_failed") {
     return "bg-warn-soft text-warn";
   }
@@ -108,6 +110,7 @@ type InboxRowProps = {
   onStartEditNotes: (item: CrmFeedItem) => void;
   onSaveNotes: (item: CrmFeedItem) => void;
   onCancelEditNotes: () => void;
+  onReload: () => Promise<void>;
 };
 
 function InboxRow({
@@ -129,6 +132,7 @@ function InboxRow({
   onStartEditNotes,
   onSaveNotes,
   onCancelEditNotes,
+  onReload,
 }: InboxRowProps) {
   const unread = isCrmFeedItemUnread(item);
   const company = item.businessName.trim();
@@ -448,6 +452,16 @@ function InboxRow({
                   {item.notes}
                 </p>
               )}
+              <CrmMilestoneInvoicePanel
+                leadId={item.id}
+                status={item.status}
+                payload={item.payload}
+                phone={
+                  typeof item.payload?.phone === "string" ? item.payload.phone : item.phone
+                }
+                email={item.email}
+                onSent={() => void onReload()}
+              />
             </div>
           )}
 
@@ -701,6 +715,7 @@ export function CrmActivityInbox({
     },
     onSaveNotes: saveNotes,
     onCancelEditNotes: () => setEditingNotes(false),
+    onReload,
     onToggleFor: (item: CrmFeedItem) => () => toggleItem(item),
   };
 

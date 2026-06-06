@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
+import { mergeMilestonePaid } from "@/lib/design-milestone-payments";
 import { hostingBillingStartsAt } from "@/lib/hosting-policy";
-import { updateLatestWdLeadByEmail, updateWdLead } from "@/lib/leads-db";
+import { getWdLeadById, updateLatestWdLeadByEmail, updateWdLead } from "@/lib/leads-db";
 
 /** After Checkout session is created — checkout link sent, payment pending. */
 export async function syncWdLeadCheckoutCreated(
@@ -99,6 +100,42 @@ export async function syncWdLeadDepositPaid(session: Stripe.Checkout.Session): P
     return;
   }
   if (email) await updateLatestWdLeadByEmail(email, patch);
+}
+
+/** 40% design milestone collected. */
+export async function syncWdLeadMilestone2Paid(session: Stripe.Checkout.Session): Promise<void> {
+  const leadId = session.metadata?.wdLeadId;
+  if (!leadId) return;
+
+  const row = await getWdLeadById(leadId);
+  if (!row) return;
+
+  const customerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id;
+
+  await updateWdLead(leadId, {
+    status: "milestone2_paid",
+    stripe_customer_id: customerId ?? row.stripe_customer_id,
+    payload: mergeMilestonePaid(row.payload, "milestone2", session.id),
+  });
+}
+
+/** 10% design milestone collected — design fee paid in full. */
+export async function syncWdLeadMilestone3Paid(session: Stripe.Checkout.Session): Promise<void> {
+  const leadId = session.metadata?.wdLeadId;
+  if (!leadId) return;
+
+  const row = await getWdLeadById(leadId);
+  if (!row) return;
+
+  const customerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id;
+
+  await updateWdLead(leadId, {
+    status: "paid_in_full",
+    stripe_customer_id: customerId ?? row.stripe_customer_id,
+    payload: mergeMilestonePaid(row.payload, "milestone3", session.id),
+  });
 }
 
 /** Design fee paid in full — starts 30-day free hosting window. */

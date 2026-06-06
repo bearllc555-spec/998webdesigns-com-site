@@ -35,6 +35,24 @@ export function notifyLeadDepositPaid(session: Stripe.Checkout.Session): void {
   });
 }
 
+export function notifyLeadMilestone2Paid(session: Stripe.Checkout.Session): void {
+  void notifyCrmActivity({
+    kind: "lead_paid",
+    status: "milestone2_paid",
+    message: "40% design milestone received — 10% due at launch",
+    ...sessionContext(session),
+  });
+}
+
+export function notifyLeadMilestone3Paid(session: Stripe.Checkout.Session): void {
+  void notifyCrmActivity({
+    kind: "lead_paid",
+    status: "paid_in_full",
+    message: "10% final milestone received — design fee paid in full",
+    ...sessionContext(session),
+  });
+}
+
 export function notifyLeadPaid(session: Stripe.Checkout.Session): void {
   void notifyCrmActivity({
     kind: "lead_paid",

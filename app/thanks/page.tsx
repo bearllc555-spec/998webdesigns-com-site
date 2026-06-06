@@ -27,13 +27,18 @@ export default async function Thanks({
 
   let view: ThanksView = "paid";
   let isDeposit = false;
+  let isMilestone2 = false;
+  let isMilestone3 = false;
   let balanceCents = 0;
   let milestone2Cents = 0;
   let milestone3Cents = 0;
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    isDeposit = session.metadata?.paymentType === "deposit";
+    const sessionPaymentType = session.metadata?.paymentType ?? "full";
+    isDeposit = sessionPaymentType === "deposit";
+    isMilestone2 = sessionPaymentType === "milestone_2";
+    isMilestone3 = sessionPaymentType === "milestone_3";
     balanceCents = Number(session.metadata?.designBalanceCents ?? 0);
     const promoCode = session.metadata?.promoCode;
     milestone2Cents = designMilestone2Cents(promoCode);
@@ -64,9 +69,11 @@ export default async function Thanks({
               Bank payment submitted
             </p>
             <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
-              {isDeposit
-                ? "Thanks — we\u2019re waiting on your deposit transfer"
-                : "Thanks — we\u2019re waiting on your bank transfer"}
+              {isMilestone2 || isMilestone3
+                ? "Thanks — we\u2019re waiting on your milestone transfer"
+                : isDeposit
+                  ? "Thanks — we\u2019re waiting on your deposit transfer"
+                  : "Thanks — we\u2019re waiting on your bank transfer"}
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-ink-soft">
               Your ACH payment was authorized in Stripe. Banks usually take a few business days to
@@ -125,9 +132,15 @@ export default async function Thanks({
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-success">
             Payment received
           </p>
-          <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
-            {isDeposit ? "Thanks — your 50% deposit is in!" : "Thanks — you\u2019re paid in full!"}
-          </h1>
+            <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
+              {isMilestone3
+                ? "Thanks — design fee paid in full!"
+                : isMilestone2
+                  ? "Thanks — your 40% payment is in!"
+                  : isDeposit
+                    ? "Thanks — your 50% deposit is in!"
+                    : "Thanks — you\u2019re paid in full!"}
+            </h1>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
             Your payment has been received. A receipt is on its way to your email. Here&apos;s
             exactly what happens next, in writing, so there are no surprises.
@@ -136,10 +149,26 @@ export default async function Thanks({
           <div className="mt-8 rounded-2xl border border-success/30 bg-success/10 p-6">
             <p className="font-display text-lg font-medium text-ink">
               <span className="text-success">
-                {isDeposit ? "50% deposit received — you\u2019re in the queue" : "Paid in full — you\u2019re all set"}
+                {isMilestone3
+                  ? "Paid in full — you\u2019re all set"
+                  : isMilestone2
+                    ? "40% milestone received"
+                    : isDeposit
+                      ? "50% deposit received — you\u2019re in the queue"
+                      : "Paid in full — you\u2019re all set"}
               </span>
             </p>
-            {isDeposit ? (
+            {isMilestone3 ? (
+              <p className="mt-2 text-sm text-ink-soft">
+                No further design-fee invoices. Your first 30 days of hosting are free; hosting
+                billing continues on your existing plan.
+              </p>
+            ) : isMilestone2 ? (
+              <p className="mt-2 text-sm text-ink-soft">
+                {formatCheckoutUsd(milestone3Cents)} is due at launch and handover. We&apos;ll send
+                that invoice when the site is ready for final approval.
+              </p>
+            ) : isDeposit ? (
               <p className="mt-2 text-sm text-ink-soft">
                 {formatCheckoutUsd(milestone2Cents)} is due after design approval or development
                 start. {formatCheckoutUsd(milestone3Cents)} is due at launch and handover (

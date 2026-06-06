@@ -10,6 +10,8 @@ import {
   notifyLeadAchFailed,
   notifyLeadAchPending,
   notifyLeadDepositPaid,
+  notifyLeadMilestone2Paid,
+  notifyLeadMilestone3Paid,
   notifyLeadPaid,
   notifyLifetimeHostingAchPending,
   notifyLifetimeHostingPaid,
@@ -24,6 +26,8 @@ import {
   syncWdLeadAwaitingBankSettlement,
   syncWdLeadBankPaymentFailed,
   syncWdLeadDepositPaid,
+  syncWdLeadMilestone2Paid,
+  syncWdLeadMilestone3Paid,
   syncWdLeadPaidInFull,
 } from "@/lib/wd-leads-sync";
 import {
@@ -55,8 +59,30 @@ function isLifetimeAchPending(session: Stripe.Checkout.Session): boolean {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  const paymentType = session.metadata?.paymentType;
+  const isMilestone =
+    paymentType === "milestone_2" || paymentType === "milestone_3";
+
+  if (isMilestone) {
+    if (session.payment_status === "paid") {
+      if (paymentType === "milestone_2") {
+        await syncWdLeadMilestone2Paid(session);
+        await sendInternalPaymentEmail(session);
+        notifyLeadMilestone2Paid(session);
+      } else {
+        await syncWdLeadMilestone3Paid(session);
+        await syncDiscoveryProspectAfterPayment(session, "paid");
+        await sendInternalPaymentEmail(session);
+        notifyLeadMilestone3Paid(session);
+      }
+    } else if (isDesignAchPending(session)) {
+      notifyLeadAchPending(session);
+    }
+    return;
+  }
+
   const lifetime = isLifetimeHostingCheckout(session);
-  const isDeposit = session.metadata?.paymentType === "deposit";
+  const isDeposit = paymentType === "deposit";
 
   if (session.payment_status === "paid") {
     if (isDeposit) {
@@ -100,7 +126,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 }
 
 async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
-  const isDeposit = session.metadata?.paymentType === "deposit";
+  const paymentType = session.metadata?.paymentType;
+
+  if (paymentType === "milestone_2") {
+    await syncWdLeadMilestone2Paid(session);
+    await sendInternalPaymentEmail(session, { settledAfterAch: true });
+    notifyLeadMilestone2Paid(session);
+    return;
+  }
+
+  if (paymentType === "milestone_3") {
+    await syncWdLeadMilestone3Paid(session);
+    await syncDiscoveryProspectAfterPayment(session, "paid");
+    await sendInternalPaymentEmail(session, { settledAfterAch: true });
+    notifyLeadMilestone3Paid(session);
+    return;
+  }
+
+  const isDeposit = paymentType === "deposit";
 
   if (isDeposit) {
     await syncWdLeadDepositPaid(session);

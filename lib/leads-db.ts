@@ -25,6 +25,17 @@ export type WdLeadPatch = {
   hosting_billing_starts_at?: string | null;
   ten_year_hosting_paid_at?: string | null;
   notes?: string | null;
+  payload?: Record<string, unknown>;
+};
+
+export type WdLeadRow = {
+  id: string;
+  email: string;
+  business_name: string;
+  full_name: string;
+  status: string;
+  stripe_customer_id: string | null;
+  payload: Record<string, unknown>;
 };
 
 export type WdLeadInsertResult =
@@ -125,6 +136,32 @@ export async function updateLatestWdLeadBySubscriptionId(
   }
 
   return updateWdLead(data.id, patch);
+}
+
+export async function getWdLeadById(leadId: string): Promise<WdLeadRow | null> {
+  const supa = supabaseAdmin();
+  if (!supa) return null;
+
+  const { data, error } = await supa
+    .from("wd_leads")
+    .select("id, email, business_name, full_name, status, stripe_customer_id, payload")
+    .eq("id", leadId)
+    .maybeSingle();
+
+  if (error || !data) {
+    if (error) console.warn("[leads] wd_leads get failed:", error.message);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    email: data.email,
+    business_name: data.business_name,
+    full_name: data.full_name,
+    status: data.status,
+    stripe_customer_id: data.stripe_customer_id,
+    payload: (data.payload as Record<string, unknown>) ?? {},
+  };
 }
 
 export type TenYearDueLead = {
