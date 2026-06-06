@@ -71,7 +71,7 @@ export const BANNER_FEATURE_ROUTES = [
     previewHref: "/temp/feature/2",
     exportHref: "/temp/feature/2/export",
     label: "Feature 2",
-    imageSrc: "/temp/feature-2-linkedin.png",
-    designLabel: "Feature 2 — Summer special compact offer (uploaded)",
+    imageSrc: "/temp/feature-2-linkedin.png?v=20260606b",
+    designLabel: "Feature 2 — SaaS offer with slanted mark (uploaded)",
   },
 ] as const;
