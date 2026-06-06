@@ -1,3 +1,4 @@
+import { crmAdminSecretSource } from "@/lib/crm-admin-secret";
 import { twilioMessagingConfigured } from "@/lib/twilio-sms";
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
 import { probeStripeOps, type StripeOpsSnapshot } from "@/lib/stripe-ops-check";
