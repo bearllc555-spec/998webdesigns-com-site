@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  ADDON_OPTIONS,
   GROWTH_PACK_ID,
   getSelectedAddons,
   isAddonVisuallySelected,
@@ -75,22 +76,6 @@ const initial: FormState = {
 };
 
 const STEP_LABELS = ["About you", "Your business", "The project", "Add-ons", "Logistics"];
-
-const ADDON_OPTIONS = [
-  { id: "addon-chatbot", value: "ai-chatbot", label: "AI Chatbot", pricing: "$299 setup · $79/mo" },
-  {
-    id: "addon-receptionist",
-    value: "ai-receptionist",
-    label: "AI Receptionist",
-    pricing: "$399 setup · $149/mo",
-  },
-  { id: "addon-social", value: "social-media", label: "Social Media Management", pricing: "$199 setup · $299/mo" },
-  { id: "addon-email-sms", value: "email-sms", label: "Email & SMS", pricing: "$149 setup · $149/mo" },
-  { id: "addon-blog", value: "blog-writing", label: "Blog Writing & Local Posts", pricing: "$199 setup · $199/mo" },
-  { id: "addon-seo", value: "hyper-local-seo", label: "Hyper-Local SEO", pricing: "$299 setup · $249/mo" },
-  { id: "addon-gmb", value: "google-profile", label: "Google Profile Optimization", pricing: "$149 setup · $79/mo" },
-  { id: "addon-booking", value: "booking-calendar", label: "Booking Calendar", pricing: "$99 setup · $29/mo" },
-] as const;
 
 const ACTIONS = ["Call", "Book", "Buy", "Request a quote", "Learn", "Other"];
 const PAGES = ["Home", "About", "Services", "Portfolio", "Pricing", "Blog", "Contact"];

@@ -94,6 +94,12 @@ export function Nav() {
               Contact
             </button>
             <Link
+              href="/book"
+              className="hidden items-center justify-center rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink transition hover:bg-rule-soft sm:inline-flex"
+            >
+              Book a call
+            </Link>
+            <Link
               href="/start"
               className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
             >
@@ -126,6 +132,15 @@ export function Nav() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <Link
+                    href="/book"
+                    onClick={closeMenu}
+                    className="nav-link block rounded-lg px-3 py-2.5 font-medium text-ink-soft transition hover:bg-rule-soft hover:text-ink"
+                  >
+                    Book a call
+                  </Link>
+                </li>
                 <li className="border-t border-rule pt-2 mt-2">
                   <button
                     type="button"

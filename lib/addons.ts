@@ -12,6 +12,48 @@ export const GROWTH_PACK_MEMBERS = [
 
 export type GrowthPackMember = (typeof GROWTH_PACK_MEMBERS)[number];
 
+/** Shared with LeadForm step 4 and CRM discovery close panel. */
+export const ADDON_OPTIONS = [
+  { id: "addon-chatbot", value: "ai-chatbot", label: "AI Chatbot", pricing: "$299 setup · $79/mo" },
+  {
+    id: "addon-receptionist",
+    value: "ai-receptionist",
+    label: "AI Receptionist",
+    pricing: "$399 setup · $149/mo",
+  },
+  {
+    id: "addon-social",
+    value: "social-media",
+    label: "Social Media Management",
+    pricing: "$199 setup · $299/mo",
+  },
+  { id: "addon-email-sms", value: "email-sms", label: "Email & SMS", pricing: "$149 setup · $149/mo" },
+  {
+    id: "addon-blog",
+    value: "blog-writing",
+    label: "Blog Writing & Local Posts",
+    pricing: "$199 setup · $199/mo",
+  },
+  {
+    id: "addon-seo",
+    value: "hyper-local-seo",
+    label: "Hyper-Local SEO",
+    pricing: "$299 setup · $249/mo",
+  },
+  {
+    id: "addon-gmb",
+    value: "google-profile",
+    label: "Google Profile Optimization",
+    pricing: "$149 setup · $79/mo",
+  },
+  {
+    id: "addon-booking",
+    value: "booking-calendar",
+    label: "Booking Calendar",
+    pricing: "$99 setup · $29/mo",
+  },
+] as const;
+
 export function getSelectedAddons(): string[] {
   if (typeof window === "undefined") return [];
   try {
@@ -48,36 +90,32 @@ export function isAddonVisuallySelected(
   return hasGrowthPack(selected) && isGrowthPackMember(value);
 }
 
-export function toggleAddon(value: string): string[] {
-  const current = getSelectedAddons();
-
+/** Pure toggle for in-memory selection (CRM close panel, tests). */
+export function toggleAddonSelection(current: string[], value: string): string[] {
   if (value === GROWTH_PACK_ID) {
     if (current.includes(GROWTH_PACK_ID)) {
-      return persist(current.filter((v) => v !== GROWTH_PACK_ID));
+      return current.filter((v) => v !== GROWTH_PACK_ID);
     }
-    const updated = [
-      ...current.filter((v) => !isGrowthPackMember(v)),
-      GROWTH_PACK_ID,
-    ];
-    return persist(updated);
+    return [...current.filter((v) => !isGrowthPackMember(v)), GROWTH_PACK_ID];
   }
 
   if (current.includes(value)) {
-    return persist(current.filter((v) => v !== value));
+    return current.filter((v) => v !== value);
   }
 
   if (isGrowthPackMember(value) && hasGrowthPack(current)) {
-    return persist(current.filter((v) => v !== GROWTH_PACK_ID));
+    return current.filter((v) => v !== GROWTH_PACK_ID);
   }
 
   if (isGrowthPackMember(value)) {
-    return persist([
-      ...current.filter((v) => v !== GROWTH_PACK_ID),
-      value,
-    ]);
+    return [...current.filter((v) => v !== GROWTH_PACK_ID), value];
   }
 
-  return persist([...current, value]);
+  return [...current, value];
+}
+
+export function toggleAddon(value: string): string[] {
+  return persist(toggleAddonSelection(getSelectedAddons(), value));
 }
 
 export function setSelectedAddons(addons: string[]): string[] {

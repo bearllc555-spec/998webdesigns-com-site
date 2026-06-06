@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import {
+  ADDON_OPTIONS,
+  GROWTH_PACK_ID,
+  isAddonVisuallySelected,
+  toggleAddonSelection,
+} from "@/lib/addons";
 
 type Props = {
   prospectId: string;
@@ -11,8 +17,13 @@ export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
   const [hostingChoice, setHostingChoice] = useState<"lifetime" | "monthly">("lifetime");
   const [paymentChannel, setPaymentChannel] = useState<"card" | "ach">("card");
   const [promoCode, setPromoCode] = useState("");
+  const [addons, setAddons] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  function toggleAddon(value: string) {
+    setAddons((current) => toggleAddonSelection(current, value));
+  }
 
   async function sendCloseLink() {
     setBusy(true);
@@ -27,7 +38,7 @@ export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
           hostingChoice,
           paymentChannel,
           promoCode,
-          addons: [],
+          addons,
         }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
@@ -84,6 +95,43 @@ export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
           />
         </label>
       </div>
+
+      <fieldset className="mt-4">
+        <legend className="text-sm font-medium text-ink">Add-ons (optional)</legend>
+        <div className="mt-2 rounded border border-accent/30 bg-accent/[0.04] p-3">
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={addons.includes(GROWTH_PACK_ID)}
+              onChange={() => toggleAddon(GROWTH_PACK_ID)}
+              className="mt-0.5 accent-[#2563eb]"
+            />
+            <span>
+              <span className="font-medium text-ink">Growth Pack</span>
+              <span className="block text-xs text-ink-soft">
+                SEO + Google Profile + Blog · $647 setup · $399/mo
+              </span>
+            </span>
+          </label>
+        </div>
+        <div className="mt-2 max-h-48 space-y-2 overflow-y-auto pr-1">
+          {ADDON_OPTIONS.map((addon) => (
+            <label key={addon.id} className="flex cursor-pointer items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isAddonVisuallySelected(addon.value, addons)}
+                onChange={() => toggleAddon(addon.value)}
+                className="mt-0.5 accent-[#2563eb]"
+              />
+              <span>
+                <span className="text-ink">{addon.label}</span>{" "}
+                <span className="text-xs text-ink-soft">{addon.pricing}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
       <button
         type="button"
         onClick={sendCloseLink}

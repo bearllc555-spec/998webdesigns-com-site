@@ -34,6 +34,12 @@ export function Hero() {
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </a>
+          <a
+            href="/book"
+            className="inline-flex items-center rounded-full border border-rule px-6 py-3 text-base font-medium text-ink transition hover:bg-rule-soft"
+          >
+            Book a discovery call
+          </a>
         </div>
       </div>
 
