@@ -188,16 +188,42 @@
 .temp-switcher {
   position: fixed;
   top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 12px;
+  right: 12px;
   z-index: 20;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  max-width: calc(100vw - 24px);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 13px;
   font-weight: 500;
+  pointer-events: none;
+}
+
+.temp-switcher-edge,
+.temp-switcher-center {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.temp-switcher-edge {
+  flex: 0 0 auto;
+}
+
+.temp-switcher-edge--start {
+  justify-content: flex-start;
+}
+
+.temp-switcher-edge--end {
+  justify-content: flex-end;
+}
+
+.temp-switcher-center {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
 }
 
 .temp-switcher a {
@@ -225,6 +251,17 @@
   color: #ffffff;
   background: #0a66c2;
   border-color: #0a66c2;
+}
+
+.temp-switcher-crm {
+  color: #2563eb;
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.temp-switcher-crm:hover {
+  color: #1d4ed8;
+  border-color: #1d4ed8;
 }
 
 .temp-page .hint,
