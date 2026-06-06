@@ -1,0 +1,75 @@
+import { createDiscoveryCloseToken, createDiscoveryIntakeToken } from "@/lib/discovery-token";
+import { marketingSiteOrigin } from "@/lib/site-origin";
+
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+async function sendResendEmail(to: string, subject: string, html: string): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[discovery-email] RESEND_API_KEY not set");
+    return false;
+  }
+  const { Resend } = await import("resend");
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { error } = await resend.emails.send({
+    from: "998 web designs <website@998webdesigns.com>",
+    to,
+    subject,
+    html,
+  });
+  if (error) {
+    console.warn("[discovery-email] send failed:", error);
+    return false;
+  }
+  return true;
+}
+
+export async function sendDiscoveryIntakeEmail(
+  fullName: string,
+  email: string,
+  prospectId: string
+): Promise<boolean> {
+  const token = createDiscoveryIntakeToken(prospectId);
+  if (!token) return false;
+
+  const url = `${marketingSiteOrigin()}/book/intake?token=${encodeURIComponent(token)}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+      <p>Hi ${escapeHtml(fullName)},</p>
+      <p>Your phone is verified. Click below to complete your project brief — opening the link also confirms your email.</p>
+      <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Complete your brief</a></p>
+      <p style="font-size: 14px; color: #52525b;">This link expires in 48 hours. Questions? Reply or write hello@998webdesigns.com.</p>
+    </div>
+  `;
+
+  return sendResendEmail(email, "Complete your project brief — 998 web designs", html);
+}
+
+export async function sendDiscoveryCloseEmail(
+  fullName: string,
+  email: string,
+  prospectId: string
+): Promise<boolean> {
+  const token = createDiscoveryCloseToken(prospectId);
+  if (!token) return false;
+
+  const url = `${marketingSiteOrigin()}/close?token=${encodeURIComponent(token)}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
+      <p>Hi ${escapeHtml(fullName)},</p>
+      <p>Great speaking with you. Your personalized checkout is ready — package and add-ons are pre-filled from our call.</p>
+      <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Review and pay</a></p>
+      <p style="font-size: 14px; color: #52525b;">This link expires in 7 days. Do not share it. Questions? hello@998webdesigns.com.</p>
+    </div>
+  `;
+
+  return sendResendEmail(email, "Your checkout link — 998 web designs", html);
+}

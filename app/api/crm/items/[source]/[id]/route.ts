@@ -6,6 +6,7 @@ import {
   type CrmInboxFlag,
 } from "@/lib/crm-inbox-flag";
 import { setCrmItemReadState } from "@/lib/crm-read-state";
+import { deleteDiscoveryProspect } from "@/lib/discovery-db";
 import { deleteWdLead } from "@/lib/leads-db";
 import { isCrmRequestAuthorized } from "@/lib/crm-session";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
@@ -28,14 +29,16 @@ export async function DELETE(
   }
 
   const { source, id } = await params;
-  if (source !== "lead" && source !== "contact") {
+  if (source !== "lead" && source !== "contact" && source !== "discovery") {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 
   const ok =
     source === "lead"
       ? await deleteWdLead(id)
-      : await deleteContactSubmission(id);
+      : source === "contact"
+        ? await deleteContactSubmission(id)
+        : await deleteDiscoveryProspect(id);
 
   if (!ok) {
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
@@ -59,7 +62,7 @@ export async function PATCH(
   }
 
   const { source, id } = await params;
-  if (source !== "lead" && source !== "contact") {
+  if (source !== "lead" && source !== "contact" && source !== "discovery") {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 

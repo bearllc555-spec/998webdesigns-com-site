@@ -61,7 +61,22 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              3. Your responsibilities
+              3. Discovery pipeline and SMS
+            </h2>
+            <p className="text-ink-soft">
+              Our optional discovery flow at /book lets you request a call before checkout. By
+              checking the SMS consent box and submitting your phone number, you agree to receive a
+              one-time verification text from us (via Twilio) to confirm your number. Message and
+              data rates may apply. You may reply STOP to opt out of further texts and HELP for
+              assistance. We may email you a secure link to complete your project brief and, after a
+              discovery call, a personalized checkout link. Those links are personal — do not share
+              them. Clicking your intake email link confirms your email address for that session.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              4. Your responsibilities
             </h2>
             <p className="text-ink-soft">
               You agree to provide accurate information in the lead form, respond within the
@@ -88,7 +103,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              4. Ownership
+              5. Ownership
             </h2>
             <p className="text-ink-soft">
               You own your site and your domain. We do not claim ownership of your business content.
@@ -100,7 +115,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              5. Payments
+              6. Payments
             </h2>
             <p className="text-ink-soft">
               Payments are processed by Stripe. Checkout defaults to credit or debit card. You may
@@ -119,7 +134,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              6. Acceptable use
+              7. Acceptable use
             </h2>
             <p className="text-ink-soft">
               You may not use our site or services for unlawful content, spam, malware, or
@@ -130,7 +145,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              7. Disclaimers and liability
+              8. Disclaimers and liability
             </h2>
             <p className="text-ink-soft">
               Websites and hosting are provided on an &ldquo;as is&rdquo; basis. We do not guarantee
@@ -143,7 +158,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              8. Changes
+              9. Changes
             </h2>
             <p className="text-ink-soft">
               We may update these terms or on-site pricing copy. Material changes will be posted on
@@ -154,7 +169,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              9. Governing law
+              10. Governing law
             </h2>
             <p className="text-ink-soft">
               These terms are governed by the laws of the State of New Jersey, without regard to
@@ -165,7 +180,7 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              10. Contact
+              11. Contact
             </h2>
             <p className="text-ink-soft">
               Questions about these terms?{" "}

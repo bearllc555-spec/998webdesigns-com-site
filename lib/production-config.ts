@@ -17,6 +17,8 @@ export type ProductionConfigStatus = {
   supabaseConfigured: boolean;
   adminAuthConfigured: boolean;
   crmAdminSecretSource: "dedicated" | "balance_fallback" | "missing";
+  cronSecretConfigured: boolean;
+  twilioVerifyConfigured: boolean;
   stripeOps: StripeOpsSnapshot | null;
   warnings: string[];
   readyForLiveCharges: boolean;
@@ -92,6 +94,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "processed_stripe_events table missing — run supabase/migrations/20260605140000_processed_stripe_events.sql."
     );
+  } else if (!supabase.discoveryProspectsTable) {
+    warnings.push(
+      "discovery_prospects table missing — POST /api/admin/migrate-discovery with BALANCE_CAPTURE_SECRET."
+    );
   }
   const crmSecretSource = crmAdminSecretSource();
   if (vercelEnv === "production" && crmSecretSource !== "dedicated") {
@@ -101,6 +107,22 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
     warnings.push("BALANCE_CAPTURE_SECRET missing — env-status API returns 503.");
+  }
+  const cronSecretConfigured = Boolean(process.env.CRON_SECRET?.trim());
+  if (vercelEnv === "production" && !cronSecretConfigured) {
+    warnings.push(
+      "CRON_SECRET not set — ten-year hosting cron uses BALANCE_CAPTURE_SECRET fallback."
+    );
+  }
+  const twilioVerifyConfigured = Boolean(
+    process.env.TWILIO_ACCOUNT_SID?.trim() &&
+      process.env.TWILIO_AUTH_TOKEN?.trim() &&
+      process.env.TWILIO_VERIFY_SERVICE_SID?.trim()
+  );
+  if (vercelEnv === "production" && !twilioVerifyConfigured) {
+    warnings.push(
+      "Twilio Verify env missing — /book discovery SMS step disabled until TWILIO_* vars are set."
+    );
   }
 
   const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
@@ -131,6 +153,8 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     supabaseConfigured,
     adminAuthConfigured,
     crmAdminSecretSource: crmSecretSource,
+    cronSecretConfigured,
+    twilioVerifyConfigured,
     stripeOps,
     warnings,
     readyForLiveCharges,

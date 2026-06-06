@@ -22,14 +22,19 @@ export function crmInboxFlagLabel(flag: CrmInboxFlag | null): string {
 }
 
 export async function setCrmItemInboxFlag(
-  source: "lead" | "contact",
+  source: "lead" | "contact" | "discovery",
   id: string,
   flag: CrmInboxFlag | null
 ): Promise<boolean> {
   const supa = supabaseAdmin();
   if (!supa) return false;
 
-  const table = source === "lead" ? "wd_leads" : "contact_submissions";
+  const table =
+    source === "lead"
+      ? "wd_leads"
+      : source === "contact"
+        ? "contact_submissions"
+        : "discovery_prospects";
   const inbox_flag = flag;
 
   const { error } = await supa.from(table).update({ inbox_flag }).eq("id", id);

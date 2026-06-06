@@ -18,6 +18,9 @@ function resolveRateLimitConfig(path: string): RateLimitConfig | null {
     if (path === "/api/crm/feed") return API_RATE_LIMITS["/api/crm/feed"];
     return API_RATE_LIMITS["/api/crm/session"];
   }
+  if (path.startsWith("/api/discovery/")) {
+    return API_RATE_LIMITS["/api/discovery/start"];
+  }
   return null;
 }
 
@@ -31,9 +34,22 @@ function shouldApplyEdgeRateLimit(req: NextRequest): boolean {
   return false;
 }
 
+/** Block internal design sandbox routes on production (robots disallow is not enough). */
+function blockTempInProduction(req: NextRequest): NextResponse | null {
+  const path = req.nextUrl.pathname;
+  if (process.env.VERCEL_ENV !== "production") return null;
+  if (path === "/temp" || path.startsWith("/temp/")) {
+    return new NextResponse(null, { status: 404 });
+  }
+  return null;
+}
+
 /** Fast in-memory gate at the edge; API routes also enforce via Supabase when configured. */
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
+
+  const tempBlock = blockTempInProduction(req);
+  if (tempBlock) return tempBlock;
 
   if (!shouldApplyEdgeRateLimit(req)) {
     return NextResponse.next();
@@ -57,8 +73,11 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/temp",
+    "/temp/:path*",
     "/api/leads",
     "/api/contact",
+    "/api/discovery/:path*",
     "/api/hosting/portal/request",
     "/api/admin/:path*",
     "/api/crm/:path*",

@@ -2,16 +2,23 @@
 
 import { useCallback, useState } from "react";
 import { SubmissionFieldStack } from "@/components/form-field-stack";
+import { CrmDiscoveryClosePanel } from "@/components/crm/CrmDiscoveryClosePanel";
 import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 
 type PendingDelete = {
-  source: "lead" | "contact";
+  source: "lead" | "contact" | "discovery";
   id: string;
   label: string;
   step: 1 | 2;
 };
+
+function sourceLabel(source: CrmFeedItem["source"]): string {
+  if (source === "lead") return "Lead";
+  if (source === "discovery") return "Discovery";
+  return "Contact";
+}
 
 function itemKey(item: CrmFeedItem): string {
   return `${item.source}-${item.id}`;
@@ -72,6 +79,7 @@ function previewLine(item: CrmFeedItem): string {
 type CrmActivityInboxProps = {
   contactItems: CrmFeedItem[];
   leadItems: CrmFeedItem[];
+  discoveryItems: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
 };
@@ -231,7 +239,7 @@ function InboxRow({
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-rule pb-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-slate">
-                {item.source === "lead" ? "Lead" : "Contact"} · {formatWhen(item.at)}
+                {sourceLabel(item.source)} · {formatWhen(item.at)}
               </p>
               <p className="mt-1 font-display text-xl font-semibold text-ink">
                 {item.title}
@@ -281,7 +289,7 @@ function InboxRow({
             <div className="mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4">
               <p className="text-sm font-medium text-ink">
                 {pendingDelete.step === 1
-                  ? `Delete this ${item.source === "lead" ? "lead" : "contact"}?`
+                  ? `Delete this ${sourceLabel(item.source).toLowerCase()}?`
                   : "Final confirmation — this cannot be undone"}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -320,6 +328,13 @@ function InboxRow({
                 : undefined
             }
           />
+
+          {item.source === "discovery" && !isDeleting && (
+            <CrmDiscoveryClosePanel
+              prospectId={item.id}
+              intakeComplete={item.status === "intake_complete" || item.status === "close_sent" || item.status === "paid"}
+            />
+          )}
 
           {item.source === "lead" && !isDeleting && (
             <div className="mt-4 border-t border-rule pt-4">
@@ -428,6 +443,7 @@ function InboxSection({
 export function CrmActivityInbox({
   contactItems,
   leadItems,
+  discoveryItems,
   onItemsChange,
   onReload,
 }: CrmActivityInboxProps) {
@@ -628,6 +644,13 @@ export function CrmActivityInbox({
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
         emptyLabel="No leads yet."
+      />
+      <InboxSection
+        title="Discovery"
+        items={discoveryItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No discovery prospects yet."
       />
     </div>
   );

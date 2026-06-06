@@ -51,6 +51,12 @@ export function PrivacyContent() {
                 full card or bank account numbers on our servers.
               </li>
               <li>
+                <strong>Discovery pipeline (/book):</strong> Name, email, phone, project goal, and
+                SMS consent when you start a discovery call. We send a one-time verification code by
+                text and may send transactional email with your intake link and payment link after a
+                call.
+              </li>
+              <li>
                 <strong>Site usage:</strong> Standard server and hosting logs (browser type, pages
                 requested, approximate timing) from our hosting provider.
               </li>
@@ -79,7 +85,20 @@ export function PrivacyContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              4. Where data is stored and who sees it
+              4. SMS and phone communications
+            </h2>
+            <p className="text-ink-soft">
+              If you opt in on our discovery form, we may send you a one-time SMS verification code
+              through Twilio to confirm your phone number. Message and data rates may apply. Reply
+              STOP to opt out of further texts; reply HELP for help. We do not send marketing SMS
+              without separate consent. Your mobile number is used for verification, scheduling
+              follow-up, and project updates related to your request — not sold to third parties.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-semibold text-ink">
+              5. Where data is stored and who sees it
             </h2>
             <p className="text-ink-soft">
               Lead submissions may be stored in our database (Supabase) and are accessible to our
@@ -101,7 +120,7 @@ export function PrivacyContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              5. Retention
+              6. Retention
             </h2>
             <p className="text-ink-soft">
               We keep lead and project records as long as needed to fulfill the engagement, support
@@ -112,7 +131,7 @@ export function PrivacyContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              6. Security
+              7. Security
             </h2>
             <p className="text-ink-soft">
               We use HTTPS, reputable payment and hosting vendors, and access controls on our
@@ -123,7 +142,7 @@ export function PrivacyContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              7. Your choices
+              8. Your choices
             </h2>
             <p className="text-ink-soft">
               You may request access, correction, or deletion of personal data we hold, subject to
@@ -134,7 +153,7 @@ export function PrivacyContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              8. Changes
+              9. Changes
             </h2>
             <p className="text-ink-soft">
               We may update this policy. The &ldquo;Last updated&rdquo; date at the top will change
@@ -145,7 +164,7 @@ export function PrivacyContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              9. Contact
+              10. Contact
             </h2>
             <p className="text-ink-soft">
               Privacy questions?{" "}

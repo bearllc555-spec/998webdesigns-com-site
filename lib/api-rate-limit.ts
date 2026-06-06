@@ -14,6 +14,10 @@ export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/admin/env-status": { limit: 5, windowMs: 60_000 },
   "/api/crm/session": { limit: 10, windowMs: 60_000 },
   "/api/crm/feed": { limit: 60, windowMs: 60_000 },
+  "/api/discovery/start": { limit: 8, windowMs: 60_000 },
+  "/api/discovery/verify-sms": { limit: 12, windowMs: 60_000 },
+  "/api/discovery/intake": { limit: 8, windowMs: 60_000 },
+  "/api/discovery/close-checkout": { limit: 5, windowMs: 60_000 },
 };
 
 export function clientIp(req: NextRequest): string {

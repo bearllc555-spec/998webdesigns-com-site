@@ -5,7 +5,7 @@ export type { CrmInboxFlag };
 
 export type CrmFeedItem = {
   id: string;
-  source: "lead" | "contact";
+  source: "lead" | "contact" | "discovery";
   at: string;
   title: string;
   email: string;
@@ -46,7 +46,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     };
   }
 
-  const [leadsRes, contactsRes] = await Promise.all([
+  const [leadsRes, contactsRes, discoveryRes] = await Promise.all([
     supa
       .from("wd_leads")
       .select(
@@ -59,6 +59,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       .select("id, submitted_at, email, name, business_name, message, read_at, inbox_flag")
       .order("submitted_at", { ascending: false })
       .limit(limit),
+    supa
+      .from("discovery_prospects")
+      .select(
+        "id, created_at, email, full_name, status, goal, intake, close_draft, read_at, inbox_flag"
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit),
   ]);
 
   const errors: string[] = [];
@@ -69,6 +76,10 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   if (contactsRes.error) {
     console.warn("[crm-feed] contact_submissions:", contactsRes.error.message);
     errors.push(`contacts: ${contactsRes.error.message}`);
+  }
+  if (discoveryRes.error && !isMissingDiscoveryTable(discoveryRes.error)) {
+    console.warn("[crm-feed] discovery_prospects:", discoveryRes.error.message);
+    errors.push(`discovery: ${discoveryRes.error.message}`);
   }
   if (errors.length) {
     const hint = /inbox_flag|read_at|does not exist/i.test(errors.join(" "))
@@ -98,6 +109,30 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     });
   }
 
+  for (const row of discoveryRes.data ?? []) {
+    const intake = row.intake as { businessName?: string } | null;
+    items.push({
+      id: row.id,
+      source: "discovery",
+      at: row.created_at,
+      title: row.full_name,
+      email: row.email,
+      businessName: intake?.businessName ?? "",
+      status: row.status,
+      notes: null,
+      stripeSessionId: null,
+      stripeSubscriptionId: null,
+      message: row.goal,
+      payload: {
+        goal: row.goal,
+        intake: row.intake,
+        closeDraft: row.close_draft,
+      },
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
+    });
+  }
+
   for (const row of contactsRes.data ?? []) {
     items.push({
       id: row.id,
@@ -119,4 +154,15 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
 
   items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
   return { items: items.slice(0, limit) };
+}
+
+function isMissingDiscoveryTable(error: { code?: string; message?: string }): boolean {
+  const code = error.code ?? "";
+  const msg = error.message ?? "";
+  return (
+    code === "PGRST205" ||
+    code === "42P01" ||
+    /schema cache/i.test(msg) ||
+    /does not exist/i.test(msg)
+  );
 }
