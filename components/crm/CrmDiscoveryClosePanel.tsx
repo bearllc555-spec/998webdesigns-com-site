@@ -1,33 +1,94 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ADDON_OPTIONS,
+  formatAddonSummary,
   GROWTH_PACK_ID,
   isAddonVisuallySelected,
   toggleAddonSelection,
 } from "@/lib/addons";
+import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
+import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
+import { hostingChoiceLabel } from "@/lib/hosting";
 
 type Props = {
   prospectId: string;
+  phone: string | null;
+  email: string;
+  phoneVerified: boolean;
   intakeComplete: boolean;
+  businessName: string;
+  closeDraft?: DiscoveryCloseDraft | null;
 };
 
-export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
-  const [hostingChoice, setHostingChoice] = useState<"lifetime" | "monthly">("lifetime");
-  const [paymentChannel, setPaymentChannel] = useState<"card" | "ach">("card");
-  const [promoCode, setPromoCode] = useState("");
-  const [addons, setAddons] = useState<string[]>([]);
+function formatPhoneDisplay(e164: string | null): string {
+  if (!e164) return "";
+  const digits = e164.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `(${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+  return e164;
+}
+
+export function CrmDiscoveryClosePanel({
+  prospectId,
+  phone,
+  email,
+  phoneVerified,
+  intakeComplete,
+  businessName: initialBusinessName,
+  closeDraft,
+}: Props) {
+  const [hostingChoice, setHostingChoice] = useState<"lifetime" | "monthly">(
+    closeDraft?.hostingChoice ?? "lifetime"
+  );
+  const [paymentChannel, setPaymentChannel] = useState<"card" | "ach">(
+    closeDraft?.paymentChannel ?? "card"
+  );
+  const [promoCode, setPromoCode] = useState(closeDraft?.promoCode ?? "");
+  const [addons, setAddons] = useState<string[]>(closeDraft?.addons ?? []);
+  const [businessName, setBusinessName] = useState(initialBusinessName);
+  const [sendEmail, setSendEmail] = useState(true);
+  const [sendSms, setSendSms] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [closeUrl, setCloseUrl] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setBusinessName(initialBusinessName);
+  }, [initialBusinessName]);
+
+  useEffect(() => {
+    if (!closeDraft) return;
+    setHostingChoice(closeDraft.hostingChoice);
+    setPaymentChannel(closeDraft.paymentChannel);
+    setPromoCode(closeDraft.promoCode);
+    setAddons(closeDraft.addons);
+  }, [closeDraft]);
 
   function toggleAddon(value: string) {
     setAddons((current) => toggleAddonSelection(current, value));
   }
 
+  const dueToday = formatCheckoutUsd(
+    checkoutDueTodayCents(hostingChoice, paymentChannel, promoCode)
+  );
+
   async function sendCloseLink() {
+    if (!sendEmail && !sendSms) {
+      setMessage("Choose email, SMS, or both.");
+      return;
+    }
+    if (!intakeComplete && !businessName.trim()) {
+      setMessage("Enter a business name before sending.");
+      return;
+    }
+
     setBusy(true);
     setMessage("");
+    setCopied(false);
     try {
       const res = await fetch("/api/discovery/close-invite", {
         method: "POST",
@@ -39,14 +100,20 @@ export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
           paymentChannel,
           promoCode,
           addons,
+          sendEmail,
+          sendSms,
+          businessName: intakeComplete ? undefined : businessName.trim(),
         }),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
+      const data = (await res.json()) as { ok?: boolean; error?: string; closeUrl?: string };
       if (!res.ok) {
         setMessage(data.error ?? "Failed to send.");
+        if (data.closeUrl) setCloseUrl(data.closeUrl);
         return;
       }
-      setMessage("Close link emailed.");
+      if (data.closeUrl) setCloseUrl(data.closeUrl);
+      const parts = [sendEmail && "Email", sendSms && "SMS"].filter(Boolean);
+      setMessage(`${parts.join(" + ")} sent.`);
     } catch {
       setMessage("Network error.");
     } finally {
@@ -54,15 +121,45 @@ export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
     }
   }
 
-  if (!intakeComplete) {
+  async function copyCloseLink() {
+    if (!closeUrl) return;
+    try {
+      await navigator.clipboard.writeText(closeUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setMessage("Could not copy link.");
+    }
+  }
+
+  if (!phoneVerified) {
     return (
-      <p className="text-sm text-ink-soft">Intake not complete — wait for the brief before sending a close link.</p>
+      <p className="text-sm text-ink-soft">
+        Phone not verified yet — complete SMS verification on /book before sending a checkout link.
+      </p>
     );
   }
 
   return (
     <div className="mt-4 rounded-md border border-rule bg-bg p-4">
-      <p className="text-sm font-medium text-ink">Send payment link</p>
+      <p className="text-sm font-medium text-ink">Build checkout (on-call)</p>
+      <p className="mt-1 text-xs text-ink-soft">
+        {email}
+        {phone ? ` · ${formatPhoneDisplay(phone)}` : ""}
+      </p>
+
+      {!intakeComplete && (
+        <label className="mt-3 block text-sm text-ink-soft">
+          Business name
+          <input
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            className="mt-1 w-full rounded border border-rule bg-bg px-2 py-1.5 text-ink"
+            placeholder="Client business name"
+          />
+        </label>
+      )}
+
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="text-sm text-ink-soft">
           Hosting
@@ -132,15 +229,62 @@ export function CrmDiscoveryClosePanel({ prospectId, intakeComplete }: Props) {
         </div>
       </fieldset>
 
-      <button
-        type="button"
-        onClick={sendCloseLink}
-        disabled={busy}
-        className="mt-3 rounded bg-accent px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
-      >
-        {busy ? "Sending…" : "Email close link"}
-      </button>
+      <div className="mt-4 rounded border border-rule bg-rule-soft/30 p-3 text-sm">
+        <p>
+          <strong className="text-ink">Design fee due today:</strong> {dueToday}
+        </p>
+        <p className="mt-1 text-xs text-ink-soft">
+          Hosting: {hostingChoiceLabel(hostingChoice)} · Add-ons: {formatAddonSummary(addons)}
+        </p>
+      </div>
+
+      <fieldset className="mt-4">
+        <legend className="text-sm font-medium text-ink">Send checkout link</legend>
+        <div className="mt-2 flex flex-wrap gap-4 text-sm">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={sendEmail}
+              onChange={(e) => setSendEmail(e.target.checked)}
+              className="accent-[#2563eb]"
+            />
+            Email
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="checkbox"
+              checked={sendSms}
+              onChange={(e) => setSendSms(e.target.checked)}
+              className="accent-[#2563eb]"
+            />
+            SMS
+          </label>
+        </div>
+      </fieldset>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={sendCloseLink}
+          disabled={busy}
+          className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+        >
+          {busy ? "Sending…" : "Send checkout"}
+        </button>
+        {closeUrl && (
+          <button
+            type="button"
+            onClick={copyCloseLink}
+            className="rounded border border-rule px-3 py-1.5 text-sm font-medium hover:border-accent/50"
+          >
+            {copied ? "Copied" : "Copy link"}
+          </button>
+        )}
+      </div>
       {message && <p className="mt-2 text-sm text-ink-soft">{message}</p>}
+      {closeUrl && (
+        <p className="mt-2 break-all text-xs text-ink-soft">{closeUrl}</p>
+      )}
     </div>
   );
 }

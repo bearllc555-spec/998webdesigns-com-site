@@ -128,3 +128,13 @@ export function clearAddons(): void {
     window.dispatchEvent(new CustomEvent("addons-updated", { detail: [] }));
   }
 }
+
+export function addonLabelForValue(value: string): string {
+  if (value === GROWTH_PACK_ID) return "Growth Pack";
+  return ADDON_OPTIONS.find((a) => a.value === value)?.label ?? value;
+}
+
+export function formatAddonSummary(addons: string[]): string {
+  if (!addons.length) return "None";
+  return addons.map(addonLabelForValue).join(", ");
+}

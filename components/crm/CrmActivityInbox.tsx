@@ -6,6 +6,7 @@ import { CrmDiscoveryClosePanel } from "@/components/crm/CrmDiscoveryClosePanel"
 import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
+import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
   source: "lead" | "contact" | "discovery";
@@ -101,7 +102,7 @@ type InboxRowProps = {
   onConfirmDelete: () => void;
   onCancelDelete: () => void;
   onStartEditNotes: (item: CrmFeedItem) => void;
-  onSaveNotes: (leadId: string) => void;
+  onSaveNotes: (item: CrmFeedItem) => void;
   onCancelEditNotes: () => void;
 };
 
@@ -330,10 +331,67 @@ function InboxRow({
           />
 
           {item.source === "discovery" && !isDeleting && (
-            <CrmDiscoveryClosePanel
-              prospectId={item.id}
-              intakeComplete={item.status === "intake_complete" || item.status === "close_sent" || item.status === "paid"}
-            />
+            <>
+              <div className="mt-4 border-t border-rule pt-4">
+                {editingNotes ? (
+                  <div className="grid gap-2">
+                    <textarea
+                      value={notesDraft}
+                      onChange={(e) => onNotesDraftChange(e.target.value)}
+                      rows={4}
+                      className="w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
+                      placeholder="Call notes — scope discussed, objections, follow-ups…"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onSaveNotes(item)}
+                        className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
+                      >
+                        Save notes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onCancelEditNotes}
+                        className="rounded-full border border-rule px-4 py-2 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onStartEditNotes(item)}
+                    className="text-sm text-accent hover:underline"
+                  >
+                    {item.notes ? "Edit call notes" : "Add call notes"}
+                  </button>
+                )}
+                {item.notes && !editingNotes && (
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">{item.notes}</p>
+                )}
+              </div>
+              <CrmDiscoveryClosePanel
+                prospectId={item.id}
+                phone={item.phone}
+                email={item.email}
+                phoneVerified={
+                  item.status === "phone_verified" ||
+                  item.status === "email_verified" ||
+                  item.status === "intake_complete" ||
+                  item.status === "close_sent" ||
+                  item.status === "paid"
+                }
+                intakeComplete={
+                  item.status === "intake_complete" ||
+                  item.status === "close_sent" ||
+                  item.status === "paid"
+                }
+                businessName={item.businessName}
+                closeDraft={(item.payload?.closeDraft as DiscoveryCloseDraft | null) ?? null}
+              />
+            </>
           )}
 
           {item.source === "lead" && !isDeleting && (
@@ -350,7 +408,7 @@ function InboxRow({
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => onSaveNotes(item.id)}
+                      onClick={() => onSaveNotes(item)}
                       className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
                     >
                       Save
@@ -561,8 +619,12 @@ export function CrmActivityInbox({
     }
   }
 
-  async function saveNotes(leadId: string) {
-    const res = await fetch(`/api/crm/leads/${leadId}/notes`, {
+  async function saveNotes(item: CrmFeedItem) {
+    const url =
+      item.source === "discovery"
+        ? `/api/crm/discovery/${item.id}/notes`
+        : `/api/crm/leads/${item.id}/notes`;
+    const res = await fetch(url, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

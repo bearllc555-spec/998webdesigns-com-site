@@ -55,4 +55,5 @@ export type DiscoveryProspectRow = {
   ip: string | null;
   read_at: string | null;
   inbox_flag: string | null;
+  crm_notes: string | null;
 };

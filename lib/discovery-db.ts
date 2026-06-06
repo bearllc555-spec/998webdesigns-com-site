@@ -118,6 +118,13 @@ export async function linkDiscoveryWdLead(id: string, wdLeadId: string): Promise
   return updateDiscoveryProspect(id, { wd_lead_id: wdLeadId, status: "paid" });
 }
 
+export async function updateDiscoveryProspectCrmNotes(
+  id: string,
+  crmNotes: string | null
+): Promise<boolean> {
+  return updateDiscoveryProspect(id, { crm_notes: crmNotes });
+}
+
 export async function deleteDiscoveryProspect(id: string): Promise<boolean> {
   const supa = supabaseAdmin();
   if (!supa) return false;

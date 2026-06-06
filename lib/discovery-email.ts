@@ -1,5 +1,12 @@
 import { createDiscoveryCloseToken, createDiscoveryIntakeToken } from "@/lib/discovery-token";
 import { marketingSiteOrigin } from "@/lib/site-origin";
+import { sendTwilioSms } from "@/lib/twilio-sms";
+
+export function buildDiscoveryCloseUrl(prospectId: string): string | null {
+  const token = createDiscoveryCloseToken(prospectId);
+  if (!token) return null;
+  return `${marketingSiteOrigin()}/close?token=${encodeURIComponent(token)}`;
+}
 
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
@@ -58,10 +65,8 @@ export async function sendDiscoveryCloseEmail(
   email: string,
   prospectId: string
 ): Promise<boolean> {
-  const token = createDiscoveryCloseToken(prospectId);
-  if (!token) return false;
-
-  const url = `${marketingSiteOrigin()}/close?token=${encodeURIComponent(token)}`;
+  const url = buildDiscoveryCloseUrl(prospectId);
+  if (!url) return false;
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
       <p>Hi ${escapeHtml(fullName)},</p>
@@ -72,4 +77,19 @@ export async function sendDiscoveryCloseEmail(
   `;
 
   return sendResendEmail(email, "Your checkout link — 998 web designs", html);
+}
+
+export async function sendDiscoveryCloseSms(
+  phoneE164: string,
+  fullName: string,
+  prospectId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const url = buildDiscoveryCloseUrl(prospectId);
+  if (!url) {
+    return { ok: false, error: "Could not build checkout link" };
+  }
+
+  const firstName = fullName.trim().split(/\s+/)[0] || "there";
+  const body = `Hi ${firstName} — your 998 web designs checkout is ready: ${url}`;
+  return sendTwilioSms(phoneE164, body);
 }

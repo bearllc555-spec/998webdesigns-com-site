@@ -16,6 +16,7 @@ export type CrmFeedItem = {
   stripeSubscriptionId: string | null;
   message: string | null;
   payload: Record<string, unknown> | null;
+  phone: string | null;
   /** null = unread */
   readAt: string | null;
   /** null = outline star; cycles star → check → alert → null */
@@ -62,7 +63,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("discovery_prospects")
       .select(
-        "id, created_at, email, full_name, status, goal, intake, close_draft, read_at, inbox_flag"
+        "id, created_at, email, full_name, phone, status, goal, intake, close_draft, crm_notes, read_at, inbox_flag"
       )
       .order("created_at", { ascending: false })
       .limit(limit),
@@ -104,6 +105,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       stripeSubscriptionId: row.stripe_subscription_id,
       message: null,
       payload: (row.payload as Record<string, unknown>) ?? null,
+      phone: null,
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
@@ -119,10 +121,11 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       email: row.email,
       businessName: intake?.businessName ?? "",
       status: row.status,
-      notes: null,
+      notes: (row as { crm_notes?: string | null }).crm_notes ?? null,
       stripeSessionId: null,
       stripeSubscriptionId: null,
       message: row.goal,
+      phone: row.phone ?? null,
       payload: {
         goal: row.goal,
         intake: row.intake,
@@ -147,6 +150,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       stripeSubscriptionId: null,
       message: row.message,
       payload: null,
+      phone: null,
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });

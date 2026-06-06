@@ -4,16 +4,26 @@ export type TwilioVerifyConfig = {
   serviceSid: string;
 };
 
-export function twilioVerifyConfig(): TwilioVerifyConfig | null {
+export function twilioCredentials(): { accountSid: string; authToken: string } | null {
   const accountSid = process.env.TWILIO_ACCOUNT_SID?.trim();
   const authToken = process.env.TWILIO_AUTH_TOKEN?.trim();
+  if (!accountSid || !authToken) return null;
+  return { accountSid, authToken };
+}
+
+export function twilioVerifyConfig(): TwilioVerifyConfig | null {
+  const creds = twilioCredentials();
   const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID?.trim();
-  if (!accountSid || !authToken || !serviceSid) return null;
-  return { accountSid, authToken, serviceSid };
+  if (!creds || !serviceSid) return null;
+  return { ...creds, serviceSid };
+}
+
+export function twilioBasicAuth(accountSid: string, authToken: string): string {
+  return Buffer.from(`${accountSid}:${authToken}`).toString("base64");
 }
 
 function basicAuth(config: TwilioVerifyConfig): string {
-  return Buffer.from(`${config.accountSid}:${config.authToken}`).toString("base64");
+  return twilioBasicAuth(config.accountSid, config.authToken);
 }
 
 /** E.164-ish normalization for US numbers. */

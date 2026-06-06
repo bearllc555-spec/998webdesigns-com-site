@@ -1,4 +1,4 @@
-import { crmAdminSecretSource } from "@/lib/crm-admin-secret";
+import { twilioMessagingConfigured } from "@/lib/twilio-sms";
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
 import { probeStripeOps, type StripeOpsSnapshot } from "@/lib/stripe-ops-check";
 import { checkSupabaseHealth, type SupabaseHealth } from "@/lib/supabase-health";
@@ -19,6 +19,7 @@ export type ProductionConfigStatus = {
   crmAdminSecretSource: "dedicated" | "balance_fallback" | "missing";
   cronSecretConfigured: boolean;
   twilioVerifyConfigured: boolean;
+  twilioMessagingConfigured: boolean;
   stripeOps: StripeOpsSnapshot | null;
   warnings: string[];
   readyForLiveCharges: boolean;
@@ -124,6 +125,12 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
       "Twilio Verify env missing — /book discovery SMS step disabled until TWILIO_* vars are set."
     );
   }
+  const twilioMessaging = twilioMessagingConfigured();
+  if (vercelEnv === "production" && !twilioMessaging) {
+    warnings.push(
+      "TWILIO_MESSAGING_FROM missing — CRM checkout SMS disabled until a Twilio sending number is set."
+    );
+  }
 
   const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
   const supabaseConfigured =
@@ -155,6 +162,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     crmAdminSecretSource: crmSecretSource,
     cronSecretConfigured,
     twilioVerifyConfigured,
+    twilioMessagingConfigured: twilioMessaging,
     stripeOps,
     warnings,
     readyForLiveCharges,
