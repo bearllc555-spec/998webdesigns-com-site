@@ -20,9 +20,14 @@ export function Design5Artboard() {
             <span className="logo-rest">webdesigns</span>
           </h1>
           <p className="tagline">
-            <strong>High-converting websites</strong> — built in 7 business days, no agency bloat.
+            <strong>High-converting websites</strong>
+            <span className="tagline-sub">Built in 7 business days — no agency bloat.</span>
           </p>
         </div>
+
+        <p className="domain-mark" aria-hidden="true">
+          998webdesigns.com
+        </p>
       </div>
     </div>
   );

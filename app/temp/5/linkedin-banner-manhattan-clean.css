@@ -14,7 +14,7 @@
   bottom: 0;
   height: 68%;
   color: #2563eb;
-  opacity: 0.16;
+  opacity: 0.19;
   pointer-events: none;
   line-height: 0;
   z-index: 0;
@@ -57,7 +57,7 @@
   height: 100%;
   display: flex;
   align-items: center;
-  padding: 0 72px 0 440px;
+  padding: 12px 96px 0 440px;
 }
 
 .temp-page-v5 .linkedin-banner .brand-block {
@@ -108,12 +108,15 @@
 }
 
 .temp-page-v5 .linkedin-banner .tagline {
-  margin-top: 16px;
-  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  max-width: 640px;
   font-family: var(--font-inter), sans-serif;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: -0.02em;
   color: #27272a;
 }
@@ -121,4 +124,20 @@
 .temp-page-v5 .linkedin-banner .tagline strong {
   font-weight: 700;
   color: #0a0a0a;
+}
+
+.temp-page-v5 .linkedin-banner .tagline-sub {
+  font-weight: 500;
+  color: #3f3f46;
+}
+
+.temp-page-v5 .linkedin-banner .domain-mark {
+  position: absolute;
+  right: 72px;
+  bottom: 44px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #a1a1aa;
 }
