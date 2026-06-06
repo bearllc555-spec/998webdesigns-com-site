@@ -4,9 +4,19 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { isCrmAuthenticated } from "@/lib/crm-session";
 import { CRM_VERSION } from "@/lib/crm-version";
 
-export default async function CrmLoginPage() {
+function safeNextPath(raw: string | undefined): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/crm/login")) {
+    return "/crm";
+  }
+  return raw;
+}
+
+type Props = { searchParams: Promise<{ next?: string }> };
+
+export default async function CrmLoginPage({ searchParams }: Props) {
+  const { next } = await searchParams;
   if (await isCrmAuthenticated()) {
-    redirect("/crm");
+    redirect(safeNextPath(next));
   }
 
   return (

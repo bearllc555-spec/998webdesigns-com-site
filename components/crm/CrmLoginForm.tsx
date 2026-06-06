@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 
+function safeNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/crm/login")) {
+    return "/crm";
+  }
+  return raw;
+}
+
 export function CrmLoginForm() {
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +29,8 @@ export function CrmLoginForm() {
         setError("Invalid secret.");
         return;
       }
-      window.location.href = "/crm";
+      const next = safeNextPath(new URLSearchParams(window.location.search).get("next"));
+      window.location.href = next;
     } catch {
       setError("Could not sign in.");
     } finally {

@@ -5,6 +5,8 @@ import {
   clientIp,
   rateLimitResponse,
 } from "@/lib/api-rate-limit";
+import { crmAdminSecret } from "@/lib/crm-admin-secret";
+import { CRM_SESSION_COOKIE, verifyCrmSessionValue } from "@/lib/crm-session";
 import { checkRateLimit, pruneRateLimitStore, type RateLimitConfig } from "@/lib/rate-limit";
 
 function resolveRateLimitConfig(path: string): RateLimitConfig | null {
@@ -34,22 +36,38 @@ function shouldApplyEdgeRateLimit(req: NextRequest): boolean {
   return false;
 }
 
-/** Block internal design sandbox routes on production (robots disallow is not enough). */
-function blockTempInProduction(req: NextRequest): NextResponse | null {
+function tempLoginRedirect(req: NextRequest): NextResponse {
   const path = req.nextUrl.pathname;
+  const next =
+    path.startsWith("/") && !path.startsWith("//") ? path + req.nextUrl.search : "/temp";
+  const loginUrl = new URL("/crm/login", req.url);
+  loginUrl.searchParams.set("next", next);
+  return NextResponse.redirect(loginUrl);
+}
+
+/** /temp on production requires the same CRM session as /crm (CRM_ADMIN_SECRET). */
+function requireCrmForTempInProduction(req: NextRequest): NextResponse | null {
   if (process.env.VERCEL_ENV !== "production") return null;
-  if (path === "/temp" || path.startsWith("/temp/")) {
-    return new NextResponse(null, { status: 404 });
+  const path = req.nextUrl.pathname;
+  if (path !== "/temp" && !path.startsWith("/temp/")) return null;
+
+  const secret = crmAdminSecret();
+  if (!secret) {
+    return new NextResponse("CRM auth not configured", { status: 503 });
   }
-  return null;
+
+  const cookie = req.cookies.get(CRM_SESSION_COOKIE)?.value;
+  if (verifyCrmSessionValue(cookie, secret)) return null;
+
+  return tempLoginRedirect(req);
 }
 
 /** Fast in-memory gate at the edge; API routes also enforce via Supabase when configured. */
 export function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  const tempBlock = blockTempInProduction(req);
-  if (tempBlock) return tempBlock;
+  const tempGate = requireCrmForTempInProduction(req);
+  if (tempGate) return tempGate;
 
   if (!shouldApplyEdgeRateLimit(req)) {
     return NextResponse.next();
