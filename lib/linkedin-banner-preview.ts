@@ -26,6 +26,13 @@ export const LINKEDIN_DISPLAY_SCALE = LINKEDIN_COVER_DISPLAY_W / LINKEDIN_COVER_
 /** Synced from live profile — anthony-de-meo-285999397 (updated 2026-06-06). */
 export const LINKEDIN_AVATAR_IMAGE_SRC = "/temp/anthony-linkedin-avatar.jpg?v=20260606";
 
+/**
+ * LinkedIn profile treasury / featured content image (measured on anthony-de-meo treasury ref).
+ * https://media.licdn.com/dms/image/v2/D4E2DAQFW1bMB0fpVoA/profile-treasury-image-shrink_480_480/...
+ */
+export const LINKEDIN_TREASURY_IMAGE_W = 480;
+export const LINKEDIN_TREASURY_IMAGE_H = 322;
+
 /** 32px gap after photo frame right edge — brand/logo safe on 1584×396 artboard. */
 export const LINKEDIN_ARTBOARD_CONTENT_PAD_LEFT = Math.ceil(
   (LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_FRAME_SIZE + 32) / LINKEDIN_DISPLAY_SCALE
