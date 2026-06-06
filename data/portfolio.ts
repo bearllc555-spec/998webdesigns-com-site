@@ -1,6 +1,16 @@
 // Portfolio carousel data.
 // Thumbnail: public/portfolio/<slug>.jpg — scripts/capture-portfolio-poster.mjs (full-page JPEG, pan on hover)
-// URLs: apex pages.dev or client production domains. Branch previews (dev.*) only when no apex exists yet.
+//
+// LOCKED — portfolio dev URLs (2026-06-06). Do NOT swap to apex/stale domains unless Anthony
+// explicitly instructs. These are the current live demos for carousel links AND poster capture:
+//   serenity-spa          → serenity-spa-3r8.pages.dev
+//   tuscano-excavating    → tuscano-excavating.pages.dev
+//   jetvip-charter        → jetvipcharter-dev.pages.dev
+//   borst-landscape       → landscape-design-site-cui.pages.dev
+//   yogacentric           → yogacentric-com-site.pages.dev
+//   new-empire-corp       → dev.nyc-design.pages.dev        (NOT nyc-design.pages.dev)
+//   pocono-vacation-homes → dev.vacation-homes.pages.dev
+//   legally-design        → dev.legally-design.pages.dev    (NOT legally-design.pages.dev)
 
 export type PortfolioItem = {
   slug: string;

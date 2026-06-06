@@ -56,9 +56,27 @@ curl -s https://998webdesigns.com/api/admin/env-status \
 
 ---
 
+## Portfolio dev URLs (locked — 2026-06-06)
+
+Carousel links and poster capture URLs in `data/portfolio.ts`. **Do not change these back to apex or stale domains unless Anthony explicitly instructs.**
+
+| Slug | URL |
+|------|-----|
+| serenity-spa | https://serenity-spa-3r8.pages.dev/ |
+| tuscano-excavating | https://tuscano-excavating.pages.dev/ |
+| jetvip-charter | https://jetvipcharter-dev.pages.dev/ |
+| borst-landscape | https://landscape-design-site-cui.pages.dev/ |
+| yogacentric | https://yogacentric-com-site.pages.dev/ |
+| new-empire-corp | https://dev.nyc-design.pages.dev/ |
+| pocono-vacation-homes | https://dev.vacation-homes.pages.dev/ |
+| legally-design | https://dev.legally-design.pages.dev/ |
+
+Re-capture posters: `npm run capture-portfolio-poster -- <slug> <url>` (see `scripts/capture-portfolio-poster.mjs`).
+
+---
+
 ## Deferred / backlog
 
-- **Portfolio polish** — Yogacentric hover video not captured yet; Borst Landscape has poster only (no preview mp4); Pocono still on `dev.vacation-homes.pages.dev` until apex ships (`data/portfolio.ts`).
 - **Lawyer review** — Terms/Privacy are operator-drafted.
 
 ---
