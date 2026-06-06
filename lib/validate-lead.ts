@@ -6,7 +6,7 @@ import { isValidDesignPromoCode } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 
 export type HostingChoice = "lifetime" | "monthly";
-export type PaymentOption = "full";
+export type PaymentOption = "full" | "deposit";
 export type PaymentChannel = "ach" | "card";
 export type ContactPref = "email" | "phone" | "text";
 export type ProjectType = "new" | "redesign";

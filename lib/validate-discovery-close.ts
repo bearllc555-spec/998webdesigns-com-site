@@ -1,5 +1,6 @@
 import { isValidDesignPromoCode } from "@/lib/design-promo";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
+import type { PaymentOption } from "@/lib/validate-lead";
 
 const ALLOWED_ADDONS = new Set([
   "growth-pack",
@@ -27,12 +28,16 @@ export function validateDiscoveryCloseDraft(
 ): { ok: true; data: DiscoveryCloseDraft } | { ok: false; error: string } {
   const hostingChoice = str(body.hostingChoice);
   const paymentChannel = str(body.paymentChannel);
+  const paymentOptionRaw = str(body.paymentOption) ?? "deposit";
 
   if (!hostingChoice || !["lifetime", "monthly"].includes(hostingChoice)) {
     return { ok: false, error: "hostingChoice must be lifetime or monthly" };
   }
   if (!paymentChannel || !["ach", "card"].includes(paymentChannel)) {
     return { ok: false, error: "paymentChannel must be ach or card" };
+  }
+  if (!["full", "deposit"].includes(paymentOptionRaw)) {
+    return { ok: false, error: "paymentOption must be full or deposit" };
   }
 
   const promoCode = str(body.promoCode) ?? "";
@@ -45,6 +50,7 @@ export function validateDiscoveryCloseDraft(
     data: {
       hostingChoice: hostingChoice as DiscoveryCloseDraft["hostingChoice"],
       paymentChannel: paymentChannel as DiscoveryCloseDraft["paymentChannel"],
+      paymentOption: paymentOptionRaw as PaymentOption,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
       promoCode,
     },

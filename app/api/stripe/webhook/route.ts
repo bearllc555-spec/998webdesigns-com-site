@@ -9,6 +9,7 @@ import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
 import {
   notifyLeadAchFailed,
   notifyLeadAchPending,
+  notifyLeadDepositPaid,
   notifyLeadPaid,
   notifyLifetimeHostingAchPending,
   notifyLifetimeHostingPaid,
@@ -17,10 +18,12 @@ import {
   handleInvoicePaymentFailed,
   handleSubscriptionDeleted,
 } from "@/lib/subscription-webhooks";
+import { syncDiscoveryProspectAfterPayment } from "@/lib/discovery-payment-sync";
 import {
   isLifetimeHostingCheckout,
   syncWdLeadAwaitingBankSettlement,
   syncWdLeadBankPaymentFailed,
+  syncWdLeadDepositPaid,
   syncWdLeadPaidInFull,
 } from "@/lib/wd-leads-sync";
 import {
@@ -53,21 +56,29 @@ function isLifetimeAchPending(session: Stripe.Checkout.Session): boolean {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const lifetime = isLifetimeHostingCheckout(session);
-
-  if (session.metadata?.paymentType === "deposit") {
-    console.info(
-      `[webhook] Legacy deposit checkout ${session.id} — treating as paid in full (no balance capture)`
-    );
-  }
+  const isDeposit = session.metadata?.paymentType === "deposit";
 
   if (session.payment_status === "paid") {
-    await syncWdLeadPaidInFull(session);
-    if (lifetime) {
-      await sendInternalLifetimeHostingPaidEmail(session);
-      notifyLifetimeHostingPaid(session);
+    if (isDeposit) {
+      await syncWdLeadDepositPaid(session);
+      await syncDiscoveryProspectAfterPayment(session, "deposit_paid");
+      if (lifetime) {
+        await sendInternalLifetimeHostingPaidEmail(session);
+        notifyLifetimeHostingPaid(session);
+      } else {
+        await sendInternalPaymentEmail(session);
+        notifyLeadDepositPaid(session);
+      }
     } else {
-      await sendInternalPaymentEmail(session);
-      notifyLeadPaid(session);
+      await syncWdLeadPaidInFull(session);
+      await syncDiscoveryProspectAfterPayment(session, "paid");
+      if (lifetime) {
+        await sendInternalLifetimeHostingPaidEmail(session);
+        notifyLifetimeHostingPaid(session);
+      } else {
+        await sendInternalPaymentEmail(session);
+        notifyLeadPaid(session);
+      }
     }
     return;
   }
@@ -89,7 +100,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 }
 
 async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
+  const isDeposit = session.metadata?.paymentType === "deposit";
+
+  if (isDeposit) {
+    await syncWdLeadDepositPaid(session);
+    await syncDiscoveryProspectAfterPayment(session, "deposit_paid");
+    await sendInternalPaymentEmail(session, { settledAfterAch: true });
+    notifyLeadDepositPaid(session);
+    return;
+  }
+
   await syncWdLeadPaidInFull(session);
+  await syncDiscoveryProspectAfterPayment(session, "paid");
   if (isLifetimeHostingCheckout(session)) {
     await sendInternalLifetimeHostingPaidEmail(session, { settledAfterAch: true });
     notifyLifetimeHostingPaid(session);

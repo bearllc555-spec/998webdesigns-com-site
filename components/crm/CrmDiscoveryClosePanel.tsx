@@ -9,8 +9,13 @@ import {
   toggleAddonSelection,
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
+import {
+  designPaymentScheduleLines,
+  designTotalCents,
+} from "@/lib/design-payment-schedule";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 import { hostingChoiceLabel } from "@/lib/hosting";
+import type { PaymentOption } from "@/lib/validate-lead";
 
 type Props = {
   prospectId: string;
@@ -46,6 +51,9 @@ export function CrmDiscoveryClosePanel({
   const [paymentChannel, setPaymentChannel] = useState<"card" | "ach">(
     closeDraft?.paymentChannel ?? "card"
   );
+  const [paymentOption, setPaymentOption] = useState<PaymentOption>(
+    closeDraft?.paymentOption ?? "deposit"
+  );
   const [promoCode, setPromoCode] = useState(closeDraft?.promoCode ?? "");
   const [addons, setAddons] = useState<string[]>(closeDraft?.addons ?? []);
   const [businessName, setBusinessName] = useState(initialBusinessName);
@@ -64,6 +72,7 @@ export function CrmDiscoveryClosePanel({
     if (!closeDraft) return;
     setHostingChoice(closeDraft.hostingChoice);
     setPaymentChannel(closeDraft.paymentChannel);
+    setPaymentOption(closeDraft.paymentOption ?? "deposit");
     setPromoCode(closeDraft.promoCode);
     setAddons(closeDraft.addons);
   }, [closeDraft]);
@@ -73,8 +82,9 @@ export function CrmDiscoveryClosePanel({
   }
 
   const dueToday = formatCheckoutUsd(
-    checkoutDueTodayCents(hostingChoice, paymentChannel, promoCode)
+    checkoutDueTodayCents(hostingChoice, paymentChannel, promoCode, paymentOption)
   );
+  const scheduleLines = designPaymentScheduleLines(promoCode);
 
   async function sendCloseLink() {
     if (!sendEmail && !sendSms) {
@@ -98,6 +108,7 @@ export function CrmDiscoveryClosePanel({
           prospectId,
           hostingChoice,
           paymentChannel,
+          paymentOption,
           promoCode,
           addons,
           sendEmail,
@@ -183,6 +194,17 @@ export function CrmDiscoveryClosePanel({
             <option value="ach">ACH</option>
           </select>
         </label>
+        <label className="text-sm text-ink-soft">
+          Design payment
+          <select
+            value={paymentOption}
+            onChange={(e) => setPaymentOption(e.target.value as PaymentOption)}
+            className="mt-1 w-full rounded border border-rule bg-bg px-2 py-1.5 text-ink"
+          >
+            <option value="deposit">50% deposit today (50 / 40 / 10 schedule)</option>
+            <option value="full">Pay design fee in full today</option>
+          </select>
+        </label>
         <label className="text-sm text-ink-soft sm:col-span-2">
           Promo code (optional)
           <input
@@ -231,9 +253,21 @@ export function CrmDiscoveryClosePanel({
 
       <div className="mt-4 rounded border border-rule bg-rule-soft/30 p-3 text-sm">
         <p>
-          <strong className="text-ink">Design fee due today:</strong> {dueToday}
+          <strong className="text-ink">Due today:</strong> {dueToday}
         </p>
-        <p className="mt-1 text-xs text-ink-soft">
+        {paymentOption === "deposit" && (
+          <ul className="mt-2 space-y-1 text-xs text-ink-soft">
+            {scheduleLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+        {paymentOption === "full" && (
+          <p className="mt-1 text-xs text-ink-soft">
+            Full design fee due today — {formatCheckoutUsd(designTotalCents(promoCode))}
+          </p>
+        )}
+        <p className="mt-2 text-xs text-ink-soft">
           Hosting: {hostingChoiceLabel(hostingChoice)} · Add-ons: {formatAddonSummary(addons)}
         </p>
       </div>

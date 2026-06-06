@@ -42,7 +42,7 @@ export function discoveryProspectToLead(
       startDate: intake.startDate,
       hostingChoice: close.hostingChoice,
       notes: [prospect.goal, intake.notes].filter(Boolean).join("\n\n"),
-      paymentOption: "full",
+      paymentOption: close.paymentOption ?? "deposit",
       paymentChannel: close.paymentChannel,
       addons: close.addons,
       promoCode,

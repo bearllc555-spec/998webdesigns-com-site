@@ -4,6 +4,7 @@ import {
   formatCheckoutUsd,
   paymentChannelLabel,
 } from "@/lib/checkout-pricing";
+import { designPaymentScheduleLines, paymentOptionLabel } from "@/lib/design-payment-schedule";
 import { formatHearAboutSources } from "@/lib/hear-about-sources";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "@/lib/validate-lead";
@@ -50,9 +51,16 @@ export async function sendInternalLeadSubmittedEmail(
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">New lead — payment not completed yet</h2>
-        <p><strong>Plan:</strong> $5,998 pay in full (selected)</p>
+        <p><strong>Plan:</strong> ${escapeHtml(paymentOptionLabel(lead.paymentOption))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(lead.paymentChannel))}</p>
-        <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel)))}</p>
+        <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel, lead.promoCode, lead.paymentOption)))}</p>
+        ${
+          lead.paymentOption === "deposit"
+            ? `<ul style="margin: 8px 0; padding-left: 20px;">${designPaymentScheduleLines(lead.promoCode)
+                .map((line) => `<li>${escapeHtml(line)}</li>`)
+                .join("")}</ul>`
+            : ""
+        }
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
         <p><strong>Company:</strong> ${lead.businessName ? escapeHtml(lead.businessName) : "&nbsp;"}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>

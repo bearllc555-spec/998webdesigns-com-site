@@ -5,23 +5,31 @@ import {
   checkoutSubtotalCents,
   type PaymentChannel,
 } from "@/lib/checkout-pricing";
-import { designFeeCents, designPromoSummary, resolveDesignPromo } from "@/lib/design-promo";
+import { designPromoSummary, resolveDesignPromo } from "@/lib/design-promo";
+import {
+  designTotalCents,
+} from "@/lib/design-payment-schedule";
 import { FULL_PRODUCT, HOSTING_MONTHLY_PRODUCT } from "@/lib/products";
 import type { HostingChoice, ValidatedLead } from "@/lib/validate-lead";
 
 function designLineItem(lead: ValidatedLead): Stripe.Checkout.SessionCreateParams.LineItem {
   const promo = resolveDesignPromo(lead.promoCode);
-  const amount = designFeeCents(lead.promoCode);
+  const isDeposit = lead.paymentOption === "deposit";
+  const amount = checkoutSubtotalCents(lead.hostingChoice, lead.promoCode, lead.paymentOption);
   const promoLabel = designPromoSummary(lead.promoCode);
-  const description = promo
-    ? `${FULL_PRODUCT.description} (${promo.code} — ${promoLabel})`
+  const totalLabel = `$${(designTotalCents(lead.promoCode) / 100).toLocaleString()} total design fee`;
+  const scheduleNote = isDeposit
+    ? `50% deposit today; 40% after design approval; 10% at launch (${totalLabel}).`
     : FULL_PRODUCT.description;
+  const description = promo
+    ? `${scheduleNote} (${promo.code} — ${promoLabel})`
+    : scheduleNote;
 
   return {
     price_data: {
       currency: "usd",
       product_data: {
-        name: FULL_PRODUCT.name,
+        name: isDeposit ? "Website Design — 50% deposit" : FULL_PRODUCT.name,
         description,
       },
       unit_amount: amount,
@@ -45,8 +53,12 @@ function monthlyHostingLineItem(): Stripe.Checkout.SessionCreateParams.LineItem 
   };
 }
 
-function cardFeeLineItem(promoCode?: string): Stripe.Checkout.SessionCreateParams.LineItem {
-  const feeCents = cardProcessingFeeCents(checkoutSubtotalCents(undefined, promoCode));
+function cardFeeLineItem(
+  lead: ValidatedLead
+): Stripe.Checkout.SessionCreateParams.LineItem {
+  const feeCents = cardProcessingFeeCents(
+    checkoutSubtotalCents(lead.hostingChoice, lead.promoCode, lead.paymentOption)
+  );
   return {
     price_data: {
       currency: "usd",
@@ -76,7 +88,7 @@ export function buildCheckoutLineItems(
   }
 
   if (channel === "card") {
-    items.push(cardFeeLineItem(lead.promoCode));
+    items.push(cardFeeLineItem(lead));
   }
 
   return items;

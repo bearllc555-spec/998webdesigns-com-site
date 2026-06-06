@@ -63,6 +63,7 @@ function formatListWhen(iso: string): string {
 function statusClass(status: string | null): string {
   if (!status) return "bg-rule-soft text-ink-soft";
   if (status === "paid_in_full") return "bg-success/15 text-success";
+  if (status === "deposit_paid") return "bg-success/15 text-success";
   if (status.includes("failed") || status === "bank_payment_failed") {
     return "bg-warn-soft text-warn";
   }
@@ -390,11 +391,13 @@ function InboxRow({
                   item.status === "email_verified" ||
                   item.status === "intake_complete" ||
                   item.status === "close_sent" ||
+                  item.status === "deposit_paid" ||
                   item.status === "paid"
                 }
                 intakeComplete={
                   item.status === "intake_complete" ||
                   item.status === "close_sent" ||
+                  item.status === "deposit_paid" ||
                   item.status === "paid"
                 }
                 businessName={item.businessName}

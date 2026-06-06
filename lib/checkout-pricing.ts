@@ -1,9 +1,10 @@
-import { designFeeCents } from "@/lib/design-promo";
+import { checkoutDesignSubtotalCents } from "@/lib/design-payment-schedule";
+import type { PaymentOption } from "@/lib/validate-lead";
 import type { HostingChoice } from "@/lib/validate-lead";
 
 export type PaymentChannel = "ach" | "card";
 
-/** Card surcharge on design fee only (hosting is not charged at initial checkout). */
+/** Card surcharge on design amount due today (hosting is not charged at initial checkout). */
 export const CARD_PROCESSING_RATE = 0.03;
 
 export const CARD_PROCESSING_PRODUCT = {
@@ -11,12 +12,13 @@ export const CARD_PROCESSING_PRODUCT = {
   description: "Processing fee for credit/debit card payments on the design fee.",
 } as const;
 
-/** Design fee subtotal at signup — hosting is billed after the 30-day free period. */
+/** Design subtotal due at Checkout — full fee or 50% deposit. */
 export function checkoutSubtotalCents(
   _hostingChoice?: HostingChoice,
-  promoCode?: string
+  promoCode?: string,
+  paymentOption: PaymentOption = "full"
 ): number {
-  return designFeeCents(promoCode);
+  return checkoutDesignSubtotalCents(paymentOption, promoCode);
 }
 
 export function cardProcessingFeeCents(subtotalCents: number): number {
@@ -26,22 +28,24 @@ export function cardProcessingFeeCents(subtotalCents: number): number {
 export function checkoutTotalCents(
   hostingChoice: HostingChoice,
   channel: PaymentChannel,
-  promoCode?: string
+  promoCode?: string,
+  paymentOption: PaymentOption = "full"
 ): number {
-  const subtotal = checkoutSubtotalCents(hostingChoice, promoCode);
+  const subtotal = checkoutSubtotalCents(hostingChoice, promoCode, paymentOption);
   if (channel === "card") {
     return subtotal + cardProcessingFeeCents(subtotal);
   }
   return subtotal;
 }
 
-/** Initial Checkout: design fee (+ 3% card fee on design). No hosting charges today. */
+/** Initial Checkout: design due today (+ 3% card fee). No hosting charges today. */
 export function checkoutDueTodayCents(
   hostingChoice: HostingChoice,
   channel: PaymentChannel,
-  promoCode?: string
+  promoCode?: string,
+  paymentOption: PaymentOption = "full"
 ): number {
-  return checkoutTotalCents(hostingChoice, channel, promoCode);
+  return checkoutTotalCents(hostingChoice, channel, promoCode, paymentOption);
 }
 
 /** Human-readable USD for buttons and emails (no cents when whole dollars). */

@@ -1,4 +1,4 @@
-import type { HostingChoice, PaymentChannel } from "@/lib/validate-lead";
+import type { HostingChoice, PaymentChannel, PaymentOption } from "@/lib/validate-lead";
 
 export type DiscoveryStatus =
   | "started"
@@ -7,6 +7,7 @@ export type DiscoveryStatus =
   | "intake_complete"
   | "call_booked"
   | "close_sent"
+  | "deposit_paid"
   | "paid";
 
 export type DiscoveryIntake = {
@@ -30,6 +31,7 @@ export type DiscoveryIntake = {
 export type DiscoveryCloseDraft = {
   hostingChoice: HostingChoice;
   paymentChannel: PaymentChannel;
+  paymentOption: PaymentOption;
   addons: string[];
   promoCode: string;
 };

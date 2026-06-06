@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
       origin,
       submittedAt,
       wdLeadId: dbResult.ok && dbResult.id ? dbResult.id : undefined,
+      discoveryProspectId: prospect.id,
     });
     const session = await stripe.checkout.sessions.create(sessionConfig);
 

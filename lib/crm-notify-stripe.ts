@@ -26,6 +26,15 @@ function sessionContext(session: Stripe.Checkout.Session) {
   };
 }
 
+export function notifyLeadDepositPaid(session: Stripe.Checkout.Session): void {
+  void notifyCrmActivity({
+    kind: "lead_paid",
+    status: "deposit_paid",
+    message: "50% design deposit received — 40% + 10% due at milestones",
+    ...sessionContext(session),
+  });
+}
+
 export function notifyLeadPaid(session: Stripe.Checkout.Session): void {
   void notifyCrmActivity({
     kind: "lead_paid",

@@ -137,7 +137,15 @@ export async function saveDiscoveryCloseDraft(
 }
 
 export async function linkDiscoveryWdLead(id: string, wdLeadId: string): Promise<boolean> {
-  return updateDiscoveryProspect(id, { wd_lead_id: wdLeadId, status: "paid" });
+  return updateDiscoveryProspect(id, { wd_lead_id: wdLeadId });
+}
+
+export async function markDiscoveryProspectDepositPaid(id: string): Promise<boolean> {
+  return updateDiscoveryProspect(id, { status: "deposit_paid" });
+}
+
+export async function markDiscoveryProspectPaid(id: string): Promise<boolean> {
+  return updateDiscoveryProspect(id, { status: "paid" });
 }
 
 export async function updateDiscoveryProspectCrmNotes(

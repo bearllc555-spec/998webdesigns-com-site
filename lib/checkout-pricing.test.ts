@@ -33,4 +33,10 @@ describe("checkout pricing", () => {
     expect(checkoutSubtotalCents("monthly", LINKEDIN20)).toBe(479840);
     expect(checkoutDueTodayCents("monthly", "card", LINKEDIN20)).toBe(494235);
   });
+
+  it("50% deposit charges half the design fee today", () => {
+    expect(checkoutSubtotalCents("monthly", undefined, "deposit")).toBe(299900);
+    expect(checkoutDueTodayCents("monthly", "ach", undefined, "deposit")).toBe(299900);
+    expect(checkoutDueTodayCents("monthly", "card", undefined, "deposit")).toBe(308897);
+  });
 });

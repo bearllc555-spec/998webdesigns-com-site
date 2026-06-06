@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
+import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
@@ -67,13 +68,17 @@ export function CloseCheckoutClient({ token }: { token: string }) {
   if (error && !data) return <p className="text-warn">{error}</p>;
   if (!data) return null;
 
+  const paymentOption = data.closeDraft.paymentOption ?? "deposit";
   const due = formatCheckoutUsd(
     checkoutDueTodayCents(
       data.closeDraft.hostingChoice,
       data.closeDraft.paymentChannel,
-      data.closeDraft.promoCode
+      data.closeDraft.promoCode,
+      paymentOption
     )
   );
+  const scheduleLines =
+    paymentOption === "deposit" ? designPaymentScheduleLines(data.closeDraft.promoCode) : [];
 
   return (
     <div className="mx-auto max-w-xl">
@@ -91,6 +96,10 @@ export function CloseCheckoutClient({ token }: { token: string }) {
           <strong className="text-ink">Payment method:</strong>{" "}
           {data.closeDraft.paymentChannel === "ach" ? "Bank (ACH)" : "Card"}
         </li>
+        <li>
+          <strong className="text-ink">Design payment:</strong>{" "}
+          {paymentOption === "deposit" ? "50% deposit today" : "Pay in full today"}
+        </li>
         {data.closeDraft.addons.length > 0 && (
           <li>
             <strong className="text-ink">Add-ons:</strong> {data.closeDraft.addons.join(", ")}
@@ -104,6 +113,16 @@ export function CloseCheckoutClient({ token }: { token: string }) {
         <li>
           <strong className="text-ink">Due today:</strong> {due}
         </li>
+        {scheduleLines.length > 0 && (
+          <li>
+            <strong className="text-ink">Balance schedule:</strong>
+            <ul className="mt-1 list-inside list-disc space-y-0.5">
+              {scheduleLines.slice(1).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </li>
+        )}
       </ul>
       {error && <p className="mt-4 text-sm text-warn">{error}</p>}
       <button

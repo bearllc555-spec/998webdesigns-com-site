@@ -4,6 +4,7 @@ import {
   paymentChannelLabel,
 } from "@/lib/checkout-pricing";
 import { designPromoSummary } from "@/lib/design-promo";
+import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import type { ValidatedLead } from "./validate-lead";
 
@@ -31,8 +32,19 @@ export async function sendLeadCheckoutEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const totalLabel = formatCheckoutUsd(
-    checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel, lead.promoCode)
+    checkoutDueTodayCents(
+      lead.hostingChoice,
+      lead.paymentChannel,
+      lead.promoCode,
+      lead.paymentOption
+    )
   );
+  const scheduleHtml =
+    lead.paymentOption === "deposit"
+      ? `<ul style="margin: 12px 0; padding-left: 20px; font-size: 14px; color: #52525b;">${designPaymentScheduleLines(lead.promoCode)
+          .map((line) => `<li>${escapeHtml(line)}</li>`)
+          .join("")}</ul>`
+      : "";
   const promoLabel = designPromoSummary(lead.promoCode);
   const promoNote =
     lead.promoCode.trim() && promoLabel
@@ -56,6 +68,7 @@ export async function sendLeadCheckoutEmail(
         <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
         ${promoNote}
         <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)} (design fee only — first 30 days of hosting are free)</p>
+        ${scheduleHtml}
         <p style="font-size: 14px; color: #52525b;">Hosting billing starts 30 days after payment clears: ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}.</p>
         ${achNote}
         <p style="margin: 24px 0;">

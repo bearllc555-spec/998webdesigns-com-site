@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ThanksActions } from "@/components/ThanksActions";
+import { formatCheckoutUsd } from "@/lib/checkout-pricing";
+import { designMilestone2Cents, designMilestone3Cents } from "@/lib/design-payment-schedule";
 import { stripe } from "@/lib/stripe";
 
 export const metadata = {
@@ -24,9 +26,18 @@ export default async function Thanks({
   }
 
   let view: ThanksView = "paid";
+  let isDeposit = false;
+  let balanceCents = 0;
+  let milestone2Cents = 0;
+  let milestone3Cents = 0;
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    isDeposit = session.metadata?.paymentType === "deposit";
+    balanceCents = Number(session.metadata?.designBalanceCents ?? 0);
+    const promoCode = session.metadata?.promoCode;
+    milestone2Cents = designMilestone2Cents(promoCode);
+    milestone3Cents = designMilestone3Cents(promoCode);
 
     if (session.payment_status === "paid") {
       view = "paid";
@@ -53,11 +64,14 @@ export default async function Thanks({
               Bank payment submitted
             </p>
             <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
-              Thanks — we&apos;re waiting on your bank transfer
+              {isDeposit
+                ? "Thanks — we\u2019re waiting on your deposit transfer"
+                : "Thanks — we\u2019re waiting on your bank transfer"}
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-ink-soft">
               Your ACH payment was authorized in Stripe. Banks usually take a few business days to
-              settle. We&apos;ll email you when funds clear and your project enters the queue.
+              settle. We&apos;ll email you when funds clear
+              {isDeposit ? " and your project enters the queue." : " and your project enters the queue."}
             </p>
 
             <div className="mt-8 rounded-2xl border border-accent/30 bg-accent/[0.06] p-6">
@@ -68,6 +82,13 @@ export default async function Thanks({
                 The 7 business-day design clock starts when your bank payment settles, not
                 when you finish this checkout step.
               </p>
+              {isDeposit && balanceCents > 0 && (
+                <p className="mt-3 text-sm text-ink-soft">
+                  After your 50% deposit clears, {formatCheckoutUsd(milestone2Cents)} is due after
+                  design approval or development start, and {formatCheckoutUsd(milestone3Cents)} at
+                  launch and handover ({formatCheckoutUsd(balanceCents)} total balance).
+                </p>
+              )}
             </div>
 
             <ol className="mt-12 space-y-6">
@@ -105,7 +126,7 @@ export default async function Thanks({
             Payment received
           </p>
           <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
-            Thanks — you&apos;re paid in full!
+            {isDeposit ? "Thanks — your 50% deposit is in!" : "Thanks — you\u2019re paid in full!"}
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
             Your payment has been received. A receipt is on its way to your email. Here&apos;s
@@ -114,13 +135,25 @@ export default async function Thanks({
 
           <div className="mt-8 rounded-2xl border border-success/30 bg-success/10 p-6">
             <p className="font-display text-lg font-medium text-ink">
-              <span className="text-success">Paid in full — you&apos;re all set</span>
+              <span className="text-success">
+                {isDeposit ? "50% deposit received — you\u2019re in the queue" : "Paid in full — you\u2019re all set"}
+              </span>
             </p>
-            <p className="mt-2 text-sm text-ink-soft">
-              No follow-up invoices for the design fee. Your first 30 days of hosting are free.
-              Month-to-month hosting ($198/mo) or lifetime hosting ($2,996) is billed starting 30
-              days after your design payment cleared — not in this Checkout.
-            </p>
+            {isDeposit ? (
+              <p className="mt-2 text-sm text-ink-soft">
+                {formatCheckoutUsd(milestone2Cents)} is due after design approval or development
+                start. {formatCheckoutUsd(milestone3Cents)} is due at launch and handover (
+                {formatCheckoutUsd(balanceCents)} total balance). We&apos;ll invoice each milestone
+                when it&apos;s due. Your first 30 days of hosting are free; hosting billing starts
+                30 days after your design payment cleared.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-ink-soft">
+                No follow-up invoices for the design fee. Your first 30 days of hosting are free.
+                Month-to-month hosting ($198/mo) or lifetime hosting ($2,996) is billed starting 30
+                days after your design payment cleared — not in this Checkout.
+              </p>
+            )}
           </div>
 
           <ol className="mt-12 space-y-6">

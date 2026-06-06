@@ -75,7 +75,33 @@ export function isLifetimeHostingCheckout(session: Stripe.Checkout.Session): boo
   return type === "lifetime_hosting" || type === "ten_year_hosting";
 }
 
-/** Design fee paid — starts 30-day free hosting window. */
+/** Design fee deposit (50%) collected — balance due at milestones. */
+export async function syncWdLeadDepositPaid(session: Stripe.Checkout.Session): Promise<void> {
+  if (isLifetimeHostingCheckout(session)) return;
+
+  const email = session.metadata?.email ?? session.customer_email;
+  const customerId =
+    typeof session.customer === "string" ? session.customer : session.customer?.id;
+  const billingStarts = hostingBillingStartsAt(new Date()).toISOString();
+
+  const patch = {
+    status: "deposit_paid",
+    stripe_customer_id: customerId ?? null,
+    stripe_deposit_invoice_id: session.id,
+    stripe_balance_invoice_id: null,
+    stripe_subscription_id: subscriptionIdFromSession(session),
+    hosting_billing_starts_at: billingStarts,
+  };
+
+  const leadId = session.metadata?.wdLeadId;
+  if (leadId) {
+    await updateWdLead(leadId, patch);
+    return;
+  }
+  if (email) await updateLatestWdLeadByEmail(email, patch);
+}
+
+/** Design fee paid in full — starts 30-day free hosting window. */
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
   if (isLifetimeHostingCheckout(session)) {
     await syncWdLeadLifetimeHostingPaid(session);

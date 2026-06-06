@@ -5,6 +5,10 @@ import {
 } from "@/lib/checkout-line-items";
 import { HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import type { PaymentChannel } from "@/lib/checkout-pricing";
+import {
+  designBalanceAfterDepositCents,
+  designTotalCents,
+} from "@/lib/design-payment-schedule";
 import { formatHearAboutSources } from "@/lib/hear-about-sources";
 import type { ValidatedLead } from "@/lib/validate-lead";
 
@@ -20,6 +24,7 @@ export function buildCheckoutSessionParams(
     origin: string;
     submittedAt: string;
     wdLeadId?: string;
+    discoveryProspectId?: string;
   }
 ): Stripe.Checkout.SessionCreateParams {
   const channel: PaymentChannel = lead.paymentChannel;
@@ -30,10 +35,12 @@ export function buildCheckoutSessionParams(
     fullName: lead.fullName,
     businessName: lead.businessName,
     email: lead.email,
-    paymentType: "full",
+    paymentType: lead.paymentOption === "deposit" ? "deposit" : "full",
     paymentChannel: channel,
     hostingChoice: lead.hostingChoice,
     submittedAt: options.submittedAt,
+    designTotalCents: String(designTotalCents(lead.promoCode)),
+    designBalanceCents: String(designBalanceAfterDepositCents(lead.promoCode)),
     ...(lead.promoCode.trim() ? { promoCode: lead.promoCode.trim().toUpperCase() } : {}),
     ...(lead.hearAboutSources.length
       ? {
@@ -44,6 +51,7 @@ export function buildCheckoutSessionParams(
         }
       : {}),
     ...(options.wdLeadId ? { wdLeadId: options.wdLeadId } : {}),
+    ...(options.discoveryProspectId ? { discoveryProspectId: options.discoveryProspectId } : {}),
   };
 
   const shared: Stripe.Checkout.SessionCreateParams = {
@@ -64,7 +72,7 @@ export function buildCheckoutSessionParams(
         metadata: {
           fullName: lead.fullName,
           businessName: lead.businessName,
-          paymentType: "full",
+          paymentType: lead.paymentOption === "deposit" ? "deposit" : "full",
           paymentChannel: channel,
           hostingChoice: lead.hostingChoice,
         },
@@ -80,7 +88,7 @@ export function buildCheckoutSessionParams(
       metadata: {
         fullName: lead.fullName,
         businessName: lead.businessName,
-        paymentType: "full",
+        paymentType: lead.paymentOption === "deposit" ? "deposit" : "full",
         paymentChannel: channel,
         hostingChoice: lead.hostingChoice,
       },

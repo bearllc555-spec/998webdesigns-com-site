@@ -70,4 +70,10 @@ describe("buildCheckoutLineItems", () => {
     );
     expect(items[0].price_data?.unit_amount).toBe(479840);
   });
+
+  it("deposit charges 50% on the design line", () => {
+    const items = buildCheckoutLineItems(lead({ paymentOption: "deposit" }), "ach");
+    expect(items[0].price_data?.unit_amount).toBe(299900);
+    expect(items[0].price_data?.product_data?.name).toContain("50% deposit");
+  });
 });
