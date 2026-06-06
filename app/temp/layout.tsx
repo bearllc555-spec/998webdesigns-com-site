@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Geist, Inter } from "next/font/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -7,10 +7,9 @@ const inter = Inter({
   display: "swap",
 });
 
-const bricolage = Bricolage_Grotesque({
+const geist = Geist({
   subsets: ["latin"],
-  weight: ["700", "800"],
-  variable: "--font-bricolage",
+  variable: "--font-geist",
   display: "swap",
 });
 
@@ -21,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function TempLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${inter.variable} ${bricolage.variable} fixed inset-0 z-40 overflow-auto`}>
+    <div className={`${inter.variable} ${geist.variable} fixed inset-0 z-40 overflow-auto`}>
       {children}
     </div>
   );

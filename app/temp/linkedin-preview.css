@@ -3,8 +3,7 @@
 .temp-page,
 .temp-page-v2,
 .temp-page-v3,
-.temp-page-v4,
-.temp-page-v5 {
+.temp-page-v4 {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -271,8 +270,7 @@
 .temp-page .hint,
 .temp-page-v2 .hint,
 .temp-page-v3 .hint,
-.temp-page-v4 .hint,
-.temp-page-v5 .hint {
+.temp-page-v4 .hint {
   position: fixed;
   bottom: 16px;
   left: 50%;

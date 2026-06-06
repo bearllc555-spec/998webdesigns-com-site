@@ -42,5 +42,4 @@ export const BANNER_DESIGN_ROUTES = [
   { previewHref: "/temp/2", exportHref: "/temp/2/export", label: "Design 2" },
   { previewHref: "/temp/3", exportHref: "/temp/3/export", label: "Design 3" },
   { previewHref: "/temp/4", exportHref: "/temp/4/export", label: "Design 4" },
-  { previewHref: "/temp/5", exportHref: "/temp/5/export", label: "Design 5" },
 ] as const;
