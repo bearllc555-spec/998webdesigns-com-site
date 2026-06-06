@@ -1,6 +1,5 @@
-import { FeatureImageArtboard } from "@/components/temp/artboards/FeatureImageArtboard";
 import { BannerDesignNav } from "@/components/temp/BannerDesignNav";
-import { LinkedInBannerPreview } from "@/components/temp/LinkedInBannerPreview";
+import { FeatureImagePreview } from "@/components/temp/FeatureImagePreview";
 import { BANNER_FEATURE_ROUTES } from "@/lib/linkedin-banner-preview";
 import "../../linkedin-preview.css";
 import "../feature-banner.css";
@@ -12,13 +11,14 @@ export default function TempFeature2Page() {
     <div className="temp-page temp-page-feature">
       <BannerDesignNav />
 
-      <LinkedInBannerPreview designLabel={feature.designLabel} exportHref={feature.exportHref}>
-        <FeatureImageArtboard src={feature.imageSrc} alt={feature.designLabel} />
-      </LinkedInBannerPreview>
+      <FeatureImagePreview
+        designLabel={feature.designLabel}
+        imageSrc={feature.imageSrc}
+        alt={feature.designLabel}
+        exportHref={feature.exportHref}
+      />
 
-      <p className="hint">
-        Uploaded banner preview (792×198). Click the cover for the full PNG download.
-      </p>
+      <p className="hint">Native image size — not cropped to LinkedIn cover dimensions.</p>
     </div>
   );
 }
