@@ -45,21 +45,21 @@ export function CrmDashboard() {
     [items]
   );
   const leadItems = useMemo(() => items.filter((i) => i.source === "lead"), [items]);
+  const clientItems = useMemo(() => items.filter((i) => i.source === "client"), [items]);
   const discoveryItems = useMemo(
     () => items.filter((i) => i.source === "discovery"),
     [items]
   );
   const smsItems = useMemo(() => items.filter((i) => i.source === "sms"), [items]);
   const unreadCount = items.filter(isCrmFeedItemUnread).length;
+  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts`;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <CrmHeader
         title="Messages"
         subtitle={
-          unreadCount > 0
-            ? `${unreadCount} unread · ${contactItems.length} contacts · ${leadItems.length} leads · ${discoveryItems.length} discovery · ${smsItems.length} texts`
-            : `${contactItems.length} contacts · ${leadItems.length} leads · ${discoveryItems.length} discovery · ${smsItems.length} texts`
+          unreadCount > 0 ? `${unreadCount} unread · ${countsLabel}` : countsLabel
         }
         onRefresh={load}
         refreshDisabled={loading}
@@ -85,6 +85,7 @@ export function CrmDashboard() {
           <CrmActivityInbox
             contactItems={contactItems}
             leadItems={leadItems}
+            clientItems={clientItems}
             discoveryItems={discoveryItems}
             smsItems={smsItems}
             onItemsChange={(updater) => setItems((prev) => updater(prev))}

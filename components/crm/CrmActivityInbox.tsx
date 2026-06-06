@@ -11,7 +11,7 @@ import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
-  source: "lead" | "contact" | "discovery" | "sms";
+  source: "lead" | "client" | "contact" | "discovery" | "sms";
   id: string;
   label: string;
   step: 1 | 2;
@@ -19,9 +19,14 @@ type PendingDelete = {
 
 function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "lead") return "Lead";
+  if (source === "client") return "Client";
   if (source === "discovery") return "Discovery";
   if (source === "sms") return "Text";
   return "Contact";
+}
+
+function isWdLeadFeedItem(item: CrmFeedItem): boolean {
+  return item.source === "lead" || item.source === "client";
 }
 
 function itemKey(item: CrmFeedItem): string {
@@ -85,6 +90,7 @@ function previewLine(item: CrmFeedItem): string {
 type CrmActivityInboxProps = {
   contactItems: CrmFeedItem[];
   leadItems: CrmFeedItem[];
+  clientItems: CrmFeedItem[];
   discoveryItems: CrmFeedItem[];
   smsItems: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
@@ -332,8 +338,10 @@ function InboxRow({
             email={item.email || ""}
             message={item.message ?? undefined}
             messagePlaceholder={
-              item.source === "lead"
-                ? "Project brief — see notes and payload below."
+              isWdLeadFeedItem(item)
+                ? item.source === "client"
+                  ? "Active client — notes, milestones, and payload below."
+                  : "Project brief — see notes and payload below."
                 : item.source === "sms"
                   ? "Inbound SMS"
                   : undefined
@@ -410,7 +418,7 @@ function InboxRow({
             </>
           )}
 
-          {item.source === "lead" && !isDeleting && (
+          {isWdLeadFeedItem(item) && !isDeleting && (
             <div className="mt-4 border-t border-rule pt-4">
               {editingNotes ? (
                 <div className="grid gap-2">
@@ -419,7 +427,9 @@ function InboxRow({
                     onChange={(e) => onNotesDraftChange(e.target.value)}
                     rows={3}
                     className="w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
-                    placeholder="Internal notes…"
+                    placeholder={
+                      item.source === "client" ? "Client notes…" : "Internal notes…"
+                    }
                   />
                   <div className="flex gap-2">
                     <button
@@ -527,6 +537,7 @@ function InboxSection({
 export function CrmActivityInbox({
   contactItems,
   leadItems,
+  clientItems,
   discoveryItems,
   smsItems,
   onItemsChange,
@@ -733,7 +744,14 @@ export function CrmActivityInbox({
         items={leadItems}
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
-        emptyLabel="No leads yet."
+        emptyLabel="No open leads — checkout pending or not started."
+      />
+      <InboxSection
+        title="Clients"
+        items={clientItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No clients yet — appears here after the 50% deposit (or pay-in-full) clears."
       />
       <InboxSection
         title="Texts"

@@ -1,11 +1,14 @@
 import { isCrmInboxFlag, type CrmInboxFlag } from "@/lib/crm-inbox-flag";
+import { wdLeadCrmFeedSource } from "@/lib/crm-wd-lead-segment";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export type { CrmInboxFlag };
 
+export type CrmFeedSource = "lead" | "client" | "contact" | "discovery" | "sms";
+
 export type CrmFeedItem = {
   id: string;
-  source: "lead" | "contact" | "discovery" | "sms";
+  source: CrmFeedSource;
   at: string;
   title: string;
   email: string;
@@ -120,7 +123,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   for (const row of leadsRes.data ?? []) {
     items.push({
       id: row.id,
-      source: "lead",
+      source: wdLeadCrmFeedSource(row.status),
       at: row.submitted_at,
       title: row.full_name,
       email: row.email,

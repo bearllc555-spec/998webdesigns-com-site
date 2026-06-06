@@ -22,7 +22,7 @@ export function crmInboxFlagLabel(flag: CrmInboxFlag | null): string {
 }
 
 export async function setCrmItemInboxFlag(
-  source: "lead" | "contact" | "discovery" | "sms",
+  source: "lead" | "client" | "contact" | "discovery" | "sms",
   id: string,
   flag: CrmInboxFlag | null
 ): Promise<boolean> {
@@ -30,7 +30,7 @@ export async function setCrmItemInboxFlag(
   if (!supa) return false;
 
   const table =
-    source === "lead"
+    source === "lead" || source === "client"
       ? "wd_leads"
       : source === "contact"
         ? "contact_submissions"

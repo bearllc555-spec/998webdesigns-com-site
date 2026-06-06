@@ -30,12 +30,18 @@ export async function DELETE(
   }
 
   const { source, id } = await params;
-  if (source !== "lead" && source !== "contact" && source !== "discovery" && source !== "sms") {
+  if (
+    source !== "lead" &&
+    source !== "client" &&
+    source !== "contact" &&
+    source !== "discovery" &&
+    source !== "sms"
+  ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 
   const ok =
-    source === "lead"
+    source === "lead" || source === "client"
       ? await deleteWdLead(id)
       : source === "contact"
         ? await deleteContactSubmission(id)
@@ -65,7 +71,13 @@ export async function PATCH(
   }
 
   const { source, id } = await params;
-  if (source !== "lead" && source !== "contact" && source !== "discovery" && source !== "sms") {
+  if (
+    source !== "lead" &&
+    source !== "client" &&
+    source !== "contact" &&
+    source !== "discovery" &&
+    source !== "sms"
+  ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 
