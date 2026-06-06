@@ -43,3 +43,20 @@ export const BANNER_DESIGN_ROUTES = [
   { previewHref: "/temp/3", exportHref: "/temp/3/export", label: "Design 3" },
   { previewHref: "/temp/4", exportHref: "/temp/4/export", label: "Design 4" },
 ] as const;
+
+export const BANNER_FEATURE_ROUTES = [
+  {
+    previewHref: "/temp/feature/1",
+    exportHref: "/temp/feature/1/export",
+    label: "Feature 1",
+    imageSrc: "/temp/feature-1-linkedin.png",
+    designLabel: "Feature 1 — SaaS compact offer (uploaded)",
+  },
+  {
+    previewHref: "/temp/feature/2",
+    exportHref: "/temp/feature/2/export",
+    label: "Feature 2",
+    imageSrc: "/temp/feature-2-linkedin.png",
+    designLabel: "Feature 2 — Summer special compact offer (uploaded)",
+  },
+] as const;

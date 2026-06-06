@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BANNER_DESIGN_ROUTES } from "@/lib/linkedin-banner-preview";
+import { BANNER_DESIGN_ROUTES, BANNER_FEATURE_ROUTES } from "@/lib/linkedin-banner-preview";
 import { LINKEDIN_BANNER_VERSION } from "@/lib/linkedin-banner-version";
 
 const LINKEDIN_INSPIRATION_HREF = "/temp/linkedin";
@@ -19,22 +19,36 @@ export function BannerDesignNav() {
       </div>
 
       <div className="temp-switcher-center">
-        <Link
-          href={LINKEDIN_INSPIRATION_HREF}
-          className="temp-switcher-linkedin"
-          aria-current={pathname === LINKEDIN_INSPIRATION_HREF ? "page" : undefined}
-        >
-          LinkedIn
-        </Link>
-        {BANNER_DESIGN_ROUTES.map((design) => (
+        <div className="temp-switcher-row">
           <Link
-            key={design.previewHref}
-            href={design.previewHref}
-            aria-current={pathname === design.previewHref ? "page" : undefined}
+            href={LINKEDIN_INSPIRATION_HREF}
+            className="temp-switcher-linkedin"
+            aria-current={pathname === LINKEDIN_INSPIRATION_HREF ? "page" : undefined}
           >
-            {design.label}
+            LinkedIn
           </Link>
-        ))}
+          {BANNER_DESIGN_ROUTES.map((design) => (
+            <Link
+              key={design.previewHref}
+              href={design.previewHref}
+              aria-current={pathname === design.previewHref ? "page" : undefined}
+            >
+              {design.label}
+            </Link>
+          ))}
+        </div>
+        <div className="temp-switcher-row temp-switcher-row--features">
+          {BANNER_FEATURE_ROUTES.map((feature) => (
+            <Link
+              key={feature.previewHref}
+              href={feature.previewHref}
+              className="temp-switcher-feature"
+              aria-current={pathname === feature.previewHref ? "page" : undefined}
+            >
+              {feature.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="temp-switcher-edge temp-switcher-edge--end">

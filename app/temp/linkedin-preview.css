@@ -3,14 +3,15 @@
 .temp-page,
 .temp-page-v2,
 .temp-page-v3,
-.temp-page-v4 {
+.temp-page-v4,
+.temp-page-feature {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 24px;
-  padding: 56px 16px 96px;
+  padding: 96px 16px 96px;
   background: #f3f2ef;
   font-family: var(--font-inter), system-ui, sans-serif;
 }
@@ -228,8 +229,30 @@
 
 .temp-switcher-center {
   flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 8px;
   min-width: 0;
+}
+
+.temp-switcher-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.temp-switcher-feature {
+  color: #3f3f46;
+  border-color: #a1a1aa;
+  background: #fafafa;
+}
+
+.temp-switcher-feature[aria-current="page"] {
+  color: #2563eb;
+  border-color: #2563eb;
+  background: #eff6ff;
 }
 
 .temp-switcher a {
@@ -288,7 +311,8 @@
 .temp-page .hint,
 .temp-page-v2 .hint,
 .temp-page-v3 .hint,
-.temp-page-v4 .hint {
+.temp-page-v4 .hint,
+.temp-page-feature .hint {
   position: fixed;
   bottom: 16px;
   left: 50%;

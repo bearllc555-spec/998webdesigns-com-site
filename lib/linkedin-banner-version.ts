@@ -1,3 +1,3 @@
 // LinkedIn banner workspace version (/temp). Independent of SITE_VERSION and CRM_VERSION.
 // Bump on every banner iteration: v1.01, v1.02, v1.03, …
-export const LINKEDIN_BANNER_VERSION = "v1.01";
+export const LINKEDIN_BANNER_VERSION = "v1.02";
