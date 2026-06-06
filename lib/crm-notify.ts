@@ -11,7 +11,8 @@ export type CrmNotifyKind =
   | "lead_hosting_canceled"
   | "lifetime_hosting_paid"
   | "lifetime_hosting_ach_pending"
-  | "contact";
+  | "contact"
+  | "inbound_sms";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_submitted: "New lead — form submitted",
@@ -24,6 +25,7 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lifetime_hosting_paid: "Lifetime hosting — paid",
   lifetime_hosting_ach_pending: "Lifetime hosting — ACH pending",
   contact: "Contact form",
+  inbound_sms: "Inbound SMS",
 };
 
 export type CrmNotifyInput = {
@@ -39,6 +41,7 @@ export type CrmNotifyInput = {
   stripeSubscriptionId?: string;
   message?: string;
   checkoutUrl?: string;
+  phone?: string;
 };
 
 function stripeDashBase(): string {
@@ -61,6 +64,7 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
   if (input.fullName) lines.push(telegramLine("Name", input.fullName));
   lines.push(telegramLine("Company", input.businessName?.trim() || "—"));
   if (input.email) lines.push(telegramLine("Email", input.email));
+  if (input.phone) lines.push(telegramLine("Phone", input.phone));
   if (input.status) lines.push(telegramLine("Status", input.status));
   if (input.hostingChoice) lines.push(telegramLine("Hosting", input.hostingChoice));
   if (input.paymentChannel) lines.push(telegramLine("Pay", input.paymentChannel));

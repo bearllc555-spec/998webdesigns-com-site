@@ -3,13 +3,14 @@
 import { useCallback, useState } from "react";
 import { SubmissionFieldStack } from "@/components/form-field-stack";
 import { CrmDiscoveryClosePanel } from "@/components/crm/CrmDiscoveryClosePanel";
+import { CrmSmsThread } from "@/components/crm/CrmSmsThread";
 import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
-  source: "lead" | "contact" | "discovery";
+  source: "lead" | "contact" | "discovery" | "sms";
   id: string;
   label: string;
   step: 1 | 2;
@@ -18,6 +19,7 @@ type PendingDelete = {
 function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "lead") return "Lead";
   if (source === "discovery") return "Discovery";
+  if (source === "sms") return "Text";
   return "Contact";
 }
 
@@ -81,6 +83,7 @@ type CrmActivityInboxProps = {
   contactItems: CrmFeedItem[];
   leadItems: CrmFeedItem[];
   discoveryItems: CrmFeedItem[];
+  smsItems: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
 };
@@ -321,17 +324,23 @@ function InboxRow({
           <SubmissionFieldStack
             name={item.title}
             company={item.businessName}
-            email={item.email}
+            email={item.email || ""}
             message={item.message ?? undefined}
             messagePlaceholder={
               item.source === "lead"
                 ? "Project brief — see notes and payload below."
-                : undefined
+                : item.source === "sms"
+                  ? "Inbound SMS"
+                  : undefined
             }
           />
 
           {item.source === "discovery" && !isDeleting && (
             <>
+              <CrmSmsThread
+                prospectId={item.id}
+                enabled={Boolean(item.payload?.hasSmsThread) || expanded}
+              />
               <div className="mt-4 border-t border-rule pt-4">
                 {editingNotes ? (
                   <div className="grid gap-2">
@@ -502,6 +511,7 @@ export function CrmActivityInbox({
   contactItems,
   leadItems,
   discoveryItems,
+  smsItems,
   onItemsChange,
   onReload,
 }: CrmActivityInboxProps) {
@@ -706,6 +716,13 @@ export function CrmActivityInbox({
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
         emptyLabel="No leads yet."
+      />
+      <InboxSection
+        title="Texts"
+        items={smsItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No unmatched inbound texts."
       />
       <InboxSection
         title="Discovery"

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteContactSubmission } from "@/lib/contact-db";
+import { deleteInboundSms } from "@/lib/inbound-sms-db";
 import {
   isCrmInboxFlag,
   setCrmItemInboxFlag,
@@ -29,7 +30,7 @@ export async function DELETE(
   }
 
   const { source, id } = await params;
-  if (source !== "lead" && source !== "contact" && source !== "discovery") {
+  if (source !== "lead" && source !== "contact" && source !== "discovery" && source !== "sms") {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 
@@ -38,7 +39,9 @@ export async function DELETE(
       ? await deleteWdLead(id)
       : source === "contact"
         ? await deleteContactSubmission(id)
-        : await deleteDiscoveryProspect(id);
+        : source === "sms"
+          ? await deleteInboundSms(id)
+          : await deleteDiscoveryProspect(id);
 
   if (!ok) {
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
@@ -62,7 +65,7 @@ export async function PATCH(
   }
 
   const { source, id } = await params;
-  if (source !== "lead" && source !== "contact" && source !== "discovery") {
+  if (source !== "lead" && source !== "contact" && source !== "discovery" && source !== "sms") {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
 
