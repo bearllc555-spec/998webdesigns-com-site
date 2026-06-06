@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
-    "capture-portfolio-preview": "node scripts/capture-portfolio-preview.mjs",
-    "capture-portfolio-strip": "node scripts/capture-portfolio-strip.mjs"
+    "capture-portfolio-poster": "node scripts/capture-portfolio-poster.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.15",

@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  hasPortfolioVideoPreviews,
-  portfolio,
-  type PortfolioItem,
-} from "@/data/portfolio";
+import { portfolio, type PortfolioItem } from "@/data/portfolio";
 
 const LOOP_COPIES = 2;
 const loopPortfolio = Array.from({ length: LOOP_COPIES }, () => portfolio).flat();
@@ -17,8 +13,7 @@ const MARQUEE_SPEED_PX_S = 28;
 const CARD_WIDTH =
   "w-[78vw] shrink-0 sm:w-[46vw] md:w-[32vw] lg:w-[26vw] lg:max-w-[320px]";
 
-// Pan duration for static JPEG fallbacks (no previewVideo).
-const HOVER_REVEAL_S = 6;
+const HOVER_PAN_S = 6;
 
 function getTranslateX(el: HTMLElement): number {
   const t = getComputedStyle(el).transform;
@@ -144,10 +139,6 @@ export function Carousel() {
     }
   }, [userPaused, resumeMarqueeAnimation]);
 
-  const hoverHint = hasPortfolioVideoPreviews
-    ? "Hover any thumbnail to preview the site"
-    : "Hover any thumbnail to scroll through the page";
-
   const cards = loopPortfolio.map((p, index) => (
     <li
       key={`${p.slug}-${index}`}
@@ -156,7 +147,7 @@ export function Carousel() {
     >
       <PortfolioCard
         item={p}
-        revealSeconds={HOVER_REVEAL_S}
+        panSeconds={HOVER_PAN_S}
         onThumbnailEnter={handleThumbnailEnter}
         onThumbnailLeave={handleThumbnailLeave}
       />
@@ -167,7 +158,7 @@ export function Carousel() {
     <div className="relative pt-16 pb-14 md:pt-24 md:pb-20">
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
-          {hoverHint}
+          Hover any thumbnail to scroll through the page
         </p>
       </div>
 
@@ -184,7 +175,7 @@ export function Carousel() {
               <li key={p.slug} className={CARD_WIDTH}>
                 <PortfolioCard
                   item={p}
-                  revealSeconds={HOVER_REVEAL_S}
+                  panSeconds={HOVER_PAN_S}
                   onThumbnailEnter={handleThumbnailEnter}
                   onThumbnailLeave={handleThumbnailLeave}
                 />
@@ -242,21 +233,9 @@ export function Carousel() {
 
       <style>{`
         .group:hover .thumb-img--pan { object-position: bottom center !important; }
-        .portfolio-strip-track {
-          transition: transform var(--strip-duration, 6s) steps(var(--strip-steps));
-          transform: translateY(0);
-        }
-        .group:hover .portfolio-strip-track {
-          transform: translateY(calc(-100% * var(--strip-steps) / var(--strip-frames)));
-        }
         @media (prefers-reduced-motion: reduce) {
           .thumb-img--pan { transition: none !important; }
           .group:hover .thumb-img--pan { object-position: top center !important; }
-          .portfolio-strip-track,
-          .group:hover .portfolio-strip-track {
-            transition: none !important;
-            transform: none !important;
-          }
         }
       `}</style>
     </div>
@@ -265,142 +244,34 @@ export function Carousel() {
 
 function PortfolioPreview({
   item,
-  revealSeconds,
+  panSeconds,
   onThumbnailEnter,
   onThumbnailLeave,
 }: {
   item: PortfolioItem;
-  revealSeconds: number;
+  panSeconds: number;
   onThumbnailEnter?: () => void;
   onThumbnailLeave?: () => void;
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [videoActive, setVideoActive] = useState(false);
-  const [stripLoaded, setStripLoaded] = useState(false);
-
-  const poster = item.previewPoster ?? item.thumbnail;
-  const motionAllowed = item.carouselHoverPreview !== false;
-  const useStrip =
-    Boolean(item.previewStrip && item.previewStripFrames) &&
-    !reduceMotion &&
-    motionAllowed;
-  const useVideo =
-    Boolean(item.previewVideo) && !reduceMotion && !useStrip && motionAllowed;
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduceMotion(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-
-  const handleEnter = () => {
-    onThumbnailEnter?.();
-    if (useStrip) {
-      setStripLoaded(true);
-      return;
-    }
-    if (!useVideo) return;
-    const video = videoRef.current;
-    if (!video) return;
-    setVideoActive(true);
-    video.currentTime = 0;
-    void video.play().catch(() => setVideoActive(false));
-  };
-
-  const handleLeave = () => {
-    onThumbnailLeave?.();
-    if (useStrip) return;
-    if (!useVideo) return;
-    const video = videoRef.current;
-    if (!video) return;
-    video.pause();
-    video.currentTime = 0;
-    setVideoActive(false);
-  };
-
   return (
     <div
       className="relative aspect-[4/3] w-full overflow-hidden bg-rule-soft"
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-      onFocus={handleEnter}
-      onBlur={handleLeave}
+      onMouseEnter={onThumbnailEnter}
+      onMouseLeave={onThumbnailLeave}
+      onFocus={onThumbnailEnter}
+      onBlur={onThumbnailLeave}
     >
-      {useStrip && item.previewStrip && item.previewStripFrames ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={poster}
-            alt={`${item.name} — ${item.industry}`}
-            loading="lazy"
-            decoding="async"
-            className={[
-              "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300",
-              stripLoaded ? "opacity-0" : "opacity-100",
-            ].join(" ")}
-          />
-          {stripLoaded ? (
-            <div
-              className="portfolio-strip-track w-full"
-              style={
-                {
-                  "--strip-frames": item.previewStripFrames,
-                  "--strip-steps": item.previewStripFrames - 1,
-                  "--strip-duration": `${revealSeconds}s`,
-                } as React.CSSProperties
-              }
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.previewStrip}
-                alt=""
-                decoding="async"
-                className="block h-auto w-full"
-                aria-hidden
-              />
-            </div>
-          ) : null}
-        </>
-      ) : (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={poster}
-          alt={`${item.name} — ${item.industry}`}
-          loading="lazy"
-          decoding="async"
-          className={[
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-300",
-            useVideo ? (videoActive ? "opacity-0" : "opacity-100") : "thumb-img--pan",
-          ].join(" ")}
-          style={
-            useVideo
-              ? { objectPosition: "top center" }
-              : {
-                  objectPosition: "top center",
-                  transition: `object-position ${revealSeconds}s linear`,
-                }
-          }
-        />
-      )}
-      {useVideo && item.previewVideo ? (
-        <video
-          ref={videoRef}
-          src={item.previewVideo}
-          poster={poster}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className={[
-            "absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300",
-            videoActive ? "opacity-100" : "opacity-0",
-          ].join(" ")}
-          aria-hidden
-        />
-      ) : null}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={item.thumbnail}
+        alt={`${item.name} — ${item.industry}`}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover object-top thumb-img--pan transition-opacity duration-300"
+        style={{
+          transition: `object-position ${panSeconds}s linear`,
+        }}
+      />
       {!item.url && (
         <span className="absolute bottom-3 left-3 z-10 rounded-full bg-bg/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-ink-soft backdrop-blur">
           Preview coming soon
@@ -412,12 +283,12 @@ function PortfolioPreview({
 
 function PortfolioCard({
   item,
-  revealSeconds,
+  panSeconds,
   onThumbnailEnter,
   onThumbnailLeave,
 }: {
   item: PortfolioItem;
-  revealSeconds: number;
+  panSeconds: number;
   onThumbnailEnter?: () => void;
   onThumbnailLeave?: () => void;
 }) {
@@ -428,7 +299,7 @@ function PortfolioCard({
     <>
       <PortfolioPreview
         item={item}
-        revealSeconds={revealSeconds}
+        panSeconds={panSeconds}
         onThumbnailEnter={onThumbnailEnter}
         onThumbnailLeave={onThumbnailLeave}
       />

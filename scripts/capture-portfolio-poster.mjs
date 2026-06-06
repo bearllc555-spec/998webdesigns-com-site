@@ -1,6 +1,7 @@
 /**
- * Static viewport poster for portfolio carousel (4:3 card crop).
- * Usage: node scripts/capture-portfolio-poster.mjs <slug> <url>
+ * Full-page JPEG for portfolio carousel (hover = CSS pan top → bottom).
+ *
+ *   node scripts/capture-portfolio-poster.mjs <slug> <url>
  */
 
 import { chromium } from "playwright";
@@ -17,27 +18,30 @@ if (!slug || !url) {
 }
 
 const posterPath = path.join(__dirname, "../public/portfolio", `${slug}.jpg`);
-const VIEWPORT = { width: 1200, height: 900 };
+const VIEWPORT = { width: 960, height: 720 };
+/** Cap capture height (~4 viewports) so JPEGs stay reasonable. */
+const MAX_PAGE_HEIGHT = VIEWPORT.height * 4;
 
-const browser = await chromium.launch({
-  args: ["--autoplay-policy=no-user-gesture-required"],
-});
+const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: VIEWPORT });
-await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
-await page
-  .evaluate(async () => {
-    const video = document.querySelector("video");
-    if (!video) return;
-    video.muted = true;
-    try {
-      await video.play();
-    } catch {
-      /* ignore */
-    }
-  })
-  .catch(() => undefined);
-await page.waitForTimeout(3_000);
-await page.screenshot({ path: posterPath, type: "jpeg", quality: 88 });
+
+console.log(`Loading ${url}`);
+await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
+await page.waitForTimeout(1_500);
+await page.evaluate(() => window.scrollTo(0, 0));
+
+const pageHeight = await page.evaluate((maxH) => {
+  const full = document.documentElement.scrollHeight;
+  return Math.min(full, maxH);
+}, MAX_PAGE_HEIGHT);
+
+await page.screenshot({
+  path: posterPath,
+  type: "jpeg",
+  quality: 82,
+  clip: { x: 0, y: 0, width: VIEWPORT.width, height: pageHeight },
+});
+
 await browser.close();
 
-console.log(`Wrote poster ${posterPath}`);
+console.log(`Wrote ${posterPath} (${VIEWPORT.width}x${pageHeight}px)`);
