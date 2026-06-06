@@ -4,7 +4,8 @@
 .temp-page-v2,
 .temp-page-v3,
 .temp-page-v4,
-.temp-page-feature {
+.temp-page-feature,
+.temp-page-logo {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -255,6 +256,18 @@
   background: #eff6ff;
 }
 
+.temp-switcher-logo {
+  color: #0a0a0a;
+  border-color: #a1a1aa;
+  background: #ffffff;
+}
+
+.temp-switcher-logo[aria-current="page"] {
+  color: #2563eb;
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
 .temp-switcher a {
   color: #52525b;
   text-decoration: none;
@@ -312,7 +325,8 @@
 .temp-page-v2 .hint,
 .temp-page-v3 .hint,
 .temp-page-v4 .hint,
-.temp-page-feature .hint {
+.temp-page-feature .hint,
+.temp-page-logo .hint {
   position: fixed;
   bottom: 16px;
   left: 50%;

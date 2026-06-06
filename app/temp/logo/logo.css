@@ -1,0 +1,64 @@
+.temp-page-logo .logo-preview-wrap {
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0 auto;
+}
+
+.temp-page-logo .logo-preview-meta {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.temp-page-logo .logo-preview-meta h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a0a0a;
+}
+
+.temp-page-logo .logo-preview-meta p {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #52525b;
+  line-height: 1.5;
+}
+
+.temp-page-logo .logo-preview-meta a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.temp-page-logo .logo-preview-meta a:hover {
+  text-decoration: underline;
+}
+
+.temp-page-logo .logo-preview-image-link {
+  display: block;
+  padding: 24px;
+  border-radius: 12px;
+  background:
+    linear-gradient(45deg, #e4e4e7 25%, transparent 25%),
+    linear-gradient(-45deg, #e4e4e7 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e4e4e7 75%),
+    linear-gradient(-45deg, transparent 75%, #e4e4e7 75%);
+  background-size: 16px 16px;
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.temp-page-logo .logo-preview-image-link:hover {
+  filter: brightness(0.98);
+}
+
+.temp-page-logo .logo-preview-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+}

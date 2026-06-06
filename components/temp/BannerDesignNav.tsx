@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BANNER_DESIGN_ROUTES, BANNER_FEATURE_ROUTES } from "@/lib/linkedin-banner-preview";
+import { BANNER_DESIGN_ROUTES, BANNER_FEATURE_ROUTES, BANNER_LOGO } from "@/lib/linkedin-banner-preview";
 import { LINKEDIN_BANNER_VERSION } from "@/lib/linkedin-banner-version";
 
 const LINKEDIN_INSPIRATION_HREF = "/temp/linkedin";
@@ -48,6 +48,13 @@ export function BannerDesignNav() {
               {feature.label}
             </Link>
           ))}
+          <Link
+            href={BANNER_LOGO.previewHref}
+            className="temp-switcher-feature temp-switcher-logo"
+            aria-current={pathname === BANNER_LOGO.previewHref ? "page" : undefined}
+          >
+            {BANNER_LOGO.label}
+          </Link>
         </div>
       </div>
 

@@ -51,6 +51,14 @@ export const BANNER_DESIGN_ROUTES = [
   { previewHref: "/temp/4", exportHref: "/temp/4/export", label: "Design 4" },
 ] as const;
 
+export const BANNER_LOGO = {
+  previewHref: "/temp/logo",
+  exportHref: "/temp/logo/export",
+  label: "Logo",
+  imageSrc: "/temp/998webdesigns-logo.png",
+  designLabel: "998 webdesigns wordmark",
+} as const;
+
 export const BANNER_FEATURE_ROUTES = [
   {
     previewHref: "/temp/feature/1",
