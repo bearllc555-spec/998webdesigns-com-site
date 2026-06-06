@@ -21,18 +21,25 @@ function formatWhen(iso: string): string {
   }
 }
 
-export function CrmSmsThread({ prospectId, enabled }: { prospectId: string; enabled: boolean }) {
+type Props = {
+  enabled: boolean;
+  prospectId?: string;
+  leadId?: string;
+};
+
+export function CrmSmsThread({ enabled, prospectId, leadId }: Props) {
   const [messages, setMessages] = useState<SmsMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!enabled || !prospectId) return;
+    if (!enabled || (!prospectId && !leadId)) return;
     setLoading(true);
     void (async () => {
       try {
-        const res = await fetch(`/api/crm/discovery/${prospectId}/sms`, {
-          credentials: "include",
-        });
+        const url = leadId
+          ? `/api/crm/leads/${leadId}/sms`
+          : `/api/crm/discovery/${prospectId}/sms`;
+        const res = await fetch(url, { credentials: "include" });
         if (!res.ok) return;
         const data = (await res.json()) as { messages?: SmsMessage[] };
         setMessages(data.messages ?? []);
@@ -40,7 +47,7 @@ export function CrmSmsThread({ prospectId, enabled }: { prospectId: string; enab
         setLoading(false);
       }
     })();
-  }, [enabled, prospectId]);
+  }, [enabled, prospectId, leadId]);
 
   if (!enabled) return null;
   if (loading) return <p className="mt-4 text-xs text-ink-soft">Loading texts…</p>;

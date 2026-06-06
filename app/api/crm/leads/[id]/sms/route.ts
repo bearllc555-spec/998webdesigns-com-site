@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isCrmRequestAuthorized } from "@/lib/crm-session";
-import { getDiscoveryProspect } from "@/lib/discovery-db";
-import {
-  listInboundSmsForProspect,
-  listInboundSmsForWdLeadProfile,
-} from "@/lib/inbound-sms-db";
+import { getWdLeadById } from "@/lib/leads-db";
+import { listInboundSmsForWdLeadProfile } from "@/lib/inbound-sms-db";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 
 export const runtime = "nodejs";
@@ -25,9 +22,16 @@ export async function GET(
   }
 
   const { id } = await params;
-  const prospect = await getDiscoveryProspect(id);
-  const messages = prospect?.wd_lead_id
-    ? await listInboundSmsForWdLeadProfile(prospect.wd_lead_id, { discoveryProspectId: id })
-    : await listInboundSmsForProspect(id);
+  const lead = await getWdLeadById(id);
+  if (!lead) {
+    return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+  }
+
+  const discoveryProspectId =
+    typeof lead.payload.discoveryProspectId === "string"
+      ? lead.payload.discoveryProspectId
+      : null;
+
+  const messages = await listInboundSmsForWdLeadProfile(id, { discoveryProspectId });
   return NextResponse.json({ ok: true, messages });
 }

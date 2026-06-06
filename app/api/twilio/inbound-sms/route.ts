@@ -4,7 +4,9 @@ import {
   findDiscoveryProspectByPhone,
   markDiscoveryProspectUnread,
 } from "@/lib/discovery-db";
+import { resolveInboundSmsLinks } from "@/lib/inbound-sms-links";
 import { insertInboundSms } from "@/lib/inbound-sms-db";
+import { getWdLeadById, markWdLeadUnread } from "@/lib/leads-db";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import { validateTwilioWebhookSignature } from "@/lib/twilio-webhook";
 import { normalizePhoneE164, twilioCredentials } from "@/lib/twilio-verify";
@@ -58,13 +60,14 @@ export async function POST(req: NextRequest) {
   }
 
   const fromPhone = normalizePhoneE164(fromRaw) ?? fromRaw;
-  const prospect = await findDiscoveryProspectByPhone(fromPhone);
+  const links = await resolveInboundSmsLinks(fromPhone);
 
   const inserted = await insertInboundSms({
     from_phone: fromPhone,
     body,
     twilio_message_sid: messageSid,
-    discovery_prospect_id: prospect?.id ?? null,
+    discovery_prospect_id: links.discoveryProspectId,
+    wd_lead_id: links.wdLeadId,
   });
 
   if (!inserted.ok) {
@@ -75,17 +78,21 @@ export async function POST(req: NextRequest) {
     return new NextResponse("Error", { status: 500 });
   }
 
-  if (prospect) {
-    await markDiscoveryProspectUnread(prospect.id);
+  if (links.prospect) {
+    await markDiscoveryProspectUnread(links.prospect.id);
+  }
+  if (links.wdLeadId) {
+    await markWdLeadUnread(links.wdLeadId);
   }
 
-  const intake = prospect?.intake as { businessName?: string } | null;
+  const intake = links.prospect?.intake as { businessName?: string } | null;
+  const wdLead = links.wdLeadId ? await getWdLeadById(links.wdLeadId) : null;
 
   void notifyCrmActivity({
     kind: "inbound_sms",
-    fullName: prospect?.full_name,
-    businessName: intake?.businessName,
-    email: prospect?.email,
+    fullName: links.prospect?.full_name ?? wdLead?.full_name,
+    businessName: intake?.businessName ?? wdLead?.business_name,
+    email: links.prospect?.email ?? wdLead?.email,
     message: body,
     phone: fromPhone,
   });

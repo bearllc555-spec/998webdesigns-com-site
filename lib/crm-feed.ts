@@ -50,7 +50,8 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     };
   }
 
-  const [leadsRes, contactsRes, discoveryRes, inboundRes, inboundLinkedRes] = await Promise.all([
+  const [leadsRes, contactsRes, discoveryRes, inboundRes, inboundLinkedRes, inboundLeadLinkedRes] =
+    await Promise.all([
     supa
       .from("wd_leads")
       .select(
@@ -66,7 +67,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("discovery_prospects")
       .select(
-        "id, created_at, updated_at, email, full_name, phone, status, goal, intake, close_draft, crm_notes, read_at, inbox_flag"
+        "id, created_at, updated_at, email, full_name, phone, status, goal, intake, close_draft, crm_notes, wd_lead_id, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -74,12 +75,19 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       .from("inbound_sms")
       .select("id, created_at, from_phone, body, read_at, inbox_flag")
       .is("discovery_prospect_id", null)
+      .is("wd_lead_id", null)
       .order("created_at", { ascending: false })
       .limit(limit),
     supa
       .from("inbound_sms")
       .select("discovery_prospect_id, body, created_at")
       .not("discovery_prospect_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(200),
+    supa
+      .from("inbound_sms")
+      .select("wd_lead_id, body, created_at")
+      .not("wd_lead_id", "is", null)
       .order("created_at", { ascending: false })
       .limit(200),
   ]);
@@ -101,9 +109,12 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     console.warn("[crm-feed] inbound_sms:", inboundRes.error.message);
     errors.push(`sms: ${inboundRes.error.message}`);
   }
+  if (inboundLeadLinkedRes.error && !isMissingTable(inboundLeadLinkedRes.error)) {
+    console.warn("[crm-feed] inbound_sms wd_lead:", inboundLeadLinkedRes.error.message);
+  }
   if (errors.length) {
-    const hint = /inbox_flag|read_at|does not exist/i.test(errors.join(" "))
-      ? " Run CRM migrations in Supabase (read_at, inbox_flag) or POST /api/admin/migrate-crm-read and migrate-crm-inbox-flag."
+    const hint = /inbox_flag|read_at|does not exist|wd_lead_id/i.test(errors.join(" "))
+      ? " Run CRM migrations in Supabase (read_at, inbox_flag, inbound_sms.wd_lead_id) or POST /api/admin/migrate-inbound-sms-wd-lead."
       : "";
     return { items: [], error: errors.join("; ") + hint };
   }
@@ -120,11 +131,30 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     });
   }
 
+  const latestSmsByLead = new Map<string, { body: string; created_at: string }>();
+  for (const row of inboundLeadLinkedRes.data ?? []) {
+    const leadId = row.wd_lead_id as string;
+    if (!leadId || latestSmsByLead.has(leadId)) continue;
+    latestSmsByLead.set(leadId, {
+      body: row.body as string,
+      created_at: row.created_at as string,
+    });
+  }
+
   for (const row of leadsRes.data ?? []) {
+    const payload = (row.payload as Record<string, unknown>) ?? {};
+    const phone = typeof payload.phone === "string" ? payload.phone : null;
+    const latestSms = latestSmsByLead.get(row.id as string);
+    const submittedAt = row.submitted_at as string;
+    const at =
+      latestSms &&
+      new Date(latestSms.created_at).getTime() > new Date(submittedAt).getTime()
+        ? latestSms.created_at
+        : submittedAt;
     items.push({
       id: row.id,
       source: wdLeadCrmFeedSource(row.status),
-      at: row.submitted_at,
+      at,
       title: row.full_name,
       email: row.email,
       businessName: row.business_name,
@@ -132,9 +162,9 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       notes: row.notes,
       stripeSessionId: row.stripe_deposit_invoice_id,
       stripeSubscriptionId: row.stripe_subscription_id,
-      message: null,
-      payload: (row.payload as Record<string, unknown>) ?? null,
-      phone: null,
+      message: latestSms?.body ?? null,
+      payload: { ...payload, hasSmsThread: Boolean(latestSms) },
+      phone,
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
@@ -142,7 +172,10 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
 
   for (const row of discoveryRes.data ?? []) {
     const intake = row.intake as { businessName?: string } | null;
-    const latestSms = latestSmsByProspect.get(row.id as string);
+    const wdLeadId = (row as { wd_lead_id?: string | null }).wd_lead_id ?? null;
+    const latestSms =
+      latestSmsByProspect.get(row.id as string) ??
+      (wdLeadId ? latestSmsByLead.get(wdLeadId) : undefined);
     const at =
       latestSms &&
       new Date(latestSms.created_at).getTime() > new Date(row.created_at as string).getTime()
@@ -165,6 +198,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
         goal: row.goal,
         intake: row.intake,
         closeDraft: row.close_draft,
+        wdLeadId: row.wd_lead_id ?? null,
         hasSmsThread: Boolean(latestSms),
       },
       readAt: (row as { read_at?: string | null }).read_at ?? null,

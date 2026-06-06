@@ -351,7 +351,14 @@ function InboxRow({
           {item.source === "discovery" && !isDeleting && (
             <>
               <CrmSmsThread
-                prospectId={item.id}
+                leadId={
+                  typeof item.payload?.wdLeadId === "string"
+                    ? item.payload.wdLeadId
+                    : undefined
+                }
+                prospectId={
+                  typeof item.payload?.wdLeadId === "string" ? undefined : item.id
+                }
                 enabled={Boolean(item.payload?.hasSmsThread) || expanded}
               />
               <div className="mt-4 border-t border-rule pt-4">
@@ -419,7 +426,12 @@ function InboxRow({
           )}
 
           {isWdLeadFeedItem(item) && !isDeleting && (
-            <div className="mt-4 border-t border-rule pt-4">
+            <>
+              <CrmSmsThread
+                leadId={item.id}
+                enabled={Boolean(item.payload?.hasSmsThread) || expanded}
+              />
+              <div className="mt-4 border-t border-rule pt-4">
               {editingNotes ? (
                 <div className="grid gap-2">
                   <textarea
@@ -472,7 +484,8 @@ function InboxRow({
                 email={item.email}
                 onSent={() => void onReload()}
               />
-            </div>
+              </div>
+            </>
           )}
 
           {item.stripeSessionId && (

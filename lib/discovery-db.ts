@@ -74,6 +74,24 @@ export async function findDiscoveryProspectByPhone(
   return data as DiscoveryProspectRow;
 }
 
+export async function findDiscoveryProspectByWdLeadId(
+  wdLeadId: string
+): Promise<DiscoveryProspectRow | null> {
+  const supa = supabaseAdmin();
+  if (!supa) return null;
+
+  const { data, error } = await supa
+    .from("discovery_prospects")
+    .select("*")
+    .eq("wd_lead_id", wdLeadId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as DiscoveryProspectRow;
+}
+
 export async function markDiscoveryProspectUnread(id: string): Promise<boolean> {
   return updateDiscoveryProspect(id, { read_at: null });
 }

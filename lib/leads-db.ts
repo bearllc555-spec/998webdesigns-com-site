@@ -26,6 +26,7 @@ export type WdLeadPatch = {
   ten_year_hosting_paid_at?: string | null;
   notes?: string | null;
   payload?: Record<string, unknown>;
+  read_at?: string | null;
 };
 
 export type WdLeadRow = {
@@ -136,6 +137,38 @@ export async function updateLatestWdLeadBySubscriptionId(
   }
 
   return updateWdLead(data.id, patch);
+}
+
+export async function findLatestWdLeadByPhone(phoneE164: string): Promise<WdLeadRow | null> {
+  const supa = supabaseAdmin();
+  if (!supa) return null;
+
+  const { data, error } = await supa
+    .from("wd_leads")
+    .select("id, email, business_name, full_name, status, stripe_customer_id, payload")
+    .filter("payload->>phone", "eq", phoneE164)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    if (error) console.warn("[leads] wd_leads phone lookup failed:", error.message);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    email: data.email,
+    business_name: data.business_name,
+    full_name: data.full_name,
+    status: data.status,
+    stripe_customer_id: data.stripe_customer_id,
+    payload: (data.payload as Record<string, unknown>) ?? {},
+  };
+}
+
+export async function markWdLeadUnread(leadId: string): Promise<boolean> {
+  return updateWdLead(leadId, { read_at: null });
 }
 
 export async function getWdLeadById(leadId: string): Promise<WdLeadRow | null> {
