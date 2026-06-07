@@ -1,3 +1,5 @@
+import { VOICE_DEMO_PLAYBACK_RATE } from "@/lib/voice-demo-constants";
+
 const SEND_SAMPLE_RATE = 16000;
 const RECEIVE_SAMPLE_RATE = 24000;
 
@@ -133,11 +135,12 @@ export class VoiceDemoAudioPlayer {
 
     const source = ctx.createBufferSource();
     source.buffer = audioBuffer;
+    source.playbackRate.value = VOICE_DEMO_PLAYBACK_RATE;
     source.connect(analyser);
 
     const start = Math.max(ctx.currentTime, this.nextTime);
     source.start(start);
-    this.nextTime = start + audioBuffer.duration;
+    this.nextTime = start + audioBuffer.duration / VOICE_DEMO_PLAYBACK_RATE;
   }
 
   reset(): void {
