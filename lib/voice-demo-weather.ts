@@ -9,6 +9,21 @@ export const WEATHER_POST_CONFIRM_PAUSE_MS = 1200;
 /** Beat after the spoken forecast before FINAL GOODBYE (ms). */
 export const WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS = 1000;
 
+/** Re-send forecast nudge if lookup finished but Jarvis never spoke the report. */
+export const WEATHER_FORECAST_DELIVERY_WATCHDOG_MS = 14_000;
+
+/** Extract spoken forecast lines from lookup_weather tool result. */
+export function weatherLookupSpeakLines(
+  result: Record<string, unknown>
+): { spokenLookup: string; briefReport: string } | null {
+  const spokenLookup =
+    typeof result.spokenLookup === "string" ? result.spokenLookup.trim() : "";
+  const briefReport =
+    typeof result.briefReport === "string" ? result.briefReport.trim() : "";
+  if (!spokenLookup || !briefReport) return null;
+  return { spokenLookup, briefReport };
+}
+
 /** Hidden client cue — weather demo done; nudges Jarvis to sign off, not wrap-up. */
 export const VOICE_DEMO_WEATHER_FORECAST_DONE_CUE = "[weather-forecast-done]";
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { weatherLookupSpeakLines } from "@/lib/voice-demo-weather";
 import {
   buildWeatherZipConfirmLine,
   buildWeatherZipLookupLine,
@@ -177,5 +178,15 @@ describe("voice-demo-weather", () => {
       "Little Falls, NJ 07424"
     );
     expect(formatPossibleLocationLabel(null, null, null)).toBeNull();
+  });
+
+  it("extracts spoken forecast lines from lookup result", () => {
+    const lines = weatherLookupSpeakLines({
+      spokenLookup: "Thank you — one moment.",
+      briefReport: "In Little Falls, New Jersey, it's 72 degrees Fahrenheit.",
+    });
+    expect(lines?.spokenLookup).toContain("one moment");
+    expect(lines?.briefReport).toContain("Little Falls");
+    expect(weatherLookupSpeakLines({ spokenLookup: "", briefReport: "x" })).toBeNull();
   });
 });
