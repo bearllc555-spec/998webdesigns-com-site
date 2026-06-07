@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPostNameSpeakNudge,
+  buildSessionResumeNudge,
   VOICE_DEMO_INTRO_LINE,
   VOICE_DEMO_MANDATORY_OPENING,
+  VOICE_DEMO_POST_NAME_CUE,
   VOICE_DEMO_POST_NAME_LINE,
+  VOICE_DEMO_SESSION_RESUME_CUE,
   VOICE_DEMO_SESSION_START_CUE,
   triggerVoiceDemoOpening,
 } from "@/lib/voice-demo-greeting";
@@ -23,5 +27,21 @@ describe("voice-demo-greeting", () => {
     expect(calls).toEqual([
       { turns: VOICE_DEMO_SESSION_START_CUE, turnComplete: true },
     ]);
+  });
+
+  it("builds post-name nudge with help line not how are you", () => {
+    const nudge = buildPostNameSpeakNudge("Anthony");
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_CUE);
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_LINE);
+    expect(nudge).toMatch(/Never say "how are you"/i);
+  });
+
+  it("builds session resume nudge without replaying intro", () => {
+    const nudge = buildSessionResumeNudge({
+      nameOnFile: "Anthony",
+      nameSavedThisSession: true,
+    });
+    expect(nudge).toContain(VOICE_DEMO_SESSION_RESUME_CUE);
+    expect(nudge).toMatch(/Do not repeat greetings/i);
   });
 });

@@ -254,14 +254,26 @@ export async function executeVoiceDemoTool(
     if (!visitorName || visitorName.length > 120) {
       return { ok: false, error: "Please provide a name." };
     }
+    const existing = row.full_name?.trim();
+    if (existing && existing.toLowerCase() === visitorName.toLowerCase()) {
+      return {
+        ok: true,
+        name: visitorName,
+        alreadySaved: true,
+        message:
+          `Name already on file (${visitorName}). Do not repeat greetings, do not say "how are you", ` +
+          `and do not speak "${VOICE_DEMO_POST_NAME_LINE}" again — listen silently for their question.`,
+      };
+    }
     await updateVoiceDemoLead(leadId, { full_name: visitorName });
+    const first = visitorName.split(/\s+/)[0] ?? visitorName;
     return {
       ok: true,
       name: visitorName,
       message:
-        `Name saved (${visitorName}). If you already said "${VOICE_DEMO_POST_NAME_LINE}" in your immediately prior spoken turn, ` +
-        `do not say it again — stop and listen. Otherwise one brief greeting by name plus that question once, then stop. ` +
-        `Never say the help question twice in a row. Do not ask for their phone in this turn.`,
+        `Name saved (${visitorName}). Speak exactly once: "Good day, ${first}. ${VOICE_DEMO_POST_NAME_LINE}" ` +
+        `Never say "how are you". If you already spoke that exact line, stop and listen. ` +
+        `Never repeat the help question. Do not ask for their phone in this turn.`,
     };
   }
 

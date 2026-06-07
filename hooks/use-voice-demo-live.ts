@@ -28,6 +28,8 @@ import {
   isUserFarewellEcho,
 } from "@/lib/voice-demo-farewell";
 import {
+  buildPostNameSpeakNudge,
+  buildSessionResumeNudge,
   triggerVoiceDemoOpening,
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
@@ -183,11 +185,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
+  const nameSavedRef = useRef(false);
+  const savedNameRef = useRef("");
+  const postNameNudgeSentRef = useRef(false);
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
   const connectedAtRef = useRef(0);
   const reconnectAttemptRef = useRef(0);
   const reconnectingRef = useRef(false);
+  const reconnectScheduledRef = useRef(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressAssistantAudioRef = useRef(false);
   const jarvisLevelsRef = useRef(JARVIS_AUDIO_IDLE);
   const orbFrameRef = useRef<number | null>(null);
@@ -237,6 +244,82 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     } catch (err) {
       console.warn("[voice-demo-live] opening trigger", err);
       greetingSentRef.current = false;
+    }
+  }, []);
+
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    reconnectScheduledRef.current = false;
+  }, []);
+
+  const scheduleLiveReconnect = useCallback(
+    (reason: string, meta?: Record<string, unknown>) => {
+      if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
+      if (reconnectAttemptRef.current >= MAX_RECONNECT_ATTEMPTS) {
+        reconnectingRef.current = false;
+        optionsRef.current.onUnexpectedClose?.();
+        return;
+      }
+      if (reconnectScheduledRef.current) return;
+      reconnectScheduledRef.current = true;
+      logVoiceDemoOps({
+        kind: "session_anomaly",
+        message: `Scheduling live reconnect: ${reason}`,
+        severity: "warn",
+        meta: {
+          attempt: reconnectAttemptRef.current,
+          hasHandle: Boolean(sessionResumptionHandleRef.current),
+          ...meta,
+        },
+      });
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectScheduledRef.current = false;
+        reconnectTimerRef.current = null;
+        if (reconnectAttemptRef.current >= MAX_RECONNECT_ATTEMPTS) return;
+        if (reconnectingRef.current) return;
+        reconnectAttemptRef.current += 1;
+        void connectRef.current(modeRef.current, { resume: true });
+      }, 400);
+    },
+    []
+  );
+
+  const sendPostNameSpeakNudge = useCallback((firstName: string) => {
+    const session = sessionRef.current;
+    if (
+      !session ||
+      postNameNudgeSentRef.current ||
+      jarvisFarewellSentRef.current ||
+      farewellDisconnectingRef.current
+    ) {
+      return;
+    }
+    postNameNudgeSentRef.current = true;
+    try {
+      session.sendClientContent({
+        turns: buildPostNameSpeakNudge(firstName),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] post-name nudge", err);
+      postNameNudgeSentRef.current = false;
+    }
+  }, []);
+
+  const sendSessionResumeNudge = useCallback((session: Session) => {
+    try {
+      session.sendClientContent({
+        turns: buildSessionResumeNudge({
+          nameOnFile: savedNameRef.current || undefined,
+          nameSavedThisSession: postNameNudgeSentRef.current,
+        }),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] session resume nudge", err);
     }
   }, []);
 
@@ -1020,6 +1103,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   );
 
   const disconnect = useCallback((intentional = true) => {
+    clearReconnectTimer();
     intentionalDisconnectRef.current = intentional;
     micRef.current?.stop();
     micRef.current = null;
@@ -1038,7 +1122,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     stopOrbLoop();
     setConnected(false);
     setConnecting(false);
-  }, [clearPhoneCollectionState, clearWeatherZipState, stopOrbLoop]);
+  }, [clearPhoneCollectionState, clearReconnectTimer, clearWeatherZipState, stopOrbLoop]);
 
   const disconnectGraceful = useCallback(async () => {
     await playerRef.current?.whenPlaybackIdle(10000);
@@ -1167,14 +1251,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             timeLeft: message.goAway.timeLeft ?? null,
           },
         });
-        if (
-          !farewellDisconnectingRef.current &&
-          !reconnectingRef.current &&
-          reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS
-        ) {
-          reconnectAttemptRef.current += 1;
-          void connectRef.current(modeRef.current, { resume: true });
-        }
+        scheduleLiveReconnect("goAway", {
+          durationMs,
+          timeLeft: message.goAway.timeLeft ?? null,
+        });
         return;
       }
 
@@ -1220,6 +1300,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           const result = await runTool(name, args);
           syncPhoneCollectionState(name, result);
           syncWeatherCollectionState(name, result);
+
+          if (name === "save_name" && result.ok === true) {
+            nameSavedRef.current = true;
+            const savedName = typeof result.name === "string" ? result.name.trim() : "";
+            if (savedName) savedNameRef.current = savedName;
+            if (result.alreadySaved !== true && savedName) {
+              const first = savedName.split(/\s+/)[0] ?? savedName;
+              setTimeout(() => sendPostNameSpeakNudge(first), 80);
+            }
+          }
 
           if (name === "lookup_weather") {
             if (result.ok === true) {
@@ -1288,6 +1378,23 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
             if (result.endCall === true) {
+              if (modeRef.current === "demo" && !nameSavedRef.current) {
+                logVoiceDemoOps({
+                  kind: "end_conversation_early_blocked",
+                  message: "Blocked end_conversation during name onboarding",
+                  severity: "warn",
+                });
+                responses.push({
+                  id: call.id,
+                  name,
+                  response: {
+                    ok: false,
+                    error:
+                      "Name onboarding is not complete. Call save_name when you hear their name, greet once, then continue — do not end the call.",
+                  },
+                });
+                continue;
+              }
               const canEnd = canModelEndConversation({
                 farewellSent: jarvisFarewellSentRef.current,
                 goodbyeNudgeSent: goodbyeNudgeSentRef.current,
@@ -1599,6 +1706,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,
       syncWeatherCollectionState,
+      scheduleLiveReconnect,
+      sendPostNameSpeakNudge,
     ]
   );
 
@@ -1619,9 +1728,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         farewellDisconnectingRef.current = false;
         lastAssistantTextRef.current = "";
         greetingSentRef.current = false;
+        nameSavedRef.current = false;
+        savedNameRef.current = "";
+        postNameNudgeSentRef.current = false;
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
         reconnectAttemptRef.current = 0;
+        clearReconnectTimer();
         suppressAssistantAudioRef.current = false;
         awaitingWeatherForecastDeliveryRef.current = false;
         visitorAskedSubstantiveQuestionRef.current = false;
@@ -1732,6 +1845,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                     sendOpeningGreeting(sessionRef.current);
                   }
                 }, 0);
+              } else if (sessionRef.current) {
+                setTimeout(() => {
+                  const session = sessionRef.current;
+                  if (!session) return;
+                  if (
+                    nameSavedRef.current &&
+                    !postNameNudgeSentRef.current &&
+                    savedNameRef.current
+                  ) {
+                    const first = savedNameRef.current.split(/\s+/)[0] ?? savedNameRef.current;
+                    sendPostNameSpeakNudge(first);
+                  } else {
+                    sendSessionResumeNudge(session);
+                  }
+                }, 0);
               }
               micRef.current?.stop();
               if (micStreamRef.current) {
@@ -1773,13 +1901,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                     attempt: reconnectAttemptRef.current,
                   },
                 });
-                if (reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS) {
-                  reconnectAttemptRef.current += 1;
-                  void connectRef.current(modeRef.current, { resume: true });
-                } else {
-                  reconnectingRef.current = false;
-                  optionsRef.current.onUnexpectedClose?.();
-                }
+                scheduleLiveReconnect("websocket_close", { durationMs });
               }
               intentionalDisconnectRef.current = false;
             },
@@ -1822,7 +1944,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       clearWeatherZipState,
       disconnect,
       handleMessage,
+      clearReconnectTimer,
       sendOpeningGreeting,
+      sendPostNameSpeakNudge,
+      sendSessionResumeNudge,
       startOrbLoop,
       stopOrbLoop,
     ]
