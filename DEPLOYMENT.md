@@ -68,9 +68,9 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
   - `invoice.payment_failed` → hello@ + lead status `hosting_payment_failed`
   - `customer.subscription.deleted` → hello@ + lead status `hosting_canceled`
 
-All new checkouts are **$5,998 pay-in-full** (plus optional lifetime or monthly hosting). Promo codes in `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design fee only). No deposit or balance-hold flow on new leads.
+All new checkouts use the **50 / 40 / 10 design fee schedule** ($5,998 total — 50% deposit at Checkout, 40% and 10% invoiced from CRM at milestones). Promo codes in `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design fee only).
 
-**Legacy:** Old deposit checkouts in Stripe still complete the webhook and sync as `paid_in_full`. Any open balance holds from before this change must be captured or released in the [Stripe Dashboard](https://dashboard.stripe.com) manually.
+**Legacy:** Older pay-in-full Stripe sessions still complete the webhook and sync as `paid_in_full`.
 
 `GET /api/admin/env-status` probes ACH + subscribed webhook events when `sk_live_` is set.
 

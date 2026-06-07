@@ -13,18 +13,16 @@ import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing
 import { HOSTING_FREE_MONTH_SUMMARY, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import { hostingChoiceShortLabel } from "@/lib/hosting";
 import {
-  designFeeCents,
   designPromoSummary,
   isValidDesignPromoCode,
 } from "@/lib/design-promo";
+import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import { HEAR_ABOUT_SOURCES } from "@/lib/hear-about-sources";
-import type { PaymentChannel } from "@/lib/validate-lead";
+import type { PaymentChannel, PaymentOption } from "@/lib/validate-lead";
 import { FixedFormField } from "@/components/form-field-stack";
 
 type ContactPref = "email" | "phone" | "text" | "";
 type Redesign = "new" | "redesign";
-
-type PaymentOption = "full";
 
 type FormState = {
   // Step 1
@@ -66,7 +64,7 @@ const initial: FormState = {
   industry: "", yearsInBusiness: "", existingUrl: "", whatYouDo: "", whoYouServe: "",
   projectType: "", visitorActions: [], pages: [], pagesOther: "", brandAssets: [],
   inspirationUrls: "", avoidances: "",
-  startDate: "", hostingChoice: "", notes: "", paymentOption: "full",
+  startDate: "", hostingChoice: "", notes: "", paymentOption: "deposit",
   paymentChannel: "card",
   addons: [],
   promoCode: "",
@@ -573,9 +571,9 @@ export function LeadForm() {
                 <p className="text-sm font-medium text-ink">{HOSTING_FREE_MONTH_SUMMARY}</p>
                 <p className="mt-2 text-xs leading-relaxed text-ink-soft">
                   {form.hostingChoice === "monthly" &&
-                    `You pay the design fee today only. $198/mo hosting starts on day ${HOSTING_TRIAL_DAYS + 1}. Cancel before then and you will not be charged for hosting.`}
+                    `You pay the 50% design deposit today only. $198/mo hosting starts on day ${HOSTING_TRIAL_DAYS + 1}. Cancel before then and you will not be charged for hosting.`}
                   {form.hostingChoice === "lifetime" &&
-                    `You pay the design fee today only. We email a secure link for the $2,996 lifetime hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Lifetime hosting begins when that payment clears.`}
+                    `You pay the 50% design deposit today only. We email a secure link for the $2,996 lifetime hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Lifetime hosting begins when that payment clears.`}
                   {!form.hostingChoice &&
                     "Pick monthly or lifetime hosting above. Either way, your first 30 days of hosting are on us."}
                 </p>
@@ -584,14 +582,19 @@ export function LeadForm() {
               <Field label="Payment" required error={errors.paymentChannel}>
                 <div className="rounded-xl border border-rule bg-bg px-4 py-4">
                   <span className="block text-sm font-medium text-ink">
-                    {formatCheckoutUsd(designFeeCents(form.promoCode))} design — paid in full today
+                    50 / 40 / 10 design fee schedule
                     {form.hostingChoice
                       ? ` (${hostingChoiceShortLabel(form.hostingChoice as "lifetime" | "monthly")} billed after free month)`
                       : ""}
                   </span>
-                  <span className="mt-1 block text-xs text-ink-soft">
-                    Design fee only at checkout. Card payments include a 3% processing fee on the
-                    design fee. Hosting is not charged today.
+                  <ul className="mt-2 space-y-1 text-xs text-ink-soft">
+                    {designPaymentScheduleLines(form.promoCode).map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                  <span className="mt-2 block text-xs text-ink-soft">
+                    Only the 50% deposit is due at checkout. Card payments include a 3% processing
+                    fee on the amount due today. Hosting is not charged today.
                   </span>
                 </div>
                 <div className="mt-4 grid gap-2 md:grid-cols-2">
@@ -603,7 +606,12 @@ export function LeadForm() {
                     const total =
                       form.hostingChoice &&
                       formatCheckoutUsd(
-                        checkoutDueTodayCents(form.hostingChoice, channel, form.promoCode)
+                        checkoutDueTodayCents(
+                          form.hostingChoice,
+                          channel,
+                          form.promoCode,
+                          form.paymentOption
+                        )
                       );
                     return (
                       <label
@@ -695,7 +703,8 @@ export function LeadForm() {
                         checkoutDueTodayCents(
                           form.hostingChoice,
                           form.paymentChannel,
-                          form.promoCode
+                          form.promoCode,
+                          form.paymentOption
                         )
                       )}`
                     : "Continue to payment"}

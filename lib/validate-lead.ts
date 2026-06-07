@@ -95,10 +95,12 @@ export function validateLeadPayload(
   if (!hostingChoice || !["lifetime", "monthly"].includes(hostingChoice)) {
     return { ok: false, error: "Missing or invalid hostingChoice (lifetime or monthly)" };
   }
-  if (paymentOption && paymentOption !== "full") {
+  const resolvedPaymentOption: PaymentOption =
+    paymentOption === "full" ? "full" : paymentOption === "deposit" ? "deposit" : "deposit";
+  if (paymentOption && !["full", "deposit"].includes(paymentOption)) {
     return {
       ok: false,
-      error: "Invalid paymentOption — $5,998 design fee must be paid in full upfront",
+      error: "Invalid paymentOption — must be deposit or full",
     };
   }
   if (!paymentChannel || !["ach", "card"].includes(paymentChannel)) {
@@ -142,7 +144,7 @@ export function validateLeadPayload(
       startDate: str(body.startDate) ?? "",
       hostingChoice: hostingChoice as HostingChoice,
       notes: str(body.notes) ?? "",
-      paymentOption: "full",
+      paymentOption: resolvedPaymentOption,
       paymentChannel: paymentChannel as PaymentChannel,
       addons: strArray(body.addons).filter((id) => ALLOWED_ADDONS.has(id)),
       promoCode,

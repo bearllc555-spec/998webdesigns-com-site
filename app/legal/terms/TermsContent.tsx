@@ -42,9 +42,11 @@ export function TermsContent() {
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
-                <strong>Design fee:</strong> $5,998 paid in full at checkout before your project
-                enters the queue. Channel-specific promo codes reduce the design fee only — not
-                hosting or card-processing fees — when entered on the lead form at checkout.
+                <strong>Design fee:</strong> $5,998 total, paid on a 50 / 40 / 10 schedule — 50% at
+                checkout before your project enters the queue, 40% after design approval or
+                development start, and 10% at launch and handover. Channel-specific promo codes
+                reduce the design fee only — not hosting or card-processing fees — when entered on
+                the lead form at checkout.
               </li>
               <li>
                 <strong>Hosting:</strong> You choose lifetime hosting ($2,996 one-time) or

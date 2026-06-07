@@ -11,7 +11,7 @@ const validBase = {
   whoYouServe: "Homeowners",
   projectType: "new",
   hostingChoice: "monthly",
-  paymentOption: "full",
+  paymentOption: "deposit",
   paymentChannel: "ach",
   addons: [],
   hearAboutSources: ["Google search"],
@@ -23,22 +23,28 @@ describe("validateLeadPayload", () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.email).toBe("jane@example.com");
-      expect(result.data.paymentOption).toBe("full");
+      expect(result.data.paymentOption).toBe("deposit");
     }
   });
 
-  it("defaults to full when paymentOption omitted", () => {
+  it("defaults to deposit when paymentOption omitted", () => {
     const { paymentOption, ...withoutPayment } = validBase;
     void paymentOption;
     const result = validateLeadPayload(withoutPayment);
     expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.paymentOption).toBe("deposit");
+  });
+
+  it("accepts full paymentOption for legacy checkouts", () => {
+    const result = validateLeadPayload({ ...validBase, paymentOption: "full" });
+    expect(result.ok).toBe(true);
     if (result.ok) expect(result.data.paymentOption).toBe("full");
   });
 
-  it("rejects deposit paymentOption", () => {
-    const result = validateLeadPayload({ ...validBase, paymentOption: "deposit" });
+  it("rejects invalid paymentOption", () => {
+    const result = validateLeadPayload({ ...validBase, paymentOption: "half" });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toMatch(/full upfront/i);
+    if (!result.ok) expect(result.error).toMatch(/paymentOption/i);
   });
 
   it("rejects invalid email", () => {

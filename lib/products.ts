@@ -9,7 +9,7 @@ export const PRODUCTS: Product[] = [
   {
     id: 'website-full',
     name: 'Website Design',
-    description: 'Complete payment for your custom website ($5,998 paid in full to start).',
+    description: 'Custom website design ($5,998 total — 50% deposit at checkout).',
     priceInCents: 599800, // $5,998.00
   },
 ]

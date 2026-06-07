@@ -16,8 +16,8 @@ export const faq: FAQItem[] = [
     a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 7 business days from the moment payment clears.",
   },
   {
-    q: "Do I have to pay the full $5,998 upfront?",
-    a: "Yes — we collect the full $5,998 design fee before your project enters the queue. Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from cleared payment, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or lifetime hosting is a one-time $2,996 (we email a secure payment link on day 31). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design fee only. Once payment clears, you're in the queue and we start within one business day. Bank transfers may take a few business days to settle.",
+    q: "How is the $5,998 design fee paid?",
+    a: "On a 50 / 40 / 10 schedule — the same structure for every project. You pay 50% ($2,999) at checkout to enter the queue. The remaining 40% ($2,399.20) is due after design approval or when development starts. The final 10% ($599.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only — not hosting or the card fee). Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from your cleared deposit, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or lifetime hosting is a one-time $2,996 (we email a secure payment link on day 31). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.",
   },
   {
     q: "Can I pay by card or bank?",
@@ -25,7 +25,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What happens if I go quiet during the design or approval process?",
-    a: "Life happens. If we send a draft and don't hear back within 14 days, we'll mark the project complete and deliver the best version we have. You've already paid in full — there is no further charge at approval. Your files are held for 90 days; come back any time in that window and we'll jump back in under normal edit terms. After 90 days, a $349 re-engagement fee applies to reopen the project. We say this up front because surprise late fees are agency behavior and we don't do that.",
+    a: "Life happens. If we send a draft and don't hear back within 14 days, we'll mark the project complete and deliver the best version we have. Your 50% deposit and any milestones already paid are not refunded — the remaining balance still follows the published 50 / 40 / 10 schedule (40% at development start, 10% at launch). Your files are held for 90 days; come back any time in that window and we'll jump back in under normal edit terms. After 90 days, a $349 re-engagement fee applies to reopen the project. We say this up front because surprise late fees are agency behavior and we don't do that.",
   },
   {
     q: "How is this so much cheaper than an agency?",
