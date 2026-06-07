@@ -13,9 +13,16 @@ export const VOICE_DEMO_MIC_MUTE_DISCONNECT_MS = 10_000;
 /** Channel-specific promo — design fee only; not on public FAQ. */
 export const VOICE_DEMO_PROMO_CODE = "VOICE20";
 
-/** Permission ask before emailing the coupon — must wait for yes before send_promo_email. */
+/** After weather + implement interest — permission before send_promo_email. */
 export const VOICE_DEMO_PROMO_EMAIL_ASK_LINE =
-  "Do you mind if I send you a coupon code via email?";
+  "Would you like me to send you a coupon code to save 20% off a web design package?";
+
+/** Step after forecast — visitor reacts to the weather demo. */
+export const VOICE_DEMO_WEATHER_COOL_REACTION_LINE = "Isn't that pretty cool?";
+
+/** Step before promo — gauge interest in Jarvis-style features on their site. */
+export const VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE =
+  "Is that something you want to implement into your website?";
 
 /** Standard sign-off before end_conversation — spoken verbatim on weather silence timeout. */
 export const VOICE_DEMO_GOODBYE_LINE =

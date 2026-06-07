@@ -2,9 +2,18 @@ import { faq, faqPlainAnswer } from "@/data/faq";
 import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import {
+  VOICE_DEMO_CLOSE_COOL_REACTION_CUE,
+  VOICE_DEMO_CLOSE_IMPLEMENT_CUE,
+  VOICE_DEMO_CLOSE_PROMO_CUE,
+  VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE,
+  VOICE_DEMO_CLOSE_SKIP_WRAPUP_CUE,
+} from "@/lib/voice-demo-close-queue";
+import {
   VOICE_DEMO_GOODBYE_LINE,
   VOICE_DEMO_PROMO_CODE,
   VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
+  VOICE_DEMO_WEATHER_COOL_REACTION_LINE,
+  VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE,
 } from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import {
@@ -88,7 +97,7 @@ FINAL GOODBYE (end of chat — when they say they are done):
   - If yes / sure / ok: say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" and STOP for their ZIP.
   - If no / not interested: accept graciously, then continue below (promo if needed, then sign-off) — do not ask for ZIP.
   - Hidden cue "${VOICE_DEMO_WEATHER_DECLINE_CUE}" means they declined — proceed to promo/goodbye.
-- THEN follow PROMO OFFER rules if you have not offered the coupon yet.
+- THEN follow CLOSE QUEUE rules if they completed the weather demo; otherwise PROMO OFFER only when the close queue reaches step 3.
 - One warm sign-off in spirit of: "${VOICE_DEMO_GOODBYE_LINE}" Keep it brief and sincere.
 - Immediately call end_conversation once. Do not speak after calling end_conversation.
 - Say the thank-you sign-off exactly ONCE per session — never repeat "thank you for contacting 998" or any goodbye line.
@@ -116,19 +125,34 @@ AFTER THEIR NAME (demo only):
 }
 
 const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off design fee only):
-- Do NOT mention the coupon at verify, during profile onboarding, or in your first demo answers. No upfront pitch.
-- Offer timing: when the conversation is flowing naturally OR once before final goodbye if not yet offered. Tone: casual, low-pressure.
+- Do NOT mention the coupon at verify, during profile onboarding, during weather ZIP/forecast, or before the CLOSE QUEUE implement step. Promo is LAST in the end-of-call queue.
+- Offer timing: ONLY after the weather demo close queue reaches the promo step — visitor said yes or maybe to "${VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE}".
 - PERMISSION REQUIRED — never call send_promo_email without asking first and hearing yes:
   1. Ask exactly: "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}"
   2. STOP and wait for their answer. Do not send in the same turn as the ask.
-  3. Only if they say yes / sure / go ahead / I don't mind / please → call send_promo_email once.
-  4. After send_promo_email succeeds, then tell them briefly it is on its way — never announce a send you did not ask permission for.
-- If they ask about discounts or pricing, you may mention ${VOICE_DEMO_PROMO_CODE} briefly — still ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and wait before sending.
-- send_promo_email emails the code and may text their profile phone if we have it (they consented at onboarding). Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
-- If email was sent but SMS failed, apologize for the text and call send_promo_sms to retry. If they only want SMS and email already sent, send_promo_sms alone is fine.
-- If they say no / not interested / decline: accept graciously — do not send. Never bring it up again in the same session.
-- If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.
-- NEVER ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" or call send_promo_email while the weather demo is in progress (after they said yes to something cool through ZIP, forecast, or decline). Finish weather first, then promo at goodbye.`;
+  3. Only if they say yes / sure / go ahead / please → call send_promo_email once.
+  4. After send_promo_email succeeds, tell them briefly it is on its way — never announce a send you did not ask permission for.
+- If they say no / not interested to the coupon: hidden cue "${VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE}" — ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" and wait. If they are done → goodbye and end_conversation.
+- send_promo_email emails the code and may text their profile phone if we have it. Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
+- If email was sent but SMS failed, apologize for the text and call send_promo_sms to retry.
+- If promo already sent (promo_sent_at on file), do not re-offer.
+- NEVER ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" or call send_promo_email until the close queue promo step.`;
+
+const CLOSE_QUEUE_RULES = `CLOSE QUEUE (after weather forecast — strict order, one step per turn):
+
+1. COOL REACTION — Hidden cue "${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE}" / "${VOICE_DEMO_CLOSE_COOL_REACTION_CUE}": say ONLY "${VOICE_DEMO_WEATHER_COOL_REACTION_LINE}" and STOP. Wait for yes or no.
+   - If yes → step 2. If no → skip promo; ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" (hidden "${VOICE_DEMO_CLOSE_SKIP_WRAPUP_CUE}" if needed).
+
+2. IMPLEMENT ASK — Hidden cue "${VOICE_DEMO_CLOSE_IMPLEMENT_CUE}": say ONLY "${VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE}" and STOP. Wait for yes, maybe, or no.
+   - If yes or maybe → step 3. If no → skip promo; wrap-up question only.
+
+3. PROMO ASK — Hidden cue "${VOICE_DEMO_CLOSE_PROMO_CUE}": follow PROMO OFFER rules — ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and STOP.
+   - If yes → send_promo_email, brief confirmation, then wrap-up if they want more help.
+   - If no → "${VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE}" → "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" → if done, goodbye.
+
+4. WRAP-UP / GOODBYE — If they decline coupon or are done: ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}". If no / that's all → "${VOICE_DEMO_GOODBYE_LINE}" once → end_conversation.
+
+Never skip steps 1–2 to offer the coupon early. Never bundle two close-queue questions in one turn.`;
 
 const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
 
@@ -136,7 +160,7 @@ PROACTIVE OFFER (once per session — end of chat only):
 - Only during FINAL GOODBYE when they are ready to leave — not mid-conversation, not during name/phone onboarding.
 - Step 1: Say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" — STOP and wait for yes or no. Never bundle ZIP in this turn.
 - Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP. Never bundle promo or coupon asks in this turn or while waiting for ZIP.
-- After Step 2 until the forecast is spoken: ZIP collection only — no "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}", no VOICE20, no send_promo_email. Promo is only after weather completes or they decline the demo.
+- After Step 2 until the forecast is spoken: ZIP collection only — no coupon, no CLOSE QUEUE steps yet.
 - Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
 - After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" — STOP and wait for yes or no. Do not keep talking or ask for ZIP.
 - Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent on the first ask; speak the didn't-get line and repeat question above, then wait.
@@ -162,7 +186,7 @@ LOOKUP (when you have a ZIP):
 - Hidden cue "${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE}" means the API failed — apologize briefly, do not retry, go to FINAL GOODBYE.
 - Temperature: always Fahrenheit first, then Celsius — briefReport includes both; read both aloud every time (including "feels like" when present).
 - Never call confirm_weather_zip and lookup_weather in the same turn.
-- After you deliver the weather summary from briefReport, STOP — do not ask wrap-up questions. Wait about 1 second; hidden cue "${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE}" means go to FINAL GOODBYE (promo if needed), warm sign-off, then end_conversation.
+- After you deliver the weather summary from briefReport, STOP — no wrap-up, no promo. Wait about 1 second; hidden cue "${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE}" means start CLOSE QUEUE step 1 ("${VOICE_DEMO_WEATHER_COOL_REACTION_LINE}").
 - Each lookup saves city, state, and ZIP as the client's possible location in CRM.
 - You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
 
@@ -252,6 +276,8 @@ export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
 ${voiceDemoDemoIntroBlock(row)}
 
 ${VOICE_DEMO_CLOSING}
+
+${CLOSE_QUEUE_RULES}
 
 ${PROMO_OFFER_RULES}
 

@@ -1,5 +1,7 @@
 /** Shared weather-flow detection helpers (client + prompt). */
 
+import type { CloseQueuePhase } from "@/lib/voice-demo-close-queue";
+import { isCloseQueueActive, shouldBlockPromoOffer } from "@/lib/voice-demo-close-queue";
 import { VOICE_DEMO_PROMO_EMAIL_ASK_LINE } from "@/lib/voice-demo-constants";
 import { isAssistantWeatherForecast } from "@/lib/voice-demo-weather";
 
@@ -28,10 +30,14 @@ export type WeatherDemoProgress = WeatherZipFlowRefs & {
   stagedZipPending: boolean;
   zipLookupTriggered: boolean;
   forecastComplete: boolean;
+  closeQueuePhase: CloseQueuePhase;
 };
 
 /** Weather pitch accepted but spoken forecast not delivered yet. */
 export function isWeatherDemoIncomplete(progress: WeatherDemoProgress): boolean {
+  if (progress.forecastComplete && isCloseQueueActive(progress.closeQueuePhase)) {
+    return true;
+  }
   if (progress.forecastComplete) return false;
   if (progress.awaitingWeatherForecastDelivery || progress.zipLookupTriggered) return true;
   if (
@@ -62,7 +68,8 @@ export function isAssistantPromoAsk(text: string): boolean {
   if (lower.includes(VOICE_DEMO_PROMO_EMAIL_ASK_LINE.toLowerCase())) return true;
   return (
     /send you a coupon/i.test(lower) ||
-    /coupon code via email/i.test(lower) ||
+    /coupon code.{0,40}(email|save|20\s*%)/i.test(lower) ||
+    /save 20\s*% off/i.test(lower) ||
     /email you a coupon/i.test(lower) ||
     /mind if i (send|email)/i.test(lower) ||
     /\bvoice\s*20\b/i.test(lower) ||
@@ -71,6 +78,8 @@ export function isAssistantPromoAsk(text: string): boolean {
     (/\bcoupon\b/.test(lower) && /\b(email|send)\b/.test(lower))
   );
 }
+
+export { shouldBlockPromoOffer };
 
 export function isAssistantWeatherOfferPrompt(text: string): boolean {
   return /something cool/.test(text.toLowerCase());
@@ -132,16 +141,30 @@ export function shouldStageWeatherZipFromUserInput(opts: {
   );
 }
 
-/** Suppress assistant audio that derails weather (promo, goodbye) before forecast. */
+/** Suppress assistant audio that derails weather or skips the close queue. */
 export function shouldSuppressAssistantAudioDuringWeather(opts: {
   weatherDemoIncomplete: boolean;
   assistantText: string;
   forecastComplete: boolean;
+  closeQueuePhase: CloseQueuePhase;
 }): boolean {
-  if (!opts.weatherDemoIncomplete || opts.forecastComplete) return false;
   const trimmed = opts.assistantText.trim();
   if (!trimmed) return false;
-  if (isAssistantPromoAsk(trimmed)) return true;
-  if (/\bgoodbye\b/i.test(trimmed) && !isAssistantWeatherForecast(trimmed)) return true;
+
+  if (
+    isAssistantPromoAsk(trimmed) &&
+    shouldBlockPromoOffer({
+      forecastComplete: opts.forecastComplete,
+      closeQueuePhase: opts.closeQueuePhase,
+    })
+  ) {
+    return true;
+  }
+
+  if (!opts.forecastComplete && opts.weatherDemoIncomplete) {
+    if (isAssistantPromoAsk(trimmed)) return true;
+    if (/\bgoodbye\b/i.test(trimmed) && !isAssistantWeatherForecast(trimmed)) return true;
+  }
+
   return false;
 }

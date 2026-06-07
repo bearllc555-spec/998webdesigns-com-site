@@ -100,12 +100,12 @@ describe("voice-demo-weather", () => {
     ).toBe(false);
   });
 
-  it("uses a 1s pause before goodbye after forecast", () => {
+  it("uses a 1s pause before close queue after forecast", () => {
     expect(WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS).toBe(1000);
     const nudge = buildWeatherForecastGoodbyeNudge();
     expect(nudge).toContain(VOICE_DEMO_WEATHER_FORECAST_DONE_CUE);
-    expect(nudge).toMatch(/do not ask wrap-up/i);
-    expect(nudge).toMatch(/end_conversation/i);
+    expect(nudge).toMatch(/CLOSE QUEUE/i);
+    expect(nudge).toMatch(/cool-reaction/i);
     expect(isAssistantWeatherForecast("Our design fee is five thousand dollars.")).toBe(
       false
     );

@@ -111,6 +111,9 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_PROMO_EMAIL_ASK_LINE);
     expect(prompt).toMatch(/never call send_promo_email without asking first/i);
     expect(prompt).toMatch(/STOP and wait/i);
+    expect(prompt).toMatch(/CLOSE QUEUE/i);
+    expect(prompt).toContain("Isn't that pretty cool?");
+    expect(prompt).toContain("implement into your website");
   });
 
   it("requires full-word price pronunciation", () => {

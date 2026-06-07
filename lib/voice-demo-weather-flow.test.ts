@@ -48,9 +48,11 @@ describe("voice-demo-weather-flow", () => {
   });
 
   it("detects promo ask and active weather ZIP flow", () => {
-    expect(isAssistantPromoAsk("Do you mind if I send you a coupon code via email?")).toBe(
-      true
-    );
+    expect(
+      isAssistantPromoAsk(
+        "Would you like me to send you a coupon code to save 20% off a web design package?"
+      )
+    ).toBe(true);
     expect(isAssistantPromoAsk("Would you like the VOICE20 discount code by email?")).toBe(
       true
     );
@@ -72,6 +74,7 @@ describe("voice-demo-weather-flow", () => {
         stagedZipPending: false,
         zipLookupTriggered: false,
         forecastComplete: false,
+        closeQueuePhase: "idle",
       })
     ).toBe(true);
     expect(
@@ -81,6 +84,7 @@ describe("voice-demo-weather-flow", () => {
         stagedZipPending: true,
         zipLookupTriggered: false,
         forecastComplete: false,
+        closeQueuePhase: "idle",
       })
     ).toBe(true);
     expect(
@@ -90,6 +94,7 @@ describe("voice-demo-weather-flow", () => {
         zipLookupTriggered: true,
         stagedZipPending: false,
         forecastComplete: false,
+        closeQueuePhase: "idle",
       })
     ).toBe(true);
     expect(
@@ -99,6 +104,17 @@ describe("voice-demo-weather-flow", () => {
         zipLookupTriggered: true,
         stagedZipPending: false,
         forecastComplete: true,
+        closeQueuePhase: "awaiting_cool_reaction",
+      })
+    ).toBe(true);
+    expect(
+      isWeatherDemoIncomplete({
+        ...idleWeather,
+        weatherDemoAccepted: true,
+        zipLookupTriggered: true,
+        stagedZipPending: false,
+        forecastComplete: true,
+        closeQueuePhase: "idle",
       })
     ).toBe(false);
   });
@@ -148,8 +164,10 @@ describe("voice-demo-weather-flow", () => {
     expect(
       shouldSuppressAssistantAudioDuringWeather({
         weatherDemoIncomplete: true,
-        assistantText: "Do you mind if I send you a coupon code via email?",
+        assistantText:
+          "Would you like me to send you a coupon code to save 20% off a web design package?",
         forecastComplete: false,
+        closeQueuePhase: "idle",
       })
     ).toBe(true);
     expect(
@@ -158,13 +176,25 @@ describe("voice-demo-weather-flow", () => {
         assistantText:
           "In Little Falls it is 72 degrees Fahrenheit, about 22 degrees Celsius, humidity 45 percent, wind 8 miles per hour, clear skies.",
         forecastComplete: false,
+        closeQueuePhase: "idle",
       })
     ).toBe(false);
     expect(
       shouldSuppressAssistantAudioDuringWeather({
-        weatherDemoIncomplete: false,
-        assistantText: "Do you mind if I send you a coupon code via email?",
-        forecastComplete: false,
+        weatherDemoIncomplete: true,
+        assistantText:
+          "Would you like me to send you a coupon code to save 20% off a web design package?",
+        forecastComplete: true,
+        closeQueuePhase: "awaiting_cool_reaction",
+      })
+    ).toBe(true);
+    expect(
+      shouldSuppressAssistantAudioDuringWeather({
+        weatherDemoIncomplete: true,
+        assistantText:
+          "Would you like me to send you a coupon code to save 20% off a web design package?",
+        forecastComplete: true,
+        closeQueuePhase: "awaiting_promo_consent",
       })
     ).toBe(false);
   });
@@ -177,6 +207,7 @@ describe("voice-demo-weather-flow", () => {
       stagedZipPending: false,
       zipLookupTriggered: false,
       forecastComplete: false,
+      closeQueuePhase: "idle",
     };
     expect(
       shouldBlockClientFarewellHangup({
@@ -202,6 +233,7 @@ describe("voice-demo-weather-flow", () => {
           awaitingZipDigits: false,
           forecastComplete: true,
           zipLookupTriggered: true,
+          closeQueuePhase: "idle",
         },
       })
     ).toBe(false);

@@ -28,6 +28,6 @@ export const TOOL_BLOCKED_CONFIRM_WEATHER_ZIP =
 export const TOOL_BLOCKED_LOOKUP_WEATHER =
   "Client already fetched weather. Speak briefReport from the [weather-lookup-ready] cue only — do not call lookup_weather.";
 
-/** Promo must wait until weather ZIP flow completes or visitor declines weather. */
+/** Promo must wait until close queue reaches the coupon step. */
 export const TOOL_BLOCKED_PROMO_WEATHER =
-  "Weather demo is in progress. Do NOT offer or send promo yet — ask for their ZIP, complete the forecast, or skip weather if they decline. Promo comes after weather or after they decline.";
+  "Promo is last in the close queue. Finish weather (ZIP + forecast), then cool reaction, then implement ask, then offer the coupon — do not call send_promo_email yet.";

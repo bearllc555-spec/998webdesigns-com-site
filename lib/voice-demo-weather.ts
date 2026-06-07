@@ -45,11 +45,11 @@ export function buildWeatherLookupFailedNudge(errorDetail: string, opts?: { retr
   );
 }
 
+/** @deprecated Use buildWeatherForecastCoolReactionNudge from voice-demo-close-queue. */
 export function buildWeatherForecastGoodbyeNudge(): string {
   return (
-    `${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE} Weather demo complete — do not ask wrap-up questions. ` +
-    `Say the sign-off ONCE in spirit of "${VOICE_DEMO_GOODBYE_LINE}" then follow PROMO OFFER rules if promo not yet sent, ` +
-    `then call end_conversation. Never repeat the goodbye line. STOP — no wrap-up questions.`
+    `${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE} Forecast delivered — follow CLOSE QUEUE rules. ` +
+    `Say ONLY the cool-reaction line from the cue; promo and goodbye come later in the queue.`
   );
 }
 
