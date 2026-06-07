@@ -5,7 +5,7 @@ export const VOICE_DEMO_LIVE_MODEL = "gemini-2.5-flash-native-audio-preview-12-2
 export const VOICE_DEMO_VOICE_NAME = "Schedar";
 
 /** Jarvis assistant audio playback rate (1 = normal; <1 = slower). */
-export const VOICE_DEMO_PLAYBACK_RATE = 0.9;
+export const VOICE_DEMO_PLAYBACK_RATE = 0.95;
 
 /** Channel-specific promo — design fee only; not on public FAQ. */
 export const VOICE_DEMO_PROMO_CODE = "VOICE20";
