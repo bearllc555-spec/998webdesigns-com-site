@@ -73,7 +73,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "stage_phone_number",
           description:
-            "Stage US cell: first call with userConfirmed false to spell digits; when visitor says yes, call again with same phone and userConfirmed true to send SMS.",
+            "Stage US cell for profile: spell digits, then confirm on yes (userConfirmed true). No coupon SMS here.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -107,7 +107,19 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "confirm_phone_number",
           description:
-            "REQUIRED when visitor said yes/correct after digit read-back. Sends VOICE20 SMS. Alternative: stage_phone_number with userConfirmed true.",
+            "When visitor said yes/correct after digit read-back. Saves phone to profile only — no SMS.",
+          parameters: { type: Type.OBJECT, properties: {} },
+        },
+        {
+          name: "send_promo_email",
+          description:
+            "Send VOICE20 coupon to verified email after visitor casually accepted the offer. Chill — only after they said yes.",
+          parameters: { type: Type.OBJECT, properties: {} },
+        },
+        {
+          name: "send_promo_sms",
+          description:
+            "Text VOICE20 to profile phone after they accepted the offer and want SMS (or after send_promo_email).",
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
@@ -125,37 +137,14 @@ type VerifyLeadCodeResult = {
   verified?: boolean;
   error?: string;
   attemptsRemaining?: number;
-  promoEmailSent?: boolean;
-  promoEmailError?: string;
-  promoCode?: string;
 };
-
-async function promoResultForVerifiedRow(row: VoiceDemoLeadRow): Promise<VerifyLeadCodeResult> {
-  if (row.primary_channel === "email" && row.email_verified_at) {
-    const refreshed = (await getVoiceDemoLead(row.id)) ?? row;
-    const promo = await sendPromoToVerifiedEmailLead(refreshed);
-    return {
-      ok: true,
-      verified: true,
-      promoEmailSent: promo.sent || promo.alreadySent,
-      promoEmailError: promo.error,
-      promoCode: promo.sent || promo.alreadySent ? VOICE_DEMO_PROMO_CODE : undefined,
-    };
-  }
-  return {
-    ok: true,
-    verified: true,
-    promoEmailSent: Boolean(row.promo_sent_at),
-    promoCode: row.promo_sent_at ? VOICE_DEMO_PROMO_CODE : undefined,
-  };
-}
 
 async function verifyLeadCode(
   row: VoiceDemoLeadRow,
   code: string
 ): Promise<VerifyLeadCodeResult> {
   if (row.email_verified_at || row.phone_verified_at) {
-    return promoResultForVerifiedRow(row);
+    return { ok: true, verified: true };
   }
 
   if (isVerificationExpired(row.verification_expires_at)) {
@@ -193,17 +182,7 @@ async function verifyLeadCode(
       };
     }
     await markVoiceDemoVerified(row.id, "email");
-
-    const refreshed = (await getVoiceDemoLead(row.id)) ?? row;
-    const promo = await sendPromoToVerifiedEmailLead(refreshed);
-
-    return {
-      ok: true,
-      verified: true,
-      promoEmailSent: promo.sent || promo.alreadySent,
-      promoEmailError: promo.error,
-      promoCode: promo.sent || promo.alreadySent ? VOICE_DEMO_PROMO_CODE : undefined,
-    };
+    return { ok: true, verified: true };
   }
 
   return { ok: false, error: "Invalid session." };
@@ -241,8 +220,7 @@ export async function executeVoiceDemoTool(
     return {
       ok: true,
       name: visitorName,
-      message:
-        "Name saved. Next ask for their US cell — offer to text VOICE20 to complete their profile.",
+      message: "Name saved. Next ask for their US cell to complete their profile — no coupon mention yet.",
     };
   }
 
@@ -288,10 +266,32 @@ export async function executeVoiceDemoTool(
     };
   }
 
-  if (name === "stage_phone_number" || name === "update_staged_phone") {
-    if (row.phone_verified_at) {
-      return { ok: false, error: "SMS already sent to this lead." };
+  if (name === "send_promo_email") {
+    const refreshed = (await getVoiceDemoLead(leadId)) ?? row;
+    const promo = await sendPromoToVerifiedEmailLead(refreshed);
+    if (promo.sent || promo.alreadySent) {
+      return {
+        ok: true,
+        promoEmailSent: true,
+        promoCode: VOICE_DEMO_PROMO_CODE,
+        message:
+          "Promo emailed. Mention it casually — check spam if needed. Offer send_promo_sms only if they want a text too.",
+      };
     }
+    return {
+      ok: false,
+      promoEmailSent: false,
+      error: promo.error ?? "Could not send promo email.",
+      message: "Apologize briefly; suggest hello@998webdesigns.com.",
+    };
+  }
+
+  if (name === "send_promo_sms") {
+    const smsResult = await deliverVoiceDemoPromoSms(leadId);
+    return promoSmsToolPayload(smsResult);
+  }
+
+  if (name === "stage_phone_number" || name === "update_staged_phone") {
     if (args.smsConsent !== true) {
       return { ok: false, error: "SMS consent required." };
     }
@@ -304,8 +304,11 @@ export async function executeVoiceDemoTool(
     await updateVoiceDemoLead(leadId, { phone });
 
     if (args.userConfirmed === true) {
-      const smsResult = await deliverVoiceDemoPromoSms(leadId);
-      return promoSmsToolPayload(smsResult);
+      return {
+        ok: true,
+        phoneConfirmed: true,
+        message: "Phone saved to profile. Continue onboarding or FAQ — no coupon unless PROMO OFFER rules apply.",
+      };
     }
 
     return {
@@ -313,15 +316,21 @@ export async function executeVoiceDemoTool(
       phone,
       spoken: spellPhoneForVoice(phone),
       spellOnce: true,
-      smsSent: false,
       message:
-        "Speak the spoken field once, ask if correct. When they say yes, you MUST call confirm_phone_number or stage_phone_number again with userConfirmed true — do not say SMS was sent until smsSent is true.",
+        "Speak the spoken field once, ask if correct. On yes, call confirm_phone_number or stage with userConfirmed true.",
     };
   }
 
   if (name === "confirm_phone_number") {
-    const smsResult = await deliverVoiceDemoPromoSms(leadId);
-    return promoSmsToolPayload(smsResult);
+    const refreshed = await getVoiceDemoLead(leadId);
+    if (!refreshed?.phone) {
+      return { ok: false, error: "No phone staged. Collect the number first." };
+    }
+    return {
+      ok: true,
+      phoneConfirmed: true,
+      message: "Phone saved to profile. Continue — no coupon unless they accept a later promo offer.",
+    };
   }
 
   return { ok: false, error: `Unknown tool: ${name}` };

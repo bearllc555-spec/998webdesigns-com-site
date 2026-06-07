@@ -62,7 +62,7 @@ export function promoSmsToolPayload(result: VoiceDemoPromoSmsResult): Record<str
     smsConfigured: result.smsConfigured,
     error: result.error,
     message: result.smsConfigured
-      ? "SMS failed — apologize, remind them VOICE20 is already in their verified email, and offer hello@998webdesigns.com if needed."
-      : "SMS not available on this server — apologize and remind them VOICE20 was emailed to their verified address. Do NOT say a text was sent.",
+      ? "SMS failed — apologize briefly; offer send_promo_email if they have not received the code yet."
+      : "SMS not available — apologize; offer send_promo_email to their verified address instead. Do NOT say a text was sent.",
   };
 }

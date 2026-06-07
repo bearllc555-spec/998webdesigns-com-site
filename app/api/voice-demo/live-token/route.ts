@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { createVoiceDemoLiveToken } from "@/lib/voice-demo-live-token";
-import { ensurePromoEmailForLeadId } from "@/lib/voice-demo-promo";
 import { readVoiceDemoSession } from "@/lib/voice-demo-session";
 import type { VoiceDemoToolMode } from "@/lib/voice-demo-tools";
 
@@ -29,10 +28,6 @@ export async function POST(req: NextRequest) {
 
   if (mode === "demo" && !session.verified) {
     return NextResponse.json({ error: "Verify your code first." }, { status: 403 });
-  }
-
-  if (mode === "demo") {
-    await ensurePromoEmailForLeadId(session.leadId);
   }
 
   const token = await createVoiceDemoLiveToken(session.leadId, mode);

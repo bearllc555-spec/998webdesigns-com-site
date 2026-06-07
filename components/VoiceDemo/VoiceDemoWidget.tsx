@@ -137,25 +137,13 @@ export function VoiceDemoWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: typedCode }),
       });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        error?: string;
-        promoEmailSent?: boolean;
-        promoEmailError?: string;
-        promoCode?: string;
-      };
+      const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) {
         setFormError(data.error ?? "Invalid code.");
         return;
       }
       setTypedCode("");
-      if (data.promoEmailSent && data.promoCode) {
-        setStatus(
-          `Verified — we emailed ${data.promoCode} to you (check spam). Ask Jarvis anything about 998.`
-        );
-      } else if (data.promoEmailError) {
-        setStatus("Verified — promo email could not send. Jarvis can still help; contact hello@998webdesigns.com for your code.");
-      }
+      setStatus("Verified — tap Start voice to talk with Jarvis.");
       void live.transitionToDemo();
     } catch {
       setFormError("Network error.");
@@ -244,8 +232,8 @@ export function VoiceDemoWidget() {
               {configured && phase === "gate" && (
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
-                    Enter your email to try Jarvis. We&apos;ll send a verification code, then Jarvis
-                    will ask your name and phone so we can email and text your {`VOICE20`} coupon.
+                    Enter your email to try Jarvis. We&apos;ll send a verification code, then chat
+                    about 998 — Jarvis will ask your name and phone to build your profile.
                   </p>
 
                   <div>
