@@ -33,6 +33,7 @@ import {
   VOICE_DEMO_ZIP_CITY_CORRECT_CUE,
   VOICE_DEMO_ZIP_STAGED_CUE,
 } from "@/lib/voice-demo-zip-nudge";
+import { VOICE_DEMO_PRICE_SPEAKING_RULES } from "@/lib/voice-demo-speak-money";
 import {
   VOICE_DEMO_WRAPUP_PAUSE_CUE,
   VOICE_DEMO_WRAPUP_QUESTIONS,
@@ -259,6 +260,8 @@ ${WEATHER_RULES}
 ${profileHint(row)}
 ${contactHint(row)}
 Site: ${marketingSiteOrigin()}
+
+${VOICE_DEMO_PRICE_SPEAKING_RULES}
 
 RULES:
 - ${PROFILE_RULES}

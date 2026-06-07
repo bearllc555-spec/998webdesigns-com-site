@@ -188,16 +188,34 @@ export function formatBriefWeatherReport(
   );
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
+async function fetchJsonOnce<T>(url: string): Promise<T> {
   const res = await fetch(url, {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "998webdesigns-voice-demo/1.0",
+    },
     next: { revalidate: 0 },
   });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }
   return (await res.json()) as T;
+}
+
+async function fetchJson<T>(url: string, retries = 1): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await fetchJsonOnce<T>(url);
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 type ZippopotamResponse = {

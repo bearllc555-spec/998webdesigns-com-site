@@ -695,7 +695,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (!session || !staged || zipCityCorrectionSentRef.current || isFarewellLocked()) {
         return;
       }
-      if (!canSendClientWeatherNudge()) return;
 
       zipCityCorrectionSentRef.current = true;
       logVoiceDemoOps({
@@ -726,7 +725,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         zipCityCorrectionSentRef.current = false;
       }
     },
-    [canSendClientWeatherNudge, isFarewellLocked, markClientWeatherNudgeSent]
+    [isFarewellLocked, markClientWeatherNudgeSent]
   );
 
   const sendZipDigitConfirmNudge = useCallback(
@@ -1268,7 +1267,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           severity: "warn",
           meta: { zip: staged.zip, error: errorDetail },
         });
-        if (!canSendClientWeatherNudge()) return;
         markClientWeatherNudgeSent();
         session.sendClientContent({
           turns: buildWeatherLookupFailedNudge(errorDetail),
@@ -1288,6 +1286,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           severity: "warn",
           meta: { zip: staged.zip },
         });
+        markClientWeatherNudgeSent();
+        session.sendClientContent({
+          turns: buildWeatherLookupFailedNudge("missing forecast lines"),
+          turnComplete: true,
+        });
         return;
       }
 
@@ -1297,7 +1300,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         meta: { zip: staged.zip, city: staged.city },
       });
 
-      if (!canSendClientWeatherNudge()) return;
       markClientWeatherNudgeSent();
       session.sendClientContent({
         turns: buildWeatherLookupSpeakNudge(spokenLookup, briefReport),
@@ -1313,9 +1315,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         severity: "error",
         meta: { zip: staged.zip, error: String(err) },
       });
+      try {
+        markClientWeatherNudgeSent();
+        session.sendClientContent({
+          turns: buildWeatherLookupFailedNudge(String(err)),
+          turnComplete: true,
+        });
+      } catch (sendErr) {
+        console.warn("[voice-demo-live] weather lookup failed nudge", sendErr);
+      }
     }
   }, [
-    canSendClientWeatherNudge,
     clearZipSilenceTimer,
     isFarewellLocked,
     markClientWeatherNudgeSent,

@@ -113,6 +113,14 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/STOP and wait/i);
   });
 
+  it("requires full-word price pronunciation", () => {
+    const prompt = voiceDemoDemoSystemPrompt(baseRow);
+    expect(prompt).toMatch(/PRICE PRONUNCIATION/i);
+    expect(prompt).toContain("four hundred and ninety nine dollars");
+    expect(prompt).toMatch(/never digit-by-digit/i);
+    expect(prompt).toMatch(/four ninety-nine/i);
+  });
+
   it("offers weather demo at end of chat with yes/no then ZIP", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);

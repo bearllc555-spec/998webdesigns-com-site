@@ -43,6 +43,7 @@ export type StagedZipReadback = {
 const OPS_LOG_MAX = 80;
 
 const KNOWN_ZIP_CITY_HALLUCINATIONS: Record<string, string[]> = {
+  "07424": ["ramsey", "fair lawn", "wayne", "totowa", "paterson"],
   "07512": ["paterson", "patterson", "little falls", "wayne", "clifton"],
 };
 

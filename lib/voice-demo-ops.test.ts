@@ -14,6 +14,14 @@ const TOTOWA_STAGED = {
     "I have ZIP code 0 7 5 1 2 for Totowa, New Jersey. Is that correct?",
 };
 
+const LITTLE_FALLS_STAGED = {
+  zip: "07424",
+  city: "Little Falls",
+  stateName: "New Jersey",
+  spokenConfirm:
+    "I have ZIP code 0 7 4 2 4 for Little Falls, New Jersey. Is that correct?",
+};
+
 describe("voice-demo-ops zip city drift", () => {
   it("extracts city from ZIP read-back", () => {
     expect(
@@ -45,6 +53,15 @@ describe("voice-demo-ops zip city drift", () => {
   it("passes correct Totowa read-back", () => {
     const result = detectZipCityDrift(TOTOWA_STAGED.spokenConfirm, TOTOWA_STAGED);
     expect(result.drift).toBe(false);
+  });
+
+  it("flags Ramsey drift for 07424 Little Falls", () => {
+    const result = detectZipCityDrift(
+      "ZIP 07424 for Ramsey, New Jersey — let me confirm that.",
+      LITTLE_FALLS_STAGED
+    );
+    expect(result.drift).toBe(true);
+    expect(result.heardCity).toBe("Ramsey");
   });
 
   it("interrupts streaming wrong city before correction", () => {
