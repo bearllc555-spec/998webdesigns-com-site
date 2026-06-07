@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   VOICE_DEMO_CLOSING,
   VOICE_DEMO_WRAPUP_QUESTIONS,
+  voiceDemoDemoSystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
+import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
+import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 
 describe("voice-demo-system-prompt closing", () => {
   it("cycles four wrap-up questions in order", () => {
@@ -26,5 +29,23 @@ describe("voice-demo-system-prompt closing", () => {
   it("requires thank-you sign-off before end_conversation", () => {
     expect(VOICE_DEMO_CLOSING).toContain("Thank you for contacting 998 web designs");
     expect(VOICE_DEMO_CLOSING).toContain("end_conversation");
+  });
+});
+
+describe("voice-demo-system-prompt onboarding", () => {
+  const baseRow = {
+    id: "lead-1",
+    primary_channel: "email",
+    email: "test@example.com",
+    phone: null,
+    full_name: null,
+    email_verified_at: "2026-06-07T00:00:00.000Z",
+  } as VoiceDemoLeadRow;
+
+  it("asks how may I help after name and forbids profile complete aloud", () => {
+    const prompt = voiceDemoDemoSystemPrompt(baseRow);
+    expect(prompt).toContain(VOICE_DEMO_POST_NAME_LINE);
+    expect(prompt).toMatch(/NEVER say "profile complete"/i);
+    expect(prompt).not.toMatch(/Profile complete:/);
   });
 });

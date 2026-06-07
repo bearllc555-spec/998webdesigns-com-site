@@ -18,6 +18,7 @@ import {
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
+import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import {
   buildWeatherZipConfirmLine,
@@ -262,7 +263,7 @@ export async function executeVoiceDemoTool(
     return {
       ok: true,
       name: visitorName,
-      message: "Name saved. Next ask for their US cell to complete their profile — no coupon mention yet.",
+      message: `Name saved. Greet them warmly by name, then ask exactly: "${VOICE_DEMO_POST_NAME_LINE}" Never say profile complete or ask for their phone in this turn.`,
     };
   }
 

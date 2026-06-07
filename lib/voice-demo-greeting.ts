@@ -4,6 +4,9 @@ export const VOICE_DEMO_SESSION_START_CUE = "[session-start]";
 export const VOICE_DEMO_INTRO_LINE =
   "Hello — I'm Jarvis, the AI assistant for 998. Who do I have the pleasure of speaking with?";
 
+/** First line after the visitor shares their name (demo onboarding). */
+export const VOICE_DEMO_POST_NAME_LINE = "How may I help you today?";
+
 export const VOICE_DEMO_MANDATORY_OPENING = `MANDATORY OPENING (your very first spoken turn in every session — never skip, never wait for the visitor to speak first):
 Deliver both parts in one calm British butler greeting:
 1. Introduce yourself: "Hello — I'm Jarvis, the AI assistant for 998."

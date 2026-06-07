@@ -3,7 +3,10 @@ import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import { VOICE_DEMO_PROMO_CODE } from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
-import { VOICE_DEMO_MANDATORY_OPENING } from "@/lib/voice-demo-greeting";
+import {
+  VOICE_DEMO_MANDATORY_OPENING,
+  VOICE_DEMO_POST_NAME_LINE,
+} from "@/lib/voice-demo-greeting";
 import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
 
 const FAQ_BLOCK = faq
@@ -100,9 +103,9 @@ function profileHint(row: VoiceDemoLeadRow): string {
   if (!row.full_name?.trim()) missing.push("name");
   if (!row.phone) missing.push("phone");
   if (missing.length === 0) {
-    return "Profile complete: email verified, name and phone on file.";
+    return "CRM STATUS (internal — never speak aloud): email verified, name and phone on file.";
   }
-  return `Profile incomplete — collect ${missing.join(" and ")} before answering business questions (unless they refuse). Do not mention coupons during profile collection.`;
+  return `CRM STATUS (internal — never speak aloud): still need ${missing.join(" and ")} for the profile. Never say profile complete or profile incomplete to the visitor.`;
 }
 
 export function voiceDemoVerifySystemPrompt(row: VoiceDemoLeadRow): string {
@@ -126,12 +129,18 @@ YOUR ONLY JOB until verified:
 When verify_code returns verified:true, congratulate them briefly — nothing about promos. Transition warmly; in demo you will collect their name and phone for their profile.`;
 }
 
-const PROFILE_RULES = `PROFILE ONBOARDING (first in demo — before FAQ; no coupon talk):
+const PROFILE_RULES = `PROFILE ONBOARDING (demo — no coupon talk during collection):
 Goal: CRM profile — verified email (on file), name, US cell phone.
 
+NEVER say "profile complete", "profile incomplete", or any CRM status aloud. Those lines are internal only.
+
 Order:
-1. NAME — Your opening already asks who you have the pleasure of speaking with. When they answer, call save_name. If name is already on file, greet them by name instead of re-asking.
-2. PHONE — Ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
+1. NAME — Your opening already asks who you have the pleasure of speaking with. When they answer, call save_name.
+   - Then greet them warmly by name and ask exactly: "${VOICE_DEMO_POST_NAME_LINE}"
+   - Do NOT ask for their phone in the same turn. Do NOT mention profile status.
+   - If name is already on file at session start, greet them by name and ask "${VOICE_DEMO_POST_NAME_LINE}" — do not repeat the full intro.
+2. HELP — Answer their questions from the FAQ. Be useful right away.
+3. PHONE — When the conversation is flowing naturally, or before promo/goodbye, if phone is still missing ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
    - When they give digits, do NOT wait forever for more. If they go quiet for about one to two seconds, treat their utterance as complete.
    - If you heard at least 10 digits → call stage_phone_number immediately with phone and smsConsent true.
    - If you heard fewer than 10 digits or are unsure → say you did not catch the full number and ask them to repeat it once.
@@ -139,9 +148,9 @@ Order:
    - Read spoken digits ONCE, ask "Is that correct?"
    - On yes → confirm_phone_number (or stage again with userConfirmed true). Saves phone only — no coupon SMS yet.
    - On correction → update_staged_phone, spell once, ask again.
-3. QUESTIONS — After profile done (or phone declined via decline_secondary_contact), answer from FAQ.
+4. ONGOING — Continue FAQ help. Phone may be collected in step 3 when natural — not immediately after their name.
 
-Do not mention ${VOICE_DEMO_PROMO_CODE} during steps 1–2.`;
+Do not mention ${VOICE_DEMO_PROMO_CODE} during steps 1–3.`;
 
 export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
   return `${VOICE_DEMO_PERSONA}
@@ -160,7 +169,7 @@ Site: ${marketingSiteOrigin()}
 
 RULES:
 - ${PROFILE_RULES}
-- Answer ONLY from the FAQ below once profile onboarding is done (or declined). If unsure, say hello@998webdesigns.com or /start.
+- Answer from the FAQ below once their name is saved (or if they refuse phone later, continue helping). If unsure, say hello@998webdesigns.com or /start.
 - Never invent prices beyond $5,998 design, $198/mo hosting after 30-day free trial, $2,996 lifetime hosting.
 - ${HOSTING_FREE_MONTH_SUMMARY}
 - CTAs: /start to checkout, /book for discovery call, /pricing for pricing page.

@@ -237,7 +237,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const syncPhoneCollectionState = useCallback(
     (name: string, result: Record<string, unknown>) => {
       if (name === "save_name" && result.ok === true) {
-        setAwaitingPhoneDigits(true);
         return;
       }
 
@@ -455,6 +454,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           lastAssistantTextRef.current,
           outText
         );
+        if (
+          modeRef.current === "demo" &&
+          /cell number|mobile number|phone number|us cell|your cell/i.test(
+            lastAssistantTextRef.current
+          )
+        ) {
+          setAwaitingPhoneDigits(true);
+        }
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
@@ -500,6 +507,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       queuePhaseTransition,
       runTool,
       schedulePhoneSilenceNudge,
+      setAwaitingPhoneDigits,
       syncPhoneCollectionState,
     ]
   );
@@ -548,17 +556,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           return;
         }
 
-        if (mode === "demo") {
-          try {
-            const statusRes = await fetch("/api/voice-demo/status");
-            const statusData = (await statusRes.json()) as { phoneOnFile?: boolean };
-            setAwaitingPhoneDigits(!statusData.phoneOnFile);
-          } catch {
-            setAwaitingPhoneDigits(true);
-          }
-        } else {
-          setAwaitingPhoneDigits(false);
-        }
+        clearPhoneCollectionState();
 
         const ai = new GoogleGenAI({
           apiKey: tokenData.token,
@@ -622,15 +620,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
       }
     },
-    [
-      clearPendingFallback,
-      clearPhoneCollectionState,
-      disconnect,
-      handleMessage,
-      sendOpeningGreeting,
-      setAwaitingPhoneDigits,
-      startOrbLoop,
-    ]
+    [clearPendingFallback, clearPhoneCollectionState, disconnect, handleMessage, sendOpeningGreeting, startOrbLoop]
   );
 
   const connectRef = useRef(connect);
