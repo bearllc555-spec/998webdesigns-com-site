@@ -60,6 +60,10 @@ export const faq: FAQItem[] = [
     a: "Logos and full copywriting are not part of the $5,998 design fee — we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional — priced clearly if you want them.",
   },
   {
+    q: "Can you set up business texting (SMS) for my company?",
+    a: "Yes — we have experience with US A2P 10DLC registration (the carrier compliance process for business texting). It includes registering your brand, submitting a messaging campaign with sample messages and opt-in details, and linking your sending number to that campaign. Approval normally takes about two to three weeks; sometimes it's faster, sometimes longer if carriers ask for changes or a resubmission is needed. Until the campaign is verified, texts can be blocked or filtered even when everything looks wired correctly in Twilio. Our Email & SMS add-on covers setup and ongoing two-way texting — ask us if you want it on your project.",
+  },
+  {
     q: "Is there a promo code?",
     a: "We run channel-specific specials from time to time — often tied to where you found us. There isn't a standing public discount on the site. If you saw an offer in an ad, on LinkedIn, or in an email, enter that code on the last step of the lead form before checkout (design fee only — not hosting or the card fee). Otherwise, contact us at hello@998webdesigns.com and we'll tell you what's available.",
   },
