@@ -6,7 +6,10 @@ import {
 } from "@/lib/voice-demo-system-prompt";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import { VOICE_DEMO_PROMO_EMAIL_ASK_LINE } from "@/lib/voice-demo-constants";
-import { VOICE_DEMO_WEATHER_OFFER_LINE } from "@/lib/voice-demo-weather";
+import {
+  VOICE_DEMO_WEATHER_OFFER_LINE,
+  VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
+} from "@/lib/voice-demo-weather";
 import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 
 describe("voice-demo-system-prompt closing", () => {
@@ -58,11 +61,12 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/STOP and wait/i);
   });
 
-  it("offers weather demo at end of chat before goodbye", () => {
+  it("offers weather demo at end of chat with yes/no then ZIP", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
-    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("Before you go");
-    expect(prompt).toMatch(/end of chat/i);
+    expect(prompt).toContain(VOICE_DEMO_WEATHER_ZIP_ASK_LINE);
+    expect(prompt).toMatch(/wait for yes or no/i);
+    expect(prompt).toMatch(/\[zip-input-pause\]/);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
   });
 });

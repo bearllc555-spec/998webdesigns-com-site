@@ -30,6 +30,15 @@ import {
   PHONE_SILENCE_NUDGE_MS,
 } from "@/lib/voice-demo-phone-nudge";
 import { WEATHER_POST_CONFIRM_PAUSE_MS } from "@/lib/voice-demo-weather";
+import {
+  buildWeatherDeclineNudge,
+  buildWeatherYesNoPauseNudge,
+  buildZipPauseNudge,
+  isWeatherOfferAccept,
+  isWeatherOfferDecline,
+  WEATHER_YESNO_SILENCE_NUDGE_MS,
+  ZIP_SILENCE_NUDGE_MS,
+} from "@/lib/voice-demo-zip-nudge";
 import type { Session } from "@google/genai";
 
 export type VoiceDemoLiveMode = "verify" | "demo";
@@ -90,6 +99,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const awaitingPhoneDigitsRef = useRef(false);
   const awaitingPhoneConfirmRef = useRef(false);
   const phoneNudgeTranscriptRef = useRef("");
+  const zipSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const weatherYesNoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const awaitingZipDigitsRef = useRef(false);
+  const awaitingWeatherYesNoRef = useRef(false);
+  const zipNudgeTranscriptRef = useRef("");
+  const weatherYesNoNudgedRef = useRef(false);
   const finishingPhaseRef = useRef(false);
   const jarvisFarewellSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
@@ -234,6 +249,139 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearPhoneSilenceTimer();
   }, [clearPhoneSilenceTimer]);
 
+  const clearZipSilenceTimer = useCallback(() => {
+    if (zipSilenceTimerRef.current) {
+      clearTimeout(zipSilenceTimerRef.current);
+      zipSilenceTimerRef.current = null;
+    }
+  }, []);
+
+  const clearWeatherYesNoTimer = useCallback(() => {
+    if (weatherYesNoTimerRef.current) {
+      clearTimeout(weatherYesNoTimerRef.current);
+      weatherYesNoTimerRef.current = null;
+    }
+  }, []);
+
+  const clearWeatherZipState = useCallback(() => {
+    awaitingZipDigitsRef.current = false;
+    awaitingWeatherYesNoRef.current = false;
+    zipNudgeTranscriptRef.current = "";
+    weatherYesNoNudgedRef.current = false;
+    clearZipSilenceTimer();
+    clearWeatherYesNoTimer();
+  }, [clearWeatherYesNoTimer, clearZipSilenceTimer]);
+
+  const clearInputSilenceTimers = useCallback(() => {
+    clearPhoneSilenceTimer();
+    clearZipSilenceTimer();
+    clearWeatherYesNoTimer();
+  }, [clearPhoneSilenceTimer, clearWeatherYesNoTimer, clearZipSilenceTimer]);
+
+  const sendZipSilenceNudge = useCallback(() => {
+    const session = sessionRef.current;
+    const transcript = captionTextRef.current.trim();
+    if (!session || !awaitingZipDigitsRef.current || !transcript) return;
+    if (zipNudgeTranscriptRef.current === transcript) return;
+    if (playerRef.current?.isPlaying()) return;
+
+    zipNudgeTranscriptRef.current = transcript;
+    try {
+      session.sendClientContent({
+        turns: buildZipPauseNudge(transcript),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] zip silence nudge", err);
+      zipNudgeTranscriptRef.current = "";
+    }
+  }, []);
+
+  const scheduleZipSilenceNudge = useCallback(() => {
+    if (!awaitingZipDigitsRef.current || modeRef.current !== "demo") return;
+    clearZipSilenceTimer();
+    zipSilenceTimerRef.current = setTimeout(() => {
+      sendZipSilenceNudge();
+    }, ZIP_SILENCE_NUDGE_MS);
+  }, [clearZipSilenceTimer, sendZipSilenceNudge]);
+
+  const sendWeatherYesNoNudge = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session || !awaitingWeatherYesNoRef.current) return;
+    if (weatherYesNoNudgedRef.current) return;
+    if (playerRef.current?.isPlaying()) return;
+
+    weatherYesNoNudgedRef.current = true;
+    try {
+      session.sendClientContent({
+        turns: buildWeatherYesNoPauseNudge(),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] weather yes/no nudge", err);
+      weatherYesNoNudgedRef.current = false;
+    }
+  }, []);
+
+  const scheduleWeatherYesNoNudge = useCallback(() => {
+    if (!awaitingWeatherYesNoRef.current || modeRef.current !== "demo") return;
+    clearWeatherYesNoTimer();
+    weatherYesNoTimerRef.current = setTimeout(() => {
+      sendWeatherYesNoNudge();
+    }, WEATHER_YESNO_SILENCE_NUDGE_MS);
+  }, [clearWeatherYesNoTimer, sendWeatherYesNoNudge]);
+
+  const sendWeatherDeclineNudge = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session) return;
+    clearWeatherZipState();
+    try {
+      session.sendClientContent({
+        turns: buildWeatherDeclineNudge(),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] weather decline nudge", err);
+    }
+  }, [clearWeatherZipState]);
+
+  const detectAssistantWeatherPrompt = useCallback((assistantText: string) => {
+    const lower = assistantText.toLowerCase();
+    if (/something cool/.test(lower)) {
+      awaitingWeatherYesNoRef.current = true;
+      weatherYesNoNudgedRef.current = false;
+      awaitingZipDigitsRef.current = false;
+      zipNudgeTranscriptRef.current = "";
+      clearZipSilenceTimer();
+      scheduleWeatherYesNoNudge();
+      return;
+    }
+
+    if (/give me your zip|your zip code|five-digit zip|5-digit zip|zip code.*forecast/i.test(lower)) {
+      awaitingWeatherYesNoRef.current = false;
+      weatherYesNoNudgedRef.current = false;
+      clearWeatherYesNoTimer();
+      awaitingZipDigitsRef.current = true;
+      zipNudgeTranscriptRef.current = "";
+    }
+  }, [clearWeatherYesNoTimer, clearZipSilenceTimer, scheduleWeatherYesNoNudge]);
+
+  const syncWeatherCollectionState = useCallback(
+    (name: string, result: Record<string, unknown>) => {
+      if (name === "confirm_weather_zip" && result.ok === true) {
+        awaitingZipDigitsRef.current = false;
+        zipNudgeTranscriptRef.current = "";
+        clearZipSilenceTimer();
+        return;
+      }
+
+      if (name === "lookup_weather" && result.ok === true) {
+        clearWeatherZipState();
+      }
+    },
+    [clearWeatherZipState, clearZipSilenceTimer]
+  );
+
   const syncPhoneCollectionState = useCallback(
     (name: string, result: Record<string, unknown>) => {
       if (name === "save_name" && result.ok === true) {
@@ -282,10 +430,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     playerRef.current?.close();
     playerRef.current = null;
     clearPhoneCollectionState();
+    clearWeatherZipState();
     stopOrbLoop();
     setConnected(false);
     setConnecting(false);
-  }, [clearPhoneCollectionState, stopOrbLoop]);
+  }, [clearPhoneCollectionState, clearWeatherZipState, stopOrbLoop]);
 
   const disconnectGraceful = useCallback(async () => {
     await playerRef.current?.whenPlaybackIdle(10000);
@@ -414,6 +563,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
           const result = await runTool(name, args);
           syncPhoneCollectionState(name, result);
+          syncWeatherCollectionState(name, result);
 
           if (name === "verify_code" && result.verified === true) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
@@ -438,7 +588,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const data = part.inlineData?.data;
         const mime = part.inlineData?.mimeType ?? "";
         if (data && mime.includes("audio/pcm")) {
-          clearPhoneSilenceTimer();
+          clearInputSilenceTimers();
           playerRef.current ??= new VoiceDemoAudioPlayer();
           playerRef.current.enqueueBase64Pcm(data);
         }
@@ -462,17 +612,42 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         ) {
           setAwaitingPhoneDigits(true);
         }
+        if (modeRef.current === "demo") {
+          detectAssistantWeatherPrompt(lastAssistantTextRef.current);
+        }
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
         emitCaption("user", inText);
+        const userLine = captionTextRef.current.trim();
+
+        if (awaitingWeatherYesNoRef.current && isWeatherOfferDecline(userLine)) {
+          sendWeatherDeclineNudge();
+        } else if (awaitingWeatherYesNoRef.current && isWeatherOfferAccept(userLine)) {
+          awaitingWeatherYesNoRef.current = false;
+          weatherYesNoNudgedRef.current = false;
+          clearWeatherYesNoTimer();
+        } else if (awaitingWeatherYesNoRef.current) {
+          scheduleWeatherYesNoNudge();
+        }
+
         if (/\d/.test(inText)) {
           if (awaitingPhoneConfirmRef.current) {
             awaitingPhoneConfirmRef.current = false;
             awaitingPhoneDigitsRef.current = true;
             phoneNudgeTranscriptRef.current = "";
           }
+          if (awaitingZipDigitsRef.current || awaitingWeatherYesNoRef.current) {
+            if (awaitingWeatherYesNoRef.current) {
+              awaitingWeatherYesNoRef.current = false;
+              weatherYesNoNudgedRef.current = false;
+              clearWeatherYesNoTimer();
+            }
+            awaitingZipDigitsRef.current = true;
+            zipNudgeTranscriptRef.current = "";
+          }
           schedulePhoneSilenceNudge();
+          scheduleZipSilenceNudge();
         }
         if (
           jarvisFarewellSentRef.current &&
@@ -485,11 +660,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }
 
       if (message.serverContent?.turnComplete) {
+        const assistantSnapshot = lastAssistantTextRef.current;
         if (
           modeRef.current === "demo" &&
-          isAssistantFarewell(lastAssistantTextRef.current)
+          isAssistantFarewell(assistantSnapshot)
         ) {
           jarvisFarewellSentRef.current = true;
+        }
+        if (modeRef.current === "demo") {
+          detectAssistantWeatherPrompt(assistantSnapshot);
         }
         lastAssistantTextRef.current = "";
 
@@ -499,7 +678,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }
     },
     [
-      clearPhoneSilenceTimer,
+      clearInputSilenceTimers,
+      detectAssistantWeatherPrompt,
       emitCaption,
       endCallNow,
       finishConversation,
@@ -507,8 +687,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       queuePhaseTransition,
       runTool,
       schedulePhoneSilenceNudge,
+      scheduleZipSilenceNudge,
+      scheduleWeatherYesNoNudge,
+      sendWeatherDeclineNudge,
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,
+      syncWeatherCollectionState,
     ]
   );
 
@@ -518,6 +702,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       pendingSinceRef.current = null;
       clearPendingFallback();
       clearPhoneCollectionState();
+      clearWeatherZipState();
       finishingPhaseRef.current = false;
       jarvisFarewellSentRef.current = false;
       farewellDisconnectingRef.current = false;
@@ -557,6 +742,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
 
         clearPhoneCollectionState();
+        clearWeatherZipState();
 
         const ai = new GoogleGenAI({
           apiKey: tokenData.token,
@@ -620,7 +806,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
       }
     },
-    [clearPendingFallback, clearPhoneCollectionState, disconnect, handleMessage, sendOpeningGreeting, startOrbLoop]
+    [
+      clearPendingFallback,
+      clearPhoneCollectionState,
+      clearWeatherZipState,
+      disconnect,
+      handleMessage,
+      sendOpeningGreeting,
+      startOrbLoop,
+    ]
   );
 
   const connectRef = useRef(connect);

@@ -5,15 +5,17 @@ import {
   formatPossibleLocationLabel,
   normalizeUsZipCode,
   VOICE_DEMO_WEATHER_OFFER_LINE,
+  VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
   wmoWeatherLabel,
 } from "@/lib/voice-demo-weather";
 
 describe("voice-demo-weather", () => {
-  it("defines end-of-chat weather offer copy", () => {
-    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("Before you go");
-    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("something cool");
-    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("ZIP code");
-    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("weather forecast");
+  it("defines split weather offer and ZIP ask copy", () => {
+    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toBe(
+      "Before you go, do you want to see something cool?"
+    );
+    expect(VOICE_DEMO_WEATHER_ZIP_ASK_LINE).toContain("ZIP code");
+    expect(VOICE_DEMO_WEATHER_ZIP_ASK_LINE).toContain("weather forecast");
   });
 
   it("normalizes US ZIP codes", () => {

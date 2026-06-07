@@ -419,7 +419,10 @@ export async function executeVoiceDemoTool(
     const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
     const placeResult = await resolveUsZipPlace(zipCode);
     if (!placeResult.ok) {
-      return { ok: false, error: placeResult.error };
+      return {
+        ok: false,
+        error: `${placeResult.error} Say you did not catch the full five-digit ZIP and ask them to repeat it once.`,
+      };
     }
     const { place } = placeResult;
 

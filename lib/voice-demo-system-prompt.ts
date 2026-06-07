@@ -11,7 +11,15 @@ import {
   VOICE_DEMO_POST_NAME_LINE,
 } from "@/lib/voice-demo-greeting";
 import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
-import { VOICE_DEMO_WEATHER_OFFER_LINE } from "@/lib/voice-demo-weather";
+import {
+  VOICE_DEMO_WEATHER_OFFER_LINE,
+  VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
+} from "@/lib/voice-demo-weather";
+import {
+  VOICE_DEMO_WEATHER_DECLINE_CUE,
+  VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
+  VOICE_DEMO_ZIP_PAUSE_CUE,
+} from "@/lib/voice-demo-zip-nudge";
 
 const FAQ_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
@@ -54,7 +62,10 @@ HOW TO USE THE CYCLE:
 - If they say no / that's all / I'm good / nothing else / they're done: go to FINAL GOODBYE immediately — do not ask another wrap-up question.
 
 FINAL GOODBYE (end of chat — when they say they are done):
-- FIRST, if you have not offered the weather demo this session: say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" and STOP. If they give a US ZIP, follow WEATHER lookup steps. If no / not interested, continue — do not offer weather again.
+- FIRST, if you have not offered the weather demo this session: say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" and STOP — wait for yes or no. Do not ask for ZIP in the same turn.
+  - If yes / sure / ok: say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" and STOP for their ZIP.
+  - If no / not interested: accept graciously, then continue below (promo if needed, then sign-off) — do not ask for ZIP.
+  - Hidden cue "${VOICE_DEMO_WEATHER_DECLINE_CUE}" means they declined — proceed to promo/goodbye.
 - THEN follow PROMO OFFER rules if you have not offered the coupon yet.
 - One warm sign-off in spirit of: "Thank you for contacting 998 web designs — goodbye." Keep it brief and sincere.
 - Immediately call end_conversation. Do not speak after calling end_conversation.
@@ -82,12 +93,18 @@ const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
 
 PROACTIVE OFFER (once per session — end of chat only):
 - Only during FINAL GOODBYE when they are ready to leave — not mid-conversation, not during name/phone onboarding.
-- Say exactly: "${VOICE_DEMO_WEATHER_OFFER_LINE}"
-- STOP and wait. If they give a US ZIP, follow the lookup steps below. If no / not interested, continue to promo and sign-off — do not offer again this session.
-- If they ask about weather earlier themselves, skip the pitch and collect their ZIP directly.
+- Step 1: Say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" — STOP and wait for yes or no. Never bundle ZIP in this turn.
+- Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP.
+- Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
+- Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they went quiet after the offer; ask yes or no clearly.
+- If they ask about weather earlier themselves, skip the pitch; ask for ZIP directly.
 
 LOOKUP (when you have a ZIP):
 - If they ask about weather in the United States, ask for their 5-digit ZIP when you do not have it.
+- When they give digits, do NOT wait forever. If they go quiet for about one to two seconds, treat their utterance as complete.
+- If you heard a valid 5-digit ZIP → call confirm_weather_zip immediately.
+- If you heard fewer than 5 digits or are unsure → say you did not catch the full ZIP and ask them to repeat it once.
+- Hidden client cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — follow the rules above right away; never read the cue aloud.
 - When they give a ZIP, always use TWO separate steps — never both tools in one turn:
   1. Call confirm_weather_zip only — then speak spokenConfirm (confirm city/ZIP + "let me look that up" / "one moment").
   2. Pause briefly after spokenConfirm (a relaxed beat — do not rush). Then call lookup_weather alone with the same ZIP — then give a short summary from briefReport.
