@@ -137,12 +137,25 @@ export function VoiceDemoWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: typedCode }),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        promoEmailSent?: boolean;
+        promoEmailError?: string;
+        promoCode?: string;
+      };
       if (!res.ok) {
         setFormError(data.error ?? "Invalid code.");
         return;
       }
       setTypedCode("");
+      if (data.promoEmailSent && data.promoCode) {
+        setStatus(
+          `Verified — we emailed ${data.promoCode} to you (check spam). Ask Jarvis anything about 998.`
+        );
+      } else if (data.promoEmailError) {
+        setStatus("Verified — promo email could not send. Jarvis can still help; contact hello@998webdesigns.com for your code.");
+      }
       void live.transitionToDemo();
     } catch {
       setFormError("Network error.");

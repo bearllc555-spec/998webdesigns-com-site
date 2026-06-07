@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { readJsonBody } from "@/lib/read-json-body";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
+import { VOICE_DEMO_PROMO_CODE } from "@/lib/voice-demo-constants";
+import { ensurePromoEmailForLeadId } from "@/lib/voice-demo-promo";
 import { executeVoiceDemoTool } from "@/lib/voice-demo-tools";
 import {
   readVoiceDemoSession,
@@ -45,7 +47,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const res = NextResponse.json({ ok: true, verified: true });
+  let promoEmailSent = result.promoEmailSent === true;
+  let promoEmailError = typeof result.promoEmailError === "string" ? result.promoEmailError : undefined;
+  if (!promoEmailSent) {
+    const promo = await ensurePromoEmailForLeadId(session.leadId);
+    promoEmailSent = promo.sent || promo.alreadySent;
+    promoEmailError = promo.error;
+  }
+
+  const res = NextResponse.json({
+    ok: true,
+    verified: true,
+    promoEmailSent,
+    promoEmailError,
+    promoCode: promoEmailSent ? VOICE_DEMO_PROMO_CODE : undefined,
+  });
   setVoiceDemoSessionCookie(res, session.leadId, true);
   return res;
 }

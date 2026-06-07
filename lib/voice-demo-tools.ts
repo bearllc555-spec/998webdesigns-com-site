@@ -121,15 +121,36 @@ type VerifyLeadCodeResult = {
   error?: string;
   attemptsRemaining?: number;
   promoEmailSent?: boolean;
+  promoEmailError?: string;
   promoCode?: string;
 };
+
+async function promoResultForVerifiedRow(row: VoiceDemoLeadRow): Promise<VerifyLeadCodeResult> {
+  if (row.primary_channel === "email" && row.email_verified_at) {
+    const refreshed = (await getVoiceDemoLead(row.id)) ?? row;
+    const promo = await sendPromoToVerifiedEmailLead(refreshed);
+    return {
+      ok: true,
+      verified: true,
+      promoEmailSent: promo.sent || promo.alreadySent,
+      promoEmailError: promo.error,
+      promoCode: promo.sent || promo.alreadySent ? VOICE_DEMO_PROMO_CODE : undefined,
+    };
+  }
+  return {
+    ok: true,
+    verified: true,
+    promoEmailSent: Boolean(row.promo_sent_at),
+    promoCode: row.promo_sent_at ? VOICE_DEMO_PROMO_CODE : undefined,
+  };
+}
 
 async function verifyLeadCode(
   row: VoiceDemoLeadRow,
   code: string
 ): Promise<VerifyLeadCodeResult> {
   if (row.email_verified_at || row.phone_verified_at) {
-    return { ok: true, verified: true };
+    return promoResultForVerifiedRow(row);
   }
 
   if (isVerificationExpired(row.verification_expires_at)) {
@@ -174,7 +195,8 @@ async function verifyLeadCode(
     return {
       ok: true,
       verified: true,
-      promoEmailSent: promo.sent,
+      promoEmailSent: promo.sent || promo.alreadySent,
+      promoEmailError: promo.error,
       promoCode: promo.sent || promo.alreadySent ? VOICE_DEMO_PROMO_CODE : undefined,
     };
   }
@@ -299,14 +321,17 @@ export async function executeVoiceDemoTool(
     const now = new Date().toISOString();
     await updateVoiceDemoLead(leadId, {
       phone_verified_at: now,
+      promo_sent_at: now,
+      promo_code: VOICE_DEMO_PROMO_CODE,
     });
 
     return {
       ok: true,
       promoCode: VOICE_DEMO_PROMO_CODE,
+      smsSent: true,
       spellOnce: false,
       message:
-        "SMS sent. Tell them briefly the text is on its way. Do not repeat or spell the phone number.",
+        "SMS sent with VOICE20. Tell them briefly the text is on its way. Do not repeat or spell the phone number.",
     };
   }
 

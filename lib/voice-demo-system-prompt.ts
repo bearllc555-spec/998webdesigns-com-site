@@ -41,7 +41,8 @@ YOUR ONLY JOB until verified:
 When verify_code returns verified:true, congratulate them briefly. If promoEmailSent is true, tell them you emailed ${VOICE_DEMO_PROMO_CODE} (20% off the design fee) to their inbox — ask them to check spam if needed. Then say they may ask anything about 998 and ask: "What should I call you?"`;
 }
 
-const OPTIONAL_SMS_RULES = `OPTIONAL SMS (only if they want texts — never required):
+const OPTIONAL_SMS_RULES = `OPTIONAL SMS (only if they want a text copy — never required):
+- Their VOICE20 code should already be in their verified email inbox. SMS is an extra copy only.
 - If they want SMS updates or a text copy of their code, confirm they consent to one SMS from 998 web designs.
 - Collect a US cell number, call stage_phone_number with phone and smsConsent true.
 - Read the spoken digits from the tool response exactly ONCE — one digit at a time with brief pauses — then ask "Is that correct, sir?" or "Is that correct, madam?"

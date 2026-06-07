@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
 import { geminiApiKey } from "@/lib/voice-demo-live-token";
 import { readVoiceDemoSession } from "@/lib/voice-demo-session";
+import { twilioMessagingConfigured } from "@/lib/twilio-sms";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,5 +37,8 @@ export async function GET(req: NextRequest) {
     destination: row.primary_channel === "email" ? row.email : row.phone,
     fullName: row.full_name,
     configured: Boolean(geminiApiKey()),
+    promoSent: Boolean(row.promo_sent_at),
+    resendConfigured: Boolean(process.env.RESEND_API_KEY?.trim()),
+    smsConfigured: twilioMessagingConfigured(),
   });
 }
