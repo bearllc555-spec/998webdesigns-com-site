@@ -20,7 +20,11 @@ import {
   smoothJarvisAudioLevels,
   type JarvisAudioLevels,
 } from "@/lib/voice-demo-jarvis-audio-level";
-import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
+import {
+  buildFarewellHoldNudge,
+  isAssistantFarewell,
+  isUserFarewellEcho,
+} from "@/lib/voice-demo-farewell";
 import {
   triggerVoiceDemoOpening,
   voiceDemoOpeningStatus,
@@ -148,6 +152,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const lastZipPromptSigRef = useRef("");
   const finishingPhaseRef = useRef(false);
   const jarvisFarewellSentRef = useRef(false);
+  const goodbyeNudgeSentRef = useRef(false);
+  const farewellHoldSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
   const lastAssistantTextRef = useRef("");
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
@@ -359,10 +365,19 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearInputSilenceTimers();
   }, [clearInputSilenceTimers]);
 
+  const isFarewellLocked = useCallback(() => {
+    return (
+      jarvisFarewellSentRef.current ||
+      farewellDisconnectingRef.current ||
+      goodbyeNudgeSentRef.current
+    );
+  }, []);
+
   const sendZipDigitConfirmNudge = useCallback(
     async (transcript: string): Promise<boolean> => {
       const session = sessionRef.current;
       const trimmed = transcript.trim();
+      if (isFarewellLocked()) return false;
       if (!session || !trimmed || awaitingZipConfirmRef.current) return false;
       if (zipNudgeTranscriptRef.current === trimmed) return false;
       if (!canSendClientWeatherNudge()) return false;
@@ -412,12 +427,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         return false;
       }
     },
-    [canSendClientWeatherNudge, clearZipSilenceTimer, markClientWeatherNudgeSent, runTool]
+    [canSendClientWeatherNudge, clearZipSilenceTimer, isFarewellLocked, markClientWeatherNudgeSent, runTool]
   );
 
   const sendZipSilenceNudge = useCallback(() => {
     const session = sessionRef.current;
     const transcript = captionTextRef.current.trim();
+    if (isFarewellLocked()) return;
     if (!session || !awaitingZipDigitsRef.current || awaitingZipConfirmRef.current) return;
     if (zipSilenceNudgedRef.current) return;
     if (!canSendClientWeatherNudge()) return;
@@ -475,6 +491,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
     awaitingZipDigitsRef.current = false;
     zipSilencePhaseRef.current = "listening";
+    goodbyeNudgeSentRef.current = true;
     markClientWeatherNudgeSent();
     try {
       session.sendClientContent({
@@ -490,6 +507,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     canSendClientWeatherNudge,
     clearWeatherYesNoTimer,
     clearZipSilenceTimer,
+    isFarewellLocked,
     markClientWeatherNudgeSent,
     sendZipDigitConfirmNudge,
   ]);
@@ -526,6 +544,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const sendWeatherYesNoNudge = useCallback(() => {
     const session = sessionRef.current;
+    if (isFarewellLocked()) return;
     if (!session || !awaitingWeatherYesNoRef.current) return;
     if (awaitingZipDigitsRef.current || awaitingZipConfirmRef.current) return;
     if (!canSendClientWeatherNudge()) return;
@@ -554,6 +573,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
     clearWeatherYesNoTimer();
     awaitingWeatherYesNoRef.current = false;
+    goodbyeNudgeSentRef.current = true;
     markClientWeatherNudgeSent();
     try {
       session.sendClientContent({
@@ -564,7 +584,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       console.warn("[voice-demo-live] weather yes/no give-up", err);
       awaitingWeatherYesNoRef.current = true;
     }
-  }, [canSendClientWeatherNudge, clearWeatherYesNoTimer, markClientWeatherNudgeSent]);
+  }, [canSendClientWeatherNudge, clearWeatherYesNoTimer, isFarewellLocked, markClientWeatherNudgeSent]);
 
   const scheduleWeatherYesNoNudge = useCallback(() => {
     if (!awaitingWeatherYesNoRef.current || modeRef.current !== "demo") return;
@@ -586,7 +606,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const sendWeatherForecastGoodbyeNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || modeRef.current !== "demo") return;
-    if (jarvisFarewellSentRef.current) return;
+    if (isFarewellLocked()) return;
     if (
       awaitingPhoneDigitsRef.current ||
       awaitingZipDigitsRef.current ||
@@ -605,6 +625,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       return;
     }
 
+    goodbyeNudgeSentRef.current = true;
     try {
       session.sendClientContent({
         turns: buildWeatherForecastGoodbyeNudge(),
@@ -612,21 +633,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       });
     } catch (err) {
       console.warn("[voice-demo-live] weather forecast goodbye nudge", err);
+      goodbyeNudgeSentRef.current = false;
     }
-  }, [clearWrapUpTimer]);
+  }, [clearWrapUpTimer, isFarewellLocked]);
 
   const scheduleWeatherForecastGoodbye = useCallback(() => {
-    if (modeRef.current !== "demo") return;
+    if (modeRef.current !== "demo" || isFarewellLocked()) return;
     clearWrapUpTimer();
     wrapUpTimerRef.current = setTimeout(() => {
       sendWeatherForecastGoodbyeNudge();
     }, WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS);
-  }, [clearWrapUpTimer, sendWeatherForecastGoodbyeNudge]);
+  }, [clearWrapUpTimer, isFarewellLocked, sendWeatherForecastGoodbyeNudge]);
 
   const sendWrapUpPauseNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || modeRef.current !== "demo") return;
-    if (jarvisFarewellSentRef.current) return;
+    if (isFarewellLocked()) return;
     if (
       awaitingPhoneDigitsRef.current ||
       awaitingZipDigitsRef.current ||
@@ -651,24 +673,25 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     } catch (err) {
       console.warn("[voice-demo-live] wrap-up pause nudge", err);
     }
-  }, [clearWrapUpTimer]);
+  }, [clearWrapUpTimer, isFarewellLocked]);
 
   const scheduleWrapUpPause = useCallback(
     (delayMs = WRAPUP_POST_ANSWER_PAUSE_MS) => {
-      if (modeRef.current !== "demo") return;
+      if (modeRef.current !== "demo" || isFarewellLocked()) return;
       clearWrapUpTimer();
       wrapUpTimerRef.current = setTimeout(() => {
         sendWrapUpPauseNudge();
       }, delayMs);
     },
-    [clearWrapUpTimer, sendWrapUpPauseNudge]
+    [clearWrapUpTimer, isFarewellLocked, sendWrapUpPauseNudge]
   );
 
   const sendWeatherDeclineNudge = useCallback(() => {
     const session = sessionRef.current;
-    if (!session) return;
+    if (!session || isFarewellLocked()) return;
     if (!canSendClientWeatherNudge()) return;
     clearWeatherZipState();
+    goodbyeNudgeSentRef.current = true;
     markClientWeatherNudgeSent();
     try {
       session.sendClientContent({
@@ -678,7 +701,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     } catch (err) {
       console.warn("[voice-demo-live] weather decline nudge", err);
     }
-  }, [canSendClientWeatherNudge, clearWeatherZipState, markClientWeatherNudgeSent]);
+  }, [canSendClientWeatherNudge, clearWeatherZipState, isFarewellLocked, markClientWeatherNudgeSent]);
 
   const detectAssistantWeatherPrompt = useCallback(
     (assistantText: string) => {
@@ -862,9 +885,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [schedulePendingFallback]
   );
 
+  const latchFarewellClosing = useCallback(() => {
+    if (jarvisFarewellSentRef.current) return;
+    jarvisFarewellSentRef.current = true;
+    awaitingWeatherForecastDeliveryRef.current = false;
+    awaitingZipDigitsRef.current = false;
+    awaitingZipConfirmRef.current = false;
+    awaitingWeatherYesNoRef.current = false;
+    zipDigitsHeardMaxRef.current = 0;
+    clearInputSilenceTimers();
+  }, [clearInputSilenceTimers]);
+
   const finishConversation = useCallback(async () => {
     if (farewellDisconnectingRef.current) return;
     farewellDisconnectingRef.current = true;
+    latchFarewellClosing();
     try {
       await playerRef.current?.whenPlaybackIdle(12000);
       await sleep(PHASE_TAIL_MS);
@@ -873,22 +908,35 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       disconnect(true);
     } finally {
       farewellDisconnectingRef.current = false;
-      jarvisFarewellSentRef.current = false;
       lastAssistantTextRef.current = "";
     }
-  }, [disconnect]);
+  }, [disconnect, latchFarewellClosing]);
+
+  const scheduleFarewellHangup = useCallback(() => {
+    if (farewellDisconnectingRef.current) return;
+    void (async () => {
+      await playerRef.current?.whenPlaybackIdle(12000);
+      if (
+        jarvisFarewellSentRef.current &&
+        !farewellDisconnectingRef.current &&
+        sessionRef.current
+      ) {
+        void finishConversation();
+      }
+    })();
+  }, [finishConversation]);
 
   const endCallNow = useCallback(() => {
     if (farewellDisconnectingRef.current) return;
     farewellDisconnectingRef.current = true;
+    latchFarewellClosing();
     micRef.current?.stop();
     optionsRef.current.onConversationEnd?.();
     optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
     disconnect(true);
     farewellDisconnectingRef.current = false;
-    jarvisFarewellSentRef.current = false;
     lastAssistantTextRef.current = "";
-  }, [disconnect]);
+  }, [disconnect, latchFarewellClosing]);
 
   const handleMessage = useCallback(
     async (message: LiveMessage) => {
@@ -936,12 +984,25 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
 
           if (name === "end_conversation") {
+            if (farewellDisconnectingRef.current || jarvisFarewellSentRef.current) {
+              responses.push({
+                id: call.id,
+                name,
+                response: {
+                  ok: true,
+                  endCall: true,
+                  message: "Call already ending. Stay completely silent.",
+                },
+              });
+              continue;
+            }
+
             const inWeatherZipFlow =
               awaitingZipDigitsRef.current ||
               awaitingZipConfirmRef.current ||
               awaitingWeatherForecastDeliveryRef.current ||
               zipDigitsHeardMaxRef.current > 0;
-            if (inWeatherZipFlow && result.endCall === true) {
+            if (inWeatherZipFlow && result.endCall === true && !goodbyeNudgeSentRef.current) {
               responses.push({
                 id: call.id,
                 name,
@@ -954,7 +1015,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
             if (result.endCall === true) {
-              jarvisFarewellSentRef.current = true;
               void finishConversation();
             }
           }
@@ -978,6 +1038,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           const data = part.inlineData?.data;
           const mime = part.inlineData?.mimeType ?? "";
           if (data && mime.includes("audio/pcm")) {
+            if (jarvisFarewellSentRef.current) {
+              playerRef.current?.hardStop();
+              if (!farewellHoldSentRef.current && sessionRef.current) {
+                farewellHoldSentRef.current = true;
+                try {
+                  sessionRef.current.sendClientContent({
+                    turns: buildFarewellHoldNudge(),
+                    turnComplete: true,
+                  });
+                } catch (err) {
+                  console.warn("[voice-demo-live] farewell hold nudge", err);
+                  farewellHoldSentRef.current = false;
+                }
+              }
+              continue;
+            }
             clearInputSilenceTimers();
             playerRef.current ??= new VoiceDemoAudioPlayer();
             playerRef.current.enqueueBase64Pcm(data);
@@ -1108,13 +1184,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }
 
       if (message.serverContent?.turnComplete) {
-        suppressAssistantAudioRef.current = false;
+        if (!jarvisFarewellSentRef.current) {
+          suppressAssistantAudioRef.current = false;
+        }
         const assistantSnapshot = lastAssistantTextRef.current;
-        if (
-          modeRef.current === "demo" &&
-          isAssistantFarewell(assistantSnapshot)
-        ) {
-          jarvisFarewellSentRef.current = true;
+        if (modeRef.current === "demo" && isAssistantFarewell(assistantSnapshot)) {
+          if (!jarvisFarewellSentRef.current) {
+            latchFarewellClosing();
+            scheduleFarewellHangup();
+          }
         }
         if (modeRef.current === "demo") {
           detectAssistantWeatherPrompt(assistantSnapshot);
@@ -1163,6 +1241,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       endCallNow,
       finishConversation,
       finishPendingPhase,
+      latchFarewellClosing,
+      scheduleFarewellHangup,
       queuePhaseTransition,
       runTool,
       schedulePhoneSilenceNudge,
@@ -1187,6 +1267,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       clearWeatherZipState();
       finishingPhaseRef.current = false;
       jarvisFarewellSentRef.current = false;
+      goodbyeNudgeSentRef.current = false;
+      farewellHoldSentRef.current = false;
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
       greetingSentRef.current = false;

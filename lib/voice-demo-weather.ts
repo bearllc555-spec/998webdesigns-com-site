@@ -14,8 +14,8 @@ export const VOICE_DEMO_WEATHER_FORECAST_DONE_CUE = "[weather-forecast-done]";
 export function buildWeatherForecastGoodbyeNudge(): string {
   return (
     `${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE} Weather demo complete — do not ask wrap-up questions. ` +
-    `Say a warm sign-off in spirit of "${VOICE_DEMO_GOODBYE_LINE}" then follow PROMO OFFER rules if promo not yet sent, ` +
-    `then call end_conversation. STOP — no "anything else" or wrap-up cycle questions.`
+    `Say the sign-off ONCE in spirit of "${VOICE_DEMO_GOODBYE_LINE}" then follow PROMO OFFER rules if promo not yet sent, ` +
+    `then call end_conversation. Never repeat the goodbye line. STOP — no wrap-up questions.`
   );
 }
 

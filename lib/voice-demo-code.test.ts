@@ -3,7 +3,12 @@ import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import { codesMatch, hashVerificationCode } from "@/lib/voice-demo-otp";
 import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
-import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
+import {
+  buildFarewellHoldNudge,
+  isAssistantFarewell,
+  isUserFarewellEcho,
+  VOICE_DEMO_FAREWELL_HOLD_CUE,
+} from "@/lib/voice-demo-farewell";
 
 describe("voice demo verification code", () => {
   it("normalizes spoken digits", () => {
@@ -32,6 +37,13 @@ describe("voice demo farewell", () => {
   it("detects user goodbye echo", () => {
     expect(isUserFarewellEcho("Goodbye, thanks!")).toBe(true);
     expect(isUserFarewellEcho("What is hosting?")).toBe(false);
+  });
+
+  it("builds farewell hold nudge to stop goodbye loops", () => {
+    const nudge = buildFarewellHoldNudge();
+    expect(nudge).toContain(VOICE_DEMO_FAREWELL_HOLD_CUE);
+    expect(nudge).toMatch(/Stay completely silent/i);
+    expect(nudge).toMatch(/do not say "thank you for contacting" again/i);
   });
 
   it("detects assistant sign-off", () => {

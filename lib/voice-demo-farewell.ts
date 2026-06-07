@@ -9,6 +9,16 @@ export function isUserFarewellEcho(text: string): boolean {
   );
 }
 
+/** Hidden cue — farewell already spoken; model must stay silent. */
+export const VOICE_DEMO_FAREWELL_HOLD_CUE = "[farewell-hold]";
+
+export function buildFarewellHoldNudge(): string {
+  return (
+    `${VOICE_DEMO_FAREWELL_HOLD_CUE} You already said goodbye. Stay completely silent — ` +
+    `do not say "thank you for contacting" again. Do not call end_conversation again. The call is ending.`
+  );
+}
+
 /** Jarvis delivered a final sign-off (paired with end_conversation tool when possible). */
 export function isAssistantFarewell(text: string): boolean {
   const t = text.trim().toLowerCase();
