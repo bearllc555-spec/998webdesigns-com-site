@@ -36,6 +36,9 @@ describe("voice demo farewell", () => {
 
   it("detects assistant sign-off", () => {
     expect(isAssistantFarewell("Have a pleasant day, sir.")).toBe(true);
+    expect(
+      isAssistantFarewell("Thank you for contacting 998 web designs — goodbye.")
+    ).toBe(true);
     expect(isAssistantFarewell("Hosting is $198 per month.")).toBe(false);
   });
 });

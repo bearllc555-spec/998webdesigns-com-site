@@ -16,6 +16,8 @@ export function isAssistantFarewell(text: string): boolean {
   return (
     /\b(goodbye|good day|good evening|take care|pleasant (day|evening)|until next time|farewell)\b/.test(
       t
-    ) || /\b(lovely speaking|pleasure assisting)\b/.test(t)
+    ) ||
+    /\b(lovely speaking|pleasure assisting)\b/.test(t) ||
+    /\bthank you for contacting\b/.test(t)
   );
 }
