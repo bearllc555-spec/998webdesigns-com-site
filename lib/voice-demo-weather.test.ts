@@ -9,7 +9,8 @@ import {
 } from "@/lib/voice-demo-weather";
 
 describe("voice-demo-weather", () => {
-  it("defines proactive weather offer copy", () => {
+  it("defines end-of-chat weather offer copy", () => {
+    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("Before you go");
     expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("something cool");
     expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("ZIP code");
     expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("weather forecast");

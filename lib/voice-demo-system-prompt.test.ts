@@ -58,10 +58,11 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/STOP and wait/i);
   });
 
-  it("offers weather demo after answering questions", () => {
+  it("offers weather demo at end of chat before goodbye", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
-    expect(prompt).toMatch(/once per session/i);
-    expect(prompt).toMatch(/before your first wrap-up question/i);
+    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("Before you go");
+    expect(prompt).toMatch(/end of chat/i);
+    expect(prompt).toMatch(/FINAL GOODBYE/i);
   });
 });

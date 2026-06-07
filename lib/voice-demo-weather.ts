@@ -3,9 +3,9 @@ const FETCH_TIMEOUT_MS = 9000;
 /** Pause after ZIP confirmation audio before weather API fetch (ms). */
 export const WEATHER_POST_CONFIRM_PAUSE_MS = 2400;
 
-/** Proactive weather demo pitch — once per session after answering their questions. */
+/** Proactive weather demo pitch — once per session at end of chat before goodbye. */
 export const VOICE_DEMO_WEATHER_OFFER_LINE =
-  "You want to see something cool? If you give me your ZIP code, I can tell you the weather forecast in your city.";
+  "Before you go, do you want to see something cool? If you give me your ZIP code, I can tell you the weather forecast in your city.";
 
 export type UsZipPlace = {
   zip: string;
