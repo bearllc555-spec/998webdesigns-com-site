@@ -42,6 +42,9 @@ export function Footer() {
             <Link href="/portfolio" className="nav-link transition hover:text-ink">
               Recent Work
             </Link>
+            <Link href="/blog" className="nav-link transition hover:text-ink">
+              Field notes
+            </Link>
             <Link href="/#how" className="nav-link transition hover:text-ink">
               How it works
             </Link>

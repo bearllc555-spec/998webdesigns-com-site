@@ -11,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const NAV_LINKS = [
   { href: "/#addons", label: "Add\u2011ons" },
   { href: "/portfolio", label: "Recent Work" },
+  { href: "/blog", label: "Field notes" },
   { href: "/#how", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
