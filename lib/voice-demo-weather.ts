@@ -1,7 +1,7 @@
 const FETCH_TIMEOUT_MS = 9000;
 
 /** Pause after ZIP confirmation audio before weather API fetch (ms). */
-export const WEATHER_POST_CONFIRM_PAUSE_MS = 2400;
+export const WEATHER_POST_CONFIRM_PAUSE_MS = 900;
 
 /** Beat after the spoken forecast before the next wrap-up question (ms). */
 export const WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS = 2000;
