@@ -38,14 +38,19 @@ export async function createVoiceDemoLiveToken(
   const systemInstruction =
     mode === "verify" ? voiceDemoVerifySystemPrompt(row) : voiceDemoDemoSystemPrompt(row);
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({
+    apiKey,
+    httpOptions: { apiVersion: "v1alpha" },
+  });
   const expireTime = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+  const newSessionExpireTime = new Date(Date.now() + 2 * 60 * 1000).toISOString();
 
   try {
     const authToken = await ai.authTokens.create({
       config: {
         uses: 1,
         expireTime,
+        newSessionExpireTime,
         liveConnectConstraints: {
           model: VOICE_DEMO_LIVE_MODEL,
           config: {
@@ -59,8 +64,10 @@ export async function createVoiceDemoLiveToken(
             },
             inputAudioTranscription: {},
             outputAudioTranscription: {},
+            sessionResumption: {},
           },
         },
+        httpOptions: { apiVersion: "v1alpha" },
       },
     });
 
@@ -71,7 +78,13 @@ export async function createVoiceDemoLiveToken(
 
     return { ok: true, token, model: VOICE_DEMO_LIVE_MODEL };
   } catch (err) {
-    console.warn("[voice-demo-live-token]", err);
+    const detail =
+      err instanceof Error
+        ? err.message
+        : typeof err === "object" && err !== null
+          ? JSON.stringify(err)
+          : String(err);
+    console.warn("[voice-demo-live-token]", detail);
     return { ok: false, error: "Could not start voice session." };
   }
 }
