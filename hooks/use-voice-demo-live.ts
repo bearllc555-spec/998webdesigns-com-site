@@ -9,6 +9,7 @@ import {
   type VoiceDemoMicHandle,
 } from "@/lib/voice-demo-audio-client";
 import { VOICE_DEMO_LIVE_MODEL } from "@/lib/voice-demo-constants";
+import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
 import type { Session } from "@google/genai";
 
 export type VoiceDemoLiveMode = "verify" | "demo";
@@ -35,6 +36,7 @@ export type VoiceDemoPhaseTransition = { kind: "verified"; nextMode: "demo" };
 type UseVoiceDemoLiveOptions = {
   onPhaseTransition?: (transition: VoiceDemoPhaseTransition) => void;
   onUnexpectedClose?: () => void;
+  onConversationEnd?: () => void;
   onStatus?: (text: string) => void;
   onTranscript?: (line: string) => void;
 };
@@ -63,6 +65,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingSinceRef = useRef<number | null>(null);
   const pendingFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finishingPhaseRef = useRef(false);
+  const jarvisFarewellSentRef = useRef(false);
+  const farewellDisconnectingRef = useRef(false);
+  const lastAssistantTextRef = useRef("");
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
@@ -141,6 +146,34 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [schedulePendingFallback]
   );
 
+  const finishConversation = useCallback(async () => {
+    if (farewellDisconnectingRef.current) return;
+    farewellDisconnectingRef.current = true;
+    try {
+      await playerRef.current?.whenPlaybackIdle(12000);
+      await sleep(PHASE_TAIL_MS);
+      optionsRef.current.onConversationEnd?.();
+      optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
+      disconnect(true);
+    } finally {
+      farewellDisconnectingRef.current = false;
+      jarvisFarewellSentRef.current = false;
+      lastAssistantTextRef.current = "";
+    }
+  }, [disconnect]);
+
+  const endCallNow = useCallback(() => {
+    if (farewellDisconnectingRef.current) return;
+    farewellDisconnectingRef.current = true;
+    micRef.current?.stop();
+    optionsRef.current.onConversationEnd?.();
+    optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
+    disconnect(true);
+    farewellDisconnectingRef.current = false;
+    jarvisFarewellSentRef.current = false;
+    lastAssistantTextRef.current = "";
+  }, [disconnect]);
+
   const runTool = useCallback(async (name: string, args: Record<string, unknown>) => {
     const res = await fetch("/api/voice-demo/tool", {
       method: "POST",
@@ -163,6 +196,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
           if (name === "verify_code" && result.verified === true) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
+          }
+
+          if (name === "end_conversation" && result.endCall === true) {
+            jarvisFarewellSentRef.current = true;
+            void finishConversation();
           }
 
           responses.push({
@@ -190,18 +228,37 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const outText = message.serverContent?.outputTranscription?.text;
       if (outText) {
+        lastAssistantTextRef.current = `${lastAssistantTextRef.current} ${outText}`.trim();
         optionsRef.current.onTranscript?.(`Assistant: ${outText}`);
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
         optionsRef.current.onTranscript?.(`You: ${inText}`);
+        if (
+          jarvisFarewellSentRef.current &&
+          isUserFarewellEcho(inText) &&
+          modeRef.current === "demo"
+        ) {
+          endCallNow();
+          return;
+        }
       }
 
-      if (message.serverContent?.turnComplete && pendingPhaseRef.current) {
-        void finishPendingPhase();
+      if (message.serverContent?.turnComplete) {
+        if (
+          modeRef.current === "demo" &&
+          isAssistantFarewell(lastAssistantTextRef.current)
+        ) {
+          jarvisFarewellSentRef.current = true;
+        }
+        lastAssistantTextRef.current = "";
+
+        if (pendingPhaseRef.current) {
+          void finishPendingPhase();
+        }
       }
     },
-    [finishPendingPhase, queuePhaseTransition, runTool]
+    [endCallNow, finishConversation, finishPendingPhase, queuePhaseTransition, runTool]
   );
 
   const connect = useCallback(
@@ -210,6 +267,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       pendingSinceRef.current = null;
       clearPendingFallback();
       finishingPhaseRef.current = false;
+      jarvisFarewellSentRef.current = false;
+      farewellDisconnectingRef.current = false;
+      lastAssistantTextRef.current = "";
       disconnect(true);
       setError("");
       setConnecting(true);

@@ -30,6 +30,9 @@ export function VoiceDemoWidget() {
     onUnexpectedClose: () => {
       setStatus("Session paused — tap Start voice to continue.");
     },
+    onConversationEnd: () => {
+      setTranscript([]);
+    },
     onStatus: setStatus,
     onTranscript: (line) => setTranscript((prev) => [...prev.slice(-12), line]),
   });

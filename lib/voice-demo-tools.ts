@@ -123,6 +123,12 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
+          name: "end_conversation",
+          description:
+            "Call right after your final goodbye. Ends the voice call — do not speak or reply again after this.",
+          parameters: { type: Type.OBJECT, properties: {} },
+        },
+        {
           name: "decline_secondary_contact",
           description: "User declined to provide a phone number for their profile.",
           parameters: { type: Type.OBJECT, properties: {} },
@@ -221,6 +227,14 @@ export async function executeVoiceDemoTool(
       ok: true,
       name: visitorName,
       message: "Name saved. Next ask for their US cell to complete their profile — no coupon mention yet.",
+    };
+  }
+
+  if (name === "end_conversation") {
+    return {
+      ok: true,
+      endCall: true,
+      message: "Call ending. Stay silent — if the visitor says goodbye, do not respond.",
     };
   }
 

@@ -3,6 +3,7 @@ import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import { codesMatch, hashVerificationCode } from "@/lib/voice-demo-otp";
 import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
+import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
 
 describe("voice demo verification code", () => {
   it("normalizes spoken digits", () => {
@@ -24,5 +25,17 @@ describe("voice demo verification code", () => {
     const hash = hashVerificationCode(code);
     expect(codesMatch(hash, "123456")).toBe(true);
     expect(codesMatch(hash, "123457")).toBe(false);
+  });
+});
+
+describe("voice demo farewell", () => {
+  it("detects user goodbye echo", () => {
+    expect(isUserFarewellEcho("Goodbye, thanks!")).toBe(true);
+    expect(isUserFarewellEcho("What is hosting?")).toBe(false);
+  });
+
+  it("detects assistant sign-off", () => {
+    expect(isAssistantFarewell("Have a pleasant day, sir.")).toBe(true);
+    expect(isAssistantFarewell("Hosting is $198 per month.")).toBe(false);
   });
 });
