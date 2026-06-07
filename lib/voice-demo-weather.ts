@@ -1,10 +1,23 @@
+import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
+
 const FETCH_TIMEOUT_MS = 9000;
 
 /** Pause after ZIP confirmation audio before weather API fetch (ms). */
 export const WEATHER_POST_CONFIRM_PAUSE_MS = 1200;
 
-/** Beat after the spoken forecast before the next wrap-up question (ms). */
-export const WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS = 2500;
+/** Beat after the spoken forecast before FINAL GOODBYE (ms). */
+export const WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS = 1000;
+
+/** Hidden client cue — weather demo done; nudges Jarvis to sign off, not wrap-up. */
+export const VOICE_DEMO_WEATHER_FORECAST_DONE_CUE = "[weather-forecast-done]";
+
+export function buildWeatherForecastGoodbyeNudge(): string {
+  return (
+    `${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE} Weather demo complete — do not ask wrap-up questions. ` +
+    `Say a warm sign-off in spirit of "${VOICE_DEMO_GOODBYE_LINE}" then follow PROMO OFFER rules if promo not yet sent, ` +
+    `then call end_conversation. STOP — no "anything else" or wrap-up cycle questions.`
+  );
+}
 
 /** Step 1 — yes/no weather offer at end of chat (wait for answer before ZIP). */
 export const VOICE_DEMO_WEATHER_OFFER_LINE =
@@ -247,23 +260,35 @@ export async function fetchUsWeather(latitude: number, longitude: number): Promi
   }
 }
 
-export async function lookupUsWeatherByZip(zip: string): Promise<UsWeatherLookupResult> {
+export type UsWeatherLookupOptions = {
+  /** City locked at ZIP confirm — forecast must match the read-back, not a model guess. */
+  confirmCity?: string | null;
+};
+
+export async function lookupUsWeatherByZip(
+  zip: string,
+  opts: UsWeatherLookupOptions = {}
+): Promise<UsWeatherLookupResult> {
   const placeResult = await resolveUsZipPlace(zip);
   if (!placeResult.ok) {
     return placeResult;
   }
   const place = placeResult.place;
+  const reportCity = opts.confirmCity?.trim() || place.city;
 
   const weather = await fetchUsWeather(place.latitude, place.longitude);
   if (!weather) {
     return { ok: false, error: "Weather service is unavailable. Try again in a moment." };
   }
 
-  const briefReport = formatBriefWeatherReport(place, weather);
+  const briefReport = formatBriefWeatherReport(
+    { city: reportCity, stateName: place.stateName },
+    weather
+  );
   return {
     ok: true,
     zip: place.zip,
-    city: place.city,
+    city: reportCity,
     state: place.state,
     stateName: place.stateName,
     weather,
@@ -284,6 +309,15 @@ export function buildWeatherZipConfirmLine(
   return (
     `I have ZIP code ${spellZipForVoice(place.zip)} for ${place.city}, ${place.stateName}. ` +
     `Is that correct?`
+  );
+}
+
+/** Tool instruction — Jarvis must not paraphrase the city from memory. */
+export function weatherZipConfirmSpeakInstruction(spokenConfirm: string): string {
+  return (
+    `Speak this spokenConfirm exactly once, word for word — do not change the city or state: "${spokenConfirm}" ` +
+    `STOP and wait for yes or no. Do NOT call lookup_weather yet. ` +
+    `Never substitute a different city (e.g. a larger nearby town) — only the city in spokenConfirm.`
   );
 }
 

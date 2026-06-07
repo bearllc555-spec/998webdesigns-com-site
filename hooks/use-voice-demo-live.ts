@@ -30,9 +30,10 @@ import {
   PHONE_SILENCE_NUDGE_MS,
 } from "@/lib/voice-demo-phone-nudge";
 import {
+  buildWeatherForecastGoodbyeNudge,
   isAssistantWeatherForecast,
   WEATHER_POST_CONFIRM_PAUSE_MS,
-  WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS,
+  WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS,
 } from "@/lib/voice-demo-weather";
 import {
   buildWrapUpPauseNudge,
@@ -133,7 +134,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const zipNudgeTranscriptRef = useRef("");
   const weatherYesNoPhaseRef = useRef<WeatherYesNoPhase>("first");
   const wrapUpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingWeatherForecastWrapUpRef = useRef(false);
+  const pendingWeatherForecastGoodbyeRef = useRef(false);
   const zipSilenceNudgedRef = useRef(false);
   const zipSilencePhaseRef = useRef<ZipSilencePhase>("listening");
   const zipDigitsHeardMaxRef = useRef(0);
@@ -541,6 +542,44 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     scheduleWeatherYesNoNudge();
   }, [scheduleWeatherYesNoNudge]);
 
+  const sendWeatherForecastGoodbyeNudge = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session || modeRef.current !== "demo") return;
+    if (jarvisFarewellSentRef.current) return;
+    if (
+      awaitingPhoneDigitsRef.current ||
+      awaitingZipDigitsRef.current ||
+      awaitingZipConfirmRef.current ||
+      awaitingWeatherYesNoRef.current
+    ) {
+      return;
+    }
+    if (playerRef.current?.isPlaying()) {
+      clearWrapUpTimer();
+      wrapUpTimerRef.current = setTimeout(() => {
+        sendWeatherForecastGoodbyeNudge();
+      }, 400);
+      return;
+    }
+
+    try {
+      session.sendClientContent({
+        turns: buildWeatherForecastGoodbyeNudge(),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] weather forecast goodbye nudge", err);
+    }
+  }, [clearWrapUpTimer]);
+
+  const scheduleWeatherForecastGoodbye = useCallback(() => {
+    if (modeRef.current !== "demo") return;
+    clearWrapUpTimer();
+    wrapUpTimerRef.current = setTimeout(() => {
+      sendWeatherForecastGoodbyeNudge();
+    }, WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS);
+  }, [clearWrapUpTimer, sendWeatherForecastGoodbyeNudge]);
+
   const sendWrapUpPauseNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || modeRef.current !== "demo") return;
@@ -663,7 +702,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       if (name === "lookup_weather" && result.ok === true) {
         clearWeatherZipState();
-        pendingWeatherForecastWrapUpRef.current = true;
+        pendingWeatherForecastGoodbyeRef.current = true;
       }
     },
     [clearWeatherZipState, clearZipSilenceTimer]
@@ -1031,16 +1070,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           detectAssistantWeatherPrompt(assistantSnapshot);
           if (isAssistantWrapUpQuestion(assistantSnapshot)) {
             clearWrapUpTimer();
-            pendingWeatherForecastWrapUpRef.current = false;
+            pendingWeatherForecastGoodbyeRef.current = false;
           } else {
             const weatherForecastTurn =
-              pendingWeatherForecastWrapUpRef.current ||
+              pendingWeatherForecastGoodbyeRef.current ||
               isAssistantWeatherForecast(assistantSnapshot);
             if (weatherForecastTurn) {
-              pendingWeatherForecastWrapUpRef.current = false;
-            }
-            if (
-              weatherForecastTurn ||
+              pendingWeatherForecastGoodbyeRef.current = false;
+              scheduleWeatherForecastGoodbye();
+            } else if (
               shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
                 awaitingCollection:
                   awaitingPhoneDigitsRef.current ||
@@ -1050,11 +1088,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 farewellSent: jarvisFarewellSentRef.current,
               })
             ) {
-              scheduleWrapUpPause(
-                weatherForecastTurn
-                  ? WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS
-                  : WRAPUP_POST_ANSWER_PAUSE_MS
-              );
+              scheduleWrapUpPause(WRAPUP_POST_ANSWER_PAUSE_MS);
             } else {
               clearWrapUpTimer();
             }
@@ -1081,6 +1115,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       schedulePhoneSilenceNudge,
       scheduleZipSilenceNudge,
       scheduleWeatherYesNoNudge,
+      scheduleWeatherForecastGoodbye,
       scheduleWrapUpPause,
       sendWeatherDeclineNudge,
       sendZipDigitConfirmNudge,
@@ -1103,7 +1138,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       lastAssistantTextRef.current = "";
       greetingSentRef.current = false;
       suppressAssistantAudioRef.current = false;
-      pendingWeatherForecastWrapUpRef.current = false;
+      pendingWeatherForecastGoodbyeRef.current = false;
       zipSilenceNudgedRef.current = false;
       lastClientWeatherNudgeAtRef.current = 0;
       lastWeatherOfferSigRef.current = "";

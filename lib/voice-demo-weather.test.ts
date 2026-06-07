@@ -11,8 +11,11 @@ import {
   normalizeUsZipCode,
   usZipCodesEquivalent,
   VOICE_DEMO_WEATHER_OFFER_LINE,
+  VOICE_DEMO_WEATHER_FORECAST_DONE_CUE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
-  WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS,
+  WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS,
+  buildWeatherForecastGoodbyeNudge,
+  weatherZipConfirmSpeakInstruction,
   wmoWeatherLabel,
 } from "@/lib/voice-demo-weather";
 
@@ -70,11 +73,23 @@ describe("voice-demo-weather", () => {
     expect(isAssistantWeatherForecast(report)).toBe(true);
   });
 
-  it("uses a 2.5s pause before wrap-up after forecast", () => {
-    expect(WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS).toBe(2500);
+  it("uses a 1s pause before goodbye after forecast", () => {
+    expect(WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS).toBe(1000);
+    const nudge = buildWeatherForecastGoodbyeNudge();
+    expect(nudge).toContain(VOICE_DEMO_WEATHER_FORECAST_DONE_CUE);
+    expect(nudge).toMatch(/do not ask wrap-up/i);
+    expect(nudge).toMatch(/end_conversation/i);
     expect(isAssistantWeatherForecast("Our design fee is five thousand dollars.")).toBe(
       false
     );
+  });
+
+  it("requires verbatim ZIP confirm and forbids city substitution", () => {
+    const line = weatherZipConfirmSpeakInstruction(
+      "I have ZIP code 0 7 5 1 2 for Totowa, New Jersey. Is that correct?"
+    );
+    expect(line).toMatch(/word for word/i);
+    expect(line).toMatch(/Never substitute a different city/i);
   });
 
   it("spells ZIP digits for read-back", () => {

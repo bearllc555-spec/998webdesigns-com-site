@@ -44,7 +44,7 @@ export function buildZipPauseNudge(transcript: string): string | null {
   if (zip) {
     return (
       `${VOICE_DEMO_ZIP_PAUSE_CUE} Visitor stopped speaking. Transcript: "${trimmed}". ` +
-      `Call confirm_weather_zip now with zipCode "${zip}", speak spokenConfirm once, and STOP — wait for yes or no. ` +
+      `Call confirm_weather_zip now with zipCode "${zip}", speak spokenConfirm word for word from the tool (never substitute a different city), and STOP — wait for yes or no. ` +
       `Do NOT ask for their ZIP again. Do NOT call lookup_weather until they confirm. ` +
       `On yes, lookup_weather with userConfirmed true and the same ZIP.`
     );

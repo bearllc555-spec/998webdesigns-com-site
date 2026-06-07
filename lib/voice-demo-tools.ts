@@ -29,6 +29,7 @@ import {
   lookupUsWeatherByZip,
   resolveUsZipPlace,
   usZipCodesEquivalent,
+  weatherZipConfirmSpeakInstruction,
 } from "@/lib/voice-demo-weather";
 import { Type, type ToolListUnion } from "@google/genai";
 
@@ -437,8 +438,7 @@ export async function executeVoiceDemoTool(
       spokenConfirm,
       zipReadBack: true,
       message:
-        `Speak spokenConfirm exactly once — ZIP digits, city, state, then ask if correct. ` +
-        `STOP and wait for their answer. Do NOT call lookup_weather yet. ` +
+        `${weatherZipConfirmSpeakInstruction(spokenConfirm)} ` +
         `On yes → lookup_weather with zipCode "${place.zip}" and userConfirmed true. ` +
         `On no or correction → call confirm_weather_zip again with the ZIP they give.`,
     };
@@ -470,6 +470,7 @@ export async function executeVoiceDemoTool(
 
     const refreshed = await getVoiceDemoLead(leadId);
     const stagedZip = refreshed?.location_zip ?? null;
+    const stagedCity = refreshed?.location_city ?? null;
     if (stagedZip && !usZipCodesEquivalent(stagedZip, placeResult.place.zip)) {
       return {
         ok: false,
@@ -478,7 +479,12 @@ export async function executeVoiceDemoTool(
       };
     }
 
-    const result = await lookupUsWeatherByZip(placeResult.place.zip);
+    const confirmCity =
+      stagedZip && stagedCity && usZipCodesEquivalent(stagedZip, placeResult.place.zip)
+        ? stagedCity
+        : placeResult.place.city;
+
+    const result = await lookupUsWeatherByZip(placeResult.place.zip, { confirmCity });
     if (!result.ok) {
       return { ok: false, error: result.error };
     }
@@ -490,20 +496,21 @@ export async function executeVoiceDemoTool(
     });
 
     const spokenLookup = buildWeatherZipLookupLine({
-      city: result.city,
+      city: confirmCity,
       stateName: result.stateName,
     });
 
     return {
       ok: true,
       zip: result.zip,
-      city: result.city,
+      city: confirmCity,
       state: result.state,
       briefReport: result.briefReport,
       spokenLookup,
-      possibleLocation: `${result.city}, ${result.state} ${result.zip}`,
+      possibleLocation: `${confirmCity}, ${result.state} ${result.zip}`,
       message:
-        `Speak spokenLookup, then give a brief weather summary from briefReport for ZIP ${result.zip} only — Fahrenheit then Celsius, conditions, wind. Keep it short.`,
+        `Speak spokenLookup, then give a brief weather summary from briefReport for ${confirmCity} (ZIP ${result.zip}) only — ` +
+        `use the city in briefReport exactly; Fahrenheit then Celsius, conditions, wind. Keep it short.`,
     };
   }
 
