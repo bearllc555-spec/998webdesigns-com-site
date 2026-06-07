@@ -16,6 +16,7 @@ import {
   type VoiceDemoLeadRow,
 } from "@/lib/voice-demo-db";
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
+import { sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
 import { startEmailVerificationLead } from "@/lib/voice-demo-start-email";
@@ -122,10 +123,19 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
   ];
 }
 
+type VerifyLeadCodeResult = {
+  ok: boolean;
+  verified?: boolean;
+  error?: string;
+  attemptsRemaining?: number;
+  promoEmailSent?: boolean;
+  promoCode?: string;
+};
+
 async function verifyLeadCode(
   row: VoiceDemoLeadRow,
   code: string
-): Promise<{ ok: boolean; verified?: boolean; error?: string; attemptsRemaining?: number }> {
+): Promise<VerifyLeadCodeResult> {
   if (row.email_verified_at || row.phone_verified_at) {
     return { ok: true, verified: true };
   }
@@ -165,7 +175,16 @@ async function verifyLeadCode(
       };
     }
     await markVoiceDemoVerified(row.id, "email");
-    return { ok: true, verified: true };
+
+    const refreshed = (await getVoiceDemoLead(row.id)) ?? row;
+    const promo = await sendPromoToVerifiedEmailLead(refreshed);
+
+    return {
+      ok: true,
+      verified: true,
+      promoEmailSent: promo.sent,
+      promoCode: promo.sent || promo.alreadySent ? VOICE_DEMO_PROMO_CODE : undefined,
+    };
   }
 
   return { ok: false, error: "Invalid session." };

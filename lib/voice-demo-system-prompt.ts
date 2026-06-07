@@ -63,7 +63,7 @@ YOUR ONLY JOB until verified:
 3. If verify_code fails, encourage retry calmly. After 3 failures, suggest the typed code field below the mic.
 4. Do NOT answer pricing, FAQ, or business questions until verified.
 
-When verify_code returns verified:true, congratulate them briefly, say they are verified and may ask anything about 998, then ask: "What should I call you?"`;
+When verify_code returns verified:true, congratulate them briefly. If promoEmailSent is true, tell them you emailed ${VOICE_DEMO_PROMO_CODE} (20% off the design fee) to their inbox — ask them to check spam if needed. Then say they may ask anything about 998 and ask: "What should I call you?"`;
 }
 
 export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
@@ -71,7 +71,9 @@ export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
   const promoLine =
     row.primary_channel === "sms"
       ? `If they have not given email yet and promo not sent: offer ${VOICE_DEMO_PROMO_CODE} (20% off design fee only) if they share email — then call capture_email_for_promo.`
-      : `If they have not given phone yet and promo not sent: offer ${VOICE_DEMO_PROMO_CODE} (20% off design fee only) if they share cell number — then call capture_phone_for_promo with smsConsent true after they agree to one SMS.`;
+      : row.promo_sent_at
+        ? `${VOICE_DEMO_PROMO_CODE} (20% off design fee) was already emailed to their verified address. Mention it if they ask about discounts.`
+        : `If promo not sent yet: offer ${VOICE_DEMO_PROMO_CODE} (20% off design fee only) if they share cell number — then call capture_phone_for_promo with smsConsent true after they agree to one SMS.`;
 
   return `${VOICE_DEMO_PERSONA}
 
