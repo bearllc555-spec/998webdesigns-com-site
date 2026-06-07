@@ -1,6 +1,7 @@
 import { designFeeCents } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 import { normalizePhoneE164, checkSmsVerification } from "@/lib/twilio-verify";
+import { twilioMessagingFrom } from "@/lib/twilio-sms";
 import {
   VOICE_DEMO_MAX_VERIFY_ATTEMPTS,
   VOICE_DEMO_PROMO_CODE,
@@ -329,6 +330,14 @@ export async function executeVoiceDemoTool(
     const phone = typeof args.phone === "string" ? normalizePhoneE164(args.phone) : null;
     if (!phone) {
       return { ok: false, error: "Invalid US phone number." };
+    }
+
+    const twilioFrom = twilioMessagingFrom();
+    if (twilioFrom && phone === twilioFrom) {
+      return {
+        ok: false,
+        error: "That is our business line, not your cell. Ask for their personal mobile number.",
+      };
     }
 
     await updateVoiceDemoLead(leadId, { phone });
