@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CrmLoginForm } from "@/components/crm/CrmLoginForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -21,6 +22,14 @@ export default async function CrmLoginPage({ searchParams }: Props) {
 
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-12">
+      <div className="absolute left-5 top-5 z-10">
+        <Link
+          href="/"
+          className="rounded-full border border-rule px-4 py-2 text-sm text-ink-soft hover:border-accent/50"
+        >
+          Home
+        </Link>
+      </div>
       <div className="absolute right-5 top-5 z-10">
         <ThemeToggle />
       </div>

@@ -69,6 +69,12 @@ export function CrmHeader({
         </div>
         <nav className="mt-4 flex flex-wrap gap-2" aria-label="CRM sections">
           <Link
+            href="/"
+            className={`${pillBase} border border-rule text-ink-soft hover:border-accent/50`}
+          >
+            Home
+          </Link>
+          <Link
             href="/crm"
             className={`${pillBase} ${
               onActivity
