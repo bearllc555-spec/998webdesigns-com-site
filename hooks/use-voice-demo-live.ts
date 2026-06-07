@@ -35,6 +35,8 @@ import {
 } from "@/lib/voice-demo-phone-nudge";
 import {
   buildWeatherForecastGoodbyeNudge,
+  buildWeatherLookupFailedNudge,
+  buildWeatherLookupSpeakNudge,
   isAssistantWeatherForecast,
   isAssistantWeatherLookupPending,
   WEATHER_POST_CONFIRM_PAUSE_MS,
@@ -165,6 +167,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const lastAssistantTextRef = useRef("");
   const stagedZipReadbackRef = useRef<StagedZipReadback | null>(null);
   const zipCityCorrectionSentRef = useRef(false);
+  const zipLookupTriggeredRef = useRef(false);
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
@@ -340,6 +343,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     weatherYesNoPhaseRef.current = "first";
     stagedZipReadbackRef.current = null;
     zipCityCorrectionSentRef.current = false;
+    zipLookupTriggeredRef.current = false;
     clearZipSilenceTimer();
     clearWeatherYesNoTimer();
   }, [clearWeatherYesNoTimer, clearZipSilenceTimer]);
@@ -361,6 +365,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     (staged: StagedZipReadback, source: "client" | "tool") => {
       stagedZipReadbackRef.current = staged;
       zipCityCorrectionSentRef.current = false;
+      zipLookupTriggeredRef.current = false;
       logVoiceDemoOps({
         kind: "zip_confirm_staged",
         message: `ZIP ${staged.zip} staged (${staged.city}) via ${source}`,
@@ -871,6 +876,99 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [clearZipSilenceTimer, rememberStagedZipReadback, stagedZipFromToolResult]
   );
 
+  const sendWeatherLookupAfterZipConfirm = useCallback(async () => {
+    const session = sessionRef.current;
+    const staged = stagedZipReadbackRef.current;
+    if (!session || !staged || zipLookupTriggeredRef.current || isFarewellLocked()) {
+      return;
+    }
+    if (!awaitingZipConfirmRef.current) return;
+
+    zipLookupTriggeredRef.current = true;
+    awaitingZipConfirmRef.current = false;
+    clearZipSilenceTimer();
+
+    logVoiceDemoOps({
+      kind: "weather_lookup_client",
+      message: `Client lookup_weather for ZIP ${staged.zip} after yes`,
+      meta: { zip: staged.zip, city: staged.city },
+    });
+
+    try {
+      await playerRef.current?.whenPlaybackIdle(10000);
+      await sleep(WEATHER_POST_CONFIRM_PAUSE_MS);
+      optionsRef.current.onStatus?.("Looking up weather…");
+
+      const result = await runTool("lookup_weather", {
+        zipCode: staged.zip,
+        userConfirmed: true,
+      });
+      syncWeatherCollectionState("lookup_weather", result);
+
+      if (result.ok !== true) {
+        const errorDetail =
+          typeof result.error === "string" ? result.error : "lookup failed";
+        logVoiceDemoOps({
+          kind: "weather_lookup_failed",
+          message: `lookup_weather failed for ZIP ${staged.zip}`,
+          severity: "warn",
+          meta: { zip: staged.zip, error: errorDetail },
+        });
+        if (!canSendClientWeatherNudge()) return;
+        markClientWeatherNudgeSent();
+        session.sendClientContent({
+          turns: buildWeatherLookupFailedNudge(errorDetail),
+          turnComplete: true,
+        });
+        return;
+      }
+
+      const spokenLookup =
+        typeof result.spokenLookup === "string" ? result.spokenLookup.trim() : "";
+      const briefReport =
+        typeof result.briefReport === "string" ? result.briefReport.trim() : "";
+      if (!spokenLookup || !briefReport) {
+        logVoiceDemoOps({
+          kind: "weather_lookup_failed",
+          message: `lookup_weather missing spoken lines for ZIP ${staged.zip}`,
+          severity: "warn",
+          meta: { zip: staged.zip },
+        });
+        return;
+      }
+
+      logVoiceDemoOps({
+        kind: "weather_lookup_success",
+        message: `Weather fetched for ZIP ${staged.zip}`,
+        meta: { zip: staged.zip, city: staged.city },
+      });
+
+      if (!canSendClientWeatherNudge()) return;
+      markClientWeatherNudgeSent();
+      session.sendClientContent({
+        turns: buildWeatherLookupSpeakNudge(spokenLookup, briefReport),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] client weather lookup", err);
+      zipLookupTriggeredRef.current = false;
+      awaitingZipConfirmRef.current = true;
+      logVoiceDemoOps({
+        kind: "weather_lookup_failed",
+        message: "Client lookup_weather threw",
+        severity: "error",
+        meta: { zip: staged.zip, error: String(err) },
+      });
+    }
+  }, [
+    canSendClientWeatherNudge,
+    clearZipSilenceTimer,
+    isFarewellLocked,
+    markClientWeatherNudgeSent,
+    runTool,
+    syncWeatherCollectionState,
+  ]);
+
   const syncPhoneCollectionState = useCallback(
     (name: string, result: Record<string, unknown>) => {
       if (name === "save_name" && result.ok === true) {
@@ -1073,6 +1171,28 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           syncPhoneCollectionState(name, result);
           syncWeatherCollectionState(name, result);
 
+          if (name === "lookup_weather") {
+            if (result.ok === true) {
+              zipLookupTriggeredRef.current = true;
+              logVoiceDemoOps({
+                kind: "weather_lookup_success",
+                message: "Model lookup_weather succeeded",
+                meta: {
+                  zip: typeof result.zip === "string" ? result.zip : undefined,
+                },
+              });
+            } else if (!zipLookupTriggeredRef.current) {
+              logVoiceDemoOps({
+                kind: "weather_lookup_failed",
+                message: "Model lookup_weather failed",
+                severity: "warn",
+                meta: {
+                  error: typeof result.error === "string" ? result.error : "unknown",
+                },
+              });
+            }
+          }
+
           if (name === "verify_code" && result.verified === true) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
           }
@@ -1236,6 +1356,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           lastZipPromptSigRef.current = "";
         } else if (awaitingZipConfirmRef.current && isWeatherZipConfirmAccept(userLine)) {
           clearZipSilenceTimer();
+          void sendWeatherLookupAfterZipConfirm();
         }
 
         const zipDigits = countSpokenZipDigits(userLine);
@@ -1393,6 +1514,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       scheduleWeatherForecastGoodbye,
       scheduleWrapUpPause,
       sendWeatherDeclineNudge,
+      sendWeatherLookupAfterZipConfirm,
       sendZipCityCorrection,
       sendZipDigitConfirmNudge,
       setAwaitingPhoneDigits,
@@ -1424,6 +1546,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       lastZipPromptSigRef.current = "";
       stagedZipReadbackRef.current = null;
       zipCityCorrectionSentRef.current = false;
+      zipLookupTriggeredRef.current = false;
       resetCaption();
       disconnect(true);
       setError("");

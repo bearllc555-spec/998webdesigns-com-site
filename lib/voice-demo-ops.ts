@@ -15,6 +15,9 @@ export type VoiceDemoOpsKind =
   | "forecast_goodbye_scheduled"
   | "wrap_up_scheduled"
   | "tool_bundled_weather"
+  | "weather_lookup_client"
+  | "weather_lookup_failed"
+  | "weather_lookup_success"
   | "session_anomaly";
 
 export type VoiceDemoOpsEvent = {
@@ -214,6 +217,9 @@ export function coerceVoiceDemoOpsInput(body: Record<string, unknown>): VoiceDem
     "forecast_goodbye_scheduled",
     "wrap_up_scheduled",
     "tool_bundled_weather",
+    "weather_lookup_client",
+    "weather_lookup_failed",
+    "weather_lookup_success",
     "session_anomaly",
   ];
   if (!allowed.includes(kind as VoiceDemoOpsKind)) return null;

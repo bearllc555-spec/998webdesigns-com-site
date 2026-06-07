@@ -16,6 +16,8 @@ import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
 import {
   VOICE_DEMO_WEATHER_DIDNT_GET_LINE,
   VOICE_DEMO_WEATHER_FORECAST_DONE_CUE,
+  VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE,
+  VOICE_DEMO_WEATHER_LOOKUP_READY_CUE,
   VOICE_DEMO_WEATHER_OFFER_LINE,
   VOICE_DEMO_WEATHER_REPEAT_LINE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
@@ -153,7 +155,8 @@ LOOKUP (when you have a ZIP):
 - ZIP confirmation is required — three separate steps, never bundled:
   1. Call confirm_weather_zip only — speak spokenConfirm word for word from the tool (ZIP digits + city/state + "Is that correct?") and STOP. Never guess or substitute a different city (e.g. a larger nearby town).
   2. Wait for yes / correct. On no or correction → call confirm_weather_zip again with the ZIP they give.
-  3. Only after yes → call lookup_weather alone with the same zipCode and userConfirmed true — then brief summary from briefReport using the same city as the read-back.
+  3. Only after yes → lookup_weather runs (often via client cue "${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE}") — speak spokenLookup then briefReport word for word; do not call lookup yourself if the cue already includes briefReport.
+- Hidden cue "${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE}" means the API failed — apologize briefly, do not retry, go to FINAL GOODBYE.
 - Temperature: always Fahrenheit first, then Celsius — briefReport includes both; read both aloud every time (including "feels like" when present).
 - Never call confirm_weather_zip and lookup_weather in the same turn.
 - After you deliver the weather summary from briefReport, STOP — do not ask wrap-up questions. Wait about 1 second; hidden cue "${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE}" means go to FINAL GOODBYE (promo if needed), warm sign-off, then end_conversation.

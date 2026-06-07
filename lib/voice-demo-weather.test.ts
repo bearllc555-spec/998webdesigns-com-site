@@ -16,6 +16,8 @@ import {
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
   WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS,
   buildWeatherForecastGoodbyeNudge,
+  buildWeatherLookupFailedNudge,
+  buildWeatherLookupSpeakNudge,
   weatherZipConfirmSpeakInstruction,
   wmoWeatherLabel,
 } from "@/lib/voice-demo-weather";
@@ -92,6 +94,26 @@ describe("voice-demo-weather", () => {
     expect(isAssistantWeatherForecast("Our design fee is five thousand dollars.")).toBe(
       false
     );
+  });
+
+  it("nudges Jarvis to speak client-fetched forecast", () => {
+    const lookup = buildWeatherZipLookupLine({
+      city: "Totowa",
+      stateName: "New Jersey",
+    });
+    const report =
+      "In Totowa, New Jersey, it's 75 degrees Fahrenheit, about 24 degrees Celsius with clear skies, 40% humidity, and winds around 5 miles per hour.";
+    const nudge = buildWeatherLookupSpeakNudge(lookup, report);
+    expect(nudge).toContain("[weather-lookup-ready]");
+    expect(nudge).toContain(lookup);
+    expect(nudge).toContain(report);
+  });
+
+  it("nudges graceful goodbye when lookup fails", () => {
+    const nudge = buildWeatherLookupFailedNudge("Weather service is unavailable.");
+    expect(nudge).toContain("[weather-lookup-failed]");
+    expect(nudge).toMatch(/unavailable/i);
+    expect(nudge).toMatch(/FINAL GOODBYE/i);
   });
 
   it("requires verbatim ZIP confirm and forbids city substitution", () => {

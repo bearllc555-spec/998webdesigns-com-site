@@ -11,6 +11,32 @@ export const WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS = 1000;
 /** Hidden client cue — weather demo done; nudges Jarvis to sign off, not wrap-up. */
 export const VOICE_DEMO_WEATHER_FORECAST_DONE_CUE = "[weather-forecast-done]";
 
+/** Hidden cue — client ran lookup_weather; Jarvis must speak the forecast. */
+export const VOICE_DEMO_WEATHER_LOOKUP_READY_CUE = "[weather-lookup-ready]";
+
+/** Hidden cue — lookup_weather failed; Jarvis apologizes and signs off. */
+export const VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE = "[weather-lookup-failed]";
+
+export function buildWeatherLookupSpeakNudge(
+  spokenLookup: string,
+  briefReport: string
+): string {
+  return (
+    `${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE} lookup_weather succeeded. ` +
+    `Speak spokenLookup exactly once: "${spokenLookup}" ` +
+    `Then speak briefReport exactly once: "${briefReport}" ` +
+    `STOP — do not apologize, do not say lookup failed, do not ask wrap-up questions.`
+  );
+}
+
+export function buildWeatherLookupFailedNudge(errorDetail: string): string {
+  return (
+    `${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE} lookup_weather failed (${errorDetail}). ` +
+    `Apologize briefly that the weather lookup is unavailable right now. ` +
+    `Do not retry or ask for another ZIP. Go to FINAL GOODBYE — warm sign-off, then end_conversation.`
+  );
+}
+
 export function buildWeatherForecastGoodbyeNudge(): string {
   return (
     `${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE} Weather demo complete — do not ask wrap-up questions. ` +
