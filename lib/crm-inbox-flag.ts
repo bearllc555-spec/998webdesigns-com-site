@@ -22,7 +22,7 @@ export function crmInboxFlagLabel(flag: CrmInboxFlag | null): string {
 }
 
 export async function setCrmItemInboxFlag(
-  source: "lead" | "client" | "contact" | "discovery" | "sms",
+  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo",
   id: string,
   flag: CrmInboxFlag | null
 ): Promise<boolean> {
@@ -36,7 +36,9 @@ export async function setCrmItemInboxFlag(
         ? "contact_submissions"
         : source === "sms"
           ? "inbound_sms"
-          : "discovery_prospects";
+          : source === "voice_demo"
+            ? "voice_demo_leads"
+            : "discovery_prospects";
   const inbox_flag = flag;
 
   const { error } = await supa.from(table).update({ inbox_flag }).eq("id", id);

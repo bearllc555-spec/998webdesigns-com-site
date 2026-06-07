@@ -10,4 +10,5 @@ export type DesignPromoEntry = {
 
 export const DESIGN_PROMO_CODES: DesignPromoEntry[] = [
   { code: "LINKEDIN20", percentOff: 20 },
+  { code: "VOICE20", percentOff: 20 },
 ];

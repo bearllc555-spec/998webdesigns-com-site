@@ -11,7 +11,7 @@ import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
-  source: "lead" | "client" | "contact" | "discovery" | "sms";
+  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo";
   id: string;
   label: string;
   step: 1 | 2;
@@ -22,6 +22,7 @@ function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "client") return "Client";
   if (source === "discovery") return "Discovery";
   if (source === "sms") return "Text";
+  if (source === "voice_demo") return "Voice demo";
   return "Contact";
 }
 

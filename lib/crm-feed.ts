@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 export type { CrmInboxFlag };
 
-export type CrmFeedSource = "lead" | "client" | "contact" | "discovery" | "sms";
+export type CrmFeedSource = "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo";
 
 export type CrmFeedItem = {
   id: string;
@@ -50,7 +50,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     };
   }
 
-  const [leadsRes, contactsRes, discoveryRes, inboundRes, inboundLinkedRes, inboundLeadLinkedRes] =
+  const [leadsRes, contactsRes, discoveryRes, voiceDemoRes, inboundRes, inboundLinkedRes, inboundLeadLinkedRes] =
     await Promise.all([
     supa
       .from("wd_leads")
@@ -68,6 +68,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       .from("discovery_prospects")
       .select(
         "id, created_at, updated_at, email, full_name, phone, status, goal, intake, close_draft, crm_notes, wd_lead_id, read_at, inbox_flag"
+      )
+      .order("updated_at", { ascending: false })
+      .limit(limit),
+    supa
+      .from("voice_demo_leads")
+      .select(
+        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -104,6 +111,10 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   if (discoveryRes.error && !isMissingDiscoveryTable(discoveryRes.error)) {
     console.warn("[crm-feed] discovery_prospects:", discoveryRes.error.message);
     errors.push(`discovery: ${discoveryRes.error.message}`);
+  }
+  if (voiceDemoRes.error && !isMissingTable(voiceDemoRes.error)) {
+    console.warn("[crm-feed] voice_demo_leads:", voiceDemoRes.error.message);
+    errors.push(`voice_demo: ${voiceDemoRes.error.message}`);
   }
   if (inboundRes.error && !isMissingTable(inboundRes.error)) {
     console.warn("[crm-feed] inbound_sms:", inboundRes.error.message);
@@ -200,6 +211,33 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
         closeDraft: row.close_draft,
         wdLeadId: row.wd_lead_id ?? null,
         hasSmsThread: Boolean(latestSms),
+      },
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
+    });
+  }
+
+  for (const row of voiceDemoRes.data ?? []) {
+    const verified = Boolean(row.email_verified_at || row.phone_verified_at);
+    items.push({
+      id: row.id,
+      source: "voice_demo",
+      at: (row.updated_at as string) ?? (row.created_at as string),
+      title: (row.full_name as string) || "Voice demo",
+      email: (row.email as string) ?? "",
+      businessName: "",
+      status: verified ? "verified" : "pending_verify",
+      notes: (row.session_summary as string) ?? null,
+      stripeSessionId: null,
+      stripeSubscriptionId: null,
+      message: row.promo_sent_at
+        ? `Promo ${row.promo_code ?? "sent"}`
+        : `Channel: ${row.primary_channel}`,
+      phone: (row.phone as string) ?? null,
+      payload: {
+        primaryChannel: row.primary_channel,
+        promoCode: row.promo_code,
+        promoSentAt: row.promo_sent_at,
       },
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),

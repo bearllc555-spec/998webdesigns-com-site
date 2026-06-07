@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AddonSummaryBar } from "@/components/AddonSummaryBar";
 import { SkipLink } from "@/components/SkipLink";
+import { VoiceDemoWidget } from "@/components/VoiceDemo/VoiceDemoWidget";
 import "./globals.css";
 
 const inter = Inter({
@@ -72,6 +73,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <SkipLink />
           {children}
+          <VoiceDemoWidget />
           <AddonSummaryBar />
           <Toaster />
           <Analytics />

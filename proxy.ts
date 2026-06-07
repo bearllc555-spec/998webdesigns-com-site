@@ -23,6 +23,9 @@ function resolveRateLimitConfig(path: string): RateLimitConfig | null {
   if (path.startsWith("/api/discovery/")) {
     return API_RATE_LIMITS["/api/discovery/start"];
   }
+  if (path.startsWith("/api/voice-demo/")) {
+    return API_RATE_LIMITS["/api/voice-demo/start"];
+  }
   return null;
 }
 

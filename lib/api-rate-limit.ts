@@ -18,6 +18,10 @@ export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/discovery/verify-sms": { limit: 12, windowMs: 60_000 },
   "/api/discovery/intake": { limit: 8, windowMs: 60_000 },
   "/api/discovery/close-checkout": { limit: 5, windowMs: 60_000 },
+  "/api/voice-demo/start": { limit: 6, windowMs: 60_000 },
+  "/api/voice-demo/verify-code": { limit: 15, windowMs: 60_000 },
+  "/api/voice-demo/live-token": { limit: 20, windowMs: 60_000 },
+  "/api/voice-demo/tool": { limit: 40, windowMs: 60_000 },
 };
 
 export function clientIp(req: NextRequest): string {

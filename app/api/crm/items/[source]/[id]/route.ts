@@ -8,6 +8,7 @@ import {
 } from "@/lib/crm-inbox-flag";
 import { setCrmItemReadState } from "@/lib/crm-read-state";
 import { deleteDiscoveryProspect } from "@/lib/discovery-db";
+import { deleteVoiceDemoLead } from "@/lib/voice-demo-db";
 import { deleteWdLead } from "@/lib/leads-db";
 import { isCrmRequestAuthorized } from "@/lib/crm-session";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
@@ -35,7 +36,8 @@ export async function DELETE(
     source !== "client" &&
     source !== "contact" &&
     source !== "discovery" &&
-    source !== "sms"
+    source !== "sms" &&
+    source !== "voice_demo"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
@@ -47,7 +49,9 @@ export async function DELETE(
         ? await deleteContactSubmission(id)
         : source === "sms"
           ? await deleteInboundSms(id)
-          : await deleteDiscoveryProspect(id);
+          : source === "voice_demo"
+            ? await deleteVoiceDemoLead(id)
+            : await deleteDiscoveryProspect(id);
 
   if (!ok) {
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
@@ -76,7 +80,8 @@ export async function PATCH(
     source !== "client" &&
     source !== "contact" &&
     source !== "discovery" &&
-    source !== "sms"
+    source !== "sms" &&
+    source !== "voice_demo"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
