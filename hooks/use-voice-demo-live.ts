@@ -30,12 +30,25 @@ type LiveMessage = {
   };
 };
 
+export type VoiceDemoPhaseTransition =
+  | { kind: "email_confirmed"; destination: string; nextMode: "verify" }
+  | { kind: "verified"; nextMode: "demo" };
+
 type UseVoiceDemoLiveOptions = {
-  onVerified?: () => void;
-  onEmailConfirmed?: (destination: string) => void;
+  onPhaseTransition?: (transition: VoiceDemoPhaseTransition) => void;
+  onUnexpectedClose?: () => void;
   onStatus?: (text: string) => void;
   onTranscript?: (line: string) => void;
 };
+
+const PHASE_TAIL_MS = 450;
+const RECONNECT_DELAY_MS = 700;
+const PHASE_FALLBACK_MS = 12000;
+const PHASE_MIN_SPOKEN_MS = 1800;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const [connecting, setConnecting] = useState(false);
@@ -47,8 +60,23 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const micStreamRef = useRef<MediaStream | null>(null);
   const playerRef = useRef<VoiceDemoAudioPlayer | null>(null);
   const modeRef = useRef<VoiceDemoLiveMode>("verify");
+  const intentionalDisconnectRef = useRef(false);
+  const pendingPhaseRef = useRef<VoiceDemoPhaseTransition | null>(null);
+  const pendingSinceRef = useRef<number | null>(null);
+  const pendingFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finishingPhaseRef = useRef(false);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
-  const disconnect = useCallback(() => {
+  const clearPendingFallback = useCallback(() => {
+    if (pendingFallbackTimerRef.current) {
+      clearTimeout(pendingFallbackTimerRef.current);
+      pendingFallbackTimerRef.current = null;
+    }
+  }, []);
+
+  const disconnect = useCallback((intentional = true) => {
+    intentionalDisconnectRef.current = intentional;
     micRef.current?.stop();
     micRef.current = null;
     micStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -65,18 +93,65 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     setConnecting(false);
   }, []);
 
-  const runTool = useCallback(
-    async (name: string, args: Record<string, unknown>) => {
-      const res = await fetch("/api/voice-demo/tool", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, args, mode: modeRef.current }),
-      });
-      const data = (await res.json()) as { result?: Record<string, unknown> };
-      return data.result ?? { ok: false, error: "Tool failed" };
+  const disconnectGraceful = useCallback(async () => {
+    await playerRef.current?.whenPlaybackIdle(10000);
+    await sleep(PHASE_TAIL_MS);
+    disconnect(true);
+  }, [disconnect]);
+
+  const finishPendingPhase = useCallback(async () => {
+    if (finishingPhaseRef.current || !pendingPhaseRef.current) return;
+    finishingPhaseRef.current = true;
+    clearPendingFallback();
+
+    const transition = pendingPhaseRef.current;
+    pendingPhaseRef.current = null;
+
+    try {
+      if (pendingSinceRef.current) {
+        const elapsed = Date.now() - pendingSinceRef.current;
+        if (elapsed < PHASE_MIN_SPOKEN_MS) {
+          await sleep(PHASE_MIN_SPOKEN_MS - elapsed);
+        }
+        pendingSinceRef.current = null;
+      }
+
+      optionsRef.current.onPhaseTransition?.(transition);
+      await playerRef.current?.whenPlaybackIdle(12000);
+      await sleep(PHASE_TAIL_MS);
+      disconnect(true);
+      await sleep(RECONNECT_DELAY_MS);
+      await connectRef.current(transition.nextMode);
+    } finally {
+      finishingPhaseRef.current = false;
+    }
+  }, [clearPendingFallback, disconnect]);
+
+  const schedulePendingFallback = useCallback(() => {
+    clearPendingFallback();
+    pendingFallbackTimerRef.current = setTimeout(() => {
+      void finishPendingPhase();
+    }, PHASE_FALLBACK_MS);
+  }, [clearPendingFallback, finishPendingPhase]);
+
+  const queuePhaseTransition = useCallback(
+    (transition: VoiceDemoPhaseTransition) => {
+      pendingPhaseRef.current = transition;
+      pendingSinceRef.current = Date.now();
+      schedulePendingFallback();
     },
-    []
+    [schedulePendingFallback]
   );
+
+  const runTool = useCallback(async (name: string, args: Record<string, unknown>) => {
+    const res = await fetch("/api/voice-demo/tool", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, args, mode: modeRef.current }),
+    });
+    const data = (await res.json()) as { result?: Record<string, unknown> };
+    return data.result ?? { ok: false, error: "Tool failed" };
+  }, []);
 
   const handleMessage = useCallback(
     async (message: LiveMessage) => {
@@ -87,16 +162,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           const name = call.name ?? "";
           const args = (call.args ?? {}) as Record<string, unknown>;
           const result = await runTool(name, args);
-          if (name === "verify_code" && result.verified === true) {
-            options.onVerified?.();
-          }
+
           if (
             name === "confirm_email_address" &&
             result.codeSent === true &&
             typeof result.destination === "string"
           ) {
-            options.onEmailConfirmed?.(result.destination);
+            queuePhaseTransition({
+              kind: "email_confirmed",
+              destination: result.destination,
+              nextMode: "verify",
+            });
           }
+          if (name === "verify_code" && result.verified === true) {
+            queuePhaseTransition({ kind: "verified", nextMode: "demo" });
+          }
+
           responses.push({
             id: call.id,
             name,
@@ -122,23 +203,31 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const outText = message.serverContent?.outputTranscription?.text;
       if (outText) {
-        options.onTranscript?.(`Assistant: ${outText}`);
+        optionsRef.current.onTranscript?.(`Assistant: ${outText}`);
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
-        options.onTranscript?.(`You: ${inText}`);
+        optionsRef.current.onTranscript?.(`You: ${inText}`);
+      }
+
+      if (message.serverContent?.turnComplete && pendingPhaseRef.current) {
+        void finishPendingPhase();
       }
     },
-    [options, runTool]
+    [finishPendingPhase, queuePhaseTransition, runTool]
   );
 
   const connect = useCallback(
     async (mode: VoiceDemoLiveMode) => {
-      disconnect();
+      pendingPhaseRef.current = null;
+      pendingSinceRef.current = null;
+      clearPendingFallback();
+      finishingPhaseRef.current = false;
+      disconnect(true);
       setError("");
       setConnecting(true);
       modeRef.current = mode;
-      options.onStatus?.(
+      optionsRef.current.onStatus?.(
         mode === "confirm_email"
           ? "Connecting — I'll confirm your email…"
           : mode === "verify"
@@ -181,10 +270,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             onopen: () => {
               setConnected(true);
               setConnecting(false);
-              options.onStatus?.(
-                mode === "verify"
-                  ? "Listening — read your 6-digit code aloud."
-                  : "You're live — ask me anything about 998."
+              optionsRef.current.onStatus?.(
+                mode === "confirm_email"
+                  ? "Listening — confirm your email when ready."
+                  : mode === "verify"
+                    ? "Listening — read your 6-digit code aloud."
+                    : "You're live — ask me anything about 998."
               );
               if (micStreamRef.current) {
                 micRef.current = startVoiceDemoMic(micStreamRef.current, (base64) => {
@@ -206,6 +297,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             },
             onclose: () => {
               setConnected(false);
+              if (!intentionalDisconnectRef.current) {
+                optionsRef.current.onUnexpectedClose?.();
+              }
+              intentionalDisconnectRef.current = false;
             },
           },
         });
@@ -225,12 +320,24 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
       }
     },
-    [disconnect, handleMessage, options]
+    [clearPendingFallback, disconnect, handleMessage]
   );
+
+  const connectRef = useRef(connect);
+  connectRef.current = connect;
+
+  const transitionToDemo = useCallback(async () => {
+    optionsRef.current.onPhaseTransition?.({ kind: "verified", nextMode: "demo" });
+    await disconnectGraceful();
+    await sleep(RECONNECT_DELAY_MS);
+    await connect("demo");
+  }, [connect, disconnectGraceful]);
 
   return {
     connect,
-    disconnect,
+    disconnect: () => disconnect(true),
+    disconnectGraceful,
+    transitionToDemo,
     connecting,
     connected,
     error,

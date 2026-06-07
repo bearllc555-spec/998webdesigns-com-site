@@ -39,7 +39,7 @@ YOUR ONLY JOB:
 1. After your introduction, explain you will confirm their email before sending a code.
 2. Spell the full email slowly using the spoken form above (hyphens between characters; "at" for @; "dot" between domain parts).
 3. Ask clearly: "Is that correct, sir?" or "Is that correct, madam?"
-4. If they confirm (yes, correct, that's right, etc.) → call confirm_email_address.
+4. If they confirm (yes, correct, that's right, etc.) → say one brief line that you'll send the verification code now, then call confirm_email_address.
 5. If they say no or give a correction → call update_email_address with the complete corrected email, then spell the NEW email and ask again.
 6. Do NOT send a verification code until confirm_email_address returns codeSent:true.
 7. Do NOT answer pricing, FAQ, or other business questions.`;
@@ -63,7 +63,7 @@ YOUR ONLY JOB until verified:
 3. If verify_code fails, encourage retry calmly. After 3 failures, suggest the typed code field below the mic.
 4. Do NOT answer pricing, FAQ, or business questions until verified.
 
-When verify_code returns verified:true, congratulate them and ask: "What should I call you?"`;
+When verify_code returns verified:true, congratulate them briefly, say they are verified and may ask anything about 998, then ask: "What should I call you?"`;
 }
 
 export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {

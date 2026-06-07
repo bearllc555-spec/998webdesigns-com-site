@@ -119,6 +119,25 @@ export class VoiceDemoAudioPlayer {
     this.nextTime = this.ensureContext().currentTime;
   }
 
+  /** Resolves when queued assistant audio has finished (or maxWaitMs elapses). */
+  whenPlaybackIdle(maxWaitMs = 12000): Promise<void> {
+    const ctx = this.ctx;
+    if (!ctx) return Promise.resolve();
+
+    const started = Date.now();
+    return new Promise((resolve) => {
+      const tick = () => {
+        const remainingSec = this.nextTime - ctx.currentTime;
+        if (remainingSec <= 0.05 || Date.now() - started >= maxWaitMs) {
+          resolve();
+          return;
+        }
+        setTimeout(tick, 80);
+      };
+      tick();
+    });
+  }
+
   close(): void {
     void this.ctx?.close();
     this.ctx = null;

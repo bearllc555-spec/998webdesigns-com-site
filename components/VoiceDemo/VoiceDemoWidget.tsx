@@ -26,16 +26,18 @@ export function VoiceDemoWidget() {
   const [website, setWebsite] = useState("");
 
   const live = useVoiceDemoLive({
-    onEmailConfirmed: (confirmedDestination) => {
-      live.disconnect();
-      setDestination(confirmedDestination);
-      setPhase("verify");
-      setStatus("Code sent — tap Start voice and read your 6-digit code.");
+    onPhaseTransition: (transition) => {
+      if (transition.kind === "email_confirmed") {
+        setDestination(transition.destination);
+        setPhase("verify");
+        setStatus("Code sent — Jarvis will ask for your 6-digit code.");
+      } else {
+        setPhase("demo");
+        setStatus("Verified — ask Jarvis anything about 998.");
+      }
     },
-    onVerified: () => {
-      live.disconnect();
-      setStatus("Verified — tap Start voice to talk with the assistant.");
-      setPhase("demo");
+    onUnexpectedClose: () => {
+      setStatus("Session paused — tap Start voice to continue.");
     },
     onStatus: setStatus,
     onTranscript: (line) => setTranscript((prev) => [...prev.slice(-12), line]),
@@ -144,9 +146,7 @@ export function VoiceDemoWidget() {
         return;
       }
       setTypedCode("");
-      live.disconnect();
-      setStatus("Verified — tap Start voice to talk with the assistant.");
-      setPhase("demo");
+      void live.transitionToDemo();
     } catch {
       setFormError("Network error.");
     } finally {
