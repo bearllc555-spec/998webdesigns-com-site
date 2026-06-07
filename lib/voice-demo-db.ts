@@ -20,6 +20,7 @@ export type VoiceDemoLeadRow = {
   promo_code: string | null;
   secondary_declined_at: string | null;
   session_summary: string | null;
+  ops_log: unknown;
   location_zip: string | null;
   location_city: string | null;
   location_state: string | null;

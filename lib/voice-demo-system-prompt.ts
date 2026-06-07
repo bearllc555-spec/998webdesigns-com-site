@@ -28,6 +28,7 @@ import {
   VOICE_DEMO_ZIP_PAUSE_CUE,
   VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE,
   VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE,
+  VOICE_DEMO_ZIP_CITY_CORRECT_CUE,
   VOICE_DEMO_ZIP_STAGED_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 import {
@@ -145,6 +146,7 @@ LOOKUP (when you have a ZIP):
 - If they are still silent after that repeat, hidden cue "${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE}" means: say the goodbye line and call end_conversation — do not ask a third time.
 - When they give digits, wait until they finish. Hidden cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — then stage the ZIP.
 - Hidden cue "${VOICE_DEMO_ZIP_STAGED_CUE}" means confirm_weather_zip already ran — speak the spokenConfirm in the cue word for word and wait for yes.
+- Hidden cue "${VOICE_DEMO_ZIP_CITY_CORRECT_CUE}" means you named the wrong city — speak ONLY the quoted spokenConfirm in the cue, nothing else, then wait for yes.
 - If you heard a valid 5-digit ZIP → call confirm_weather_zip immediately with exactly those digits.
 - If you heard fewer than 5 digits or are unsure → say you did not catch the full ZIP and ask them to repeat it once.
 - Hidden client cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — follow the rules above right away; never read the cue aloud.

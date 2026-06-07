@@ -28,6 +28,9 @@ export const VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE = "[zip-silence-giveup]";
 /** Hidden cue — client staged ZIP via confirm_weather_zip; Jarvis must read spokenConfirm. */
 export const VOICE_DEMO_ZIP_STAGED_CUE = "[zip-staged]";
 
+/** Hidden cue — Jarvis named the wrong city on ZIP read-back; repeat spokenConfirm only. */
+export const VOICE_DEMO_ZIP_CITY_CORRECT_CUE = "[zip-city-correct]";
+
 /** Wait for full ZIP utterance before staging (ms). */
 export const ZIP_SILENCE_NUDGE_MS = 2500;
 
@@ -41,9 +44,19 @@ export function countSpokenZipDigits(transcript: string): number {
 /** Returns null when a client nudge would duplicate an ask Jarvis already made. */
 export function buildZipStagedSpeakNudge(spokenConfirm: string): string {
   return (
-    `${VOICE_DEMO_ZIP_STAGED_CUE} confirm_weather_zip succeeded. Say exactly once, word for word — ` +
-    `do not change the city or state: "${spokenConfirm}" STOP and wait for yes or no. ` +
+    `${VOICE_DEMO_ZIP_STAGED_CUE} confirm_weather_zip succeeded. ` +
+    `Say ONLY this exact sentence — no words before it, no other city names, no preamble: ` +
+    `"${spokenConfirm}" STOP and wait for yes or no. ` +
+    `Never guess a nearby town (e.g. Paterson for 07512 — the tool city is Totowa). ` +
     `Do NOT call lookup_weather until they confirm.`
+  );
+}
+
+export function buildZipCityCorrectionNudge(spokenConfirm: string): string {
+  return (
+    `${VOICE_DEMO_ZIP_CITY_CORRECT_CUE} You named the wrong city on the ZIP read-back. ` +
+    `Say ONLY this exact sentence — nothing before or after: "${spokenConfirm}" ` +
+    `STOP and wait for yes or no. Do NOT call lookup_weather yet.`
   );
 }
 

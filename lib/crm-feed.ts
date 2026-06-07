@@ -1,6 +1,11 @@
 import { isCrmInboxFlag, type CrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { wdLeadCrmFeedSource } from "@/lib/crm-wd-lead-segment";
 import { supabaseAdmin } from "@/lib/supabase";
+import {
+  countVoiceDemoOpsWarnings,
+  parseVoiceDemoOpsLog,
+  summarizeVoiceDemoOpsWarnings,
+} from "@/lib/voice-demo-ops";
 import { formatPossibleLocationLabel } from "@/lib/voice-demo-weather";
 
 export type { CrmInboxFlag };
@@ -90,7 +95,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("voice_demo_leads")
       .select(
-        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, location_zip, location_city, location_state, read_at, inbox_flag"
+        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, ops_log, location_zip, location_city, location_state, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -249,6 +254,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       (row.location_state as string | null) ?? null,
       (row.location_zip as string | null) ?? null
     );
+    const opsLog = parseVoiceDemoOpsLog(row.ops_log);
+    const opsWarnings = summarizeVoiceDemoOpsWarnings(opsLog);
+    const opsNotes = opsWarnings
+      ? [row.session_summary as string | null, `Jarvis ops:\n${opsWarnings}`]
+          .filter(Boolean)
+          .join("\n\n")
+      : ((row.session_summary as string) ?? null);
     items.push({
       id: row.id,
       source: "voice_demo",
@@ -257,19 +269,23 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       email: (row.email as string) ?? "",
       businessName: "",
       status: verified ? "verified" : "pending_verify",
-      notes: (row.session_summary as string) ?? null,
+      notes: opsNotes,
       stripeSessionId: null,
       stripeSubscriptionId: null,
-      message: locationLabel
-        ? `Possible location: ${locationLabel}`
-        : row.promo_sent_at
-          ? `Promo ${row.promo_code ?? "sent"}`
-          : `Channel: ${row.primary_channel}`,
+      message: opsWarnings
+        ? `Jarvis ops (${countVoiceDemoOpsWarnings(opsLog)}): see notes`
+        : locationLabel
+          ? `Possible location: ${locationLabel}`
+          : row.promo_sent_at
+            ? `Promo ${row.promo_code ?? "sent"}`
+            : `Channel: ${row.primary_channel}`,
       phone: (row.phone as string) ?? null,
       payload: {
         primaryChannel: row.primary_channel,
         promoCode: row.promo_code,
         promoSentAt: row.promo_sent_at,
+        opsLog,
+        opsWarningCount: countVoiceDemoOpsWarnings(opsLog),
         possibleLocation: locationLabel
           ? {
               zip: row.location_zip,

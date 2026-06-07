@@ -7,6 +7,7 @@ import {
   buildZipPauseNudge,
   buildZipSilenceGiveUpNudge,
   buildZipSilenceRepeatNudge,
+  buildZipCityCorrectionNudge,
   buildZipStagedSpeakNudge,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
@@ -18,6 +19,7 @@ import {
   VOICE_DEMO_ZIP_PAUSE_CUE,
   VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE,
   VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE,
+  VOICE_DEMO_ZIP_CITY_CORRECT_CUE,
   VOICE_DEMO_ZIP_STAGED_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 
@@ -28,8 +30,18 @@ describe("voice-demo-zip-nudge", () => {
     );
     expect(nudge).toContain(VOICE_DEMO_ZIP_STAGED_CUE);
     expect(nudge).toContain("Totowa");
-    expect(nudge).toMatch(/word for word/i);
+    expect(nudge).toMatch(/Say ONLY this exact sentence/i);
+    expect(nudge).toMatch(/Paterson for 07512/i);
     expect(nudge).toMatch(/Do NOT call lookup_weather/i);
+  });
+
+  it("corrects wrong city on ZIP read-back", () => {
+    const line =
+      "I have ZIP code 0 7 5 1 2 for Totowa, New Jersey. Is that correct?";
+    const nudge = buildZipCityCorrectionNudge(line);
+    expect(nudge).toContain(VOICE_DEMO_ZIP_CITY_CORRECT_CUE);
+    expect(nudge).toContain(line);
+    expect(nudge).toMatch(/wrong city/i);
   });
 
   it("nudges confirm_weather_zip when five digits heard", () => {

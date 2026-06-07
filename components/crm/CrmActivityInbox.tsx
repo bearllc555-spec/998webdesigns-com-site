@@ -358,16 +358,40 @@ function InboxRow({
               | { label?: string; city?: string; state?: string; zip?: string }
               | null
               | undefined;
-            if (!loc || typeof loc !== "object") return null;
+            const opsLog = item.payload?.opsLog as
+              | Array<{ kind?: string; severity?: string; message?: string; at?: string }>
+              | null
+              | undefined;
+            const opsWarnings = Array.isArray(opsLog)
+              ? opsLog.filter((e) => e.severity === "warn" || e.severity === "error")
+              : [];
             const label =
-              loc.label ??
-              [loc.city, loc.state, loc.zip].filter(Boolean).join(", ");
-            if (!label) return null;
+              loc && typeof loc === "object"
+                ? loc.label ?? [loc.city, loc.state, loc.zip].filter(Boolean).join(", ")
+                : "";
+            if (!label && opsWarnings.length === 0) return null;
             return (
-              <p className="mt-4 rounded-xl border border-rule bg-rule-soft/50 px-4 py-3 text-sm text-ink-soft">
-                <span className="font-medium text-ink">Client&apos;s possible location: </span>
-                {label}
-              </p>
+              <div className="mt-4 grid gap-3">
+                {label ? (
+                  <p className="rounded-xl border border-rule bg-rule-soft/50 px-4 py-3 text-sm text-ink-soft">
+                    <span className="font-medium text-ink">Client&apos;s possible location: </span>
+                    {label}
+                  </p>
+                ) : null}
+                {opsWarnings.length > 0 ? (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+                    <p className="font-medium">Jarvis ops warnings ({opsWarnings.length})</p>
+                    <ul className="mt-2 list-disc space-y-1 pl-5">
+                      {opsWarnings.slice(-5).map((entry, idx) => (
+                        <li key={`${entry.kind ?? "ops"}-${idx}`}>
+                          <span className="font-medium">{entry.kind ?? "event"}: </span>
+                          {entry.message ?? "Anomaly logged"}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
             );
           })()}
 
