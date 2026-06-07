@@ -50,8 +50,19 @@ export type UsWeatherLookupResult =
   | { ok: false; error: string };
 
 /** Normalize a US ZIP to 5 digits (ZIP+4 accepted). */
-export function normalizeUsZipCode(raw: string): string | null {
-  const trimmed = raw.trim();
+export function normalizeUsZipCode(raw: string | number): string | null {
+  let trimmed: string;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    trimmed = String(Math.trunc(raw));
+    if (trimmed.length > 0 && trimmed.length < 5) {
+      trimmed = trimmed.padStart(5, "0");
+    }
+  } else if (typeof raw === "string") {
+    trimmed = raw.trim();
+  } else {
+    return null;
+  }
+
   if (!trimmed) return null;
 
   const zipPlus4 = trimmed.match(/^(\d{5})-(\d{4})$/);
@@ -59,7 +70,17 @@ export function normalizeUsZipCode(raw: string): string | null {
 
   const digits = trimmed.replace(/\D/g, "");
   if (digits.length >= 5) return digits.slice(0, 5);
+  // Voice/STT and JSON numbers often drop the leading zero (e.g. 07424 → 7424).
+  if (digits.length === 4) return `0${digits}`;
   return null;
+}
+
+/** True when two ZIP inputs resolve to the same 5-digit code. */
+export function usZipCodesEquivalent(a: string | number | null | undefined, b: string | number | null | undefined): boolean {
+  if (a == null || b == null) return false;
+  const na = normalizeUsZipCode(a);
+  const nb = normalizeUsZipCode(b);
+  return !!na && !!nb && na === nb;
 }
 
 /** WMO weather code → short spoken label. */

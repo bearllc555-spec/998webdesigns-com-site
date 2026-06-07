@@ -21,12 +21,14 @@ import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/vo
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
 import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
+import { coerceToolBoolean, coerceToolString } from "@/lib/voice-demo-tool-args";
 import {
   buildWeatherZipConfirmLine,
   buildWeatherZipLookupLine,
   normalizeUsZipCode,
   lookupUsWeatherByZip,
   resolveUsZipPlace,
+  usZipCodesEquivalent,
 } from "@/lib/voice-demo-weather";
 import { Type, type ToolListUnion } from "@google/genai";
 
@@ -410,7 +412,7 @@ export async function executeVoiceDemoTool(
   }
 
   if (name === "confirm_weather_zip") {
-    const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
+    const zipCode = coerceToolString(args.zipCode);
     const placeResult = await resolveUsZipPlace(zipCode);
     if (!placeResult.ok) {
       return {
@@ -443,7 +445,7 @@ export async function executeVoiceDemoTool(
   }
 
   if (name === "lookup_weather") {
-    if (args.userConfirmed !== true) {
+    if (!coerceToolBoolean(args.userConfirmed)) {
       return {
         ok: false,
         error:
@@ -451,18 +453,32 @@ export async function executeVoiceDemoTool(
       };
     }
 
-    const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
+    const zipCode = coerceToolString(args.zipCode);
     const normalized = normalizeUsZipCode(zipCode);
-    const refreshed = await getVoiceDemoLead(leadId);
-    if (!normalized || !refreshed?.location_zip || refreshed.location_zip !== normalized) {
+    if (!normalized) {
       return {
         ok: false,
         error:
-          "ZIP not staged or mismatch. Call confirm_weather_zip with the ZIP you heard, read it back, wait for yes, then lookup with the same ZIP.",
+          "Could not read a valid 5-digit ZIP. Call confirm_weather_zip with the ZIP you heard, read it back, wait for yes, then lookup with the same ZIP.",
       };
     }
 
-    const result = await lookupUsWeatherByZip(zipCode);
+    const placeResult = await resolveUsZipPlace(normalized);
+    if (!placeResult.ok) {
+      return { ok: false, error: placeResult.error };
+    }
+
+    const refreshed = await getVoiceDemoLead(leadId);
+    const stagedZip = refreshed?.location_zip ?? null;
+    if (stagedZip && !usZipCodesEquivalent(stagedZip, placeResult.place.zip)) {
+      return {
+        ok: false,
+        error:
+          "ZIP does not match what you confirmed. Call confirm_weather_zip with the ZIP they gave, read it back, wait for yes, then lookup with the same ZIP.",
+      };
+    }
+
+    const result = await lookupUsWeatherByZip(placeResult.place.zip);
     if (!result.ok) {
       return { ok: false, error: result.error };
     }

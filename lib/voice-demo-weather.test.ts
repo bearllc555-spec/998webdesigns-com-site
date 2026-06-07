@@ -7,6 +7,7 @@ import {
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
   normalizeUsZipCode,
+  usZipCodesEquivalent,
   VOICE_DEMO_WEATHER_OFFER_LINE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
   WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS,
@@ -26,7 +27,14 @@ describe("voice-demo-weather", () => {
     expect(normalizeUsZipCode("07424")).toBe("07424");
     expect(normalizeUsZipCode("07424-1234")).toBe("07424");
     expect(normalizeUsZipCode("zip 10001")).toBe("10001");
-    expect(normalizeUsZipCode("1234")).toBeNull();
+    expect(normalizeUsZipCode("123")).toBeNull();
+  });
+
+  it("recovers leading-zero ZIPs dropped by voice or JSON numbers", () => {
+    expect(normalizeUsZipCode("7424")).toBe("07424");
+    expect(normalizeUsZipCode(7424)).toBe("07424");
+    expect(normalizeUsZipCode(10001)).toBe("10001");
+    expect(usZipCodesEquivalent("07424", 7424)).toBe(true);
   });
 
   it("maps WMO codes to spoken labels", () => {
