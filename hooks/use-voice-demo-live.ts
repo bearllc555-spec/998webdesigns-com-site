@@ -31,10 +31,12 @@ import {
   shouldClientScheduleFarewellHangup,
 } from "@/lib/voice-demo-farewell";
 import {
+  buildPostNameGreetingNudge,
   buildPostNameHoldNudge,
   buildSaveNameToolMessage,
   buildSessionResumeNudge,
   isAssistantPostNameGreeting,
+  POST_NAME_GREETING_NUDGE_MS,
   triggerVoiceDemoOpening,
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
@@ -211,6 +213,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const savedNameRef = useRef("");
   const postNameLineSpokenRef = useRef(false);
   const postNameHoldSentRef = useRef(false);
+  const postNameGreetingNudgeSentRef = useRef(false);
+  const postNameGreetingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
   const connectedAtRef = useRef(0);
@@ -310,6 +314,65 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     []
   );
 
+  const clearPostNameGreetingTimer = useCallback(() => {
+    if (postNameGreetingTimerRef.current) {
+      clearTimeout(postNameGreetingTimerRef.current);
+      postNameGreetingTimerRef.current = null;
+    }
+  }, []);
+
+  const sendPostNameGreetingNudge = useCallback(() => {
+    const session = sessionRef.current;
+    const name = savedNameRef.current.trim();
+    if (
+      !session ||
+      !name ||
+      !nameSavedRef.current ||
+      postNameLineSpokenRef.current ||
+      postNameGreetingNudgeSentRef.current
+    ) {
+      return;
+    }
+    postNameGreetingNudgeSentRef.current = true;
+    logVoiceDemoOps({
+      kind: "session_anomaly",
+      message: "Post-name greeting nudge — model idle after save_name",
+      severity: "warn",
+      meta: { name },
+    });
+    try {
+      session.sendClientContent({
+        turns: buildPostNameGreetingNudge(name),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] post-name greeting nudge", err);
+      postNameGreetingNudgeSentRef.current = false;
+    }
+  }, []);
+
+  const schedulePostNameGreetingNudge = useCallback(() => {
+    if (
+      modeRef.current !== "demo" ||
+      !nameSavedRef.current ||
+      postNameLineSpokenRef.current ||
+      postNameGreetingNudgeSentRef.current
+    ) {
+      return;
+    }
+    clearPostNameGreetingTimer();
+    postNameGreetingTimerRef.current = setTimeout(() => {
+      postNameGreetingTimerRef.current = null;
+      if (playerRef.current?.isPlaying()) {
+        void playerRef.current.whenPlaybackIdle(10000).then(() => {
+          sendPostNameGreetingNudge();
+        });
+        return;
+      }
+      sendPostNameGreetingNudge();
+    }, POST_NAME_GREETING_NUDGE_MS);
+  }, [clearPostNameGreetingTimer, sendPostNameGreetingNudge]);
+
   const sendPostNameHoldNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || postNameHoldSentRef.current) return;
@@ -354,8 +417,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         return;
       }
       postNameLineSpokenRef.current = true;
+      clearPostNameGreetingTimer();
     },
-    [sendPostNameHoldNudge]
+    [clearPostNameGreetingTimer, sendPostNameHoldNudge]
   );
 
   const emitCaption = useCallback((role: VoiceDemoCaptionRole, chunk: string) => {
@@ -1252,6 +1316,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const disconnect = useCallback((intentional = true) => {
     clearReconnectTimer();
+    clearPostNameGreetingTimer();
     clearMicMuteDisconnectTimer();
     applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
@@ -1276,6 +1341,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     applyMicMuted,
     clearMicMuteDisconnectTimer,
     clearPhoneCollectionState,
+    clearPostNameGreetingTimer,
     clearReconnectTimer,
     clearWeatherZipState,
     stopOrbLoop,
@@ -1561,10 +1627,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             nameSavedRef.current = true;
             const savedName = typeof result.name === "string" ? result.name.trim() : "";
             if (savedName) savedNameRef.current = savedName;
-            const alreadyGreeted = isAssistantPostNameGreeting(lastAssistantTextRef.current);
-            if (alreadyGreeted) {
-              postNameLineSpokenRef.current = true;
-            }
+            const alreadyGreeted = postNameLineSpokenRef.current;
             responses.push({
               id: call.id,
               name,
@@ -1573,6 +1636,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
               },
             });
+            if (!alreadyGreeted) {
+              schedulePostNameGreetingNudge();
+            }
             continue;
           }
 
@@ -1763,7 +1829,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           if (isUserExplicitlyDone(userLine)) {
             visitorExplicitlyDoneRef.current = true;
           }
-          if (isUserSmallTalk(userLine)) {
+          if (
+            nameSavedRef.current &&
+            !postNameLineSpokenRef.current &&
+            isUserSmallTalk(userLine)
+          ) {
+            clearPostNameGreetingTimer();
+            sendPostNameGreetingNudge();
+          } else if (isUserSmallTalk(userLine)) {
             visitorAskedSubstantiveQuestionRef.current = false;
             clearWrapUpTimer();
           } else if (isUserSubstantiveQuestion(userLine)) {
@@ -1897,6 +1970,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           scheduleFarewellHangup();
         }
         if (modeRef.current === "demo") {
+          if (nameSavedRef.current && !postNameLineSpokenRef.current) {
+            schedulePostNameGreetingNudge();
+          }
           detectAssistantWeatherPrompt(assistantSnapshot);
           if (
             awaitingZipConfirmRef.current &&
@@ -1962,6 +2038,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     },
     [
       clearInputSilenceTimers,
+      clearPostNameGreetingTimer,
       clearWrapUpTimer,
       handleAssistantInterrupted,
       detectAssistantWeatherPrompt,
@@ -1991,6 +2068,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       syncWeatherCollectionState,
       noteAssistantPostNameLine,
       scheduleLiveReconnect,
+      schedulePostNameGreetingNudge,
+      sendPostNameGreetingNudge,
     ]
   );
 
@@ -2019,6 +2098,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         savedNameRef.current = "";
         postNameLineSpokenRef.current = false;
         postNameHoldSentRef.current = false;
+        postNameGreetingNudgeSentRef.current = false;
+        clearPostNameGreetingTimer();
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
         reconnectAttemptRef.current = 0;

@@ -45,6 +45,21 @@ export function buildSaveNameToolMessage(visitorName: string, alreadyGreeted: bo
   );
 }
 
+/** Hidden cue — name saved but post-name greeting not spoken yet; speak now. */
+export const VOICE_DEMO_POST_NAME_PENDING_CUE = "[post-name-pending]";
+
+/** Wait after save_name before nudging — model often idles until visitor speaks. */
+export const POST_NAME_GREETING_NUDGE_MS = 900;
+
+export function buildPostNameGreetingNudge(visitorName: string): string {
+  const first = visitorName.split(/\s+/)[0] ?? visitorName;
+  return (
+    `${VOICE_DEMO_POST_NAME_PENDING_CUE} Name is saved. Speak NOW exactly once: ` +
+    `"Good day, ${first}. ${VOICE_DEMO_POST_NAME_LINE}" ` +
+    `Then stop and listen. Do NOT say "how are you". Do NOT ask for phone. Do NOT call save_name again.`
+  );
+}
+
 /** Hidden cue — post-name line already spoken; model must stay silent. */
 export const VOICE_DEMO_POST_NAME_HOLD_CUE = "[post-name-hold]";
 

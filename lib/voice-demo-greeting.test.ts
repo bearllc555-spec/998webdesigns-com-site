@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPostNameGreetingNudge,
   buildPostNameHoldNudge,
   buildSaveNameToolMessage,
   buildSessionResumeNudge,
@@ -8,6 +9,7 @@ import {
   VOICE_DEMO_MANDATORY_OPENING,
   VOICE_DEMO_POST_NAME_HOLD_CUE,
   VOICE_DEMO_POST_NAME_LINE,
+  VOICE_DEMO_POST_NAME_PENDING_CUE,
   VOICE_DEMO_SESSION_RESUME_CUE,
   VOICE_DEMO_SESSION_START_CUE,
   triggerVoiceDemoOpening,
@@ -45,6 +47,14 @@ describe("voice-demo-greeting", () => {
     expect(silent).toMatch(/stay completely silent/i);
     const speak = buildSaveNameToolMessage("Anthony", false);
     expect(speak).toContain(VOICE_DEMO_POST_NAME_LINE);
+  });
+
+  it("nudges post-name greeting when model idles after save_name", () => {
+    const nudge = buildPostNameGreetingNudge("Anthony");
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_PENDING_CUE);
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_LINE);
+    expect(nudge).toMatch(/Good day, Anthony/i);
+    expect(nudge).toMatch(/Do NOT say "how are you"/i);
   });
 
   it("builds post-name hold nudge to block repeats", () => {
