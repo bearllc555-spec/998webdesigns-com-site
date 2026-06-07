@@ -28,8 +28,10 @@ Q3: "${VOICE_DEMO_WRAPUP_QUESTIONS[2]}"
 Q4: "${VOICE_DEMO_WRAPUP_QUESTIONS[3]}"
 After Q4, return to Q1 and repeat. Track your position in the cycle across the conversation.
 
-Q1 WORDING (critical — never garble):
-- Q1 must be spoken exactly: "Is there anything else I can help you with today?" — include the word anything. NEVER say "any else" or drop "thing".
+ANYTHING ELSE — pronunciation (Q1 and Q4 — critical):
+- The word is anything (any + thing), never "any else". Never drop "thing".
+- Q1 exact: "Is there anything else I can help you with today?"
+- Q4 exact: "Anything else?" — still the full word anything at the start, then else.
 
 HOW TO USE THE CYCLE:
 - First time you check if they need more help → Q1. Second wrap-up → Q2. Third → Q3. Fourth → Q4. Fifth wrap-up → Q1 again, and so on.
