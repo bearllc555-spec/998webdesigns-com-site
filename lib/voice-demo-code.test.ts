@@ -6,9 +6,11 @@ import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import {
   buildFarewellHoldNudge,
   canModelEndConversation,
+  isAssistantExplicitGoodbye,
   isAssistantFarewell,
   isUserExplicitlyDone,
   isUserFarewellEcho,
+  shouldClientScheduleFarewellHangup,
   VOICE_DEMO_FAREWELL_HOLD_CUE,
 } from "@/lib/voice-demo-farewell";
 
@@ -60,6 +62,20 @@ describe("voice demo farewell", () => {
     expect(isAssistantFarewell("We take care of hosting, SSL, and updates.")).toBe(false);
     expect(isAssistantFarewell("I'll take care of that for you, sir.")).toBe(false);
     expect(isAssistantFarewell("Take care, sir — goodbye.")).toBe(true);
+    expect(
+      isAssistantFarewell(
+        "We build custom websites for local businesses, sir — mobile-friendly pages, hosting included. It is my pleasure assisting you with your website design needs."
+      )
+    ).toBe(false);
+    expect(
+      isAssistantExplicitGoodbye("Thank you for contacting 998 web designs — goodbye.")
+    ).toBe(true);
+    expect(shouldClientScheduleFarewellHangup("Have a pleasant day, sir.", false)).toBe(
+      false
+    );
+    expect(shouldClientScheduleFarewellHangup("Have a pleasant day, sir.", true)).toBe(
+      true
+    );
   });
 
   it("detects explicit visitor done", () => {
@@ -91,6 +107,6 @@ describe("voice demo farewell", () => {
         visitorExplicitlyDone: false,
         assistantText: "How may I help you today?",
       })
-    ).toBe(false);
+    ).toBe(true);
   });
 });

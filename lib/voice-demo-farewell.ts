@@ -17,7 +17,8 @@ export function canModelEndConversation(opts: {
   assistantText: string;
 }): boolean {
   if (opts.farewellSent) return true;
-  if (isAssistantFarewell(opts.assistantText)) return true;
+  if (opts.goodbyeNudgeSent) return true;
+  if (isAssistantExplicitGoodbye(opts.assistantText)) return true;
   if (opts.visitorExplicitlyDone && isAssistantFarewell(opts.assistantText)) return true;
   return false;
 }
@@ -63,6 +64,23 @@ export function isAssistantOnboardingOrHelpSpeech(text: string): boolean {
   );
 }
 
+function isSubstantiveServiceSpeech(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  return (
+    t.length >= 60 &&
+    /\b(website|design fee|hosting|portfolio|pricing|timeline|pages|mobile|998)\b/.test(t)
+  );
+}
+
+/** Canonical sign-off — safe to end the call (thank-you line or explicit goodbye). */
+export function isAssistantExplicitGoodbye(text: string): boolean {
+  const tail = assistantFarewellTail(text).toLowerCase();
+  if (!tail || isAssistantOnboardingOrHelpSpeech(text)) return false;
+  if (/\bthank you for contacting\b/.test(tail)) return true;
+  if (/\b(goodbye|farewell)\b/.test(tail)) return true;
+  return false;
+}
+
 /** Jarvis delivered a final sign-off (paired with end_conversation tool when possible). */
 export function isAssistantFarewellPhrase(text: string): boolean {
   const t = text.trim().toLowerCase();
@@ -71,8 +89,7 @@ export function isAssistantFarewellPhrase(text: string): boolean {
 
   if (/\bthank you for contacting\b/.test(t)) return true;
   if (/\b(goodbye|farewell|until next time)\b/.test(t)) return true;
-  if (/\bpleasant (day|evening)\b/.test(t)) return true;
-  if (/\b(lovely speaking|pleasure assisting)\b/.test(t)) return true;
+  if (/\bhave a pleasant (day|evening)\b/.test(t)) return true;
   if (/\bgood evening\b/.test(t) && /\b(goodbye|contacting)\b/.test(t)) return true;
 
   // "take care" as a sign-off — not "take care of your website / hosting"
@@ -82,5 +99,17 @@ export function isAssistantFarewellPhrase(text: string): boolean {
 }
 
 export function isAssistantFarewell(text: string): boolean {
+  if (isAssistantOnboardingOrHelpSpeech(text)) return false;
+  if (isSubstantiveServiceSpeech(text) && !isAssistantExplicitGoodbye(text)) return false;
   return isAssistantFarewellPhrase(assistantFarewellTail(text));
+}
+
+/** Client auto-hangup — stricter than isAssistantFarewell to avoid FAQ false positives. */
+export function shouldClientScheduleFarewellHangup(
+  text: string,
+  visitorExplicitlyDone: boolean
+): boolean {
+  if (isAssistantExplicitGoodbye(text)) return true;
+  if (visitorExplicitlyDone && isAssistantFarewell(text)) return true;
+  return false;
 }

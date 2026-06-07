@@ -23,9 +23,9 @@ import {
 import {
   buildFarewellHoldNudge,
   canModelEndConversation,
-  isAssistantFarewell,
   isUserExplicitlyDone,
   isUserFarewellEcho,
+  shouldClientScheduleFarewellHangup,
 } from "@/lib/voice-demo-farewell";
 import {
   buildPostNameHoldNudge,
@@ -185,6 +185,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const goodbyeNudgeSentRef = useRef(false);
   const farewellHoldSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
+  const pendingEndConversationRef = useRef(false);
   const lastAssistantTextRef = useRef("");
   const stagedZipReadbackRef = useRef<StagedZipReadback | null>(null);
   const zipCityCorrectionSentRef = useRef(false);
@@ -1208,9 +1209,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const finishConversation = useCallback(async () => {
     if (farewellDisconnectingRef.current) return;
     farewellDisconnectingRef.current = true;
-    latchFarewellClosing();
     try {
       await playerRef.current?.whenPlaybackIdle(12000);
+      latchFarewellClosing();
       await sleep(PHASE_TAIL_MS);
       optionsRef.current.onConversationEnd?.();
       optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
@@ -1223,17 +1224,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const scheduleFarewellHangup = useCallback(() => {
     if (farewellDisconnectingRef.current || reconnectingRef.current) return;
-    void (async () => {
-      await playerRef.current?.whenPlaybackIdle(12000);
-      if (
-        jarvisFarewellSentRef.current &&
-        !farewellDisconnectingRef.current &&
-        !reconnectingRef.current &&
-        sessionRef.current
-      ) {
-        void finishConversation();
-      }
-    })();
+    void finishConversation();
   }, [finishConversation]);
 
   const endCallNow = useCallback(() => {
@@ -1511,7 +1502,18 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 });
                 continue;
               }
-              void finishConversation();
+              pendingEndConversationRef.current = true;
+              responses.push({
+                id: call.id,
+                name,
+                response: {
+                  ok: true,
+                  endCall: true,
+                  message:
+                    "Acknowledged. Finish your current sentence if any audio remains, then stay silent.",
+                },
+              });
+              continue;
             }
           }
 
@@ -1682,12 +1684,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           modeRef.current === "demo" &&
           postNameLineSpokenRef.current &&
           !reconnectingRef.current &&
-          isAssistantFarewell(assistantSnapshot)
+          shouldClientScheduleFarewellHangup(
+            assistantSnapshot,
+            visitorExplicitlyDoneRef.current
+          )
         ) {
-          if (!jarvisFarewellSentRef.current) {
-            latchFarewellClosing();
-            scheduleFarewellHangup();
-          }
+          scheduleFarewellHangup();
+        }
+        if (pendingEndConversationRef.current) {
+          pendingEndConversationRef.current = false;
+          scheduleFarewellHangup();
         }
         if (modeRef.current === "demo") {
           detectAssistantWeatherPrompt(assistantSnapshot);
@@ -1762,7 +1768,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       endCallNow,
       finishConversation,
       finishPendingPhase,
-      latchFarewellClosing,
       scheduleFarewellHangup,
       queuePhaseTransition,
       runTool,
@@ -1798,6 +1803,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         goodbyeNudgeSentRef.current = false;
         farewellHoldSentRef.current = false;
         farewellDisconnectingRef.current = false;
+        pendingEndConversationRef.current = false;
         lastAssistantTextRef.current = "";
         greetingSentRef.current = false;
         nameSavedRef.current = false;
