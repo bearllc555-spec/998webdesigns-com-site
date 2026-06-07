@@ -23,15 +23,16 @@ export function isWeatherZipFlowActive(refs: WeatherZipFlowRefs): boolean {
   );
 }
 
-/** Block client auto-hangup while forecast audio or post-lookup sign-off is still in flight. */
+/** Block client auto-hangup until weather demo finishes or client authorizes goodbye. */
 export function shouldBlockClientFarewellHangup(opts: {
-  awaitingWeatherForecastDelivery: boolean;
-  zipLookupTriggered: boolean;
   goodbyeNudgeSent: boolean;
+  weatherZipFlow: WeatherZipFlowRefs;
+  zipLookupTriggered: boolean;
 }): boolean {
-  if (opts.awaitingWeatherForecastDelivery) return true;
-  if (opts.zipLookupTriggered && !opts.goodbyeNudgeSent) return true;
-  return false;
+  if (opts.goodbyeNudgeSent) return false;
+  if (opts.weatherZipFlow.awaitingWeatherForecastDelivery) return true;
+  if (opts.zipLookupTriggered) return true;
+  return isWeatherZipFlowActive(opts.weatherZipFlow);
 }
 
 /** Jarvis asked permission to email the coupon (or mentioned VOICE20 / discount). */

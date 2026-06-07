@@ -58,26 +58,45 @@ describe("voice-demo-weather-flow", () => {
     ).toBe(false);
   });
 
-  it("blocks client farewell hangup until forecast sign-off nudge", () => {
+  it("blocks client farewell hangup during weather ZIP collection", () => {
+    const collectingZip = {
+      awaitingWeatherYesNo: false,
+      awaitingZipDigits: true,
+      awaitingZipConfirm: false,
+      awaitingWeatherForecastDelivery: false,
+      zipDigitsHeardMax: 0,
+      weatherDemoAccepted: true,
+    };
     expect(
       shouldBlockClientFarewellHangup({
-        awaitingWeatherForecastDelivery: true,
+        goodbyeNudgeSent: false,
+        weatherZipFlow: collectingZip,
         zipLookupTriggered: false,
-        goodbyeNudgeSent: false,
       })
     ).toBe(true);
     expect(
       shouldBlockClientFarewellHangup({
-        awaitingWeatherForecastDelivery: false,
-        zipLookupTriggered: true,
         goodbyeNudgeSent: false,
+        weatherZipFlow: {
+          ...collectingZip,
+          awaitingZipDigits: false,
+          awaitingWeatherForecastDelivery: true,
+        },
+        zipLookupTriggered: false,
       })
     ).toBe(true);
     expect(
       shouldBlockClientFarewellHangup({
-        awaitingWeatherForecastDelivery: false,
+        goodbyeNudgeSent: false,
+        weatherZipFlow: collectingZip,
         zipLookupTriggered: true,
+      })
+    ).toBe(true);
+    expect(
+      shouldBlockClientFarewellHangup({
         goodbyeNudgeSent: true,
+        weatherZipFlow: collectingZip,
+        zipLookupTriggered: false,
       })
     ).toBe(false);
   });

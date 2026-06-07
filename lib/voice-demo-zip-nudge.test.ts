@@ -12,6 +12,8 @@ import {
   buildZipSilenceRepeatNudge,
   buildZipCityCorrectionNudge,
   buildZipStagedSpeakNudge,
+  buildWeatherZipPrematureGoodbyeRecoveryNudge,
+  countSpokenZipDigits,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
   isWeatherZipConfirmAccept,
@@ -27,9 +29,21 @@ import {
   VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE,
   VOICE_DEMO_ZIP_CITY_CORRECT_CUE,
   VOICE_DEMO_ZIP_STAGED_CUE,
+  VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 
 describe("voice-demo-zip-nudge", () => {
+  it("counts spoken-word ZIP digits", () => {
+    expect(countSpokenZipDigits("zero seven four two four")).toBe(5);
+    expect(countSpokenZipDigits("07424")).toBe(5);
+  });
+
+  it("recovers when Jarvis says goodbye before ZIP read-back", () => {
+    const nudge = buildWeatherZipPrematureGoodbyeRecoveryNudge();
+    expect(nudge).toContain(VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE);
+    expect(nudge).toMatch(/must NOT say goodbye/i);
+    expect(nudge).toContain(VOICE_DEMO_ZIP_STAGED_CUE);
+  });
   it("stages ZIP read-back when client already confirmed", () => {
     const nudge = buildZipStagedSpeakNudge(
       "I have ZIP code 0 7 5 1 2 for Totowa, New Jersey. Is that correct?"

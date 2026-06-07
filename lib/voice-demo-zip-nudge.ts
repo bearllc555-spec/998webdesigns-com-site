@@ -1,5 +1,7 @@
 import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
+import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import {
+  normalizeSpokenUsZipCode,
   normalizeUsZipCode,
   VOICE_DEMO_WEATHER_DIDNT_GET_LINE,
   VOICE_DEMO_WEATHER_REPEAT_LINE,
@@ -38,7 +40,21 @@ export const ZIP_SILENCE_NUDGE_MS = 2500;
 export const WEATHER_YESNO_SILENCE_NUDGE_MS = 3000;
 
 export function countSpokenZipDigits(transcript: string): number {
-  return transcript.replace(/\D/g, "").length;
+  const digits = transcript.replace(/\D/g, "").length;
+  if (digits > 0) return digits;
+  return normalizeVerificationCode(transcript).length;
+}
+
+/** Hidden cue — Jarvis said goodbye before ZIP read-back; recover the flow. */
+export const VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE = "[zip-goodbye-blocked]";
+
+export function buildWeatherZipPrematureGoodbyeRecoveryNudge(): string {
+  return (
+    `${VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE} You must NOT say goodbye or call end_conversation yet. ` +
+    `The visitor gave a ZIP — wait for hidden cue ${VOICE_DEMO_ZIP_STAGED_CUE}, then speak spokenConfirm word for word and STOP. ` +
+    `If you have not heard five digits yet, say ONLY: "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" and wait. ` +
+    `No thank-you sign-off until after the weather forecast or they decline.`
+  );
 }
 
 /** Returns null when a client nudge would duplicate an ask Jarvis already made. */
@@ -63,7 +79,7 @@ export function buildZipCityCorrectionNudge(spokenConfirm: string): string {
 export function buildZipPauseNudge(transcript: string): string | null {
   const trimmed = transcript.trim();
   const digits = countSpokenZipDigits(trimmed);
-  const zip = normalizeUsZipCode(trimmed);
+  const zip = normalizeSpokenUsZipCode(trimmed);
 
   if (zip) {
     return (

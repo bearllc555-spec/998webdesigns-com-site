@@ -1,4 +1,5 @@
 import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
+import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 
 const FETCH_TIMEOUT_MS = 9000;
 
@@ -116,6 +117,15 @@ export function normalizeUsZipCode(raw: string | number): string | null {
   // Voice/STT and JSON numbers often drop the leading zero (e.g. 07424 → 7424).
   if (digits.length === 4) return `0${digits}`;
   return null;
+}
+
+/** Digits or spoken words (e.g. "zero seven four two four") → 5-digit ZIP. */
+export function normalizeSpokenUsZipCode(raw: string): string | null {
+  const direct = normalizeUsZipCode(raw);
+  if (direct) return direct;
+  const spokenDigits = normalizeVerificationCode(raw);
+  if (!spokenDigits) return null;
+  return normalizeUsZipCode(spokenDigits);
 }
 
 /** True when two ZIP inputs resolve to the same 5-digit code. */

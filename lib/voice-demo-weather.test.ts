@@ -9,6 +9,7 @@ import {
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
   isAssistantWeatherLookupPending,
+  normalizeSpokenUsZipCode,
   normalizeUsZipCode,
   usZipCodesEquivalent,
   VOICE_DEMO_WEATHER_OFFER_LINE,
@@ -36,6 +37,12 @@ describe("voice-demo-weather", () => {
     expect(normalizeUsZipCode("07424-1234")).toBe("07424");
     expect(normalizeUsZipCode("zip 10001")).toBe("10001");
     expect(normalizeUsZipCode("123")).toBeNull();
+  });
+
+  it("normalizes spoken-word ZIPs from voice", () => {
+    expect(normalizeSpokenUsZipCode("zero seven four two four")).toBe("07424");
+    expect(normalizeSpokenUsZipCode("oh seven four two four")).toBe("07424");
+    expect(normalizeSpokenUsZipCode("07424")).toBe("07424");
   });
 
   it("recovers leading-zero ZIPs dropped by voice or JSON numbers", () => {
