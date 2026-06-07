@@ -4,6 +4,7 @@ import {
   buildPostNameHoldNudge,
   buildSaveNameToolMessage,
   buildSessionResumeNudge,
+  isAssistantPartialPostNameGreeting,
   isAssistantPostNameGreeting,
   VOICE_DEMO_INTRO_LINE,
   VOICE_DEMO_MANDATORY_OPENING,
@@ -40,6 +41,13 @@ describe("voice-demo-greeting", () => {
     expect(isAssistantPostNameGreeting("Who do I have the pleasure of speaking with?")).toBe(
       false
     );
+  });
+
+  it("detects partial good-day greeting without help line", () => {
+    expect(isAssistantPartialPostNameGreeting("Good day, Anthony.")).toBe(true);
+    expect(
+      isAssistantPartialPostNameGreeting("Good day, Anthony. How may I help you today?")
+    ).toBe(false);
   });
 
   it("save_name tool message stays silent when already greeted", () => {

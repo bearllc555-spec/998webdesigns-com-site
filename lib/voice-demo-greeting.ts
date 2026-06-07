@@ -31,6 +31,13 @@ export function isAssistantPostNameGreeting(text: string): boolean {
   return /how may i help you today/i.test(text.trim().toLowerCase());
 }
 
+/** Good-day opener without the help line — greeting was cut off mid-stream. */
+export function isAssistantPartialPostNameGreeting(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t || isAssistantPostNameGreeting(text)) return false;
+  return /\bgood day,\s+\w+/i.test(t);
+}
+
 export function buildSaveNameToolMessage(visitorName: string, alreadyGreeted: boolean): string {
   const first = visitorName.split(/\s+/)[0] ?? visitorName;
   if (alreadyGreeted) {
