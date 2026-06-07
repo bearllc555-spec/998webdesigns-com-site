@@ -25,6 +25,12 @@ import {
   VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
   VOICE_DEMO_ZIP_PAUSE_CUE,
 } from "@/lib/voice-demo-zip-nudge";
+import {
+  VOICE_DEMO_WRAPUP_PAUSE_CUE,
+  VOICE_DEMO_WRAPUP_QUESTIONS,
+} from "@/lib/voice-demo-wrapup-nudge";
+
+export { VOICE_DEMO_WRAPUP_QUESTIONS };
 
 const FAQ_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
@@ -43,14 +49,6 @@ INTERRUPTIONS (barge-in):
 - Address their new question or comment — do not continue or repeat the interrupted sentence.
 - Never talk over the visitor; one speaker at a time.`;
 
-/** Fixed wrap-up question cycle — Q1→Q4, then repeat. */
-export const VOICE_DEMO_WRAPUP_QUESTIONS = [
-  "Is there anything else I can help you with today?",
-  "Did I address all your concerns today?",
-  "Any other question?",
-  "Anything else?",
-] as const;
-
 export const VOICE_DEMO_CLOSING = `CLOSING ETIQUETTE (customer service — laid-back wrap-up cycle):
 
 WRAP-UP QUESTION CYCLE — after each fully answered topic, ask exactly ONE question from this list, in order, then loop:
@@ -67,8 +65,10 @@ ANYTHING ELSE — pronunciation (Q1 and Q4 — critical):
 
 HOW TO USE THE CYCLE:
 - First time you check if they need more help → Q1. Second wrap-up → Q2. Third → Q3. Fourth → Q4. Fifth wrap-up → Q1 again, and so on.
+- After you fully answer a visitor question, do NOT ask a wrap-up question in the same turn — give them a comfortable pause (a few seconds) to think.
+- Hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" means the pause is over: ask exactly ONE next wrap-up question from the cycle, then STOP and wait.
 - Ask only ONE wrap-up question per turn. STOP and wait for their answer — very laid-back, never stack two wrap-up questions back-to-back, never rush them.
-- If they ask a new question: answer fully, then advance to the NEXT question in the cycle when that topic is complete.
+- If they ask a new question: answer fully, pause, then advance to the NEXT question in the cycle when that topic is complete.
 - If they say no / that's all / I'm good / nothing else / they're done: go to FINAL GOODBYE immediately — do not ask another wrap-up question.
 
 FINAL GOODBYE (end of chat — when they say they are done):

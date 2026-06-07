@@ -31,6 +31,12 @@ import {
 } from "@/lib/voice-demo-phone-nudge";
 import { WEATHER_POST_CONFIRM_PAUSE_MS } from "@/lib/voice-demo-weather";
 import {
+  buildWrapUpPauseNudge,
+  isAssistantWrapUpQuestion,
+  shouldScheduleWrapUpAfterAnswer,
+  WRAPUP_POST_ANSWER_PAUSE_MS,
+} from "@/lib/voice-demo-wrapup-nudge";
+import {
   buildWeatherDeclineNudge,
   buildWeatherYesNoGiveUpNudge,
   buildWeatherYesNoPauseNudge,
@@ -108,6 +114,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const awaitingWeatherYesNoRef = useRef(false);
   const zipNudgeTranscriptRef = useRef("");
   const weatherYesNoPhaseRef = useRef<WeatherYesNoPhase>("first");
+  const wrapUpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finishingPhaseRef = useRef(false);
   const jarvisFarewellSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
@@ -267,6 +274,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearWrapUpTimer = useCallback(() => {
+    if (wrapUpTimerRef.current) {
+      clearTimeout(wrapUpTimerRef.current);
+      wrapUpTimerRef.current = null;
+    }
+  }, []);
+
   const clearWeatherZipState = useCallback(() => {
     awaitingZipDigitsRef.current = false;
     awaitingWeatherYesNoRef.current = false;
@@ -280,7 +294,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearPhoneSilenceTimer();
     clearZipSilenceTimer();
     clearWeatherYesNoTimer();
-  }, [clearPhoneSilenceTimer, clearWeatherYesNoTimer, clearZipSilenceTimer]);
+    clearWrapUpTimer();
+  }, [clearPhoneSilenceTimer, clearWeatherYesNoTimer, clearWrapUpTimer, clearZipSilenceTimer]);
 
   const handleAssistantInterrupted = useCallback(() => {
     suppressAssistantAudioRef.current = true;
@@ -361,6 +376,43 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       sendWeatherYesNoNudge();
     }, WEATHER_YESNO_SILENCE_NUDGE_MS);
   }, [clearWeatherYesNoTimer, sendWeatherYesNoNudge]);
+
+  const sendWrapUpPauseNudge = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session || modeRef.current !== "demo") return;
+    if (jarvisFarewellSentRef.current) return;
+    if (
+      awaitingPhoneDigitsRef.current ||
+      awaitingZipDigitsRef.current ||
+      awaitingWeatherYesNoRef.current
+    ) {
+      return;
+    }
+    if (playerRef.current?.isPlaying()) {
+      clearWrapUpTimer();
+      wrapUpTimerRef.current = setTimeout(() => {
+        sendWrapUpPauseNudge();
+      }, 400);
+      return;
+    }
+
+    try {
+      session.sendClientContent({
+        turns: buildWrapUpPauseNudge(),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] wrap-up pause nudge", err);
+    }
+  }, [clearWrapUpTimer]);
+
+  const scheduleWrapUpPause = useCallback(() => {
+    if (modeRef.current !== "demo") return;
+    clearWrapUpTimer();
+    wrapUpTimerRef.current = setTimeout(() => {
+      sendWrapUpPauseNudge();
+    }, WRAPUP_POST_ANSWER_PAUSE_MS);
+  }, [clearWrapUpTimer, sendWrapUpPauseNudge]);
 
   const sendWeatherDeclineNudge = useCallback(() => {
     const session = sessionRef.current;
@@ -647,6 +699,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         if (modeRef.current === "demo") {
           detectAssistantWeatherPrompt(lastAssistantTextRef.current);
+          if (isAssistantWrapUpQuestion(lastAssistantTextRef.current)) {
+            clearWrapUpTimer();
+          }
         }
       }
       const inText = message.serverContent?.inputTranscription?.text;
@@ -654,6 +709,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (inText.trim() && playerRef.current?.isPlaying()) {
           handleAssistantInterrupted();
         }
+        clearWrapUpTimer();
         emitCaption("user", inText);
         const userLine = captionTextRef.current.trim();
 
@@ -706,6 +762,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         if (modeRef.current === "demo") {
           detectAssistantWeatherPrompt(assistantSnapshot);
+          if (isAssistantWrapUpQuestion(assistantSnapshot)) {
+            clearWrapUpTimer();
+          } else if (
+            shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
+              awaitingCollection:
+                awaitingPhoneDigitsRef.current ||
+                awaitingZipDigitsRef.current ||
+                awaitingWeatherYesNoRef.current,
+              farewellSent: jarvisFarewellSentRef.current,
+            })
+          ) {
+            scheduleWrapUpPause();
+          } else {
+            clearWrapUpTimer();
+          }
         }
         lastAssistantTextRef.current = "";
 
@@ -716,6 +787,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     },
     [
       clearInputSilenceTimers,
+      clearWrapUpTimer,
       handleAssistantInterrupted,
       detectAssistantWeatherPrompt,
       emitCaption,
@@ -727,6 +799,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       schedulePhoneSilenceNudge,
       scheduleZipSilenceNudge,
       scheduleWeatherYesNoNudge,
+      scheduleWrapUpPause,
       sendWeatherDeclineNudge,
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,

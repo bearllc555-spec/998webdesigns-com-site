@@ -18,6 +18,12 @@ import {
 import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 
 describe("voice-demo-system-prompt closing", () => {
+  it("pauses before wrap-up questions after answers", () => {
+    expect(VOICE_DEMO_CLOSING).toMatch(/\[wrap-up-pause\]/);
+    expect(VOICE_DEMO_CLOSING).toMatch(/do NOT ask a wrap-up question in the same turn/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/comfortable pause/i);
+  });
+
   it("cycles four wrap-up questions in order", () => {
     expect(VOICE_DEMO_WRAPUP_QUESTIONS[0]).toContain("anything else");
     expect(VOICE_DEMO_WRAPUP_QUESTIONS[3]).toBe("Anything else?");
