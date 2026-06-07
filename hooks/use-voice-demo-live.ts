@@ -67,6 +67,7 @@ import {
   buildCloseQueueSkipToWrapUpNudge,
   buildPromoBlockedBeforeCloseQueueNudge,
   buildPromoDeclinedWrapUpNudge,
+  buildPostForecastDerailRecoveryNudge,
   buildWeatherForecastCoolReactionNudge,
   buildWeatherImplementAskNudge,
   buildWeatherPromoAskNudge,
@@ -78,10 +79,15 @@ import {
   type CloseQueuePhase,
 } from "@/lib/voice-demo-close-queue";
 import {
+  assistantWeatherTemperatureMismatch,
+  buildWeatherForecastCorrectionNudge,
   buildWeatherLookupFailedNudge,
   buildWeatherLookupSpeakNudge,
+  extractFirstTemperatureFahrenheit,
+  isAssistantPostForecastDerail,
   isAssistantWeatherForecast,
   isAssistantWeatherLookupPending,
+  weatherLookupExpectedTempF,
   weatherLookupSpeakLines,
   WEATHER_FORECAST_DELIVERY_WATCHDOG_MS,
   WEATHER_POST_CONFIRM_PAUSE_MS,
@@ -261,6 +267,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const weatherLookupInFlightRef = useRef(false);
   const weatherForecastWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastWeatherForecastNudgeRef = useRef<string | null>(null);
+  const expectedWeatherTempFRef = useRef<number | null>(null);
+  const expectedWeatherBriefReportRef = useRef<string | null>(null);
   const weatherForecastGoodbyeScheduledRef = useRef(false);
   const weatherForecastCompleteRef = useRef(false);
   const lastUserWeatherZipRef = useRef<string | null>(null);
@@ -736,6 +744,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     zipLookupTriggeredRef.current = false;
     weatherLookupInFlightRef.current = false;
     lastWeatherForecastNudgeRef.current = null;
+    expectedWeatherTempFRef.current = null;
+    expectedWeatherBriefReportRef.current = null;
     weatherForecastGoodbyeScheduledRef.current = false;
     weatherForecastCompleteRef.current = false;
     lastUserWeatherZipRef.current = null;
@@ -1739,6 +1749,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       syncWeatherCollectionState("lookup_weather", result);
       zipLookupTriggeredRef.current = true;
+      expectedWeatherTempFRef.current = weatherLookupExpectedTempF(result);
+      expectedWeatherBriefReportRef.current = lines.briefReport;
       const nudge = buildWeatherLookupSpeakNudge(lines.spokenLookup, lines.briefReport);
       lastWeatherForecastNudgeRef.current = nudge;
       markClientWeatherNudgeSent();
@@ -2700,18 +2712,52 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             if (isInWeatherZipFlow()) {
               sendWeatherZipWrapUpBlockedNudge();
             }
-          } else if (isAssistantWeatherForecast(assistantSnapshot)) {
-            weatherForecastCompleteRef.current = true;
-            suppressPromoAudioDuringWeatherRef.current = false;
-            promoWeatherNudgeSentRef.current = false;
-            awaitingWeatherForecastDeliveryRef.current = false;
-            clearWeatherForecastWatchdog();
-            scheduleWeatherCloseQueueStart();
           } else if (
             awaitingWeatherForecastDeliveryRef.current ||
-            isAssistantWeatherLookupPending(assistantSnapshot)
+            isAssistantWeatherForecast(assistantSnapshot)
           ) {
-            clearWrapUpTimer();
+            const briefReport = expectedWeatherBriefReportRef.current;
+            const expectedF = expectedWeatherTempFRef.current;
+            const assistantTrimmed = assistantSnapshot.trim();
+
+            if (isAssistantPostForecastDerail(assistantSnapshot)) {
+              clearWrapUpTimer();
+              if (weatherForecastCompleteRef.current) {
+                markClientWeatherNudgeSent();
+                void sendClientNudge(buildPostForecastDerailRecoveryNudge());
+              } else if (briefReport) {
+                markClientWeatherNudgeSent();
+                void sendClientNudge(buildWeatherForecastCorrectionNudge(briefReport));
+                scheduleWeatherForecastWatchdog();
+              }
+            } else if (
+              briefReport &&
+              expectedF != null &&
+              assistantTrimmed &&
+              assistantWeatherTemperatureMismatch(expectedF, assistantSnapshot)
+            ) {
+              clearWrapUpTimer();
+              markClientWeatherNudgeSent();
+              void sendClientNudge(buildWeatherForecastCorrectionNudge(briefReport));
+              scheduleWeatherForecastWatchdog();
+            } else if (
+              isAssistantWeatherForecast(assistantSnapshot) ||
+              (expectedF != null &&
+                extractFirstTemperatureFahrenheit(assistantSnapshot) != null &&
+                !assistantWeatherTemperatureMismatch(expectedF, assistantSnapshot))
+            ) {
+              weatherForecastCompleteRef.current = true;
+              suppressPromoAudioDuringWeatherRef.current = false;
+              promoWeatherNudgeSentRef.current = false;
+              awaitingWeatherForecastDeliveryRef.current = false;
+              clearWeatherForecastWatchdog();
+              scheduleWeatherCloseQueueStart();
+            } else if (
+              awaitingWeatherForecastDeliveryRef.current ||
+              isAssistantWeatherLookupPending(assistantSnapshot)
+            ) {
+              clearWrapUpTimer();
+            }
           } else if (
             shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
               awaitingCollection:
@@ -2848,6 +2894,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         zipLookupTriggeredRef.current = false;
         weatherForecastGoodbyeScheduledRef.current = false;
         weatherForecastCompleteRef.current = false;
+        expectedWeatherTempFRef.current = null;
+        expectedWeatherBriefReportRef.current = null;
         lastUserWeatherZipRef.current = null;
         closeQueuePhaseRef.current = "idle";
         wrapUpQuestionIndexRef.current = 0;

@@ -33,11 +33,22 @@ export type WeatherDemoProgress = WeatherZipFlowRefs & {
   closeQueuePhase: CloseQueuePhase;
 };
 
+/** Forecast spoken but close queue (cool reaction → implement → promo) not finished. */
+export function isWeatherCloseQueueIncomplete(progress: WeatherDemoProgress): boolean {
+  if (!progress.forecastComplete) return false;
+  const phase = progress.closeQueuePhase;
+  return (
+    phase === "idle" ||
+    phase === "awaiting_cool_reaction" ||
+    phase === "awaiting_implement_interest" ||
+    phase === "awaiting_promo_consent" ||
+    phase === "promo_sent"
+  );
+}
+
 /** Weather pitch accepted but spoken forecast not delivered yet. */
 export function isWeatherDemoIncomplete(progress: WeatherDemoProgress): boolean {
-  if (progress.forecastComplete && isCloseQueueActive(progress.closeQueuePhase)) {
-    return true;
-  }
+  if (isWeatherCloseQueueIncomplete(progress)) return true;
   if (progress.forecastComplete) return false;
   if (progress.awaitingWeatherForecastDelivery || progress.zipLookupTriggered) return true;
   if (

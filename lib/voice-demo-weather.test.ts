@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { weatherLookupSpeakLines } from "@/lib/voice-demo-weather";
 import {
+  assistantWeatherTemperatureMismatch,
+  buildWeatherForecastCorrectionNudge,
   buildWeatherZipConfirmLine,
   buildWeatherZipLookupLine,
+  extractFirstTemperatureFahrenheit,
   fahrenheitToCelsiusRounded,
   formatBriefWeatherReport,
   formatSpokenTemperaturePair,
+  isAssistantPostForecastDerail,
   spellZipForVoice,
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
@@ -20,6 +23,8 @@ import {
   buildWeatherForecastGoodbyeNudge,
   buildWeatherLookupFailedNudge,
   buildWeatherLookupSpeakNudge,
+  weatherLookupExpectedTempF,
+  weatherLookupSpeakLines,
   weatherZipConfirmSpeakInstruction,
   wmoWeatherLabel,
 } from "@/lib/voice-demo-weather";
@@ -65,7 +70,7 @@ describe("voice-demo-weather", () => {
     expect(fahrenheitToCelsiusRounded(32)).toBe(0);
     expect(fahrenheitToCelsiusRounded(72)).toBe(22);
     expect(formatSpokenTemperaturePair(72)).toBe(
-      "72 degrees Fahrenheit, about 22 degrees Celsius"
+      "seventy two degrees Fahrenheit, about twenty two degrees Celsius"
     );
   });
 
@@ -81,8 +86,12 @@ describe("voice-demo-weather", () => {
       }
     );
     expect(report).toContain("Little Falls");
-    expect(report).toContain("72 degrees Fahrenheit, about 22 degrees Celsius");
-    expect(report).toContain("65 degrees Fahrenheit, about 18 degrees Celsius");
+    expect(report).toContain(
+      "seventy two degrees Fahrenheit, about twenty two degrees Celsius"
+    );
+    expect(report).toContain(
+      "sixty five degrees Fahrenheit, about eighteen degrees Celsius"
+    );
     expect(report).toContain("partly cloudy");
     expect(isAssistantWeatherForecast(report)).toBe(true);
   });
@@ -178,6 +187,43 @@ describe("voice-demo-weather", () => {
       "Little Falls, NJ 07424"
     );
     expect(formatPossibleLocationLabel(null, null, null)).toBeNull();
+  });
+
+  it("detects wrong spoken temperature vs API briefReport", () => {
+    expect(extractFirstTemperatureFahrenheit("it's 66 degrees Fahrenheit")).toBe(66);
+    expect(
+      assistantWeatherTemperatureMismatch(
+        77,
+        "In Little Falls it's 66 degrees Fahrenheit with humidity"
+      )
+    ).toBe(true);
+    expect(
+      assistantWeatherTemperatureMismatch(
+        77,
+        "In Little Falls it's 77 degrees Fahrenheit with humidity"
+      )
+    ).toBe(false);
+  });
+
+  it("detects post-forecast apology derail", () => {
+    expect(isAssistantPostForecastDerail("I'm sorry, thank you, have a good day.")).toBe(
+      true
+    );
+    expect(
+      isAssistantPostForecastDerail("Thank you for contacting 998 Web Designs. Goodbye.")
+    ).toBe(false);
+  });
+
+  it("reads expected temperature from lookup result", () => {
+    expect(weatherLookupExpectedTempF({ temperatureF: 77.1, briefReport: "x" })).toBe(77);
+  });
+
+  it("nudges correction when forecast was wrong", () => {
+    const report =
+      "In Little Falls, New Jersey, it's seventy-seven degrees Fahrenheit, about twenty-five degrees Celsius with clear skies, 40% humidity, and winds around 5 miles per hour.";
+    const nudge = buildWeatherForecastCorrectionNudge(report);
+    expect(nudge).toContain("[weather-forecast-correction]");
+    expect(nudge).toContain(report);
   });
 
   it("extracts spoken forecast lines from lookup result", () => {

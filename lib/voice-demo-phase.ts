@@ -5,6 +5,7 @@ import {
   isAssistantFarewell,
   isSubstantiveServiceSpeech,
 } from "@/lib/voice-demo-farewell";
+import { isAssistantPostForecastDerail } from "@/lib/voice-demo-weather";
 
 /** Single session lane — client owns transitions and hangup. */
 export type VoiceDemoSessionPhase =
@@ -71,6 +72,8 @@ export function canClientScheduleHangup(opts: {
 }): boolean {
   const text = opts.assistantText.trim();
   if (!text || opts.phase === "ended" || opts.phase === "onboarding") return false;
+  if (opts.phase === "weather_forecast" || opts.phase === "close_queue") return false;
+  if (isAssistantPostForecastDerail(text)) return false;
   if (opts.farewellSent) return true;
 
   if (opts.goodbyeNudgeSent) {

@@ -124,3 +124,10 @@ export function buildPromoBlockedBeforeCloseQueueNudge(): string {
     `Say ONLY: "${VOICE_DEMO_WEATHER_COOL_REACTION_LINE}" or the next step cue you were given — no coupon yet.`
   );
 }
+
+export function buildPostForecastDerailRecoveryNudge(): string {
+  return (
+    `[weather-post-forecast-derail] Do NOT apologize or say goodbye — weather demo is not finished. ` +
+    `Say ONLY: "${VOICE_DEMO_WEATHER_COOL_REACTION_LINE}" then STOP and wait for their answer.`
+  );
+}

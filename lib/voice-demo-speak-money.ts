@@ -53,6 +53,15 @@ function speakUnder1000(n: number): string {
   return `${head} and ${speakUnder100(remainder, false)}`;
 }
 
+/** Whole numbers for spoken weather (0–199). */
+export function speakInteger(n: number): string {
+  if (!Number.isFinite(n) || n < 0 || n > 199 || !Number.isInteger(n)) {
+    throw new Error(`speakInteger expects an integer 0–199, got ${n}`);
+  }
+  if (n < 1000) return speakUnder1000(n);
+  throw new Error(`speakInteger expects an integer 0–199, got ${n}`);
+}
+
 /** Whole-dollar amounts for Jarvis voice (British butler style). */
 export function speakUsdDollars(amount: number): string {
   if (!Number.isFinite(amount) || amount < 0 || !Number.isInteger(amount)) {

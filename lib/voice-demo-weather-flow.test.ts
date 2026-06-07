@@ -5,6 +5,7 @@ import {
   isAssistantZipCollectionPrompt,
   isAssistantZipReadBackPrompt,
   isAssistantWeatherOfferPrompt,
+  isWeatherCloseQueueIncomplete,
   isWeatherDemoIncomplete,
   isWeatherZipFlowActive,
   shouldBlockClientFarewellHangup,
@@ -115,6 +116,26 @@ describe("voice-demo-weather-flow", () => {
         stagedZipPending: false,
         forecastComplete: true,
         closeQueuePhase: "idle",
+      })
+    ).toBe(true);
+    expect(
+      isWeatherCloseQueueIncomplete({
+        ...idleWeather,
+        weatherDemoAccepted: true,
+        zipLookupTriggered: true,
+        stagedZipPending: false,
+        forecastComplete: true,
+        closeQueuePhase: "promo_sent",
+      })
+    ).toBe(true);
+    expect(
+      isWeatherDemoIncomplete({
+        ...idleWeather,
+        weatherDemoAccepted: true,
+        zipLookupTriggered: true,
+        stagedZipPending: false,
+        forecastComplete: true,
+        closeQueuePhase: "skipped_to_wrapup",
       })
     ).toBe(false);
   });
@@ -236,6 +257,6 @@ describe("voice-demo-weather-flow", () => {
           closeQueuePhase: "idle",
         },
       })
-    ).toBe(false);
+    ).toBe(true);
   });
 });

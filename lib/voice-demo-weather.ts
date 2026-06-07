@@ -1,5 +1,6 @@
 import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
 import { normalizeVerificationCode } from "@/lib/voice-demo-code";
+import { speakInteger } from "@/lib/voice-demo-speak-money";
 
 const FETCH_TIMEOUT_MS = 9000;
 
@@ -33,15 +34,26 @@ export const VOICE_DEMO_WEATHER_LOOKUP_READY_CUE = "[weather-lookup-ready]";
 /** Hidden cue — lookup_weather failed; Jarvis apologizes and signs off. */
 export const VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE = "[weather-lookup-failed]";
 
+/** Hidden cue — Jarvis gave wrong temps or apologized instead of reading briefReport. */
+export const VOICE_DEMO_WEATHER_FORECAST_CORRECTION_CUE = "[weather-forecast-correction]";
+
 export function buildWeatherLookupSpeakNudge(
   spokenLookup: string,
   briefReport: string
 ): string {
   return (
     `${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE} lookup_weather succeeded. ` +
-    `Speak spokenLookup exactly once: "${spokenLookup}" ` +
-    `Then speak briefReport exactly once: "${briefReport}" ` +
-    `STOP — do not apologize, do not say lookup failed, do not ask wrap-up questions.`
+    `VERBATIM SCRIPT — speak spokenLookup exactly once, word for word: "${spokenLookup}" ` +
+    `Then speak briefReport exactly once, word for word — every temperature word must match briefReport: "${briefReport}" ` +
+    `Do not invent, round, or swap Fahrenheit and Celsius. STOP after briefReport — no apology, no goodbye, no wrap-up.`
+  );
+}
+
+export function buildWeatherForecastCorrectionNudge(briefReport: string): string {
+  return (
+    `${VOICE_DEMO_WEATHER_FORECAST_CORRECTION_CUE} Wrong or incomplete forecast. ` +
+    `Speak ONLY briefReport verbatim — word for word, every temperature must match: "${briefReport}" ` +
+    `STOP after briefReport. No apology. No goodbye. The close queue continues after the forecast.`
   );
 }
 
@@ -177,11 +189,58 @@ export function fahrenheitToCelsiusRounded(tempF: number): number {
   return Math.round((tempF - 32) * (5 / 9));
 }
 
-/** Spoken "72 degrees Fahrenheit, about 22 degrees Celsius". */
+/** Spoken "seventy-two degrees Fahrenheit, about twenty-two degrees Celsius". */
 export function formatSpokenTemperaturePair(tempF: number): string {
   const f = Math.round(tempF);
   const c = fahrenheitToCelsiusRounded(tempF);
-  return `${f} degrees Fahrenheit, about ${c} degrees Celsius`;
+  return `${speakInteger(f)} degrees Fahrenheit, about ${speakInteger(c)} degrees Celsius`;
+}
+
+/** First Fahrenheit integer Jarvis spoke in a forecast turn (digits only). */
+export function extractFirstTemperatureFahrenheit(text: string): number | null {
+  const match = text.match(/(\d{1,3})\s*degrees?\s*fahrenheit/i);
+  if (!match) return null;
+  const value = Number.parseInt(match[1]!, 10);
+  return Number.isFinite(value) ? value : null;
+}
+
+/** True when Jarvis's spoken °F differs from the API-backed briefReport by more than tolerance. */
+export function assistantWeatherTemperatureMismatch(
+  expectedF: number,
+  assistantText: string,
+  toleranceF = 6
+): boolean {
+  const spokenF = extractFirstTemperatureFahrenheit(assistantText);
+  if (spokenF == null) return false;
+  return Math.abs(spokenF - Math.round(expectedF)) > toleranceF;
+}
+
+/** Apology or casual goodbye before the weather close queue finishes. */
+export function isAssistantPostForecastDerail(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  if (/\bthank you for contacting\b/.test(t)) return false;
+  if (/\bi'?m sorry\b/.test(t) && /\b(have a (good|great|nice) day|goodbye|thank you)\b/.test(t)) {
+    return true;
+  }
+  if (/\bhave a (good|great|nice) day\b/.test(t) && !/\bsomething cool\b/.test(t)) return true;
+  return false;
+}
+
+export function weatherLookupExpectedTempF(result: Record<string, unknown>): number | null {
+  if (typeof result.temperatureF === "number" && Number.isFinite(result.temperatureF)) {
+    return Math.round(result.temperatureF);
+  }
+  const briefReport =
+    typeof result.briefReport === "string" ? result.briefReport.trim() : "";
+  if (!briefReport) return null;
+  const fromWords = briefReport.match(
+    /it's ([\w\s-]+?) degrees Fahrenheit/i
+  );
+  if (!fromWords) return null;
+  const digits = fromWords[1]!.match(/\d{1,3}/);
+  if (digits) return Number.parseInt(digits[0]!, 10);
+  return null;
 }
 
 /** Assistant turn is the pre-fetch "one moment" line — not the forecast yet. */
@@ -193,12 +252,12 @@ export function isAssistantWeatherLookupPending(text: string): boolean {
 export function isAssistantWeatherForecast(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
-  return (
-    /\d+\s*degrees fahrenheit/.test(t) &&
-    /celsius/.test(t) &&
-    /humidity/.test(t) &&
-    /\bwind/.test(t)
-  );
+  const hasFahrenheit =
+    /\d+\s*degrees?\s*fahrenheit/.test(t) ||
+    /\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:\s+(?:and\s+)?(?:zero|one|two|three|four|five|six|seven|eight|nine))?\s+degrees?\s+fahrenheit/.test(
+      t
+    );
+  return hasFahrenheit && /celsius/.test(t) && /humidity/.test(t) && /\bwind/.test(t);
 }
 
 export function formatBriefWeatherReport(

@@ -505,6 +505,7 @@ export async function executeVoiceDemoTool(
       zip: result.zip,
       city: confirmCity,
       state: result.state,
+      temperatureF: Math.round(result.weather.temperatureF),
       briefReport: result.briefReport,
       spokenLookup,
       possibleLocation: `${confirmCity}, ${result.state} ${result.zip}`,
