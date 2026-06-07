@@ -266,14 +266,12 @@ export async function executeVoiceDemoTool(
       };
     }
     await updateVoiceDemoLead(leadId, { full_name: visitorName });
-    const first = visitorName.split(/\s+/)[0] ?? visitorName;
     return {
       ok: true,
       name: visitorName,
       message:
-        `Name saved (${visitorName}). Speak exactly once: "Good day, ${first}. ${VOICE_DEMO_POST_NAME_LINE}" ` +
-        `Never say "how are you". If you already spoke that exact line, stop and listen. ` +
-        `Never repeat the help question. Do not ask for their phone in this turn.`,
+        `Name saved (${visitorName}). If you already greeted them and asked "${VOICE_DEMO_POST_NAME_LINE}", ` +
+        `stay silent. Otherwise speak that greeting once only — never twice.`,
     };
   }
 

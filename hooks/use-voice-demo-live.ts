@@ -28,8 +28,10 @@ import {
   isUserFarewellEcho,
 } from "@/lib/voice-demo-farewell";
 import {
-  buildPostNameSpeakNudge,
+  buildPostNameHoldNudge,
+  buildSaveNameToolMessage,
   buildSessionResumeNudge,
+  isAssistantPostNameGreeting,
   triggerVoiceDemoOpening,
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
@@ -187,7 +189,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const greetingSentRef = useRef(false);
   const nameSavedRef = useRef(false);
   const savedNameRef = useRef("");
-  const postNameNudgeSentRef = useRef(false);
+  const postNameLineSpokenRef = useRef(false);
+  const postNameHoldSentRef = useRef(false);
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
   const connectedAtRef = useRef(0);
@@ -287,25 +290,23 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     []
   );
 
-  const sendPostNameSpeakNudge = useCallback((firstName: string) => {
+  const sendPostNameHoldNudge = useCallback(() => {
     const session = sessionRef.current;
-    if (
-      !session ||
-      postNameNudgeSentRef.current ||
-      jarvisFarewellSentRef.current ||
-      farewellDisconnectingRef.current
-    ) {
-      return;
-    }
-    postNameNudgeSentRef.current = true;
+    if (!session || postNameHoldSentRef.current) return;
+    postNameHoldSentRef.current = true;
+    logVoiceDemoOps({
+      kind: "session_anomaly",
+      message: "Blocked duplicate post-name greeting",
+      severity: "warn",
+    });
     try {
       session.sendClientContent({
-        turns: buildPostNameSpeakNudge(firstName),
+        turns: buildPostNameHoldNudge(),
         turnComplete: true,
       });
     } catch (err) {
-      console.warn("[voice-demo-live] post-name nudge", err);
-      postNameNudgeSentRef.current = false;
+      console.warn("[voice-demo-live] post-name hold nudge", err);
+      postNameHoldSentRef.current = false;
     }
   }, []);
 
@@ -314,7 +315,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       session.sendClientContent({
         turns: buildSessionResumeNudge({
           nameOnFile: savedNameRef.current || undefined,
-          nameSavedThisSession: postNameNudgeSentRef.current,
+          nameSavedThisSession: postNameLineSpokenRef.current,
         }),
         turnComplete: true,
       });
@@ -322,6 +323,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       console.warn("[voice-demo-live] session resume nudge", err);
     }
   }, []);
+
+  const noteAssistantPostNameLine = useCallback(
+    (text: string) => {
+      if (modeRef.current !== "demo" || !isAssistantPostNameGreeting(text)) return;
+      if (postNameLineSpokenRef.current) {
+        playerRef.current?.hardStop();
+        suppressAssistantAudioRef.current = true;
+        sendPostNameHoldNudge();
+        return;
+      }
+      postNameLineSpokenRef.current = true;
+    },
+    [sendPostNameHoldNudge]
+  );
 
   const emitCaption = useCallback((role: VoiceDemoCaptionRole, chunk: string) => {
     const trimmed = chunk.trim();
@@ -1258,6 +1273,35 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         return;
       }
 
+      const earlyOut = message.serverContent?.outputTranscription?.text;
+      if (earlyOut) {
+        lastAssistantTextRef.current = mergeTranscriptChunk(
+          lastAssistantTextRef.current,
+          earlyOut
+        );
+        noteAssistantPostNameLine(lastAssistantTextRef.current);
+        if (
+          modeRef.current === "demo" &&
+          /cell number|mobile number|phone number|us cell|your cell/i.test(
+            lastAssistantTextRef.current
+          )
+        ) {
+          setAwaitingPhoneDigits(true);
+        }
+        if (modeRef.current === "demo" && isAssistantWrapUpQuestion(lastAssistantTextRef.current)) {
+          clearWrapUpTimer();
+        }
+        if (
+          modeRef.current === "demo" &&
+          awaitingZipConfirmRef.current &&
+          stagedZipReadbackRef.current &&
+          !zipCityCorrectionSentRef.current &&
+          shouldInterruptZipCityDrift(lastAssistantTextRef.current, stagedZipReadbackRef.current)
+        ) {
+          sendZipCityCorrection("Interrupted wrong city during ZIP read-back stream", false, null);
+        }
+      }
+
       const calls = message.toolCall?.functionCalls ?? [];
       if (calls.length > 0 && sessionRef.current) {
         const responses = [];
@@ -1305,10 +1349,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             nameSavedRef.current = true;
             const savedName = typeof result.name === "string" ? result.name.trim() : "";
             if (savedName) savedNameRef.current = savedName;
-            if (result.alreadySaved !== true && savedName) {
-              const first = savedName.split(/\s+/)[0] ?? savedName;
-              setTimeout(() => sendPostNameSpeakNudge(first), 80);
+            const alreadyGreeted = isAssistantPostNameGreeting(lastAssistantTextRef.current);
+            if (alreadyGreeted || result.alreadySaved === true) {
+              postNameLineSpokenRef.current = true;
             }
+            responses.push({
+              id: call.id,
+              name,
+              response:
+                result.alreadySaved === true
+                  ? result
+                  : {
+                      ...result,
+                      message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
+                    },
+            });
+            continue;
           }
 
           if (name === "lookup_weather") {
@@ -1444,6 +1500,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           const data = part.inlineData?.data;
           const mime = part.inlineData?.mimeType ?? "";
           if (data && mime.includes("audio/pcm")) {
+            if (postNameHoldSentRef.current) {
+              playerRef.current?.hardStop();
+              continue;
+            }
             if (jarvisFarewellSentRef.current) {
               playerRef.current?.hardStop();
               if (!farewellHoldSentRef.current && sessionRef.current) {
@@ -1471,33 +1531,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
       }
 
-      const outText = message.serverContent?.outputTranscription?.text;
-      if (outText) {
-        lastAssistantTextRef.current = mergeTranscriptChunk(
-          lastAssistantTextRef.current,
-          outText
-        );
-        if (
-          modeRef.current === "demo" &&
-          /cell number|mobile number|phone number|us cell|your cell/i.test(
-            lastAssistantTextRef.current
-          )
-        ) {
-          setAwaitingPhoneDigits(true);
-        }
-        if (modeRef.current === "demo" && isAssistantWrapUpQuestion(lastAssistantTextRef.current)) {
-          clearWrapUpTimer();
-        }
-        if (
-          modeRef.current === "demo" &&
-          awaitingZipConfirmRef.current &&
-          stagedZipReadbackRef.current &&
-          !zipCityCorrectionSentRef.current &&
-          shouldInterruptZipCityDrift(lastAssistantTextRef.current, stagedZipReadbackRef.current)
-        ) {
-          sendZipCityCorrection("Interrupted wrong city during ZIP read-back stream", false, null);
-        }
-      }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
         if (inText.trim() && playerRef.current?.isPlaying()) {
@@ -1706,8 +1739,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,
       syncWeatherCollectionState,
+      noteAssistantPostNameLine,
       scheduleLiveReconnect,
-      sendPostNameSpeakNudge,
     ]
   );
 
@@ -1730,7 +1763,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         greetingSentRef.current = false;
         nameSavedRef.current = false;
         savedNameRef.current = "";
-        postNameNudgeSentRef.current = false;
+        postNameLineSpokenRef.current = false;
+        postNameHoldSentRef.current = false;
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
         reconnectAttemptRef.current = 0;
@@ -1847,17 +1881,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 }, 0);
               } else if (sessionRef.current) {
                 setTimeout(() => {
-                  const session = sessionRef.current;
-                  if (!session) return;
-                  if (
-                    nameSavedRef.current &&
-                    !postNameNudgeSentRef.current &&
-                    savedNameRef.current
-                  ) {
-                    const first = savedNameRef.current.split(/\s+/)[0] ?? savedNameRef.current;
-                    sendPostNameSpeakNudge(first);
-                  } else {
-                    sendSessionResumeNudge(session);
+                  if (sessionRef.current) {
+                    sendSessionResumeNudge(sessionRef.current);
                   }
                 }, 0);
               }
@@ -1946,7 +1971,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       handleMessage,
       clearReconnectTimer,
       sendOpeningGreeting,
-      sendPostNameSpeakNudge,
       sendSessionResumeNudge,
       startOrbLoop,
       stopOrbLoop,

@@ -26,15 +26,32 @@ export function triggerVoiceDemoOpening(session: {
   });
 }
 
-/** Hidden cue — post save_name: speak the help question once, never "how are you". */
-export const VOICE_DEMO_POST_NAME_CUE = "[post-name-speak]";
+/** True when Jarvis already spoke the post-name help question. */
+export function isAssistantPostNameGreeting(text: string): boolean {
+  return /how may i help you today/i.test(text.trim().toLowerCase());
+}
 
-export function buildPostNameSpeakNudge(firstName: string): string {
-  const name = firstName.trim() || "there";
-  const line = `Good day, ${name}. ${VOICE_DEMO_POST_NAME_LINE}`;
+export function buildSaveNameToolMessage(visitorName: string, alreadyGreeted: boolean): string {
+  const first = visitorName.split(/\s+/)[0] ?? visitorName;
+  if (alreadyGreeted) {
+    return (
+      `Name saved (${visitorName}). You already spoke "${VOICE_DEMO_POST_NAME_LINE}" — ` +
+      `stay completely silent and listen. Do not repeat the greeting.`
+    );
+  }
   return (
-    `${VOICE_DEMO_POST_NAME_CUE} Name saved. Speak exactly once: "${line}" ` +
-    `Never say "how are you". Never repeat the line. Then stop and listen.`
+    `Name saved (${visitorName}). Speak exactly once: "Good day, ${first}. ${VOICE_DEMO_POST_NAME_LINE}" ` +
+    `Then stop and listen. Never repeat that line. Do not ask for their phone in this turn.`
+  );
+}
+
+/** Hidden cue — post-name line already spoken; model must stay silent. */
+export const VOICE_DEMO_POST_NAME_HOLD_CUE = "[post-name-hold]";
+
+export function buildPostNameHoldNudge(): string {
+  return (
+    `${VOICE_DEMO_POST_NAME_HOLD_CUE} You already said "${VOICE_DEMO_POST_NAME_LINE}" — ` +
+    `stay completely silent and listen. Do not repeat the greeting.`
   );
 }
 

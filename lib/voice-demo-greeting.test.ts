@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildPostNameSpeakNudge,
+  buildPostNameHoldNudge,
+  buildSaveNameToolMessage,
   buildSessionResumeNudge,
+  isAssistantPostNameGreeting,
   VOICE_DEMO_INTRO_LINE,
   VOICE_DEMO_MANDATORY_OPENING,
-  VOICE_DEMO_POST_NAME_CUE,
+  VOICE_DEMO_POST_NAME_HOLD_CUE,
   VOICE_DEMO_POST_NAME_LINE,
   VOICE_DEMO_SESSION_RESUME_CUE,
   VOICE_DEMO_SESSION_START_CUE,
@@ -29,11 +31,26 @@ describe("voice-demo-greeting", () => {
     ]);
   });
 
-  it("builds post-name nudge with help line not how are you", () => {
-    const nudge = buildPostNameSpeakNudge("Anthony");
-    expect(nudge).toContain(VOICE_DEMO_POST_NAME_CUE);
-    expect(nudge).toContain(VOICE_DEMO_POST_NAME_LINE);
-    expect(nudge).toMatch(/Never say "how are you"/i);
+  it("detects post-name help line in assistant speech", () => {
+    expect(isAssistantPostNameGreeting("Good day, Anthony. How may I help you today?")).toBe(
+      true
+    );
+    expect(isAssistantPostNameGreeting("Who do I have the pleasure of speaking with?")).toBe(
+      false
+    );
+  });
+
+  it("save_name tool message stays silent when already greeted", () => {
+    const silent = buildSaveNameToolMessage("Anthony", true);
+    expect(silent).toMatch(/stay completely silent/i);
+    const speak = buildSaveNameToolMessage("Anthony", false);
+    expect(speak).toContain(VOICE_DEMO_POST_NAME_LINE);
+  });
+
+  it("builds post-name hold nudge to block repeats", () => {
+    const nudge = buildPostNameHoldNudge();
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_HOLD_CUE);
+    expect(nudge).toMatch(/Do not repeat the greeting/i);
   });
 
   it("builds session resume nudge without replaying intro", () => {
