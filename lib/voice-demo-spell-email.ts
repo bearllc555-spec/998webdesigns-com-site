@@ -1,6 +1,6 @@
-/** Letter-by-letter spelling for voice read-back (e.g. "a-t" for local parts). */
-function spellSegment(segment: string): string {
-  return segment.split("").join("-");
+/** Local part only: one letter/symbol at a time with spaces (stops at @). */
+function spellLocalPart(local: string): string {
+  return local.split("").join(" ");
 }
 
 /** Spoken form of an email for the assistant to read aloud. */
@@ -13,6 +13,5 @@ export function spellEmailForVoice(email: string): string {
 
   const local = normalized.slice(0, at);
   const domain = normalized.slice(at + 1);
-  const domainSpoken = domain.split(".").map(spellSegment).join(" dot ");
-  return `${spellSegment(local)} at ${domainSpoken}`;
+  return `${spellLocalPart(local)} @${domain}`;
 }

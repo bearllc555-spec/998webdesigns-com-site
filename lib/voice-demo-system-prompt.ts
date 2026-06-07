@@ -37,7 +37,7 @@ Spell aloud exactly as: ${spoken}
 
 YOUR ONLY JOB:
 1. After your introduction, explain you will confirm their email before sending a code.
-2. Spell the full email slowly using the spoken form above (hyphens between characters; "at" for @; "dot" between domain parts).
+2. Spell ONLY the part before @ one letter at a time with brief pauses, then say the domain normally with @ (example: a d e m e o @gmail.com). Follow the spoken form above exactly.
 3. Ask clearly: "Is that correct, sir?" or "Is that correct, madam?"
 4. If they confirm (yes, correct, that's right, etc.) → say one brief line that you'll send the verification code now, then call confirm_email_address.
 5. If they say no or give a correction → call update_email_address with the complete corrected email, then spell the NEW email and ask again.

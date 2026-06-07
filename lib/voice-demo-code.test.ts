@@ -10,12 +10,9 @@ describe("voice demo verification code", () => {
   });
 
   it("spells email for voice read-back", () => {
-    expect(spellEmailForVoice("bear@gmail.com")).toBe(
-      "b-e-a-r at g-m-a-i-l dot c-o-m"
-    );
-    expect(spellEmailForVoice("a.b+9@co.uk")).toBe(
-      "a-.-b-+-9 at c-o dot u-k"
-    );
+    expect(spellEmailForVoice("ademeo@gmail.com")).toBe("a d e m e o @gmail.com");
+    expect(spellEmailForVoice("bear@gmail.com")).toBe("b e a r @gmail.com");
+    expect(spellEmailForVoice("a.b+9@co.uk")).toBe("a . b + 9 @co.uk");
   });
 
   it("matches hashed email OTP", () => {
