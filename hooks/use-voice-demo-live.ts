@@ -31,12 +31,22 @@ import {
   shouldClientScheduleFarewellHangup,
 } from "@/lib/voice-demo-farewell";
 import {
+  createVoiceDemoNudgeQueue,
+  enqueueVoiceDemoClientNudge,
+  flushVoiceDemoClientNudgeQueue,
+  sendVoiceDemoClientNudge,
+  type VoiceDemoClientNudgeOpts,
+} from "@/lib/voice-demo-client-nudge";
+import {
   canClientScheduleHangup,
   deriveVoiceDemoSessionPhase,
-  TOOL_END_CONVERSATION_CLIENT_OWNED,
   type VoiceDemoHangupReason,
   type VoiceDemoSessionPhase,
 } from "@/lib/voice-demo-phase";
+import {
+  buildVoiceDemoToolResponse,
+  type VoiceDemoToolResponseEntry,
+} from "@/lib/voice-demo-tool-response";
 import {
   buildPostNameGreetingNudge,
   buildPostNameHelpOnlyNudge,
@@ -272,6 +282,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const reconnectScheduledRef = useRef(false);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressAssistantAudioRef = useRef(false);
+  const clientNudgeQueueRef = useRef(createVoiceDemoNudgeQueue());
   const jarvisLevelsRef = useRef(JARVIS_AUDIO_IDLE);
   const orbFrameRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
@@ -430,10 +441,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       meta: { name, helpOnly },
     });
     try {
-      session.sendClientContent({
-        turns: helpOnly ? buildPostNameHelpOnlyNudge() : buildPostNameGreetingNudge(name),
-        turnComplete: true,
-      });
+      void sendClientNudge(helpOnly ? buildPostNameHelpOnlyNudge() : buildPostNameGreetingNudge(name));
     } catch (err) {
       console.warn("[voice-demo-live] post-name greeting nudge", err);
       postNameGreetingNudgeSentRef.current = false;
@@ -472,32 +480,31 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       severity: "warn",
     });
     try {
-      session.sendClientContent({
-        turns: buildPostNameHoldNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildPostNameHoldNudge());
     } catch (err) {
       console.warn("[voice-demo-live] post-name hold nudge", err);
       postNameHoldSentRef.current = false;
     }
   }, []);
 
-  const sendSessionResumeNudge = useCallback((session: Session) => {
-    try {
-      session.sendClientContent({
-        turns: buildSessionResumeNudge({
+  const sendSessionResumeNudge = useCallback(
+    (session: Session) => {
+      void sendVoiceDemoClientNudge(
+        session,
+        playerRef.current,
+        buildSessionResumeNudge({
           nameOnFile: savedNameRef.current || undefined,
           nameSavedThisSession: postNameLineSpokenRef.current,
           weatherForecastInProgress:
             zipLookupTriggeredRef.current ||
             awaitingWeatherForecastDeliveryRef.current,
-        }),
-        turnComplete: true,
+        })
+      ).catch((err) => {
+        console.warn("[voice-demo-live] session resume nudge", err);
       });
-    } catch (err) {
-      console.warn("[voice-demo-live] session resume nudge", err);
-    }
-  }, []);
+    },
+    []
+  );
 
   const visitorFirstName = useCallback(() => {
     const name = savedNameRef.current.trim();
@@ -637,10 +644,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
     phoneNudgeTranscriptRef.current = transcript;
     try {
-      session.sendClientContent({
-        turns: buildPhonePauseNudge(transcript),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildPhonePauseNudge(transcript));
     } catch (err) {
       console.warn("[voice-demo-live] phone silence nudge", err);
       phoneNudgeTranscriptRef.current = "";
@@ -823,6 +827,27 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     return data.result ?? { ok: false, error: "Tool failed" };
   }, []);
 
+  const sendClientNudge = useCallback(
+    async (turns: string | string[], opts?: VoiceDemoClientNudgeOpts) => {
+      const session = sessionRef.current;
+      if (!session) return false;
+      if (playerRef.current?.isPlaying() && !opts?.hardStop) {
+        enqueueVoiceDemoClientNudge(clientNudgeQueueRef.current, turns, opts);
+        return true;
+      }
+      return sendVoiceDemoClientNudge(session, playerRef.current, turns, opts);
+    },
+    []
+  );
+
+  const flushClientNudges = useCallback(async () => {
+    await flushVoiceDemoClientNudgeQueue(
+      sessionRef.current,
+      playerRef.current,
+      clientNudgeQueueRef.current
+    );
+  }, []);
+
   const clearInputSilenceTimers = useCallback(() => {
     clearPhoneSilenceTimer();
     clearZipSilenceTimer();
@@ -870,10 +895,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         meta: { zip: staged.zip, city: staged.city },
       });
       try {
-        session.sendClientContent({
-          turns: buildZipStagedSpeakNudge(staged.spokenConfirm),
-          turnComplete: true,
-        });
+        void sendClientNudge(buildZipStagedSpeakNudge(staged.spokenConfirm));
       } catch (err) {
         console.warn("[voice-demo-live] zip staging watchdog nudge", err);
       }
@@ -900,12 +922,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         },
       });
 
-      playerRef.current?.hardStop();
       markClientWeatherNudgeSent();
       try {
-        session.sendClientContent({
-          turns: buildZipCityCorrectionNudge(staged.spokenConfirm),
-          turnComplete: true,
+        void sendClientNudge(buildZipCityCorrectionNudge(staged.spokenConfirm), {
+          hardStop: true,
         });
         logVoiceDemoOps({
           kind: "zip_city_correction_sent",
@@ -962,10 +982,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       markClientWeatherNudgeSent();
       suppressPromoAudioDuringWeatherRef.current = false;
       try {
-        session.sendClientContent({
-          turns,
-          turnComplete: true,
-        });
+        const sent = await sendClientNudge(turns);
+        if (!sent) throw new Error("nudge not sent");
         if (zip && stagedZipReadbackRef.current) {
           scheduleZipStagingWatchdog();
         }
@@ -1017,10 +1035,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     });
 
     try {
-      session.sendClientContent({
-        turns: buildWeatherZipPrematureGoodbyeRecoveryNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherZipPrematureGoodbyeRecoveryNudge());
     } catch (err) {
       console.warn("[voice-demo-live] zip premature goodbye recovery", err);
     }
@@ -1064,10 +1079,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       awaitingWeatherYesNoRef.current = false;
       markClientWeatherNudgeSent();
       try {
-        session.sendClientContent({
-          turns: buildZipSilenceRepeatNudge(),
-          turnComplete: true,
-        });
+        void sendClientNudge(buildZipSilenceRepeatNudge());
       } catch (err) {
         console.warn("[voice-demo-live] zip silence repeat nudge", err);
         zipSilencePhaseRef.current = "listening";
@@ -1090,10 +1102,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     goodbyeNudgeSentRef.current = true;
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildZipSilenceGiveUpNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildZipSilenceGiveUpNudge());
     } catch (err) {
       console.warn("[voice-demo-live] zip silence give-up", err);
       awaitingZipDigitsRef.current = true;
@@ -1156,10 +1165,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       weatherYesNoPhaseRef.current = "repeat";
       markClientWeatherNudgeSent();
       try {
-        session.sendClientContent({
-          turns: buildWeatherYesNoPauseNudge(),
-          turnComplete: true,
-        });
+        void sendClientNudge(buildWeatherYesNoPauseNudge());
       } catch (err) {
         console.warn("[voice-demo-live] weather yes/no nudge", err);
         weatherYesNoPhaseRef.current = "first";
@@ -1172,10 +1178,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     goodbyeNudgeSentRef.current = true;
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildWeatherYesNoGiveUpNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherYesNoGiveUpNudge());
     } catch (err) {
       console.warn("[voice-demo-live] weather yes/no give-up", err);
       awaitingWeatherYesNoRef.current = true;
@@ -1213,10 +1216,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildWeatherForecastCoolReactionNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherForecastCoolReactionNudge());
     } catch (err) {
       console.warn("[voice-demo-live] weather cool reaction nudge", err);
     }
@@ -1245,10 +1245,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     closeQueuePhaseRef.current = "awaiting_implement_interest";
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildWeatherImplementAskNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherImplementAskNudge());
     } catch (err) {
       console.warn("[voice-demo-live] close queue implement nudge", err);
     }
@@ -1261,10 +1258,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     promoWeatherNudgeSentRef.current = false;
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildWeatherPromoAskNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherPromoAskNudge());
     } catch (err) {
       console.warn("[voice-demo-live] close queue promo nudge", err);
     }
@@ -1277,10 +1271,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       closeQueuePhaseRef.current = "skipped_to_wrapup";
       markClientWeatherNudgeSent();
       try {
-        session.sendClientContent({
-          turns: buildCloseQueueSkipToWrapUpNudge(reason),
-          turnComplete: true,
-        });
+        void sendClientNudge(buildCloseQueueSkipToWrapUpNudge(reason));
       } catch (err) {
         console.warn("[voice-demo-live] close queue skip wrap-up", err);
       }
@@ -1294,10 +1285,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     closeQueuePhaseRef.current = "skipped_to_wrapup";
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildPromoDeclinedWrapUpNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildPromoDeclinedWrapUpNudge());
     } catch (err) {
       console.warn("[voice-demo-live] promo declined wrap-up", err);
     }
@@ -1332,10 +1320,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       severity: "warn",
     });
     try {
-      session.sendClientContent({
-        turns: buildWrapUpCueLeakRecoveryNudge(wrapUpQuestionIndexRef.current),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWrapUpCueLeakRecoveryNudge(wrapUpQuestionIndexRef.current));
     } catch (err) {
       console.warn("[voice-demo-live] wrap-up cue leak recovery", err);
       wrapUpCueLeakRecoverySentRef.current = false;
@@ -1366,10 +1351,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     wrapUpCueLeakRecoverySentRef.current = false;
     const questionIndex = wrapUpQuestionIndexRef.current;
     try {
-      session.sendClientContent({
-        turns: buildWrapUpPauseNudge(questionIndex),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWrapUpPauseNudge(questionIndex));
       wrapUpQuestionIndexRef.current =
         (questionIndex + 1) % VOICE_DEMO_WRAPUP_QUESTIONS.length;
     } catch (err) {
@@ -1396,10 +1378,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     goodbyeNudgeSentRef.current = true;
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildWeatherDeclineNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherDeclineNudge());
     } catch (err) {
       console.warn("[voice-demo-live] weather decline nudge", err);
     }
@@ -1412,10 +1391,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     markClientWeatherNudgeSent();
     promoWeatherNudgeSentRef.current = false;
     try {
-      session.sendClientContent({
-        turns: buildWeatherAcceptZipNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherAcceptZipNudge());
     } catch (err) {
       console.warn("[voice-demo-live] weather accept zip nudge", err);
     }
@@ -1436,10 +1412,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         meta: { zip: staged.zip, city: staged.city },
       });
       try {
-        session.sendClientContent({
-          turns: buildZipStagedSpeakNudge(staged.spokenConfirm),
-          turnComplete: true,
-        });
+        void sendClientNudge(buildZipStagedSpeakNudge(staged.spokenConfirm));
         scheduleZipStagingWatchdog();
       } catch (err) {
         console.warn("[voice-demo-live] staged zip read-back nudge", err);
@@ -1460,10 +1433,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       severity: "warn",
     });
     try {
-      session.sendClientContent({
-        turns: buildWeatherZipWrapUpBlockedNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildWeatherZipWrapUpBlockedNudge());
     } catch (err) {
       console.warn("[voice-demo-live] zip wrap-up blocked nudge", err);
     }
@@ -1497,10 +1467,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       meta: { zip: staged?.zip, hasStaged: Boolean(staged) },
     });
     try {
-      session.sendClientContent({
-        turns,
-        turnComplete: true,
-      });
+      void sendClientNudge(turns, { hardStop: true });
     } catch (err) {
       console.warn("[voice-demo-live] promo weather blocked nudge", err);
       promoWeatherNudgeSentRef.current = false;
@@ -1514,10 +1481,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (!canSendClientWeatherNudge()) return;
     markClientWeatherNudgeSent();
     try {
-      session.sendClientContent({
-        turns: buildZipOnlyAfterAmbiguousYesNudge(),
-        turnComplete: true,
-      });
+      void sendClientNudge(buildZipOnlyAfterAmbiguousYesNudge());
     } catch (err) {
       console.warn("[voice-demo-live] zip ambiguous yes nudge", err);
     }
@@ -1750,10 +1714,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           meta: { zip: staged.zip, error: errorDetail },
         });
         markClientWeatherNudgeSent();
-        session.sendClientContent({
-          turns: buildWeatherLookupFailedNudge(errorDetail, { retriesExhausted: true }),
-          turnComplete: true,
-        });
+        await sendClientNudge(
+          buildWeatherLookupFailedNudge(errorDetail, { retriesExhausted: true })
+        );
         return;
       }
 
@@ -1772,12 +1735,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         });
         zipLookupTriggeredRef.current = false;
         markClientWeatherNudgeSent();
-        session.sendClientContent({
-          turns: buildWeatherLookupFailedNudge("missing forecast lines", {
+        await sendClientNudge(
+          buildWeatherLookupFailedNudge("missing forecast lines", {
             retriesExhausted: true,
-          }),
-          turnComplete: true,
-        });
+          })
+        );
         return;
       }
 
@@ -1788,10 +1750,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       });
 
       markClientWeatherNudgeSent();
-      session.sendClientContent({
-        turns: buildWeatherLookupSpeakNudge(spokenLookup, briefReport),
-        turnComplete: true,
-      });
+      await sendClientNudge(buildWeatherLookupSpeakNudge(spokenLookup, briefReport));
     } catch (err) {
       console.warn("[voice-demo-live] client weather lookup", err);
       zipLookupTriggeredRef.current = false;
@@ -1804,10 +1763,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       });
       try {
         markClientWeatherNudgeSent();
-        session.sendClientContent({
-          turns: buildWeatherLookupFailedNudge(String(err), { retriesExhausted: true }),
-          turnComplete: true,
-        });
+        await sendClientNudge(
+          buildWeatherLookupFailedNudge(String(err), { retriesExhausted: true })
+        );
       } catch (sendErr) {
         console.warn("[voice-demo-live] weather lookup failed nudge", sendErr);
       }
@@ -2140,7 +2098,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const calls = message.toolCall?.functionCalls ?? [];
       if (calls.length > 0 && sessionRef.current) {
-        const responses = [];
+        const responses: VoiceDemoToolResponseEntry[] = [];
         const bundledWeatherLookup =
           calls.some((c) => c.name === "confirm_weather_zip") &&
           calls.some((c) => c.name === "lookup_weather");
@@ -2154,15 +2112,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               kind: "tool_bundled_weather",
               message: "Blocked confirm_weather_zip + lookup_weather in one turn",
             });
-            responses.push({
-              id: call.id,
-              name,
-              response: {
+            responses.push(buildVoiceDemoToolResponse(call.id, name, {
                 ok: false,
                 error:
                   "Speak spokenConfirm and wait for yes — then call lookup_weather alone with userConfirmed true, not in the same turn as confirm_weather_zip.",
-              },
-            });
+              }));
             continue;
           }
 
@@ -2174,11 +2128,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               kind: "tool_blocked_confirm_zip",
               message: "Blocked duplicate model confirm_weather_zip — client owns staging",
             });
-            responses.push({
-              id: call.id,
-              name,
-              response: { ok: false, error: TOOL_BLOCKED_CONFIRM_WEATHER_ZIP },
-            });
+            responses.push(buildVoiceDemoToolResponse(call.id, name, { ok: false, error: TOOL_BLOCKED_CONFIRM_WEATHER_ZIP }));
             continue;
           }
 
@@ -2187,11 +2137,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               kind: "tool_blocked_lookup_weather",
               message: "Blocked duplicate model lookup_weather — client already fetched",
             });
-            responses.push({
-              id: call.id,
-              name,
-              response: { ok: false, error: TOOL_BLOCKED_LOOKUP_WEATHER },
-            });
+            responses.push(buildVoiceDemoToolResponse(call.id, name, { ok: false, error: TOOL_BLOCKED_LOOKUP_WEATHER }));
             continue;
           }
 
@@ -2208,11 +2154,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               kind: "tool_blocked_promo_weather",
               message: `Blocked ${name} during incomplete weather ZIP flow`,
             });
-            responses.push({
-              id: call.id,
-              name,
-              response: { ok: false, error: TOOL_BLOCKED_PROMO_WEATHER },
-            });
+            responses.push(buildVoiceDemoToolResponse(call.id, name, { ok: false, error: TOOL_BLOCKED_PROMO_WEATHER }));
             continue;
           }
 
@@ -2236,14 +2178,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             const savedName = typeof result.name === "string" ? result.name.trim() : "";
             if (savedName) savedNameRef.current = savedName;
             const alreadyGreeted = postNameLineSpokenRef.current;
-            responses.push({
-              id: call.id,
-              name,
-              response: {
+            responses.push(buildVoiceDemoToolResponse(call.id, name, {
                 ...result,
                 message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
-              },
-            });
+              }));
             continue;
           }
 
@@ -2287,141 +2225,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
           }
 
-          if (name === "end_conversation") {
-            if (farewellDisconnectingRef.current || jarvisFarewellSentRef.current) {
-              responses.push({
-                id: call.id,
-                name,
-                response: {
-                  ok: true,
-                  endCall: true,
-                  message: "Call already ending. Stay completely silent.",
-                },
-              });
-              continue;
-            }
-
-            if (isAssistantHiddenCueLeak(lastAssistantTextRef.current)) {
-              logVoiceDemoOps({
-                kind: "end_conversation_early_blocked",
-                message: "Blocked end_conversation after hidden cue leak",
-                severity: "warn",
-                meta: {
-                  phase: getSessionPhase(),
-                  assistantTail: lastAssistantTextRef.current.slice(-80),
-                },
-              });
-              sendWrapUpCueLeakRecovery();
-              responses.push({
-                id: call.id,
-                name,
-                response: {
-                  ok: false,
-                  error:
-                    "You leaked a hidden system tag. Apologize briefly, ask the wrap-up question, and do not end the call yet.",
-                },
-              });
-              continue;
-            }
-
-            if (weatherDemoStillIncomplete()) {
-              logVoiceDemoOps({
-                kind: "end_conversation_blocked",
-                message: "Blocked end_conversation during incomplete weather demo",
-                meta: {
-                  phase: getSessionPhase(),
-                  awaitingZipDigits: awaitingZipDigitsRef.current,
-                  awaitingZipConfirm: awaitingZipConfirmRef.current,
-                  awaitingForecast: awaitingWeatherForecastDeliveryRef.current,
-                  zipLookupTriggered: zipLookupTriggeredRef.current,
-                  stagedZip: stagedZipReadbackRef.current?.zip ?? null,
-                },
-              });
-              if (isAssistantPromoAsk(lastAssistantTextRef.current)) {
-                sendPromoBlockedDuringWeatherNudge();
-              } else if (
-                stagedZipReadbackRef.current &&
-                !zipLookupTriggeredRef.current
-              ) {
-                sendStagedZipReadBackNudge(
-                  "Blocked end_conversation before weather — re-send staged ZIP read-back"
-                );
-              }
-              responses.push({
-                id: call.id,
-                name,
-                response: {
-                  ok: false,
-                  error:
-                    "Weather demo is incomplete. Finish ZIP read-back, wait for yes, deliver the spoken forecast, then promo/goodbye. Do not end the call yet.",
-                },
-              });
-              continue;
-            }
-
-            if (modeRef.current === "demo" && !postNameLineSpokenRef.current) {
-              logVoiceDemoOps({
-                kind: "end_conversation_early_blocked",
-                message: "Blocked end_conversation during name onboarding",
-                severity: "warn",
-                meta: { phase: getSessionPhase() },
-              });
-              responses.push({
-                id: call.id,
-                name,
-                response: {
-                  ok: false,
-                  error:
-                    "Name onboarding is not complete. Call save_name when you hear their name, greet once with how may I help you today, then continue — do not end the call.",
-                },
-              });
-              continue;
-            }
-
-            const phase = getSessionPhase();
-            const assistantText = lastAssistantTextRef.current;
-            logVoiceDemoOps({
-              kind: "model_end_conversation_blocked",
-              message: "Blocked model end_conversation — client owns hangup",
-              severity: "warn",
-              meta: {
-                phase,
-                assistantTail: assistantText.slice(-120),
-                straySignOff:
-                  isAssistantExplicitGoodbye(assistantText) && phase === "helping",
-              },
-            });
-
-            if (
-              canClientScheduleHangup({
-                phase,
-                farewellSent: jarvisFarewellSentRef.current,
-                goodbyeNudgeSent: goodbyeNudgeSentRef.current,
-                visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
-                assistantText,
-              }) &&
-              !shouldBlockFarewellHangup()
-            ) {
-              pendingClientHangupRef.current = true;
-              hangupReasonRef.current = "model_end_conversation_blocked";
-            }
-
-            responses.push({
-              id: call.id,
-              name,
-              response: {
-                ok: false,
-                error: TOOL_END_CONVERSATION_CLIENT_OWNED,
-              },
-            });
-            continue;
-          }
-
-          responses.push({
-            id: call.id,
-            name,
-            response: result,
-          });
+          responses.push(buildVoiceDemoToolResponse(call.id, name, result));
         }
         sessionRef.current.sendToolResponse({ functionResponses: responses });
       }
@@ -2463,10 +2267,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   message: "Muted repeat assistant audio after farewell — hold nudge sent",
                 });
                 try {
-                  sessionRef.current.sendClientContent({
-                    turns: buildFarewellHoldNudge(),
-                    turnComplete: true,
-                  });
+                  void sendClientNudge(buildFarewellHoldNudge());
                 } catch (err) {
                   console.warn("[voice-demo-live] farewell hold nudge", err);
                   farewellHoldSentRef.current = false;
@@ -2605,10 +2406,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             !zipLookupTriggeredRef.current
           ) {
             markClientWeatherNudgeSent();
-            sessionRef.current?.sendClientContent({
-              turns: buildZipStagedSpeakNudge(stagedZipReadbackRef.current.spokenConfirm),
-              turnComplete: true,
-            });
+            void sendClientNudge(
+              buildZipStagedSpeakNudge(stagedZipReadbackRef.current.spokenConfirm)
+            );
           } else {
             sendWeatherZipWrapUpBlockedNudge();
           }
@@ -2694,6 +2494,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
         void (async () => {
           await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
+          await flushClientNudges();
           if (farewellDisconnectingRef.current || reconnectingRef.current) return;
           if (modeRef.current !== "demo" || !postNameLineSpokenRef.current) return;
 

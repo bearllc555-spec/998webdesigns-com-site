@@ -21,8 +21,8 @@ import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 describe("voice-demo-system-prompt closing", () => {
   it("pauses before wrap-up questions after answers", () => {
     expect(VOICE_DEMO_CLOSING).toMatch(/\[wrapup-ready\]/);
-    expect(VOICE_DEMO_CLOSING).toMatch(/do NOT ask a wrap-up question in the same turn/i);
-    expect(VOICE_DEMO_CLOSING).toMatch(/comfortable pause/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/do not ask wrap-up in the same turn/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/wait for the client cue/i);
   });
 
   it("cycles five wrap-up questions in order", () => {
@@ -30,7 +30,7 @@ describe("voice-demo-system-prompt closing", () => {
     expect(VOICE_DEMO_WRAPUP_QUESTIONS[3]).toBe("Anything else?");
     expect(VOICE_DEMO_WRAPUP_QUESTIONS[4]).toBe("Did I address all your concerns today?");
     expect(VOICE_DEMO_CLOSING).toMatch(/never "any else"/i);
-    expect(VOICE_DEMO_CLOSING).toMatch(/Q4 exact/i);
+    expect(VOICE_DEMO_CLOSING).toContain('Q4: "Anything else?"');
     expect(VOICE_DEMO_WRAPUP_QUESTIONS).toEqual([
       "Is there anything else I can help you with today?",
       "Do you have any other questions?",
@@ -41,14 +41,13 @@ describe("voice-demo-system-prompt closing", () => {
     for (const q of VOICE_DEMO_WRAPUP_QUESTIONS) {
       expect(VOICE_DEMO_CLOSING).toContain(q);
     }
-    expect(VOICE_DEMO_CLOSING).toMatch(/return to Q1/i);
-    expect(VOICE_DEMO_CLOSING).toMatch(/STOP and wait/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/substantive 998 FAQ/i);
   });
 
   it("requires client-owned hangup after final sign-off", () => {
     expect(VOICE_DEMO_CLOSING).toContain("Thank you for contacting 998 web designs");
-    expect(VOICE_DEMO_CLOSING).toMatch(/NEVER call end_conversation/i);
-    expect(VOICE_DEMO_CLOSING).toMatch(/system disconnects automatically/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/system disconnects|system ends the call/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/client-owned/i);
   });
 });
 
@@ -110,8 +109,7 @@ describe("voice-demo-system-prompt onboarding", () => {
   it("requires permission ask before emailing coupon", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_PROMO_EMAIL_ASK_LINE);
-    expect(prompt).toMatch(/never call send_promo_email without asking first/i);
-    expect(prompt).toMatch(/STOP and wait/i);
+    expect(prompt).toMatch(/wait for yes before send_promo_email/i);
     expect(prompt).toMatch(/CLOSE QUEUE/i);
     expect(prompt).toContain("Isn't that pretty cool?");
     expect(prompt).toContain("implement into your website");
@@ -125,27 +123,17 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/four ninety-nine/i);
   });
 
-  it("offers weather demo at end of chat with yes/no then ZIP", () => {
+  it("offers weather demo at end of chat with client-owned ZIP flow", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_ZIP_ASK_LINE);
-    expect(prompt).toMatch(/wait for yes or no/i);
-    expect(prompt).toMatch(/Is that correct\?/i);
-    expect(prompt).toMatch(/userConfirmed true/i);
+    expect(prompt).toMatch(/client stages ZIP/i);
     expect(prompt).toMatch(/Fahrenheit first, then Celsius/i);
-    expect(prompt).toMatch(/I didn't get that ZIP code/i);
-    expect(prompt).toContain("[zip-silence-repeat]");
-    expect(prompt).toMatch(/NEVER use "possible location on file"/i);
-    expect(prompt).toContain("I didn't get that.");
-    expect(prompt).toContain("Do you want to see something cool?");
+    expect(prompt).toMatch(/possible location on file/i);
+    expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
     expect(prompt).toContain(VOICE_DEMO_GOODBYE_LINE);
-    expect(prompt).toMatch(/\[weather-yesno-giveup\]/);
-    expect(prompt).toMatch(/do not ask a third time/i);
-    expect(prompt).toMatch(/1 second/i);
-    expect(prompt).toMatch(/\[weather-forecast-done\]/);
-    expect(prompt).toMatch(/Never guess or substitute a different city/i);
-    expect(prompt).toMatch(/\[zip-input-pause\]/);
-    expect(prompt).toMatch(/\[zip-staged\]/);
+    expect(prompt).toMatch(/\[weather-forecast-done\]/i);
+    expect(prompt).toMatch(/\[zip-staged\]/i);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
   });
 });

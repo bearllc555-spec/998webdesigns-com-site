@@ -117,13 +117,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "send_promo_sms",
           description:
-            "Text VOICE20 to profile phone after they accepted the offer and want SMS (or after send_promo_email).",
-          parameters: { type: Type.OBJECT, properties: {} },
-        },
-        {
-          name: "end_conversation",
-          description:
-            "Deprecated — do not call. The system ends the call automatically after your final goodbye.",
+            "SILENT EXECUTION. Text VOICE20 to profile phone after they accepted the offer and want SMS (or after send_promo_email). Say nothing about the tool result.",
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
@@ -134,7 +128,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "confirm_weather_zip",
           description:
-            "Step 1 of weather: visitor just gave a US ZIP. Validates ZIP, stages location. Returns spokenConfirm — read it back digit-by-digit and ask if correct. STOP and wait for yes before lookup_weather.",
+            "SILENT EXECUTION. Step 1 of weather: visitor just gave a US ZIP. Client stages location — speak spokenConfirm from the client cue, not from this tool. STOP and wait for yes before lookup.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -149,7 +143,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "lookup_weather",
           description:
-            "Step 3 of weather: fetch conditions ONLY after visitor said yes/correct to the ZIP read-back. Never call in the same turn as confirm_weather_zip.",
+            "SILENT EXECUTION. Step 3 of weather: fetch conditions ONLY after visitor confirmed ZIP. Client sends spokenLookup cue — speak that, not the tool result.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -269,14 +263,6 @@ export async function executeVoiceDemoTool(
       ok: true,
       name: visitorName,
       message: buildSaveNameToolMessage(visitorName, false),
-    };
-  }
-
-  if (name === "end_conversation") {
-    return {
-      ok: true,
-      endCall: true,
-      message: "Call ending. Stay silent — if the visitor says goodbye, do not respond.",
     };
   }
 
