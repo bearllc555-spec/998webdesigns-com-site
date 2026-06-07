@@ -5,6 +5,7 @@ import {
   voiceDemoDemoSystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
+import { VOICE_DEMO_PROMO_EMAIL_ASK_LINE } from "@/lib/voice-demo-constants";
 import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 
 describe("voice-demo-system-prompt closing", () => {
@@ -47,5 +48,12 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_POST_NAME_LINE);
     expect(prompt).toMatch(/NEVER say "profile complete"/i);
     expect(prompt).not.toMatch(/Profile complete:/);
+  });
+
+  it("requires permission ask before emailing coupon", () => {
+    const prompt = voiceDemoDemoSystemPrompt(baseRow);
+    expect(prompt).toContain(VOICE_DEMO_PROMO_EMAIL_ASK_LINE);
+    expect(prompt).toMatch(/never call send_promo_email without asking first/i);
+    expect(prompt).toMatch(/STOP and wait/i);
   });
 });

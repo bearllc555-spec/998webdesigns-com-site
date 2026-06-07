@@ -5,6 +5,7 @@ import { twilioMessagingFrom } from "@/lib/twilio-sms";
 import {
   VOICE_DEMO_MAX_VERIFY_ATTEMPTS,
   VOICE_DEMO_PROMO_CODE,
+  VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
 } from "@/lib/voice-demo-constants";
 import { codesMatch, isVerificationExpired } from "@/lib/voice-demo-otp";
 import {
@@ -120,7 +121,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "send_promo_email",
           description:
-            "Send VOICE20 coupon to verified email after visitor casually accepted the offer. Chill — only after they said yes.",
+            `Email VOICE20 coupon ONLY after you asked "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and visitor said yes. Never call without that permission.`,
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
@@ -323,7 +324,9 @@ export async function executeVoiceDemoTool(
     const smsOk = bundle.sms?.ok === true;
 
     if (emailOk) {
-      const parts = ["Promo emailed — mention casually, check spam if needed."];
+      const parts = [
+        "Promo emailed — tell them briefly it is on its way (you already had their permission). Mention spam folder if natural.",
+      ];
       if (bundle.sms) {
         if (smsOk) {
           parts.push("Text sent to their profile phone too — mention briefly if natural.");

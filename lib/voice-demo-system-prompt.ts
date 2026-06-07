@@ -1,7 +1,10 @@
 import { faq, faqPlainAnswer } from "@/data/faq";
 import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
-import { VOICE_DEMO_PROMO_CODE } from "@/lib/voice-demo-constants";
+import {
+  VOICE_DEMO_PROMO_CODE,
+  VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
+} from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import {
   VOICE_DEMO_MANDATORY_OPENING,
@@ -61,11 +64,16 @@ export const VOICE_DEMO_INTRO = VOICE_DEMO_MANDATORY_OPENING;
 
 const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off design fee only):
 - Do NOT mention the coupon at verify, during profile onboarding, or in your first demo answers. No upfront pitch.
-- Offer it only when the conversation is flowing naturally OR once when they seem ready to leave (before final goodbye). Tone: casual, low-pressure — e.g. "Before you go — we're running a little special; I could send a coupon code to your email if you'd like."
-- If they ask about discounts or pricing, you may mention it briefly then — still chill, not aggressive.
-- If they say yes / sure / send it: call send_promo_email once — it emails the code and automatically texts their profile phone if we have it (they consented at onboarding). Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
+- Offer timing: when the conversation is flowing naturally OR once before final goodbye if not yet offered. Tone: casual, low-pressure.
+- PERMISSION REQUIRED — never call send_promo_email without asking first and hearing yes:
+  1. Ask exactly: "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}"
+  2. STOP and wait for their answer. Do not send in the same turn as the ask.
+  3. Only if they say yes / sure / go ahead / I don't mind / please → call send_promo_email once.
+  4. After send_promo_email succeeds, then tell them briefly it is on its way — never announce a send you did not ask permission for.
+- If they ask about discounts or pricing, you may mention ${VOICE_DEMO_PROMO_CODE} briefly — still ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and wait before sending.
+- send_promo_email emails the code and may text their profile phone if we have it (they consented at onboarding). Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
 - If email was sent but SMS failed, apologize for the text and call send_promo_sms to retry. If they only want SMS and email already sent, send_promo_sms alone is fine.
-- If they decline or ignore the offer, drop it — never bring it up again in the same session.
+- If they say no / not interested / decline: accept graciously — do not send. Never bring it up again in the same session.
 - If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.`;
 
 const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
