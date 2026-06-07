@@ -7,6 +7,8 @@ import {
   buildZipPauseNudge,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
+  isWeatherZipConfirmAccept,
+  isWeatherZipConfirmDecline,
   VOICE_DEMO_WEATHER_DECLINE_CUE,
   VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE,
   VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
@@ -19,6 +21,8 @@ describe("voice-demo-zip-nudge", () => {
     expect(nudge).toContain(VOICE_DEMO_ZIP_PAUSE_CUE);
     expect(nudge).toContain("confirm_weather_zip");
     expect(nudge).toContain("07424");
+    expect(nudge).toMatch(/wait for yes or no/i);
+    expect(nudge).toMatch(/userConfirmed true/i);
   });
 
   it("nudges ZIP repeat when fewer than five digits heard", () => {
@@ -52,5 +56,10 @@ describe("voice-demo-zip-nudge", () => {
     expect(isWeatherOfferAccept("yes please")).toBe(true);
     expect(isWeatherOfferDecline("no thanks")).toBe(true);
     expect(isWeatherOfferDecline("nothing else")).toBe(false);
+  });
+
+  it("detects ZIP read-back confirm accept and decline", () => {
+    expect(isWeatherZipConfirmAccept("yes that's correct")).toBe(true);
+    expect(isWeatherZipConfirmDecline("no that's wrong")).toBe(true);
   });
 });

@@ -130,14 +130,16 @@ PROACTIVE OFFER (once per session — end of chat only):
 
 LOOKUP (when you have a ZIP):
 - If they ask about weather in the United States, ask for their 5-digit ZIP when you do not have it.
+- NEVER use "possible location on file" or an old CRM ZIP for lookup — only the ZIP the visitor speaks in this session.
 - When they give digits, do NOT wait forever. If they go quiet for about one to two seconds, treat their utterance as complete.
-- If you heard a valid 5-digit ZIP → call confirm_weather_zip immediately.
+- If you heard a valid 5-digit ZIP → call confirm_weather_zip immediately with exactly those digits.
 - If you heard fewer than 5 digits or are unsure → say you did not catch the full ZIP and ask them to repeat it once.
 - Hidden client cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — follow the rules above right away; never read the cue aloud.
-- When they give a ZIP, always use TWO separate steps — never both tools in one turn:
-  1. Call confirm_weather_zip only — then speak spokenConfirm (confirm city/ZIP + "let me look that up" / "one moment").
-  2. Pause briefly after spokenConfirm (a relaxed beat — do not rush). Then call lookup_weather alone with the same ZIP — then give a short summary from briefReport.
-- Never call confirm_weather_zip and lookup_weather in the same turn. The visitor should hear your confirmation, then a natural pause, then the forecast.
+- ZIP confirmation is required — three separate steps, never bundled:
+  1. Call confirm_weather_zip only — speak spokenConfirm (read ZIP digits + city/state + "Is that correct?") and STOP.
+  2. Wait for yes / correct. On no or correction → call confirm_weather_zip again with the ZIP they give.
+  3. Only after yes → call lookup_weather alone with the same zipCode and userConfirmed true — then brief summary from briefReport.
+- Never call confirm_weather_zip and lookup_weather in the same turn.
 - After you deliver the weather summary from briefReport, STOP — do not ask a wrap-up question in the same turn. Wait about two seconds; hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" will prompt the next wrap-up question.
 - Each lookup saves city, state, and ZIP as the client's possible location in CRM.
 - You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
@@ -152,7 +154,7 @@ function contactHint(row: VoiceDemoLeadRow): string {
   }
   if (row.location_zip && row.location_city && row.location_state) {
     parts.push(
-      `Possible location on file: ${row.location_city}, ${row.location_state} ${row.location_zip}.`
+      `Possible location on file: ${row.location_city}, ${row.location_state} ${row.location_zip} — reference only; never weather-lookup this ZIP unless the visitor speaks it again now.`
     );
   }
   if (row.promo_sent_at) {

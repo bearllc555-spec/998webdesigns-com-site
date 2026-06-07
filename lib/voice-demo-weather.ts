@@ -229,11 +229,27 @@ export async function lookupUsWeatherByZip(zip: string): Promise<UsWeatherLookup
   };
 }
 
-/** Spoken acknowledgment after the visitor gives a ZIP — before the weather fetch. */
+/** Space-separated digits for clear ZIP read-back (e.g. "0 7 4 2 4"). */
+export function spellZipForVoice(zip: string): string {
+  const digits = zip.replace(/\D/g, "").slice(0, 5);
+  return digits.split("").join(" ");
+}
+
+/** Read-back after the visitor gives a ZIP — ask yes/no before lookup. */
 export function buildWeatherZipConfirmLine(
   place: Pick<UsZipPlace, "zip" | "city" | "stateName">
 ): string {
-  return `Thank you — let me look up the weather for ${place.city}, ${place.stateName}, ${place.zip}.`;
+  return (
+    `I have ZIP code ${spellZipForVoice(place.zip)} for ${place.city}, ${place.stateName}. ` +
+    `Is that correct?`
+  );
+}
+
+/** Spoken after the visitor confirms the ZIP — before the API fetch. */
+export function buildWeatherZipLookupLine(
+  place: Pick<UsZipPlace, "city" | "stateName">
+): string {
+  return `Thank you — one moment while I look up the weather for ${place.city}, ${place.stateName}.`;
 }
 
 export function formatPossibleLocationLabel(

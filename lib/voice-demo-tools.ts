@@ -23,6 +23,8 @@ import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import {
   buildWeatherZipConfirmLine,
+  buildWeatherZipLookupLine,
+  normalizeUsZipCode,
   lookupUsWeatherByZip,
   resolveUsZipPlace,
 } from "@/lib/voice-demo-weather";
@@ -144,7 +146,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "confirm_weather_zip",
           description:
-            "Step 1 of weather: visitor just gave a US ZIP. Fast — validates ZIP, saves possible location. Returns spokenConfirm — you MUST speak it (confirm ZIP + say you are looking it up) before calling lookup_weather.",
+            "Step 1 of weather: visitor just gave a US ZIP. Validates ZIP, stages location. Returns spokenConfirm — read it back digit-by-digit and ask if correct. STOP and wait for yes before lookup_weather.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -159,16 +161,21 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "lookup_weather",
           description:
-            "Step 2 of weather: fetch current conditions after you spoke confirm_weather_zip spokenConfirm. Never call without confirm_weather_zip first in the same request.",
+            "Step 3 of weather: fetch conditions ONLY after visitor said yes/correct to the ZIP read-back. Never call in the same turn as confirm_weather_zip.",
           parameters: {
             type: Type.OBJECT,
             properties: {
               zipCode: {
                 type: Type.STRING,
-                description: "Same US ZIP confirmed in confirm_weather_zip",
+                description: "Same US ZIP staged in confirm_weather_zip",
+              },
+              userConfirmed: {
+                type: Type.BOOLEAN,
+                description:
+                  "True only when visitor said yes/correct/that's right after the ZIP read-back",
               },
             },
-            required: ["zipCode"],
+            required: ["zipCode", "userConfirmed"],
           },
         },
       ],
@@ -442,15 +449,35 @@ export async function executeVoiceDemoTool(
       city: place.city,
       state: place.state,
       spokenConfirm,
+      zipReadBack: true,
       message:
-        `Speak spokenConfirm now in a relaxed tone — confirm their city and ZIP and say you are looking it up. ` +
-        `Pause a beat after you finish speaking. Do NOT give weather data yet. ` +
-        `Then call lookup_weather alone (separate turn) with zipCode "${place.zip}".`,
+        `Speak spokenConfirm exactly once — ZIP digits, city, state, then ask if correct. ` +
+        `STOP and wait for their answer. Do NOT call lookup_weather yet. ` +
+        `On yes → lookup_weather with zipCode "${place.zip}" and userConfirmed true. ` +
+        `On no or correction → call confirm_weather_zip again with the ZIP they give.`,
     };
   }
 
   if (name === "lookup_weather") {
+    if (args.userConfirmed !== true) {
+      return {
+        ok: false,
+        error:
+          "Visitor must confirm the ZIP read-back first. Speak spokenConfirm, wait for yes, then call lookup_weather with userConfirmed true.",
+      };
+    }
+
     const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
+    const normalized = normalizeUsZipCode(zipCode);
+    const refreshed = await getVoiceDemoLead(leadId);
+    if (!normalized || !refreshed?.location_zip || refreshed.location_zip !== normalized) {
+      return {
+        ok: false,
+        error:
+          "ZIP not staged or mismatch. Call confirm_weather_zip with the ZIP you heard, read it back, wait for yes, then lookup with the same ZIP.",
+      };
+    }
+
     const result = await lookupUsWeatherByZip(zipCode);
     if (!result.ok) {
       return { ok: false, error: result.error };
@@ -462,15 +489,21 @@ export async function executeVoiceDemoTool(
       location_state: result.state,
     });
 
+    const spokenLookup = buildWeatherZipLookupLine({
+      city: result.city,
+      stateName: result.stateName,
+    });
+
     return {
       ok: true,
       zip: result.zip,
       city: result.city,
       state: result.state,
       briefReport: result.briefReport,
+      spokenLookup,
       possibleLocation: `${result.city}, ${result.state} ${result.zip}`,
       message:
-        "Give a brief spoken weather summary from briefReport — temperature, conditions, wind. Keep it short.",
+        `Speak spokenLookup, then give a brief weather summary from briefReport for ZIP ${result.zip} only — temperature, conditions, wind. Keep it short.`,
     };
   }
 

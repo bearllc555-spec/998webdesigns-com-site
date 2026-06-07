@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   buildWeatherZipConfirmLine,
+  buildWeatherZipLookupLine,
   formatBriefWeatherReport,
+  spellZipForVoice,
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
   normalizeUsZipCode,
@@ -56,17 +58,21 @@ describe("voice-demo-weather", () => {
     );
   });
 
-  it("builds spoken ZIP confirmation before weather fetch", () => {
+  it("spells ZIP digits for read-back", () => {
+    expect(spellZipForVoice("07424")).toBe("0 7 4 2 4");
+  });
+
+  it("builds ZIP read-back before weather fetch", () => {
+    const readBack = buildWeatherZipConfirmLine({
+      zip: "07424",
+      city: "Little Falls",
+      stateName: "New Jersey",
+    });
+    expect(readBack).toContain("0 7 4 2 4");
+    expect(readBack).toContain("Little Falls");
+    expect(readBack).toMatch(/Is that correct\?/i);
     expect(
-      buildWeatherZipConfirmLine({
-        zip: "07424",
-        city: "Little Falls",
-        stateName: "New Jersey",
-      })
-    ).toContain("07424");
-    expect(
-      buildWeatherZipConfirmLine({
-        zip: "07424",
+      buildWeatherZipLookupLine({
         city: "Little Falls",
         stateName: "New Jersey",
       })

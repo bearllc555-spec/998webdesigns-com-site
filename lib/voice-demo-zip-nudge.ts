@@ -34,7 +34,8 @@ export function buildZipPauseNudge(transcript: string): string {
   if (zip) {
     return (
       `${VOICE_DEMO_ZIP_PAUSE_CUE} Visitor stopped speaking. Transcript: "${trimmed}". ` +
-      `Call confirm_weather_zip now with zipCode "${zip}", speak spokenConfirm, pause, then lookup_weather alone.`
+      `Call confirm_weather_zip now with zipCode "${zip}", speak spokenConfirm once, and STOP — wait for yes or no. ` +
+      `Do NOT call lookup_weather until they confirm. On yes, lookup_weather with userConfirmed true and the same ZIP.`
     );
   }
 
@@ -77,6 +78,20 @@ export function buildWeatherDeclineNudge(): string {
 /** Visitor transcript looks like a clear no to the weather demo. */
 export function isWeatherOfferDecline(transcript: string): boolean {
   return /\b(no|nah|nope|not really|don't|do not|pass|skip|i'm good|im good)\b/i.test(
+    transcript.trim()
+  );
+}
+
+/** Visitor said yes to the staged ZIP read-back. */
+export function isWeatherZipConfirmAccept(transcript: string): boolean {
+  return /\b(yes|yeah|yep|sure|ok|okay|correct|that's right|that is right|right|absolutely|affirmative)\b/i.test(
+    transcript.trim()
+  );
+}
+
+/** Visitor rejected the staged ZIP read-back. */
+export function isWeatherZipConfirmDecline(transcript: string): boolean {
+  return /\b(no|nah|nope|wrong|incorrect|not right|that's wrong|that is wrong)\b/i.test(
     transcript.trim()
   );
 }

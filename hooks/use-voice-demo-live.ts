@@ -47,6 +47,7 @@ import {
   buildZipPauseNudge,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
+  isWeatherZipConfirmDecline,
   WEATHER_YESNO_SILENCE_NUDGE_MS,
   ZIP_SILENCE_NUDGE_MS,
 } from "@/lib/voice-demo-zip-nudge";
@@ -115,6 +116,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const zipSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const weatherYesNoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const awaitingZipDigitsRef = useRef(false);
+  const awaitingZipConfirmRef = useRef(false);
   const awaitingWeatherYesNoRef = useRef(false);
   const zipNudgeTranscriptRef = useRef("");
   const weatherYesNoPhaseRef = useRef<WeatherYesNoPhase>("first");
@@ -288,6 +290,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const clearWeatherZipState = useCallback(() => {
     awaitingZipDigitsRef.current = false;
+    awaitingZipConfirmRef.current = false;
     awaitingWeatherYesNoRef.current = false;
     zipNudgeTranscriptRef.current = "";
     weatherYesNoPhaseRef.current = "first";
@@ -389,6 +392,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (
       awaitingPhoneDigitsRef.current ||
       awaitingZipDigitsRef.current ||
+      awaitingZipConfirmRef.current ||
       awaitingWeatherYesNoRef.current
     ) {
       return;
@@ -452,8 +456,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       awaitingWeatherYesNoRef.current = false;
       weatherYesNoPhaseRef.current = "first";
       clearWeatherYesNoTimer();
+      awaitingZipConfirmRef.current = false;
       awaitingZipDigitsRef.current = true;
       zipNudgeTranscriptRef.current = "";
+    }
+
+    if (/is that correct\?/i.test(assistantText) && /\bzip\b/i.test(lower)) {
+      awaitingZipDigitsRef.current = false;
+      awaitingZipConfirmRef.current = true;
+      clearZipSilenceTimer();
     }
   }, [clearWeatherYesNoTimer, clearZipSilenceTimer, scheduleWeatherYesNoNudge]);
 
@@ -461,6 +472,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     (name: string, result: Record<string, unknown>) => {
       if (name === "confirm_weather_zip" && result.ok === true) {
         awaitingZipDigitsRef.current = false;
+        awaitingZipConfirmRef.current = true;
         zipNudgeTranscriptRef.current = "";
         clearZipSilenceTimer();
         return;
@@ -636,7 +648,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               response: {
                 ok: false,
                 error:
-                  "Speak spokenConfirm first, pause a moment, then call lookup_weather alone — not in the same turn as confirm_weather_zip.",
+                  "Speak spokenConfirm and wait for yes — then call lookup_weather alone with userConfirmed true, not in the same turn as confirm_weather_zip.",
               },
             });
             continue;
@@ -732,17 +744,30 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           scheduleWeatherYesNoNudge();
         }
 
+        if (awaitingZipConfirmRef.current && isWeatherZipConfirmDecline(userLine)) {
+          awaitingZipConfirmRef.current = false;
+          awaitingZipDigitsRef.current = true;
+          zipNudgeTranscriptRef.current = "";
+        }
+
         if (/\d/.test(inText)) {
           if (awaitingPhoneConfirmRef.current) {
             awaitingPhoneConfirmRef.current = false;
             awaitingPhoneDigitsRef.current = true;
             phoneNudgeTranscriptRef.current = "";
           }
-          if (awaitingZipDigitsRef.current || awaitingWeatherYesNoRef.current) {
+          if (
+            awaitingZipDigitsRef.current ||
+            awaitingZipConfirmRef.current ||
+            awaitingWeatherYesNoRef.current
+          ) {
             if (awaitingWeatherYesNoRef.current) {
               awaitingWeatherYesNoRef.current = false;
               weatherYesNoPhaseRef.current = "first";
               clearWeatherYesNoTimer();
+            }
+            if (awaitingZipConfirmRef.current) {
+              awaitingZipConfirmRef.current = false;
             }
             awaitingZipDigitsRef.current = true;
             zipNudgeTranscriptRef.current = "";
@@ -787,6 +812,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 awaitingCollection:
                   awaitingPhoneDigitsRef.current ||
                   awaitingZipDigitsRef.current ||
+                  awaitingZipConfirmRef.current ||
                   awaitingWeatherYesNoRef.current,
                 farewellSent: jarvisFarewellSentRef.current,
               })
