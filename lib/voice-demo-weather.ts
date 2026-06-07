@@ -1,5 +1,8 @@
 const FETCH_TIMEOUT_MS = 9000;
 
+/** Pause after ZIP confirmation audio before weather API fetch (ms). */
+export const WEATHER_POST_CONFIRM_PAUSE_MS = 2400;
+
 export type UsZipPlace = {
   zip: string;
   city: string;

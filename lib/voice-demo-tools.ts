@@ -429,8 +429,9 @@ export async function executeVoiceDemoTool(
       state: place.state,
       spokenConfirm,
       message:
-        `Speak spokenConfirm now in a relaxed tone — confirm their ZIP and say you are looking it up. ` +
-        `Do NOT give weather data yet. Then call lookup_weather with zipCode "${place.zip}".`,
+        `Speak spokenConfirm now in a relaxed tone — confirm their city and ZIP and say you are looking it up. ` +
+        `Pause a beat after you finish speaking. Do NOT give weather data yet. ` +
+        `Then call lookup_weather alone (separate turn) with zipCode "${place.zip}".`,
     };
   }
 

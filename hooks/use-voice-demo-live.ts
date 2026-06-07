@@ -25,6 +25,7 @@ import {
   triggerVoiceDemoOpening,
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
+import { WEATHER_POST_CONFIRM_PAUSE_MS } from "@/lib/voice-demo-weather";
 import type { Session } from "@google/genai";
 
 export type VoiceDemoLiveMode = "verify" | "demo";
@@ -282,17 +283,38 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       const calls = message.toolCall?.functionCalls ?? [];
       if (calls.length > 0 && sessionRef.current) {
         const responses = [];
+        const bundledWeatherLookup =
+          calls.some((c) => c.name === "confirm_weather_zip") &&
+          calls.some((c) => c.name === "lookup_weather");
+
         for (const call of calls) {
           const name = call.name ?? "";
           const args = (call.args ?? {}) as Record<string, unknown>;
+
+          if (name === "lookup_weather" && bundledWeatherLookup) {
+            responses.push({
+              id: call.id,
+              name,
+              response: {
+                ok: false,
+                error:
+                  "Speak spokenConfirm first, pause a moment, then call lookup_weather alone — not in the same turn as confirm_weather_zip.",
+              },
+            });
+            continue;
+          }
+
           if (name === "confirm_weather_zip") {
             const zip = typeof args.zipCode === "string" ? args.zipCode.trim() : "";
             optionsRef.current.onStatus?.(
               zip ? `Confirming ZIP ${zip}…` : "Confirming ZIP…"
             );
           } else if (name === "lookup_weather") {
-            optionsRef.current.onStatus?.("Looking up weather…");
+            optionsRef.current.onStatus?.("One moment — looking up weather…");
+            await playerRef.current?.whenPlaybackIdle(10000);
+            await sleep(WEATHER_POST_CONFIRM_PAUSE_MS);
           }
+
           const result = await runTool(name, args);
 
           if (name === "verify_code" && result.verified === true) {

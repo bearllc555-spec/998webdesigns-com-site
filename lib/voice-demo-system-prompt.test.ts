@@ -6,6 +6,8 @@ import {
 
 describe("voice-demo-system-prompt closing", () => {
   it("cycles four wrap-up questions in order", () => {
+    expect(VOICE_DEMO_WRAPUP_QUESTIONS[0]).toContain("anything else");
+    expect(VOICE_DEMO_CLOSING).toMatch(/NEVER say "any else"/i);
     expect(VOICE_DEMO_WRAPUP_QUESTIONS).toEqual([
       "Is there anything else I can help you with today?",
       "Did I address all your concerns today?",

@@ -28,6 +28,9 @@ Q3: "${VOICE_DEMO_WRAPUP_QUESTIONS[2]}"
 Q4: "${VOICE_DEMO_WRAPUP_QUESTIONS[3]}"
 After Q4, return to Q1 and repeat. Track your position in the cycle across the conversation.
 
+Q1 WORDING (critical — never garble):
+- Q1 must be spoken exactly: "Is there anything else I can help you with today?" — include the word anything. NEVER say "any else" or drop "thing".
+
 HOW TO USE THE CYCLE:
 - First time you check if they need more help → Q1. Second wrap-up → Q2. Third → Q3. Fourth → Q4. Fifth wrap-up → Q1 again, and so on.
 - Ask only ONE wrap-up question per turn. STOP and wait for their answer — very laid-back, never stack two wrap-up questions back-to-back, never rush them.
@@ -55,10 +58,10 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
 
 const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
 - If they ask about weather in the United States, ask for their 5-digit ZIP when you do not have it.
-- When they give a ZIP, always use TWO steps — never skip step 1, never go silent:
-  1. Call confirm_weather_zip — then immediately speak spokenConfirm (confirm the ZIP + "let me look that up" / "one moment"). The visitor should hear you working before the forecast.
-  2. Call lookup_weather with the same ZIP — then give a short summary from briefReport (temperature, conditions, wind).
-- Do not call lookup_weather in the same breath as receiving the ZIP without speaking spokenConfirm first.
+- When they give a ZIP, always use TWO separate steps — never both tools in one turn:
+  1. Call confirm_weather_zip only — then speak spokenConfirm (confirm city/ZIP + "let me look that up" / "one moment").
+  2. Pause briefly after spokenConfirm (a relaxed beat — do not rush). Then call lookup_weather alone with the same ZIP — then give a short summary from briefReport.
+- Never call confirm_weather_zip and lookup_weather in the same turn. The visitor should hear your confirmation, then a natural pause, then the forecast.
 - Each lookup saves city, state, and ZIP as the client's possible location in CRM.
 - You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
 
