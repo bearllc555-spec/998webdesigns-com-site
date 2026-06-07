@@ -5,6 +5,7 @@ import {
   isAssistantZipReadBackPrompt,
   isAssistantWeatherOfferPrompt,
   isWeatherZipFlowActive,
+  shouldBlockClientFarewellHangup,
 } from "@/lib/voice-demo-weather-flow";
 
 describe("voice-demo-weather-flow", () => {
@@ -53,6 +54,30 @@ describe("voice-demo-weather-flow", () => {
         awaitingWeatherForecastDelivery: false,
         zipDigitsHeardMax: 0,
         weatherDemoAccepted: false,
+      })
+    ).toBe(false);
+  });
+
+  it("blocks client farewell hangup until forecast sign-off nudge", () => {
+    expect(
+      shouldBlockClientFarewellHangup({
+        awaitingWeatherForecastDelivery: true,
+        zipLookupTriggered: false,
+        goodbyeNudgeSent: false,
+      })
+    ).toBe(true);
+    expect(
+      shouldBlockClientFarewellHangup({
+        awaitingWeatherForecastDelivery: false,
+        zipLookupTriggered: true,
+        goodbyeNudgeSent: false,
+      })
+    ).toBe(true);
+    expect(
+      shouldBlockClientFarewellHangup({
+        awaitingWeatherForecastDelivery: false,
+        zipLookupTriggered: true,
+        goodbyeNudgeSent: true,
       })
     ).toBe(false);
   });

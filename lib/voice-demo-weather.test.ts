@@ -85,6 +85,14 @@ describe("voice-demo-weather", () => {
     expect(isAssistantWeatherForecast("Thank you — one moment while I look up")).toBe(false);
   });
 
+  it("does not treat partial temperature-only lines as a complete forecast", () => {
+    expect(
+      isAssistantWeatherForecast(
+        "In Little Falls, New Jersey, it's 72 degrees Fahrenheit, about 22 degrees Celsius with partly cloudy"
+      )
+    ).toBe(false);
+  });
+
   it("uses a 1s pause before goodbye after forecast", () => {
     expect(WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS).toBe(1000);
     const nudge = buildWeatherForecastGoodbyeNudge();

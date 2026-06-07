@@ -157,16 +157,15 @@ export function isAssistantWeatherLookupPending(text: string): boolean {
   return /look up the weather for/i.test(text.trim().toLowerCase());
 }
 
-/** Assistant turn looks like the spoken briefReport weather summary. */
+/** Assistant turn looks like the full spoken briefReport (not a partial temp-only line). */
 export function isAssistantWeatherForecast(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
   return (
-    (/\bin .+, .+, it's \d+ degrees fahrenheit/i.test(t) && /celsius/.test(t)) ||
-    (/\d+\s*degrees fahrenheit/.test(t) &&
-      /celsius/.test(t) &&
-      /humidity/.test(t) &&
-      /\bwind/.test(t))
+    /\d+\s*degrees fahrenheit/.test(t) &&
+    /celsius/.test(t) &&
+    /humidity/.test(t) &&
+    /\bwind/.test(t)
   );
 }
 

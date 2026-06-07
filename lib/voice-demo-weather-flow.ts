@@ -23,6 +23,17 @@ export function isWeatherZipFlowActive(refs: WeatherZipFlowRefs): boolean {
   );
 }
 
+/** Block client auto-hangup while forecast audio or post-lookup sign-off is still in flight. */
+export function shouldBlockClientFarewellHangup(opts: {
+  awaitingWeatherForecastDelivery: boolean;
+  zipLookupTriggered: boolean;
+  goodbyeNudgeSent: boolean;
+}): boolean {
+  if (opts.awaitingWeatherForecastDelivery) return true;
+  if (opts.zipLookupTriggered && !opts.goodbyeNudgeSent) return true;
+  return false;
+}
+
 /** Jarvis asked permission to email the coupon (or mentioned VOICE20 / discount). */
 export function isAssistantPromoAsk(text: string): boolean {
   const lower = text.trim().toLowerCase();

@@ -79,4 +79,15 @@ describe("voice-demo-greeting", () => {
     expect(nudge).toContain(VOICE_DEMO_SESSION_RESUME_CUE);
     expect(nudge).toMatch(/Do not repeat greetings/i);
   });
+
+  it("builds weather-aware resume nudge without re-asking ZIP", () => {
+    const nudge = buildSessionResumeNudge({
+      nameOnFile: "Anthony",
+      nameSavedThisSession: true,
+      weatherForecastInProgress: true,
+    });
+    expect(nudge).toContain(VOICE_DEMO_SESSION_RESUME_CUE);
+    expect(nudge).toMatch(/do NOT ask for their ZIP again/i);
+    expect(nudge).toMatch(/Finish speaking the forecast/i);
+  });
 });
