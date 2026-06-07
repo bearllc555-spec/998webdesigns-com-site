@@ -79,7 +79,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "stage_phone_number",
           description:
-            "Stage US cell for profile: spell digits, then confirm on yes (userConfirmed true). No coupon SMS here.",
+            "Stage US cell for profile after visitor stops speaking (about 1-2s silence): spell digits, then confirm on yes (userConfirmed true). No coupon SMS here.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -364,7 +364,11 @@ export async function executeVoiceDemoTool(
 
     const phone = typeof args.phone === "string" ? normalizePhoneE164(args.phone) : null;
     if (!phone) {
-      return { ok: false, error: "Invalid US phone number." };
+      return {
+        ok: false,
+        error:
+          "Invalid or incomplete US phone number. Say you did not catch the full ten-digit cell number and ask them to repeat it once.",
+      };
     }
 
     const twilioFrom = twilioMessagingFrom();

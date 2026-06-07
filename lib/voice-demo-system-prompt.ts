@@ -4,6 +4,7 @@ import { marketingSiteOrigin } from "@/lib/site-origin";
 import { VOICE_DEMO_PROMO_CODE } from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import { VOICE_DEMO_MANDATORY_OPENING } from "@/lib/voice-demo-greeting";
+import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
 
 const FAQ_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
@@ -131,7 +132,10 @@ Goal: CRM profile — verified email (on file), name, US cell phone.
 Order:
 1. NAME — Your opening already asks who you have the pleasure of speaking with. When they answer, call save_name. If name is already on file, greet them by name instead of re-asking.
 2. PHONE — Ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
-   - stage_phone_number with phone and smsConsent true.
+   - When they give digits, do NOT wait forever for more. If they go quiet for about one to two seconds, treat their utterance as complete.
+   - If you heard at least 10 digits → call stage_phone_number immediately with phone and smsConsent true.
+   - If you heard fewer than 10 digits or are unsure → say you did not catch the full number and ask them to repeat it once.
+   - Hidden client cue "${VOICE_DEMO_PHONE_PAUSE_CUE}" means they stopped speaking — follow the rules above right away; never read the cue aloud.
    - Read spoken digits ONCE, ask "Is that correct?"
    - On yes → confirm_phone_number (or stage again with userConfirmed true). Saves phone only — no coupon SMS yet.
    - On correction → update_staged_phone, spell once, ask again.

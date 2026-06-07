@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
     channel: row.primary_channel,
     destination: row.primary_channel === "email" ? row.email : row.phone,
     fullName: row.full_name,
+    phoneOnFile: Boolean(row.phone),
     configured: Boolean(geminiApiKey()),
     promoSent: Boolean(row.promo_sent_at),
     resendConfigured: Boolean(process.env.RESEND_API_KEY?.trim()),

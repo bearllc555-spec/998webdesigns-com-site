@@ -25,6 +25,10 @@ import {
   triggerVoiceDemoOpening,
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
+import {
+  buildPhonePauseNudge,
+  PHONE_SILENCE_NUDGE_MS,
+} from "@/lib/voice-demo-phone-nudge";
 import { WEATHER_POST_CONFIRM_PAUSE_MS } from "@/lib/voice-demo-weather";
 import type { Session } from "@google/genai";
 
@@ -82,6 +86,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingPhaseRef = useRef<VoiceDemoPhaseTransition | null>(null);
   const pendingSinceRef = useRef<number | null>(null);
   const pendingFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const phoneSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const awaitingPhoneDigitsRef = useRef(false);
+  const awaitingPhoneConfirmRef = useRef(false);
+  const phoneNudgeTranscriptRef = useRef("");
   const finishingPhaseRef = useRef(false);
   const jarvisFarewellSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
@@ -171,6 +179,95 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearPhoneSilenceTimer = useCallback(() => {
+    if (phoneSilenceTimerRef.current) {
+      clearTimeout(phoneSilenceTimerRef.current);
+      phoneSilenceTimerRef.current = null;
+    }
+  }, []);
+
+  const sendPhoneSilenceNudge = useCallback(() => {
+    const session = sessionRef.current;
+    const transcript = captionTextRef.current.trim();
+    if (!session || !awaitingPhoneDigitsRef.current || !transcript) return;
+    if (phoneNudgeTranscriptRef.current === transcript) return;
+    if (playerRef.current?.isPlaying()) return;
+
+    phoneNudgeTranscriptRef.current = transcript;
+    try {
+      session.sendClientContent({
+        turns: buildPhonePauseNudge(transcript),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] phone silence nudge", err);
+      phoneNudgeTranscriptRef.current = "";
+    }
+  }, []);
+
+  const schedulePhoneSilenceNudge = useCallback(() => {
+    if (!awaitingPhoneDigitsRef.current || modeRef.current !== "demo") return;
+    clearPhoneSilenceTimer();
+    phoneSilenceTimerRef.current = setTimeout(() => {
+      sendPhoneSilenceNudge();
+    }, PHONE_SILENCE_NUDGE_MS);
+  }, [clearPhoneSilenceTimer, sendPhoneSilenceNudge]);
+
+  const setAwaitingPhoneDigits = useCallback(
+    (active: boolean) => {
+      awaitingPhoneDigitsRef.current = active;
+      if (active) {
+        awaitingPhoneConfirmRef.current = false;
+      }
+      phoneNudgeTranscriptRef.current = "";
+      if (!active) {
+        clearPhoneSilenceTimer();
+      }
+    },
+    [clearPhoneSilenceTimer]
+  );
+
+  const clearPhoneCollectionState = useCallback(() => {
+    awaitingPhoneDigitsRef.current = false;
+    awaitingPhoneConfirmRef.current = false;
+    phoneNudgeTranscriptRef.current = "";
+    clearPhoneSilenceTimer();
+  }, [clearPhoneSilenceTimer]);
+
+  const syncPhoneCollectionState = useCallback(
+    (name: string, result: Record<string, unknown>) => {
+      if (name === "save_name" && result.ok === true) {
+        setAwaitingPhoneDigits(true);
+        return;
+      }
+
+      if (name === "decline_secondary_contact" && result.ok === true) {
+        clearPhoneCollectionState();
+        return;
+      }
+
+      if (
+        (name === "stage_phone_number" || name === "update_staged_phone") &&
+        result.ok === true
+      ) {
+        if (result.phoneConfirmed === true) {
+          clearPhoneCollectionState();
+        } else if (result.spellOnce === true) {
+          awaitingPhoneDigitsRef.current = false;
+          awaitingPhoneConfirmRef.current = true;
+          phoneNudgeTranscriptRef.current = "";
+          clearPhoneSilenceTimer();
+        }
+        return;
+      }
+
+      if (name === "confirm_phone_number" && result.ok === true) {
+        clearPhoneCollectionState();
+      }
+    },
+    [clearPhoneCollectionState, clearPhoneSilenceTimer, setAwaitingPhoneDigits]
+  );
+
   const disconnect = useCallback((intentional = true) => {
     intentionalDisconnectRef.current = intentional;
     micRef.current?.stop();
@@ -185,10 +282,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     sessionRef.current = null;
     playerRef.current?.close();
     playerRef.current = null;
+    clearPhoneCollectionState();
     stopOrbLoop();
     setConnected(false);
     setConnecting(false);
-  }, [stopOrbLoop]);
+  }, [clearPhoneCollectionState, stopOrbLoop]);
 
   const disconnectGraceful = useCallback(async () => {
     await playerRef.current?.whenPlaybackIdle(10000);
@@ -316,6 +414,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
 
           const result = await runTool(name, args);
+          syncPhoneCollectionState(name, result);
 
           if (name === "verify_code" && result.verified === true) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
@@ -340,6 +439,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const data = part.inlineData?.data;
         const mime = part.inlineData?.mimeType ?? "";
         if (data && mime.includes("audio/pcm")) {
+          clearPhoneSilenceTimer();
           playerRef.current ??= new VoiceDemoAudioPlayer();
           playerRef.current.enqueueBase64Pcm(data);
         }
@@ -359,6 +459,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
         emitCaption("user", inText);
+        if (/\d/.test(inText)) {
+          if (awaitingPhoneConfirmRef.current) {
+            awaitingPhoneConfirmRef.current = false;
+            awaitingPhoneDigitsRef.current = true;
+            phoneNudgeTranscriptRef.current = "";
+          }
+          schedulePhoneSilenceNudge();
+        }
         if (
           jarvisFarewellSentRef.current &&
           isUserFarewellEcho(inText) &&
@@ -383,7 +491,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
       }
     },
-    [emitCaption, endCallNow, finishConversation, finishPendingPhase, queuePhaseTransition, runTool]
+    [
+      clearPhoneSilenceTimer,
+      emitCaption,
+      endCallNow,
+      finishConversation,
+      finishPendingPhase,
+      queuePhaseTransition,
+      runTool,
+      schedulePhoneSilenceNudge,
+      syncPhoneCollectionState,
+    ]
   );
 
   const connect = useCallback(
@@ -391,6 +509,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       pendingPhaseRef.current = null;
       pendingSinceRef.current = null;
       clearPendingFallback();
+      clearPhoneCollectionState();
       finishingPhaseRef.current = false;
       jarvisFarewellSentRef.current = false;
       farewellDisconnectingRef.current = false;
@@ -427,6 +546,18 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           setError(tokenData.error ?? "Could not start voice session.");
           setConnecting(false);
           return;
+        }
+
+        if (mode === "demo") {
+          try {
+            const statusRes = await fetch("/api/voice-demo/status");
+            const statusData = (await statusRes.json()) as { phoneOnFile?: boolean };
+            setAwaitingPhoneDigits(!statusData.phoneOnFile);
+          } catch {
+            setAwaitingPhoneDigits(true);
+          }
+        } else {
+          setAwaitingPhoneDigits(false);
         }
 
         const ai = new GoogleGenAI({
@@ -491,7 +622,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
       }
     },
-    [clearPendingFallback, disconnect, handleMessage, sendOpeningGreeting, startOrbLoop]
+    [
+      clearPendingFallback,
+      clearPhoneCollectionState,
+      disconnect,
+      handleMessage,
+      sendOpeningGreeting,
+      setAwaitingPhoneDigits,
+      startOrbLoop,
+    ]
   );
 
   const connectRef = useRef(connect);
