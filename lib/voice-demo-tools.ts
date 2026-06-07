@@ -19,7 +19,7 @@ import {
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
-import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
+import { buildSaveNameToolMessage } from "@/lib/voice-demo-greeting";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import { coerceToolBoolean, coerceToolString } from "@/lib/voice-demo-tool-args";
 import {
@@ -81,7 +81,8 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
               },
               userConfirmed: {
                 type: Type.BOOLEAN,
-                description: "True when visitor said yes/correct after digit read-back — sends SMS immediately",
+                description:
+                  "True when visitor said yes/correct after digit read-back — saves phone to profile only",
               },
             },
             required: ["phone", "smsConsent"],
@@ -90,7 +91,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "update_staged_phone",
           description:
-            "User corrected the phone number. Re-stage; spell once unless userConfirmed true (then sends SMS).",
+            "User corrected the phone number. Re-stage; spell once unless userConfirmed true (then save to profile).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -260,18 +261,14 @@ export async function executeVoiceDemoTool(
         ok: true,
         name: visitorName,
         alreadySaved: true,
-        message:
-          `Name already on file (${visitorName}). Do not repeat greetings, do not say "how are you", ` +
-          `and do not speak "${VOICE_DEMO_POST_NAME_LINE}" again — listen silently for their question.`,
+        message: buildSaveNameToolMessage(visitorName, true),
       };
     }
     await updateVoiceDemoLead(leadId, { full_name: visitorName });
     return {
       ok: true,
       name: visitorName,
-      message:
-        `Name saved (${visitorName}). If you already greeted them and asked "${VOICE_DEMO_POST_NAME_LINE}", ` +
-        `stay silent. Otherwise speak that greeting once only — never twice.`,
+      message: buildSaveNameToolMessage(visitorName, false),
     };
   }
 

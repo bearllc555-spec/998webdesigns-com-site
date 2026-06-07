@@ -101,8 +101,9 @@ export const VOICE_DEMO_INTRO = VOICE_DEMO_MANDATORY_OPENING;
 export function voiceDemoDemoIntroBlock(row: VoiceDemoLeadRow): string {
   const name = row.full_name?.trim();
   if (name) {
-    return `DEMO SESSION START — visitor name on file: ${name}.
-On "${VOICE_DEMO_SESSION_START_CUE}": greet them by name only (skip the full introduction; do not ask who you have the pleasure of speaking with). Ask "${VOICE_DEMO_POST_NAME_LINE}" exactly once, then stop and listen.`;
+    return `DEMO SESSION START — visitor name on file: ${name} (already saved in CRM).
+On "${VOICE_DEMO_SESSION_START_CUE}": greet them by first name only (skip the full introduction; do not ask who you have the pleasure of speaking with). Ask "${VOICE_DEMO_POST_NAME_LINE}" exactly once, then stop and listen.
+Do not call save_name unless they give a different name.`;
   }
 
   return `${VOICE_DEMO_MANDATORY_OPENING}
@@ -146,16 +147,15 @@ LOOKUP (when you have a ZIP):
 - Ask for their ZIP exactly once per attempt, then listen — never ask for the ZIP twice in a row or talk over them.
 - If they say nothing after the ZIP ask, hidden cue "${VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE}" means: say exactly "${VOICE_DEMO_ZIP_DIDNT_GET_LINE}" then repeat the ZIP ask — STOP and wait. Do not say goodbye yet.
 - If they are still silent after that repeat, hidden cue "${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE}" means: say the goodbye line and call end_conversation — do not ask a third time.
-- When they give digits, wait until they finish. Hidden cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — then stage the ZIP.
-- Hidden cue "${VOICE_DEMO_ZIP_STAGED_CUE}" means confirm_weather_zip already ran — speak the spokenConfirm in the cue word for word and wait for yes.
+- When they give digits, wait until they finish. Hidden cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — the client stages the ZIP; do NOT call confirm_weather_zip yourself.
+- Hidden cue "${VOICE_DEMO_ZIP_STAGED_CUE}" means the client staged the ZIP — speak the spokenConfirm in the cue word for word and wait for yes.
 - Hidden cue "${VOICE_DEMO_ZIP_CITY_CORRECT_CUE}" means you named the wrong city — speak ONLY the quoted spokenConfirm in the cue, nothing else, then wait for yes.
-- If you heard a valid 5-digit ZIP → call confirm_weather_zip immediately with exactly those digits.
 - If you heard fewer than 5 digits or are unsure → say you did not catch the full ZIP and ask them to repeat it once.
 - Hidden client cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — follow the rules above right away; never read the cue aloud.
-- ZIP confirmation is required — three separate steps, never bundled:
-  1. Call confirm_weather_zip only — speak spokenConfirm word for word from the tool (ZIP digits + city/state + "Is that correct?") and STOP. Never guess or substitute a different city (e.g. a larger nearby town).
-  2. Wait for yes / correct. On no or correction → call confirm_weather_zip again with the ZIP they give.
-  3. Only after yes → lookup_weather runs (often via client cue "${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE}") — speak spokenLookup then briefReport word for word; do not call lookup yourself if the cue already includes briefReport.
+- ZIP confirmation is required — client-owned staging, model-owned read-back:
+  1. Client runs confirm_weather_zip — you speak spokenConfirm word for word (ZIP digits + city/state + "Is that correct?") and STOP. Never guess or substitute a different city (e.g. a larger nearby town). Do not call confirm_weather_zip yourself.
+  2. Wait for yes / correct. On no or correction → ask for the correct ZIP; client will re-stage.
+  3. Only after yes → client runs lookup_weather and sends cue "${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE}" — speak spokenLookup then briefReport word for word; do not call lookup_weather yourself if the cue already includes briefReport.
 - Hidden cue "${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE}" means the API failed — apologize briefly, do not retry, go to FINAL GOODBYE.
 - Temperature: always Fahrenheit first, then Celsius — briefReport includes both; read both aloud every time (including "feels like" when present).
 - Never call confirm_weather_zip and lookup_weather in the same turn.

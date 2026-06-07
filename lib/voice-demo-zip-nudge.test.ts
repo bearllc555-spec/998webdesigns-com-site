@@ -44,13 +44,13 @@ describe("voice-demo-zip-nudge", () => {
     expect(nudge).toMatch(/wrong city/i);
   });
 
-  it("nudges confirm_weather_zip when five digits heard", () => {
+  it("tells model to wait for client ZIP staging when five digits heard", () => {
     const nudge = buildZipPauseNudge("07424");
     expect(nudge).toContain(VOICE_DEMO_ZIP_PAUSE_CUE);
-    expect(nudge).toContain("confirm_weather_zip");
+    expect(nudge).toContain(VOICE_DEMO_ZIP_STAGED_CUE);
     expect(nudge).toContain("07424");
-    expect(nudge).toMatch(/wait for yes or no/i);
-    expect(nudge).toMatch(/userConfirmed true/i);
+    expect(nudge).toMatch(/Do NOT call confirm_weather_zip yourself/i);
+    expect(nudge).toMatch(/confirm yes on the read-back/i);
   });
 
   it("nudges ZIP repeat when fewer than five digits heard", () => {

@@ -9,16 +9,16 @@ export function isUserExplicitlyDone(text: string): boolean {
   );
 }
 
-/** Block model end_conversation until farewell was spoken or a give-up nudge fired. */
+/** Block model end_conversation until farewell was spoken (give-up nudges require goodbye first). */
 export function canModelEndConversation(opts: {
   farewellSent: boolean;
   goodbyeNudgeSent: boolean;
   visitorExplicitlyDone: boolean;
   assistantText: string;
 }): boolean {
-  if (opts.farewellSent || opts.goodbyeNudgeSent) return true;
-  if (opts.visitorExplicitlyDone && isAssistantFarewell(opts.assistantText)) return true;
+  if (opts.farewellSent) return true;
   if (isAssistantFarewell(opts.assistantText)) return true;
+  if (opts.visitorExplicitlyDone && isAssistantFarewell(opts.assistantText)) return true;
   return false;
 }
 
@@ -48,7 +48,7 @@ export function isAssistantFarewell(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
   return (
-    /\b(goodbye|good day|good evening|take care|pleasant (day|evening)|until next time|farewell)\b/.test(
+    /\b(goodbye|good evening|take care|pleasant (day|evening)|until next time|farewell)\b/.test(
       t
     ) ||
     /\b(lovely speaking|pleasure assisting)\b/.test(t) ||

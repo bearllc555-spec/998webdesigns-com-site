@@ -54,6 +54,9 @@ describe("voice demo farewell", () => {
       isAssistantFarewell("Thank you for contacting 998 web designs — goodbye.")
     ).toBe(true);
     expect(isAssistantFarewell("Hosting is $198 per month.")).toBe(false);
+    expect(
+      isAssistantFarewell("Good day, Anthony. How may I help you today?")
+    ).toBe(false);
   });
 
   it("detects explicit visitor done", () => {
@@ -78,5 +81,13 @@ describe("voice demo farewell", () => {
         assistantText: "Thank you for contacting 998 web designs — goodbye.",
       })
     ).toBe(true);
+    expect(
+      canModelEndConversation({
+        farewellSent: false,
+        goodbyeNudgeSent: true,
+        visitorExplicitlyDone: false,
+        assistantText: "How may I help you today?",
+      })
+    ).toBe(false);
   });
 });

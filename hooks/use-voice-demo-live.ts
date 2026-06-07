@@ -80,6 +80,11 @@ import {
   WEATHER_YESNO_SILENCE_NUDGE_MS,
   ZIP_SILENCE_NUDGE_MS,
 } from "@/lib/voice-demo-zip-nudge";
+import {
+  seedOnboardingFromFullName,
+  TOOL_BLOCKED_CONFIRM_WEATHER_ZIP,
+  TOOL_BLOCKED_LOOKUP_WEATHER,
+} from "@/lib/voice-demo-flow-policy";
 import { logVoiceDemoOps } from "@/lib/voice-demo-ops-client";
 import {
   detectZipCityDrift,
@@ -285,7 +290,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (reconnectingRef.current) return;
         reconnectAttemptRef.current += 1;
         void connectRef.current(modeRef.current, { resume: true });
-      }, 400);
+      }, RECONNECT_DELAY_MS);
     },
     []
   );
@@ -928,7 +933,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         zipDigitsHeardMaxRef.current = 0;
         lastZipPromptSigRef.current = "";
         clearZipSilenceTimer();
-        weatherYesNoPhaseRef.current = /before you go/.test(sig) ? "first" : "repeat";
+        weatherYesNoPhaseRef.current = "first";
         void scheduleWeatherYesNoAfterIdle();
         return;
       }
@@ -1330,6 +1335,35 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             continue;
           }
 
+          if (
+            name === "confirm_weather_zip" &&
+            (awaitingZipConfirmRef.current || stagedZipReadbackRef.current)
+          ) {
+            logVoiceDemoOps({
+              kind: "tool_blocked_confirm_zip",
+              message: "Blocked duplicate model confirm_weather_zip — client owns staging",
+            });
+            responses.push({
+              id: call.id,
+              name,
+              response: { ok: false, error: TOOL_BLOCKED_CONFIRM_WEATHER_ZIP },
+            });
+            continue;
+          }
+
+          if (name === "lookup_weather" && zipLookupTriggeredRef.current) {
+            logVoiceDemoOps({
+              kind: "tool_blocked_lookup_weather",
+              message: "Blocked duplicate model lookup_weather — client already fetched",
+            });
+            responses.push({
+              id: call.id,
+              name,
+              response: { ok: false, error: TOOL_BLOCKED_LOOKUP_WEATHER },
+            });
+            continue;
+          }
+
           if (name === "confirm_weather_zip") {
             const zip = typeof args.zipCode === "string" ? args.zipCode.trim() : "";
             optionsRef.current.onStatus?.(
@@ -1408,6 +1442,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             }
 
             const inWeatherZipFlow =
+              awaitingWeatherYesNoRef.current ||
               awaitingZipDigitsRef.current ||
               awaitingZipConfirmRef.current ||
               awaitingWeatherForecastDeliveryRef.current ||
@@ -1802,6 +1837,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setConnecting(true);
       modeRef.current = mode;
       optionsRef.current.onStatus?.(resume ? "Reconnecting…" : "Connecting…");
+
+      if (!resume && mode === "demo") {
+        try {
+          const statusRes = await fetch("/api/voice-demo/status");
+          const statusData = (await statusRes.json()) as { fullName?: string | null };
+          const seed = seedOnboardingFromFullName(statusData.fullName);
+          if (seed.nameSaved) {
+            nameSavedRef.current = true;
+            savedNameRef.current = seed.savedName;
+          }
+        } catch {
+          /* status optional — fresh onboarding if unavailable */
+        }
+      }
 
       try {
         let stream = micStreamRef.current;
