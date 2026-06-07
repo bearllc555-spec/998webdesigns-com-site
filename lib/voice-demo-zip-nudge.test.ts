@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
 import {
   buildPromoBlockedDuringWeatherNudge,
+  buildZipOnlyAfterAmbiguousYesNudge,
   buildWeatherAcceptZipNudge,
   buildWeatherDeclineNudge,
   buildWeatherYesNoGiveUpNudge,
@@ -16,6 +17,7 @@ import {
   isWeatherZipConfirmAccept,
   isWeatherZipConfirmDecline,
   VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE,
+  VOICE_DEMO_ZIP_AMBIGUOUS_YES_CUE,
   VOICE_DEMO_WEATHER_ACCEPT_ZIP_CUE,
   VOICE_DEMO_WEATHER_DECLINE_CUE,
   VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE,
@@ -122,5 +124,12 @@ describe("voice-demo-zip-nudge", () => {
     const blocked = buildPromoBlockedDuringWeatherNudge();
     expect(blocked).toContain(VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE);
     expect(blocked).toMatch(/do NOT offer or send promo/i);
+  });
+
+  it("nudges ZIP-only when visitor yes is not promo consent", () => {
+    const nudge = buildZipOnlyAfterAmbiguousYesNudge();
+    expect(nudge).toContain(VOICE_DEMO_ZIP_AMBIGUOUS_YES_CUE);
+    expect(nudge).toMatch(/NOT promo permission/i);
+    expect(nudge).toMatch(/send_promo_email/i);
   });
 });

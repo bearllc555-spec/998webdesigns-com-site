@@ -70,6 +70,7 @@ import {
 import { normalizeUsZipCode } from "@/lib/voice-demo-weather";
 import {
   buildPromoBlockedDuringWeatherNudge,
+  buildZipOnlyAfterAmbiguousYesNudge,
   buildWeatherAcceptZipNudge,
   buildWeatherDeclineNudge,
   buildWeatherYesNoGiveUpNudge,
@@ -197,6 +198,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingEndConversationRef = useRef(false);
   const weatherDemoAcceptedRef = useRef(false);
   const promoWeatherNudgeSentRef = useRef(false);
+  const suppressPromoAudioDuringWeatherRef = useRef(false);
   const micMuteDisconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAssistantTextRef = useRef("");
   const stagedZipReadbackRef = useRef<StagedZipReadback | null>(null);
@@ -479,6 +481,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     zipLookupTriggeredRef.current = false;
     weatherDemoAcceptedRef.current = false;
     promoWeatherNudgeSentRef.current = false;
+    suppressPromoAudioDuringWeatherRef.current = false;
     clearZipSilenceTimer();
     clearWeatherYesNoTimer();
   }, [clearWeatherYesNoTimer, clearZipSilenceTimer]);
@@ -963,6 +966,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (!isInWeatherZipFlow()) return;
     if (!canSendClientWeatherNudge()) return;
     promoWeatherNudgeSentRef.current = true;
+    suppressPromoAudioDuringWeatherRef.current = true;
+    playerRef.current?.hardStop();
     markClientWeatherNudgeSent();
     logVoiceDemoOps({
       kind: "tool_blocked_promo_weather",
@@ -976,6 +981,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     } catch (err) {
       console.warn("[voice-demo-live] promo weather blocked nudge", err);
       promoWeatherNudgeSentRef.current = false;
+      suppressPromoAudioDuringWeatherRef.current = false;
     }
   }, [
     canSendClientWeatherNudge,
@@ -983,6 +989,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     isInWeatherZipFlow,
     markClientWeatherNudgeSent,
   ]);
+
+  const sendZipOnlyAfterAmbiguousYesNudge = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session || isFarewellLocked()) return;
+    if (!canSendClientWeatherNudge()) return;
+    markClientWeatherNudgeSent();
+    try {
+      session.sendClientContent({
+        turns: buildZipOnlyAfterAmbiguousYesNudge(),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] zip ambiguous yes nudge", err);
+    }
+  }, [canSendClientWeatherNudge, isFarewellLocked, markClientWeatherNudgeSent]);
 
   const maybeCorrectPromoDuringWeather = useCallback(
     (assistantText: string) => {
@@ -1440,6 +1461,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         ) {
           sendZipCityCorrection("Interrupted wrong city during ZIP read-back stream", false, null);
         }
+        if (modeRef.current === "demo") {
+          detectAssistantWeatherPrompt(lastAssistantTextRef.current);
+          maybeCorrectPromoDuringWeather(lastAssistantTextRef.current);
+        }
       }
 
       const calls = message.toolCall?.functionCalls ?? [];
@@ -1500,7 +1525,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
 
           if (
-            (name === "send_promo_email" || name === "send_promo_sms") &&
+            (name === "send_promo_email" ||
+              name === "send_promo_sms" ||
+              name === "capture_email_for_promo") &&
             isInWeatherZipFlow()
           ) {
             logVoiceDemoOps({
@@ -1692,6 +1719,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               playerRef.current?.hardStop();
               continue;
             }
+            if (suppressPromoAudioDuringWeatherRef.current) {
+              playerRef.current?.hardStop();
+              continue;
+            }
             if (jarvisFarewellSentRef.current) {
               playerRef.current?.hardStop();
               if (!farewellHoldSentRef.current && sessionRef.current) {
@@ -1790,6 +1821,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
         }
 
+        if (
+          awaitingZipDigitsRef.current &&
+          !awaitingZipConfirmRef.current &&
+          isWeatherOfferAccept(userLine) &&
+          countSpokenZipDigits(userLine) < 3 &&
+          !normalizeUsZipCode(userLine)
+        ) {
+          sendZipOnlyAfterAmbiguousYesNudge();
+        }
+
         if (awaitingZipDigitsRef.current && normalizeUsZipCode(userLine)) {
           clearZipSilenceTimer();
           if (!playerRef.current?.isPlaying()) {
@@ -1834,6 +1875,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (message.serverContent?.turnComplete) {
         if (!jarvisFarewellSentRef.current) {
           suppressAssistantAudioRef.current = false;
+        }
+        suppressPromoAudioDuringWeatherRef.current = false;
+        if (isInWeatherZipFlow()) {
+          promoWeatherNudgeSentRef.current = false;
         }
         const assistantSnapshot = lastAssistantTextRef.current;
         if (
@@ -1920,6 +1965,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       clearWrapUpTimer,
       handleAssistantInterrupted,
       detectAssistantWeatherPrompt,
+      maybeCorrectPromoDuringWeather,
       emitCaption,
       endCallNow,
       finishConversation,
@@ -1932,6 +1978,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       scheduleZipSilenceAfterIdle,
       scheduleZipSilenceNudge,
       sendWeatherAcceptZipNudge,
+      sendZipOnlyAfterAmbiguousYesNudge,
       scheduleWeatherYesNoNudge,
       scheduleWeatherForecastGoodbye,
       scheduleWrapUpPause,
@@ -1965,6 +2012,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         pendingEndConversationRef.current = false;
         weatherDemoAcceptedRef.current = false;
         promoWeatherNudgeSentRef.current = false;
+        suppressPromoAudioDuringWeatherRef.current = false;
         lastAssistantTextRef.current = "";
         greetingSentRef.current = false;
         nameSavedRef.current = false;

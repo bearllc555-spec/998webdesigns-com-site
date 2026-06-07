@@ -23,7 +23,7 @@ export function isWeatherZipFlowActive(refs: WeatherZipFlowRefs): boolean {
   );
 }
 
-/** Jarvis asked permission to email the coupon. */
+/** Jarvis asked permission to email the coupon (or mentioned VOICE20 / discount). */
 export function isAssistantPromoAsk(text: string): boolean {
   const lower = text.trim().toLowerCase();
   if (!lower) return false;
@@ -31,7 +31,12 @@ export function isAssistantPromoAsk(text: string): boolean {
   return (
     /send you a coupon/i.test(lower) ||
     /coupon code via email/i.test(lower) ||
-    (/\bcoupon\b/.test(lower) && /\bemail\b/.test(lower))
+    /email you a coupon/i.test(lower) ||
+    /mind if i (send|email)/i.test(lower) ||
+    /\bvoice\s*20\b/i.test(lower) ||
+    /\b20\s*% off/i.test(lower) ||
+    /\bdiscount code\b/i.test(lower) ||
+    (/\bcoupon\b/.test(lower) && /\b(email|send)\b/.test(lower))
   );
 }
 

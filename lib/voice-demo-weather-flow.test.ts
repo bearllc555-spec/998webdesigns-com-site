@@ -31,6 +31,9 @@ describe("voice-demo-weather-flow", () => {
     expect(isAssistantPromoAsk("Do you mind if I send you a coupon code via email?")).toBe(
       true
     );
+    expect(isAssistantPromoAsk("Would you like the VOICE20 discount code by email?")).toBe(
+      true
+    );
     expect(isAssistantPromoAsk("What is your ZIP code?")).toBe(false);
     expect(
       isWeatherZipFlowActive({

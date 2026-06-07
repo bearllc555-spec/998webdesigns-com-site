@@ -144,6 +144,18 @@ export function buildPromoBlockedDuringWeatherNudge(): string {
   );
 }
 
+/** Hidden cue — visitor said yes but ZIP digits still needed (not promo consent). */
+export const VOICE_DEMO_ZIP_AMBIGUOUS_YES_CUE = "[zip-ambiguous-yes]";
+
+export function buildZipOnlyAfterAmbiguousYesNudge(): string {
+  return (
+    `${VOICE_DEMO_ZIP_AMBIGUOUS_YES_CUE} Visitor said yes but the weather ZIP is still missing. ` +
+    `That was NOT promo permission — ignore coupon threads. ` +
+    `Say ONLY: "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" then STOP and wait for five digits. ` +
+    `Do not call send_promo_email.`
+  );
+}
+
 /** Visitor transcript looks like a clear no to the weather demo. */
 export function isWeatherOfferDecline(transcript: string): boolean {
   return /\b(no|nah|nope|not really|don't|do not|pass|skip|i'm good|im good)\b/i.test(

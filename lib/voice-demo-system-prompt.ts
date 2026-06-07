@@ -135,6 +135,7 @@ PROACTIVE OFFER (once per session — end of chat only):
 - Only during FINAL GOODBYE when they are ready to leave — not mid-conversation, not during name/phone onboarding.
 - Step 1: Say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" — STOP and wait for yes or no. Never bundle ZIP in this turn.
 - Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP. Never bundle promo or coupon asks in this turn or while waiting for ZIP.
+- After Step 2 until the forecast is spoken: ZIP collection only — no "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}", no VOICE20, no send_promo_email. Promo is only after weather completes or they decline the demo.
 - Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
 - After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" — STOP and wait for yes or no. Do not keep talking or ask for ZIP.
 - Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent on the first ask; speak the didn't-get line and repeat question above, then wait.
