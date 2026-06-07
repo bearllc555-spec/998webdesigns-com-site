@@ -20,6 +20,10 @@ export const VOICE_DEMO_WEATHER_REPEAT_LINE = "Do you want to see something cool
 export const VOICE_DEMO_WEATHER_ZIP_ASK_LINE =
   "If you give me your ZIP code, I can tell you the weather forecast in your city.";
 
+/** Spoken when visitor is silent after the ZIP ask — then repeat the ZIP ask. */
+export const VOICE_DEMO_ZIP_DIDNT_GET_LINE =
+  "I didn't get that ZIP code — can you please repeat it?";
+
 export type UsZipPlace = {
   zip: string;
   city: string;

@@ -5,6 +5,8 @@ import {
   buildWeatherYesNoGiveUpNudge,
   buildWeatherYesNoPauseNudge,
   buildZipPauseNudge,
+  buildZipSilenceGiveUpNudge,
+  buildZipSilenceRepeatNudge,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
   isWeatherZipConfirmAccept,
@@ -13,6 +15,8 @@ import {
   VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE,
   VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
   VOICE_DEMO_ZIP_PAUSE_CUE,
+  VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE,
+  VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 
 describe("voice-demo-zip-nudge", () => {
@@ -26,13 +30,28 @@ describe("voice-demo-zip-nudge", () => {
   });
 
   it("nudges ZIP repeat when fewer than five digits heard", () => {
-    const nudge = buildZipPauseNudge("0742");
+    const nudge = buildZipPauseNudge("074");
     expect(nudge).toContain("five-digit ZIP");
   });
 
-  it("does not nudge a duplicate ZIP ask when transcript is empty", () => {
+  it("does not build digit nudge when transcript is empty", () => {
     expect(buildZipPauseNudge("")).toBeNull();
     expect(buildZipPauseNudge("   ")).toBeNull();
+  });
+
+  it("nudges ZIP repeat when visitor is silent after ZIP ask", () => {
+    const nudge = buildZipSilenceRepeatNudge();
+    expect(nudge).toContain(VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE);
+    expect(nudge).toContain("I didn't get that ZIP code");
+    expect(nudge).toMatch(/do not say goodbye/i);
+  });
+
+  it("nudges goodbye after second ZIP silence", () => {
+    const nudge = buildZipSilenceGiveUpNudge();
+    expect(nudge).toContain(VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE);
+    expect(nudge).toContain(VOICE_DEMO_GOODBYE_LINE);
+    expect(nudge).toMatch(/end_conversation/i);
+    expect(nudge).toMatch(/Do not ask for the ZIP again/i);
   });
 
   it("nudges didn't-get and repeat when visitor is silent", () => {

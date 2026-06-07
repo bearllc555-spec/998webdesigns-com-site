@@ -1,11 +1,12 @@
 import { isAssistantFarewell } from "@/lib/voice-demo-farewell";
 
-/** Fixed wrap-up question cycle — Q1→Q4, then repeat. */
+/** Fixed wrap-up question cycle — Q1→Q5, then repeat. */
 export const VOICE_DEMO_WRAPUP_QUESTIONS = [
   "Is there anything else I can help you with today?",
-  "Did I address all your concerns today?",
+  "Do you have any other questions?",
   "Any other question?",
   "Anything else?",
+  "Did I address all your concerns today?",
 ] as const;
 
 /** Hidden client cue — never spoken aloud; nudges Jarvis after a post-answer pause. */

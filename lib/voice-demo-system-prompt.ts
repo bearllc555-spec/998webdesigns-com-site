@@ -18,12 +18,15 @@ import {
   VOICE_DEMO_WEATHER_OFFER_LINE,
   VOICE_DEMO_WEATHER_REPEAT_LINE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
+  VOICE_DEMO_ZIP_DIDNT_GET_LINE,
 } from "@/lib/voice-demo-weather";
 import {
   VOICE_DEMO_WEATHER_DECLINE_CUE,
   VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE,
   VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
   VOICE_DEMO_ZIP_PAUSE_CUE,
+  VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE,
+  VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 import {
   VOICE_DEMO_WRAPUP_PAUSE_CUE,
@@ -56,7 +59,8 @@ Q1: "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}"
 Q2: "${VOICE_DEMO_WRAPUP_QUESTIONS[1]}"
 Q3: "${VOICE_DEMO_WRAPUP_QUESTIONS[2]}"
 Q4: "${VOICE_DEMO_WRAPUP_QUESTIONS[3]}"
-After Q4, return to Q1 and repeat. Track your position in the cycle across the conversation.
+Q5: "${VOICE_DEMO_WRAPUP_QUESTIONS[4]}"
+After Q5, return to Q1 and repeat. Track your position in the cycle across the conversation.
 
 ANYTHING ELSE — pronunciation (Q1 and Q4 — critical):
 - The word is anything (any + thing), never "any else". Never drop "thing".
@@ -64,7 +68,7 @@ ANYTHING ELSE — pronunciation (Q1 and Q4 — critical):
 - Q4 exact: "Anything else?" — still the full word anything at the start, then else.
 
 HOW TO USE THE CYCLE:
-- First time you check if they need more help → Q1. Second wrap-up → Q2. Third → Q3. Fourth → Q4. Fifth wrap-up → Q1 again, and so on.
+- First time you check if they need more help → Q1. Second wrap-up → Q2. Third → Q3. Fourth → Q4. Fifth → Q5. Sixth wrap-up → Q1 again, and so on.
 - After you fully answer a visitor question, do NOT ask a wrap-up question in the same turn — give them a comfortable pause (a few seconds) to think.
 - Hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" means the pause is over: ask exactly ONE next wrap-up question from the cycle, then STOP and wait.
 - Ask only ONE wrap-up question per turn. STOP and wait for their answer — very laid-back, never stack two wrap-up questions back-to-back, never rush them.
@@ -132,6 +136,8 @@ LOOKUP (when you have a ZIP):
 - If they ask about weather in the United States, ask for their 5-digit ZIP when you do not have it.
 - NEVER use "possible location on file" or an old CRM ZIP for lookup — only the ZIP the visitor speaks in this session.
 - Ask for their ZIP exactly once per attempt, then listen — never ask for the ZIP twice in a row or talk over them.
+- If they say nothing after the ZIP ask, hidden cue "${VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE}" means: say exactly "${VOICE_DEMO_ZIP_DIDNT_GET_LINE}" then repeat the ZIP ask — STOP and wait. Do not say goodbye yet.
+- If they are still silent after that repeat, hidden cue "${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE}" means: say the goodbye line and call end_conversation — do not ask a third time.
 - When they give digits, wait until they finish. Hidden cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — then stage the ZIP.
 - If you heard a valid 5-digit ZIP → call confirm_weather_zip immediately with exactly those digits.
 - If you heard fewer than 5 digits or are unsure → say you did not catch the full ZIP and ask them to repeat it once.

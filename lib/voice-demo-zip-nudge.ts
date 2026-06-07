@@ -3,6 +3,8 @@ import {
   normalizeUsZipCode,
   VOICE_DEMO_WEATHER_DIDNT_GET_LINE,
   VOICE_DEMO_WEATHER_REPEAT_LINE,
+  VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
+  VOICE_DEMO_ZIP_DIDNT_GET_LINE,
 } from "@/lib/voice-demo-weather";
 
 /** Hidden client cue — never spoken aloud; nudges Jarvis after ZIP-digit silence. */
@@ -16,6 +18,12 @@ export const VOICE_DEMO_WEATHER_DECLINE_CUE = "[weather-offer-declined]";
 
 /** Hidden cue when visitor stays silent after the repeat weather offer. */
 export const VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE = "[weather-yesno-giveup]";
+
+/** Hidden cue — visitor silent after ZIP ask (first time). */
+export const VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE = "[zip-silence-repeat]";
+
+/** Hidden cue — visitor still silent after ZIP repeat ask. */
+export const VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE = "[zip-silence-giveup]";
 
 /** Wait for full ZIP utterance before staging (ms). */
 export const ZIP_SILENCE_NUDGE_MS = 2500;
@@ -50,6 +58,22 @@ export function buildZipPauseNudge(transcript: string): string | null {
   }
 
   return null;
+}
+
+export function buildZipSilenceRepeatNudge(): string {
+  return (
+    `${VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE} Visitor did not reply after the ZIP ask. ` +
+    `Say exactly "${VOICE_DEMO_ZIP_DIDNT_GET_LINE}" then ask exactly: "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" ` +
+    `STOP and wait for their ZIP — do not say goodbye or call end_conversation in this turn.`
+  );
+}
+
+export function buildZipSilenceGiveUpNudge(): string {
+  return (
+    `${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE} Visitor did not reply after the ZIP repeat ask. ` +
+    `Say exactly: "${VOICE_DEMO_GOODBYE_LINE}" then STOP and call end_conversation immediately. ` +
+    `Do not ask for the ZIP again. Do not offer weather or promo.`
+  );
 }
 
 export function buildWeatherYesNoPauseNudge(): string {

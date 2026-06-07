@@ -25,16 +25,18 @@ describe("voice-demo-system-prompt closing", () => {
     expect(VOICE_DEMO_CLOSING).toMatch(/comfortable pause/i);
   });
 
-  it("cycles four wrap-up questions in order", () => {
+  it("cycles five wrap-up questions in order", () => {
     expect(VOICE_DEMO_WRAPUP_QUESTIONS[0]).toContain("anything else");
     expect(VOICE_DEMO_WRAPUP_QUESTIONS[3]).toBe("Anything else?");
+    expect(VOICE_DEMO_WRAPUP_QUESTIONS[4]).toBe("Did I address all your concerns today?");
     expect(VOICE_DEMO_CLOSING).toMatch(/never "any else"/i);
     expect(VOICE_DEMO_CLOSING).toMatch(/Q4 exact/i);
     expect(VOICE_DEMO_WRAPUP_QUESTIONS).toEqual([
       "Is there anything else I can help you with today?",
-      "Did I address all your concerns today?",
+      "Do you have any other questions?",
       "Any other question?",
       "Anything else?",
+      "Did I address all your concerns today?",
     ]);
     for (const q of VOICE_DEMO_WRAPUP_QUESTIONS) {
       expect(VOICE_DEMO_CLOSING).toContain(q);
@@ -119,6 +121,8 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/Is that correct\?/i);
     expect(prompt).toMatch(/userConfirmed true/i);
     expect(prompt).toMatch(/Fahrenheit first, then Celsius/i);
+    expect(prompt).toMatch(/I didn't get that ZIP code/i);
+    expect(prompt).toContain("[zip-silence-repeat]");
     expect(prompt).toMatch(/NEVER use "possible location on file"/i);
     expect(prompt).toContain("I didn't get that.");
     expect(prompt).toContain("Do you want to see something cool?");

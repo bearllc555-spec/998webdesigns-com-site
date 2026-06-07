@@ -6,8 +6,15 @@ export function isAssistantWeatherOfferPrompt(text: string): boolean {
 
 export function isAssistantZipCollectionPrompt(text: string): boolean {
   const lower = text.toLowerCase();
-  return /give me your zip|your zip code|five-digit zip|5-digit zip|zip code.*forecast/i.test(
-    lower
+  return (
+    /give me your zip|your zip code|five-digit zip|5-digit zip|zip code.*forecast/i.test(
+      lower
+    ) ||
+    /\bwhat(?:'s| is) your zip\b/i.test(lower) ||
+    /\brepeat.*zip\b/i.test(lower) ||
+    (/\bzip\b/.test(lower) &&
+      /\b(code|forecast|weather)\b/.test(lower) &&
+      /\b(give|share|tell|need|provide|repeat)\b/.test(lower))
   );
 }
 

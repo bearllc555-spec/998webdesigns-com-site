@@ -18,5 +18,10 @@ describe("voice-demo-weather-flow", () => {
     expect(isAssistantZipReadBackPrompt("I have ZIP code 0 7 4 2 4. Is that correct?")).toBe(
       true
     );
+    expect(
+      isAssistantZipCollectionPrompt(
+        "I didn't get that ZIP code — can you please repeat it? If you give me your ZIP code, I can tell you the weather forecast in your city."
+      )
+    ).toBe(true);
   });
 });
