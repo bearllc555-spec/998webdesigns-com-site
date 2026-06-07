@@ -5,7 +5,9 @@ import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import {
   buildFarewellHoldNudge,
+  canModelEndConversation,
   isAssistantFarewell,
+  isUserExplicitlyDone,
   isUserFarewellEcho,
   VOICE_DEMO_FAREWELL_HOLD_CUE,
 } from "@/lib/voice-demo-farewell";
@@ -52,5 +54,29 @@ describe("voice demo farewell", () => {
       isAssistantFarewell("Thank you for contacting 998 web designs — goodbye.")
     ).toBe(true);
     expect(isAssistantFarewell("Hosting is $198 per month.")).toBe(false);
+  });
+
+  it("detects explicit visitor done", () => {
+    expect(isUserExplicitlyDone("That's all, thanks.")).toBe(true);
+    expect(isUserExplicitlyDone("What is hosting?")).toBe(false);
+  });
+
+  it("blocks premature end_conversation until farewell", () => {
+    expect(
+      canModelEndConversation({
+        farewellSent: false,
+        goodbyeNudgeSent: false,
+        visitorExplicitlyDone: false,
+        assistantText: "How may I help you today?",
+      })
+    ).toBe(false);
+    expect(
+      canModelEndConversation({
+        farewellSent: false,
+        goodbyeNudgeSent: false,
+        visitorExplicitlyDone: false,
+        assistantText: "Thank you for contacting 998 web designs — goodbye.",
+      })
+    ).toBe(true);
   });
 });

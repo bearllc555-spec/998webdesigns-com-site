@@ -22,7 +22,9 @@ import {
 } from "@/lib/voice-demo-jarvis-audio-level";
 import {
   buildFarewellHoldNudge,
+  canModelEndConversation,
   isAssistantFarewell,
+  isUserExplicitlyDone,
   isUserFarewellEcho,
 } from "@/lib/voice-demo-farewell";
 import {
@@ -102,6 +104,15 @@ type LiveMessage = {
     turnComplete?: boolean;
     interrupted?: boolean;
   };
+  goAway?: { timeLeft?: string };
+  sessionResumptionUpdate?: {
+    newHandle?: string;
+    resumable?: boolean;
+  };
+};
+
+type ConnectOptions = {
+  resume?: boolean;
 };
 
 export type VoiceDemoPhaseTransition = { kind: "verified"; nextMode: "demo" };
@@ -118,6 +129,7 @@ const PHASE_TAIL_MS = 450;
 const RECONNECT_DELAY_MS = 700;
 const PHASE_FALLBACK_MS = 12000;
 const PHASE_MIN_SPOKEN_MS = 1800;
+const MAX_RECONNECT_ATTEMPTS = 2;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -171,6 +183,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
+  const visitorExplicitlyDoneRef = useRef(false);
+  const sessionResumptionHandleRef = useRef<string | null>(null);
+  const connectedAtRef = useRef(0);
+  const reconnectAttemptRef = useRef(0);
+  const reconnectingRef = useRef(false);
   const suppressAssistantAudioRef = useRef(false);
   const jarvisLevelsRef = useRef(JARVIS_AUDIO_IDLE);
   const orbFrameRef = useRef<number | null>(null);
@@ -1128,6 +1145,39 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const handleMessage = useCallback(
     async (message: LiveMessage) => {
+      if (message.sessionResumptionUpdate?.newHandle) {
+        sessionResumptionHandleRef.current = message.sessionResumptionUpdate.newHandle;
+        logVoiceDemoOps({
+          kind: "session_resumption",
+          message: "Stored session resumption handle",
+          meta: {
+            resumable: message.sessionResumptionUpdate.resumable === true,
+          },
+        });
+      }
+
+      if (message.goAway) {
+        const durationMs = Date.now() - connectedAtRef.current;
+        logVoiceDemoOps({
+          kind: "session_anomaly",
+          message: "Gemini goAway — reconnecting before disconnect",
+          severity: "warn",
+          meta: {
+            durationMs,
+            timeLeft: message.goAway.timeLeft ?? null,
+          },
+        });
+        if (
+          !farewellDisconnectingRef.current &&
+          !reconnectingRef.current &&
+          reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS
+        ) {
+          reconnectAttemptRef.current += 1;
+          void connectRef.current(modeRef.current, { resume: true });
+        }
+        return;
+      }
+
       const calls = message.toolCall?.functionCalls ?? [];
       if (calls.length > 0 && sessionRef.current) {
         const responses = [];
@@ -1238,6 +1288,32 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
             if (result.endCall === true) {
+              const canEnd = canModelEndConversation({
+                farewellSent: jarvisFarewellSentRef.current,
+                goodbyeNudgeSent: goodbyeNudgeSentRef.current,
+                visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
+                assistantText: lastAssistantTextRef.current,
+              });
+              if (!canEnd) {
+                logVoiceDemoOps({
+                  kind: "end_conversation_early_blocked",
+                  message: "Blocked premature end_conversation before farewell",
+                  severity: "warn",
+                  meta: {
+                    assistantTail: lastAssistantTextRef.current.slice(-120),
+                  },
+                });
+                responses.push({
+                  id: call.id,
+                  name,
+                  response: {
+                    ok: false,
+                    error:
+                      "Too early to end the call. Continue helping the visitor — ask how you may assist or answer their question. Only call end_conversation after your final goodbye.",
+                  },
+                });
+                continue;
+              }
               void finishConversation();
             }
           }
@@ -1325,6 +1401,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const userLine = captionTextRef.current.trim();
 
         if (modeRef.current === "demo") {
+          if (isUserExplicitlyDone(userLine)) {
+            visitorExplicitlyDoneRef.current = true;
+          }
           if (isUserSmallTalk(userLine)) {
             visitorAskedSubstantiveQuestionRef.current = false;
             clearWrapUpTimer();
@@ -1524,41 +1603,66 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   );
 
   const connect = useCallback(
-    async (mode: VoiceDemoLiveMode) => {
-      pendingPhaseRef.current = null;
-      pendingSinceRef.current = null;
-      clearPendingFallback();
-      clearPhoneCollectionState();
-      clearWeatherZipState();
-      finishingPhaseRef.current = false;
-      jarvisFarewellSentRef.current = false;
-      goodbyeNudgeSentRef.current = false;
-      farewellHoldSentRef.current = false;
-      farewellDisconnectingRef.current = false;
-      lastAssistantTextRef.current = "";
-      greetingSentRef.current = false;
-      suppressAssistantAudioRef.current = false;
-      awaitingWeatherForecastDeliveryRef.current = false;
-      visitorAskedSubstantiveQuestionRef.current = false;
-      zipSilenceNudgedRef.current = false;
-      lastClientWeatherNudgeAtRef.current = 0;
-      lastWeatherOfferSigRef.current = "";
-      lastZipPromptSigRef.current = "";
-      stagedZipReadbackRef.current = null;
-      zipCityCorrectionSentRef.current = false;
-      zipLookupTriggeredRef.current = false;
-      resetCaption();
-      disconnect(true);
+    async (mode: VoiceDemoLiveMode, connectOpts?: ConnectOptions) => {
+      const resume = connectOpts?.resume === true;
+
+      if (!resume) {
+        pendingPhaseRef.current = null;
+        pendingSinceRef.current = null;
+        clearPendingFallback();
+        clearPhoneCollectionState();
+        clearWeatherZipState();
+        finishingPhaseRef.current = false;
+        jarvisFarewellSentRef.current = false;
+        goodbyeNudgeSentRef.current = false;
+        farewellHoldSentRef.current = false;
+        farewellDisconnectingRef.current = false;
+        lastAssistantTextRef.current = "";
+        greetingSentRef.current = false;
+        visitorExplicitlyDoneRef.current = false;
+        sessionResumptionHandleRef.current = null;
+        reconnectAttemptRef.current = 0;
+        suppressAssistantAudioRef.current = false;
+        awaitingWeatherForecastDeliveryRef.current = false;
+        visitorAskedSubstantiveQuestionRef.current = false;
+        zipSilenceNudgedRef.current = false;
+        lastClientWeatherNudgeAtRef.current = 0;
+        lastWeatherOfferSigRef.current = "";
+        lastZipPromptSigRef.current = "";
+        stagedZipReadbackRef.current = null;
+        zipCityCorrectionSentRef.current = false;
+        zipLookupTriggeredRef.current = false;
+        resetCaption();
+        disconnect(true);
+      } else if (reconnectingRef.current) {
+        return;
+      } else {
+        reconnectingRef.current = true;
+        intentionalDisconnectRef.current = true;
+        try {
+          sessionRef.current?.close();
+        } catch {
+          /* ignore */
+        }
+        sessionRef.current = null;
+        playerRef.current?.close();
+        playerRef.current = null;
+        stopOrbLoop();
+        setConnected(false);
+      }
+
       setError("");
       setConnecting(true);
       modeRef.current = mode;
-      optionsRef.current.onStatus?.(
-        "Connecting…"
-      );
+      optionsRef.current.onStatus?.(resume ? "Reconnecting…" : "Connecting…");
 
       try {
-        const stream = await requestVoiceDemoMicStream();
-        micStreamRef.current = stream;
+        let stream = micStreamRef.current;
+        if (!stream || !resume) {
+          stream?.getTracks().forEach((t) => t.stop());
+          stream = await requestVoiceDemoMicStream();
+          micStreamRef.current = stream;
+        }
 
         const tokenRes = await fetch("/api/voice-demo/live-token", {
           method: "POST",
@@ -1573,34 +1677,59 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         };
 
         if (!tokenRes.ok || !tokenData.token) {
-          stream.getTracks().forEach((t) => t.stop());
-          micStreamRef.current = null;
+          reconnectingRef.current = false;
+          if (!resume) {
+            stream.getTracks().forEach((t) => t.stop());
+            micStreamRef.current = null;
+          }
           setError(tokenData.error ?? "Could not start voice session.");
           setConnecting(false);
+          if (resume) {
+            optionsRef.current.onUnexpectedClose?.();
+          }
           return;
         }
 
-        clearPhoneCollectionState();
-        clearWeatherZipState();
+        if (!resume) {
+          clearPhoneCollectionState();
+          clearWeatherZipState();
+        }
 
         const ai = new GoogleGenAI({
           apiKey: tokenData.token,
           httpOptions: { apiVersion: "v1alpha" },
         });
 
+        const resumptionHandle = sessionResumptionHandleRef.current ?? undefined;
+
         const session = await ai.live.connect({
           model: tokenData.model ?? VOICE_DEMO_LIVE_MODEL,
+          config: {
+            sessionResumption: resumptionHandle
+              ? { handle: resumptionHandle, transparent: true }
+              : { transparent: true },
+          },
           callbacks: {
             onopen: () => {
               setConnected(true);
               setConnecting(false);
+              reconnectingRef.current = false;
+              connectedAtRef.current = Date.now();
+              if (!resume) {
+                reconnectAttemptRef.current = 0;
+              }
               startOrbLoop();
-              optionsRef.current.onStatus?.(voiceDemoOpeningStatus(mode));
-              setTimeout(() => {
-                if (sessionRef.current) {
-                  sendOpeningGreeting(sessionRef.current);
-                }
-              }, 0);
+              optionsRef.current.onStatus?.(
+                resume ? "Back with you — keep talking." : voiceDemoOpeningStatus(mode)
+              );
+              if (!resume) {
+                setTimeout(() => {
+                  if (sessionRef.current) {
+                    sendOpeningGreeting(sessionRef.current);
+                  }
+                }, 0);
+              }
+              micRef.current?.stop();
               if (micStreamRef.current) {
                 micRef.current = startVoiceDemoMic(micStreamRef.current, (base64) => {
                   sessionRef.current?.sendRealtimeInput({
@@ -1617,12 +1746,36 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             },
             onerror: (e) => {
               console.warn("[voice-demo-live]", e);
+              const durationMs = Date.now() - connectedAtRef.current;
+              logVoiceDemoOps({
+                kind: "session_anomaly",
+                message: "Live session error",
+                severity: "warn",
+                meta: { durationMs },
+              });
               setError("Voice connection error.");
             },
             onclose: () => {
               setConnected(false);
-              if (!intentionalDisconnectRef.current) {
-                optionsRef.current.onUnexpectedClose?.();
+              if (!intentionalDisconnectRef.current && !farewellDisconnectingRef.current) {
+                const durationMs = Date.now() - connectedAtRef.current;
+                logVoiceDemoOps({
+                  kind: "session_anomaly",
+                  message: "Live WebSocket closed unexpectedly",
+                  severity: "warn",
+                  meta: {
+                    durationMs,
+                    hasHandle: Boolean(sessionResumptionHandleRef.current),
+                    attempt: reconnectAttemptRef.current,
+                  },
+                });
+                if (reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS) {
+                  reconnectAttemptRef.current += 1;
+                  void connectRef.current(modeRef.current, { resume: true });
+                } else {
+                  reconnectingRef.current = false;
+                  optionsRef.current.onUnexpectedClose?.();
+                }
               }
               intentionalDisconnectRef.current = false;
             },
@@ -1632,8 +1785,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionRef.current = session;
       } catch (err) {
         console.warn("[voice-demo-live] connect", err);
-        micStreamRef.current?.getTracks().forEach((t) => t.stop());
-        micStreamRef.current = null;
+        reconnectingRef.current = false;
+        if (!resume) {
+          micStreamRef.current?.getTracks().forEach((t) => t.stop());
+          micStreamRef.current = null;
+        }
         const message =
           err instanceof DOMException && err.name === "NotAllowedError"
             ? "Microphone blocked. Allow mic access in your browser, then tap Start voice again."
@@ -1652,6 +1808,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       handleMessage,
       sendOpeningGreeting,
       startOrbLoop,
+      stopOrbLoop,
     ]
   );
 

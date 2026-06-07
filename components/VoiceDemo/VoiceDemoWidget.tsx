@@ -186,7 +186,11 @@ export function VoiceDemoWidget() {
           className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 md:items-center"
           role="dialog"
           aria-label="Voice assistant"
-          onClick={close}
+          onClick={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (live.connected || live.connecting) return;
+            close();
+          }}
         >
           <div
             className="relative z-10 flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-rule bg-bg shadow-xl"
