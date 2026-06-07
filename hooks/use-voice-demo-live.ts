@@ -67,6 +67,8 @@ import {
 import {
   assistantZipReadBackMissingStagedCity,
   isAssistantPromoAsk,
+  shouldStageWeatherZipFromUserInput,
+  shouldSuppressAssistantAudioDuringWeather,
   isAssistantWeatherOfferPrompt,
   isAssistantZipCollectionPrompt,
   isAssistantZipReadBackPrompt,
@@ -220,6 +222,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const zipLookupTriggeredRef = useRef(false);
   const weatherForecastGoodbyeScheduledRef = useRef(false);
   const weatherForecastCompleteRef = useRef(false);
+  const lastUserWeatherZipRef = useRef<string | null>(null);
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
@@ -657,6 +660,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     zipLookupTriggeredRef.current = false;
     weatherForecastGoodbyeScheduledRef.current = false;
     weatherForecastCompleteRef.current = false;
+    lastUserWeatherZipRef.current = null;
     weatherDemoAcceptedRef.current = false;
     promoWeatherNudgeSentRef.current = false;
     suppressPromoAudioDuringWeatherRef.current = false;
@@ -1325,6 +1329,62 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [sendPromoBlockedDuringWeatherNudge, weatherDemoStillIncomplete]
   );
 
+  const captureUserWeatherZip = useCallback(
+    (userLine: string, heardZip: string) => {
+      lastUserWeatherZipRef.current = heardZip;
+      if (!awaitingZipDigitsRef.current) {
+        awaitingZipDigitsRef.current = true;
+        awaitingWeatherYesNoRef.current = false;
+        clearWeatherYesNoTimer();
+      }
+      awaitingZipConfirmRef.current = false;
+      zipSilenceNudgedRef.current = false;
+      zipNudgeTranscriptRef.current = "";
+      clearWrapUpTimer();
+      clearZipSilenceTimer();
+      suppressPromoAudioDuringWeatherRef.current = true;
+      playerRef.current?.hardStop();
+      void sendZipDigitConfirmNudge(userLine);
+    },
+    [clearWeatherYesNoTimer, clearWrapUpTimer, clearZipSilenceTimer, sendZipDigitConfirmNudge]
+  );
+
+  const recoverWeatherZipAfterPromoSkip = useCallback(
+    (assistantText: string) => {
+      if (!weatherDemoStillIncomplete()) return;
+      const trimmed = assistantText.trim();
+      if (!trimmed || !isAssistantPromoAsk(trimmed)) return;
+
+      suppressPromoAudioDuringWeatherRef.current = true;
+      playerRef.current?.hardStop();
+      promoWeatherNudgeSentRef.current = false;
+
+      const heardZip =
+        lastUserWeatherZipRef.current ||
+        normalizeSpokenUsZipCode(captionTextRef.current.trim());
+
+      if (!stagedZipReadbackRef.current && heardZip && !zipLookupTriggeredRef.current) {
+        logVoiceDemoOps({
+          kind: "session_anomaly",
+          message: "Promo asked before ZIP staging — client recovery staging",
+          severity: "warn",
+          meta: { zip: heardZip },
+        });
+        captureUserWeatherZip(heardZip, heardZip);
+      } else if (stagedZipReadbackRef.current && !zipLookupTriggeredRef.current) {
+        sendStagedZipReadBackNudge("Promo skipped ZIP read-back — recovery nudge");
+      }
+
+      maybeCorrectPromoDuringWeather(trimmed);
+    },
+    [
+      captureUserWeatherZip,
+      maybeCorrectPromoDuringWeather,
+      sendStagedZipReadBackNudge,
+      weatherDemoStillIncomplete,
+    ]
+  );
+
   const detectAssistantWeatherPrompt = useCallback(
     (assistantText: string) => {
       const trimmed = assistantText.trim();
@@ -1366,6 +1426,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const sig = trimmed.toLowerCase();
         if (lastZipPromptSigRef.current === sig) return;
         lastZipPromptSigRef.current = sig;
+        weatherDemoAcceptedRef.current = true;
 
         awaitingWeatherYesNoRef.current = false;
         weatherYesNoPhaseRef.current = "first";
@@ -1822,6 +1883,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           sendZipCityCorrection("Interrupted wrong city during ZIP read-back stream", false, null);
         }
         if (modeRef.current === "demo") {
+          if (
+            shouldSuppressAssistantAudioDuringWeather({
+              weatherDemoIncomplete: weatherDemoStillIncomplete(),
+              assistantText: lastAssistantTextRef.current,
+              forecastComplete: weatherForecastCompleteRef.current,
+            })
+          ) {
+            suppressPromoAudioDuringWeatherRef.current = true;
+          }
           detectAssistantWeatherPrompt(lastAssistantTextRef.current);
           maybeCorrectPromoDuringWeather(lastAssistantTextRef.current);
         }
@@ -2100,7 +2170,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               playerRef.current?.hardStop();
               continue;
             }
-            if (suppressPromoAudioDuringWeatherRef.current) {
+            if (
+              suppressPromoAudioDuringWeatherRef.current ||
+              (modeRef.current === "demo" &&
+                shouldSuppressAssistantAudioDuringWeather({
+                  weatherDemoIncomplete: weatherDemoStillIncomplete(),
+                  assistantText: lastAssistantTextRef.current,
+                  forecastComplete: weatherForecastCompleteRef.current,
+                }))
+            ) {
+              suppressPromoAudioDuringWeatherRef.current = true;
               playerRef.current?.hardStop();
               continue;
             }
@@ -2246,26 +2325,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
         }
 
+        const heardZip = normalizeSpokenUsZipCode(userLine);
         if (
-          (awaitingZipDigitsRef.current || isCollectingWeatherZip()) &&
-          normalizeSpokenUsZipCode(userLine)
+          heardZip &&
+          shouldStageWeatherZipFromUserInput({
+            awaitingZipDigits: awaitingZipDigitsRef.current,
+            weatherDemoAccepted: weatherDemoAcceptedRef.current,
+            zipPromptSeen: Boolean(lastZipPromptSigRef.current),
+            zipDigitsHeardMax: zipDigitsHeardMaxRef.current,
+          })
         ) {
-          if (!awaitingZipDigitsRef.current) {
-            awaitingZipDigitsRef.current = true;
-            awaitingWeatherYesNoRef.current = false;
-            clearWeatherYesNoTimer();
-          }
-          clearWrapUpTimer();
-          clearZipSilenceTimer();
-          if (!playerRef.current?.isPlaying()) {
-            void sendZipDigitConfirmNudge(userLine);
-          } else {
-            void playerRef.current.whenPlaybackIdle(10000).then(() => {
-              if (awaitingZipConfirmRef.current) return;
-              if (!awaitingZipDigitsRef.current && !isCollectingWeatherZip()) return;
-              void sendZipDigitConfirmNudge(captionTextRef.current.trim());
-            });
-          }
+          captureUserWeatherZip(userLine, heardZip);
         }
 
         if (/\d/.test(inText)) {
@@ -2301,7 +2371,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (!jarvisFarewellSentRef.current) {
           suppressAssistantAudioRef.current = false;
         }
-        suppressPromoAudioDuringWeatherRef.current = false;
+        if (!weatherDemoStillIncomplete()) {
+          suppressPromoAudioDuringWeatherRef.current = false;
+        }
         if (isInWeatherZipFlow()) {
           promoWeatherNudgeSentRef.current = false;
         }
@@ -2364,6 +2436,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             schedulePostNameGreetingNudge();
           }
           detectAssistantWeatherPrompt(assistantSnapshot);
+          recoverWeatherZipAfterPromoSkip(assistantSnapshot);
           if (
             stagedZipReadbackRef.current &&
             !zipLookupTriggeredRef.current &&
@@ -2453,8 +2526,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       finishPostNameGreetingTurn,
       recoverIncompletePostNameGreeting,
       noteAssistantPostNameProgress,
+      captureUserWeatherZip,
       detectAssistantWeatherPrompt,
       maybeCorrectPromoDuringWeather,
+      recoverWeatherZipAfterPromoSkip,
       emitCaption,
       endCallNow,
       finishConversation,
@@ -2482,6 +2557,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       sendZipCityCorrection,
       sendZipDigitConfirmNudge,
       shouldBlockFarewellHangup,
+      shouldSuppressAssistantAudioDuringWeather,
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,
       syncWeatherCollectionState,
@@ -2536,6 +2612,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         zipLookupTriggeredRef.current = false;
         weatherForecastGoodbyeScheduledRef.current = false;
         weatherForecastCompleteRef.current = false;
+        lastUserWeatherZipRef.current = null;
         resetCaption();
         disconnect(true);
       } else if (reconnectingRef.current) {

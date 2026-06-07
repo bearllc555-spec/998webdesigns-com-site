@@ -8,6 +8,8 @@ import {
   isWeatherDemoIncomplete,
   isWeatherZipFlowActive,
   shouldBlockClientFarewellHangup,
+  shouldStageWeatherZipFromUserInput,
+  shouldSuppressAssistantAudioDuringWeather,
 } from "@/lib/voice-demo-weather-flow";
 
 const idleWeather = {
@@ -113,6 +115,58 @@ describe("voice-demo-weather-flow", () => {
     expect(assistantZipReadBackMissingStagedCity(staged.spokenConfirm, staged)).toBe(
       false
     );
+  });
+
+  it("stages ZIP from user input when zip prompt was seen", () => {
+    expect(
+      shouldStageWeatherZipFromUserInput({
+        awaitingZipDigits: false,
+        weatherDemoAccepted: false,
+        zipPromptSeen: true,
+        zipDigitsHeardMax: 0,
+      })
+    ).toBe(true);
+    expect(
+      shouldStageWeatherZipFromUserInput({
+        awaitingZipDigits: false,
+        weatherDemoAccepted: false,
+        zipPromptSeen: false,
+        zipDigitsHeardMax: 5,
+      })
+    ).toBe(true);
+    expect(
+      shouldStageWeatherZipFromUserInput({
+        awaitingZipDigits: false,
+        weatherDemoAccepted: false,
+        zipPromptSeen: false,
+        zipDigitsHeardMax: 2,
+      })
+    ).toBe(false);
+  });
+
+  it("suppresses promo audio while weather demo is incomplete", () => {
+    expect(
+      shouldSuppressAssistantAudioDuringWeather({
+        weatherDemoIncomplete: true,
+        assistantText: "Do you mind if I send you a coupon code via email?",
+        forecastComplete: false,
+      })
+    ).toBe(true);
+    expect(
+      shouldSuppressAssistantAudioDuringWeather({
+        weatherDemoIncomplete: true,
+        assistantText:
+          "In Little Falls it is 72 degrees Fahrenheit, about 22 degrees Celsius, humidity 45 percent, wind 8 miles per hour, clear skies.",
+        forecastComplete: false,
+      })
+    ).toBe(false);
+    expect(
+      shouldSuppressAssistantAudioDuringWeather({
+        weatherDemoIncomplete: false,
+        assistantText: "Do you mind if I send you a coupon code via email?",
+        forecastComplete: false,
+      })
+    ).toBe(false);
   });
 
   it("blocks client farewell hangup during weather ZIP collection", () => {

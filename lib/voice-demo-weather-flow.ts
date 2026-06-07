@@ -1,6 +1,7 @@
 /** Shared weather-flow detection helpers (client + prompt). */
 
 import { VOICE_DEMO_PROMO_EMAIL_ASK_LINE } from "@/lib/voice-demo-constants";
+import { isAssistantWeatherForecast } from "@/lib/voice-demo-weather";
 
 export type WeatherZipFlowRefs = {
   awaitingWeatherYesNo: boolean;
@@ -115,3 +116,32 @@ export function assistantZipReadBackMissingStagedCity(
 
 /** Minimum gap between hidden client weather nudges (avoids double prompts). */
 export const WEATHER_CLIENT_NUDGE_COOLDOWN_MS = 4500;
+
+/** True when visitor speech should trigger client-side ZIP staging. */
+export function shouldStageWeatherZipFromUserInput(opts: {
+  awaitingZipDigits: boolean;
+  weatherDemoAccepted: boolean;
+  zipPromptSeen: boolean;
+  zipDigitsHeardMax: number;
+}): boolean {
+  return (
+    opts.awaitingZipDigits ||
+    opts.weatherDemoAccepted ||
+    opts.zipPromptSeen ||
+    opts.zipDigitsHeardMax >= 5
+  );
+}
+
+/** Suppress assistant audio that derails weather (promo, goodbye) before forecast. */
+export function shouldSuppressAssistantAudioDuringWeather(opts: {
+  weatherDemoIncomplete: boolean;
+  assistantText: string;
+  forecastComplete: boolean;
+}): boolean {
+  if (!opts.weatherDemoIncomplete || opts.forecastComplete) return false;
+  const trimmed = opts.assistantText.trim();
+  if (!trimmed) return false;
+  if (isAssistantPromoAsk(trimmed)) return true;
+  if (/\bgoodbye\b/i.test(trimmed) && !isAssistantWeatherForecast(trimmed)) return true;
+  return false;
+}
