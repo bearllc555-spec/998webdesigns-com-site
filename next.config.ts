@@ -8,7 +8,7 @@ function productionCsp(): string {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+    "connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
     "frame-ancestors 'self'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -23,7 +23,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    value: "camera=(), microphone=(self), geolocation=(), interest-cohort=()",
   },
   ...(process.env.NODE_ENV === "production"
     ? [{ key: "Content-Security-Policy", value: productionCsp() }]
