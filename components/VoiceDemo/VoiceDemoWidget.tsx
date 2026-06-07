@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Mic, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
@@ -25,28 +25,15 @@ export function VoiceDemoWidget() {
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [website, setWebsite] = useState("");
 
-  const [pendingDemo, setPendingDemo] = useState(false);
-
   const live = useVoiceDemoLive({
     onVerified: () => {
-      setPendingDemo(true);
+      live.disconnect();
+      setStatus("Verified — tap Start voice to talk with the assistant.");
       setPhase("demo");
     },
     onStatus: setStatus,
     onTranscript: (line) => setTranscript((prev) => [...prev.slice(-12), line]),
   });
-
-  const connectDemoRef = useRef(live.connect);
-  const disconnectRef = useRef(live.disconnect);
-  connectDemoRef.current = live.connect;
-  disconnectRef.current = live.disconnect;
-
-  useEffect(() => {
-    if (!pendingDemo || phase !== "demo") return;
-    setPendingDemo(false);
-    disconnectRef.current();
-    void connectDemoRef.current("demo");
-  }, [pendingDemo, phase]);
 
   useEffect(() => {
     void fetch("/api/voice-demo/status")
@@ -116,7 +103,7 @@ export function VoiceDemoWidget() {
       setDestination(data.destination ?? "");
       setPhase("verify");
       setTranscript([]);
-      await live.connect("verify");
+      setStatus("Code sent — tap Start voice to connect your microphone.");
     } catch {
       setFormError("Network error. Try again.");
     } finally {
@@ -140,7 +127,8 @@ export function VoiceDemoWidget() {
         return;
       }
       setTypedCode("");
-      setPendingDemo(true);
+      live.disconnect();
+      setStatus("Verified — tap Start voice to talk with the assistant.");
       setPhase("demo");
     } catch {
       setFormError("Network error.");
@@ -148,6 +136,11 @@ export function VoiceDemoWidget() {
       setBusy(false);
     }
   }
+
+  const startVoice = () => {
+    const mode = phase === "demo" ? "demo" : "verify";
+    void live.connect(mode);
+  };
 
   if (configured === null) {
     return null;
@@ -169,12 +162,16 @@ export function VoiceDemoWidget() {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 p-4 md:items-center"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/30 p-4 md:items-center"
           role="dialog"
           aria-label="Voice assistant"
+          onClick={close}
         >
-          <div className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-rule bg-bg shadow-xl">
-            <div className="flex items-center justify-between border-b border-rule px-4 py-3">
+          <div
+            className="relative z-10 flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-rule bg-bg shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex select-none items-center justify-between border-b border-rule px-4 py-3">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-accent" aria-hidden />
                 <span className="font-display text-sm font-medium text-ink">998 Voice Assistant</span>
@@ -304,21 +301,64 @@ export function VoiceDemoWidget() {
                     </p>
                   )}
 
-                  <div className="flex items-center justify-center py-4">
-                    <div
-                      className={`flex h-20 w-20 items-center justify-center rounded-full border-2 ${
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <button
+                      type="button"
+                      onClick={startVoice}
+                      disabled={live.connecting || live.connected}
+                      aria-label={
+                        live.connected
+                          ? "Microphone active"
+                          : live.connecting
+                            ? "Connecting voice assistant"
+                            : "Start voice assistant"
+                      }
+                      className={`flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border-2 transition hover:scale-[1.02] disabled:cursor-default disabled:hover:scale-100 ${
                         live.connected
                           ? "border-accent bg-accent-soft animate-pulse"
-                          : "border-rule bg-rule-soft"
+                          : live.connecting
+                            ? "border-accent/60 bg-accent-soft/40"
+                            : "border-rule bg-rule-soft hover:border-accent hover:bg-accent-soft/30"
                       }`}
                     >
-                      <Mic className={`h-8 w-8 ${live.connected ? "text-accent" : "text-ink-soft"}`} />
-                    </div>
+                      <Mic
+                        className={`h-8 w-8 ${
+                          live.connected || live.connecting ? "text-accent" : "text-ink-soft"
+                        }`}
+                      />
+                    </button>
+
+                    {!live.connected && !live.connecting && (
+                      <button
+                        type="button"
+                        onClick={startVoice}
+                        className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
+                      >
+                        Start voice
+                      </button>
+                    )}
                   </div>
 
                   {status && <p className="text-center text-sm text-ink-soft">{status}</p>}
                   {(live.error || formError) && (
-                    <p className="text-center text-sm text-warn">{live.error || formError}</p>
+                    <div className="space-y-2 text-center">
+                      <p className="text-sm text-warn">{live.error || formError}</p>
+                      {live.error && (
+                        <button
+                          type="button"
+                          onClick={startVoice}
+                          className="rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink transition hover:bg-rule-soft"
+                        >
+                          Try again
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {phase === "demo" && !live.connected && !live.connecting && !live.error && !status && (
+                    <p className="text-center text-sm text-ink-soft">
+                      Tap Start voice to talk with the assistant.
+                    </p>
                   )}
 
                   {phase === "verify" && (

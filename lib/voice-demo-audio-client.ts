@@ -33,56 +33,54 @@ export type VoiceDemoMicHandle = {
   stop: () => void;
 };
 
-export function startVoiceDemoMic(
+function startVoiceDemoMicFromStream(
+  stream: MediaStream,
   onPcmChunk: (base64Pcm: string) => void
-): VoiceDemoMicHandle | null {
-  if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-    return null;
-  }
-
+): VoiceDemoMicHandle {
   let stopped = false;
-  let audioContext: AudioContext | null = null;
-  let stream: MediaStream | null = null;
-  let processor: ScriptProcessorNode | null = null;
+  const audioContext = new AudioContext();
+  const source = audioContext.createMediaStreamSource(stream);
+  const inputRate = audioContext.sampleRate;
+  const ratio = inputRate / SEND_SAMPLE_RATE;
+  const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
-  void (async () => {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (stopped) return;
-
-      audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-      const inputRate = audioContext.sampleRate;
-      const ratio = inputRate / SEND_SAMPLE_RATE;
-      processor = audioContext.createScriptProcessor(4096, 1, 1);
-
-      processor.onaudioprocess = (event) => {
-        if (stopped) return;
-        const input = event.inputBuffer.getChannelData(0);
-        const outLength = Math.floor(input.length / ratio);
-        const downsampled = new Float32Array(outLength);
-        for (let i = 0; i < outLength; i++) {
-          downsampled[i] = input[Math.floor(i * ratio)] ?? 0;
-        }
-        const pcm = floatTo16BitPCM(downsampled);
-        onPcmChunk(arrayBufferToBase64(pcm));
-      };
-
-      source.connect(processor);
-      processor.connect(audioContext.destination);
-    } catch (err) {
-      console.warn("[voice-demo-audio] mic error", err);
+  processor.onaudioprocess = (event) => {
+    if (stopped) return;
+    const input = event.inputBuffer.getChannelData(0);
+    const outLength = Math.floor(input.length / ratio);
+    const downsampled = new Float32Array(outLength);
+    for (let i = 0; i < outLength; i++) {
+      downsampled[i] = input[Math.floor(i * ratio)] ?? 0;
     }
-  })();
+    const pcm = floatTo16BitPCM(downsampled);
+    onPcmChunk(arrayBufferToBase64(pcm));
+  };
+
+  source.connect(processor);
+  processor.connect(audioContext.destination);
 
   return {
     stop: () => {
       stopped = true;
-      processor?.disconnect();
-      stream?.getTracks().forEach((t) => t.stop());
-      void audioContext?.close();
+      processor.disconnect();
+      stream.getTracks().forEach((t) => t.stop());
+      void audioContext.close();
     },
   };
+}
+
+export async function requestVoiceDemoMicStream(): Promise<MediaStream> {
+  if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Microphone is not supported in this browser.");
+  }
+  return navigator.mediaDevices.getUserMedia({ audio: true });
+}
+
+export function startVoiceDemoMic(
+  stream: MediaStream,
+  onPcmChunk: (base64Pcm: string) => void
+): VoiceDemoMicHandle {
+  return startVoiceDemoMicFromStream(stream, onPcmChunk);
 }
 
 export class VoiceDemoAudioPlayer {

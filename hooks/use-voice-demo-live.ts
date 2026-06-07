@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 import {
+  requestVoiceDemoMicStream,
   startVoiceDemoMic,
   VoiceDemoAudioPlayer,
   type VoiceDemoMicHandle,
@@ -42,12 +43,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const sessionRef = useRef<Session | null>(null);
   const micRef = useRef<VoiceDemoMicHandle | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
   const playerRef = useRef<VoiceDemoAudioPlayer | null>(null);
   const modeRef = useRef<VoiceDemoLiveMode>("verify");
 
   const disconnect = useCallback(() => {
     micRef.current?.stop();
     micRef.current = null;
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
     try {
       sessionRef.current?.close();
     } catch {
@@ -129,6 +133,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       options.onStatus?.(mode === "verify" ? "Connecting — say your code when ready…" : "Connecting…");
 
       try {
+        const stream = await requestVoiceDemoMicStream();
+        micStreamRef.current = stream;
+
         const tokenRes = await fetch("/api/voice-demo/live-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -142,6 +149,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         };
 
         if (!tokenRes.ok || !tokenData.token) {
+          stream.getTracks().forEach((t) => t.stop());
+          micStreamRef.current = null;
           setError(tokenData.error ?? "Could not start voice session.");
           setConnecting(false);
           return;
@@ -163,14 +172,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   ? "Listening — read your 6-digit code aloud."
                   : "You're live — ask me anything about 998."
               );
-              micRef.current = startVoiceDemoMic((base64) => {
-                sessionRef.current?.sendRealtimeInput({
-                  audio: {
-                    data: base64,
-                    mimeType: "audio/pcm;rate=16000",
-                  },
+              if (micStreamRef.current) {
+                micRef.current = startVoiceDemoMic(micStreamRef.current, (base64) => {
+                  sessionRef.current?.sendRealtimeInput({
+                    audio: {
+                      data: base64,
+                      mimeType: "audio/pcm;rate=16000",
+                    },
+                  });
                 });
-              });
+              }
             },
             onmessage: (msg) => {
               void handleMessage(msg as LiveMessage);
@@ -188,7 +199,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionRef.current = session;
       } catch (err) {
         console.warn("[voice-demo-live] connect", err);
-        setError("Could not connect to voice assistant.");
+        micStreamRef.current?.getTracks().forEach((t) => t.stop());
+        micStreamRef.current = null;
+        const message =
+          err instanceof DOMException && err.name === "NotAllowedError"
+            ? "Microphone blocked. Allow mic access in your browser, then tap Start voice again."
+            : err instanceof Error && err.message.includes("not supported")
+              ? err.message
+              : "Could not connect to voice assistant.";
+        setError(message);
         setConnecting(false);
       }
     },
