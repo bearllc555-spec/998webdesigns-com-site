@@ -7,6 +7,9 @@ export const VOICE_DEMO_VOICE_NAME = "Schedar";
 /** Jarvis assistant audio playback rate (1 = normal; <1 = slower). */
 export const VOICE_DEMO_PLAYBACK_RATE = 0.95;
 
+/** End the voice session if the visitor leaves the mic muted this long (ms). */
+export const VOICE_DEMO_MIC_MUTE_DISCONNECT_MS = 10_000;
+
 /** Channel-specific promo — design fee only; not on public FAQ. */
 export const VOICE_DEMO_PROMO_CODE = "VOICE20";
 

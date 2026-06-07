@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Mic, X, MessageCircle } from "lucide-react";
+import { Mic, MicOff, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
 import { VoiceJarvisOrb } from "@/components/VoiceDemo/VoiceJarvisOrb";
@@ -383,6 +383,27 @@ export function VoiceDemoWidget() {
                         className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
                       >
                         Start voice
+                      </button>
+                    )}
+
+                    {live.connected && (
+                      <button
+                        type="button"
+                        onClick={() => live.toggleMicMute()}
+                        aria-pressed={live.micMuted}
+                        aria-label={live.micMuted ? "Unmute microphone" : "Mute microphone"}
+                        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                          live.micMuted
+                            ? "border-warn bg-warn/10 text-warn"
+                            : "border-rule bg-bg text-ink-soft hover:border-accent hover:text-ink"
+                        }`}
+                      >
+                        {live.micMuted ? (
+                          <MicOff className="h-4 w-4" aria-hidden />
+                        ) : (
+                          <Mic className="h-4 w-4" aria-hidden />
+                        )}
+                        {live.micMuted ? "Unmute mic" : "Mute mic"}
                       </button>
                     )}
                   </div>

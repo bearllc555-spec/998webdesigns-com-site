@@ -33,6 +33,8 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 
 export type VoiceDemoMicHandle = {
   stop: () => void;
+  setMuted: (muted: boolean) => void;
+  isMuted: () => boolean;
 };
 
 function startVoiceDemoMicFromStream(
@@ -40,6 +42,7 @@ function startVoiceDemoMicFromStream(
   onPcmChunk: (base64Pcm: string) => void
 ): VoiceDemoMicHandle {
   let stopped = false;
+  let muted = false;
   const audioContext = new AudioContext();
   const source = audioContext.createMediaStreamSource(stream);
   const inputRate = audioContext.sampleRate;
@@ -47,7 +50,7 @@ function startVoiceDemoMicFromStream(
   const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
   processor.onaudioprocess = (event) => {
-    if (stopped) return;
+    if (stopped || muted) return;
     const input = event.inputBuffer.getChannelData(0);
     const outLength = Math.floor(input.length / ratio);
     const downsampled = new Float32Array(outLength);
@@ -68,6 +71,10 @@ function startVoiceDemoMicFromStream(
       stream.getTracks().forEach((t) => t.stop());
       void audioContext.close();
     },
+    setMuted: (next: boolean) => {
+      muted = next;
+    },
+    isMuted: () => muted,
   };
 }
 

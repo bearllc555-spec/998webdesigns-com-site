@@ -8,7 +8,10 @@ import {
   VoiceDemoAudioPlayer,
   type VoiceDemoMicHandle,
 } from "@/lib/voice-demo-audio-client";
-import { VOICE_DEMO_LIVE_MODEL } from "@/lib/voice-demo-constants";
+import {
+  VOICE_DEMO_LIVE_MODEL,
+  VOICE_DEMO_MIC_MUTE_DISCONNECT_MS,
+} from "@/lib/voice-demo-constants";
 import {
   mergeTranscriptChunk,
   type VoiceDemoCaption,
@@ -155,6 +158,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const [error, setError] = useState("");
   const [jarvisLevels, setJarvisLevels] = useState<JarvisAudioLevels>(JARVIS_AUDIO_IDLE);
   const [jarvisSpeaking, setJarvisSpeaking] = useState(false);
+  const [micMuted, setMicMuted] = useState(false);
 
   const sessionRef = useRef<Session | null>(null);
   const micRef = useRef<VoiceDemoMicHandle | null>(null);
@@ -193,6 +197,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingEndConversationRef = useRef(false);
   const weatherDemoAcceptedRef = useRef(false);
   const promoWeatherNudgeSentRef = useRef(false);
+  const micMuteDisconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAssistantTextRef = useRef("");
   const stagedZipReadbackRef = useRef<StagedZipReadback | null>(null);
   const zipCityCorrectionSentRef = useRef(false);
@@ -1206,8 +1211,28 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [clearPhoneCollectionState, clearPhoneSilenceTimer, setAwaitingPhoneDigits]
   );
 
+  const clearMicMuteDisconnectTimer = useCallback(() => {
+    if (micMuteDisconnectTimerRef.current) {
+      clearTimeout(micMuteDisconnectTimerRef.current);
+      micMuteDisconnectTimerRef.current = null;
+    }
+  }, []);
+
+  const applyMicMuted = useCallback(
+    (muted: boolean) => {
+      micRef.current?.setMuted(muted);
+      micStreamRef.current?.getAudioTracks().forEach((track) => {
+        track.enabled = !muted;
+      });
+      setMicMuted(muted);
+    },
+    []
+  );
+
   const disconnect = useCallback((intentional = true) => {
     clearReconnectTimer();
+    clearMicMuteDisconnectTimer();
+    applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
     micRef.current?.stop();
     micRef.current = null;
@@ -1226,13 +1251,47 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     stopOrbLoop();
     setConnected(false);
     setConnecting(false);
-  }, [clearPhoneCollectionState, clearReconnectTimer, clearWeatherZipState, stopOrbLoop]);
+  }, [
+    applyMicMuted,
+    clearMicMuteDisconnectTimer,
+    clearPhoneCollectionState,
+    clearReconnectTimer,
+    clearWeatherZipState,
+    stopOrbLoop,
+  ]);
 
   const disconnectGraceful = useCallback(async () => {
     await playerRef.current?.whenPlaybackIdle(10000);
     await sleep(PHASE_TAIL_MS);
     disconnect(true);
   }, [disconnect]);
+
+  const setMicMutedState = useCallback(
+    (muted: boolean) => {
+      if (!sessionRef.current) return;
+      clearMicMuteDisconnectTimer();
+      applyMicMuted(muted);
+      if (muted) {
+        optionsRef.current.onStatus?.(
+          "Microphone muted — unmute within 10 seconds or the call will end."
+        );
+        micMuteDisconnectTimerRef.current = setTimeout(() => {
+          micMuteDisconnectTimerRef.current = null;
+          optionsRef.current.onStatus?.(
+            "Muted too long — session ended. Tap Start voice to chat again."
+          );
+          disconnect(true);
+        }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
+      } else {
+        optionsRef.current.onStatus?.("Microphone on — Jarvis can hear you again.");
+      }
+    },
+    [applyMicMuted, clearMicMuteDisconnectTimer, disconnect]
+  );
+
+  const toggleMicMute = useCallback(() => {
+    setMicMutedState(!micMuted);
+  }, [micMuted, setMicMutedState]);
 
   const finishPendingPhase = useCallback(async () => {
     if (finishingPhaseRef.current || !pendingPhaseRef.current) return;
@@ -2157,5 +2216,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     error,
     jarvisLevels,
     jarvisSpeaking,
+    micMuted,
+    toggleMicMute,
+    setMicMuted: setMicMutedState,
   };
 }
