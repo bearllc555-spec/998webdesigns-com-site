@@ -1702,13 +1702,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
         const resumptionHandle = sessionResumptionHandleRef.current ?? undefined;
 
+        // Ephemeral live tokens lock connect config server-side — only pass
+        // sessionResumption on resume (handle from prior SessionResumptionUpdate).
         const session = await ai.live.connect({
           model: tokenData.model ?? VOICE_DEMO_LIVE_MODEL,
-          config: {
-            sessionResumption: resumptionHandle
-              ? { handle: resumptionHandle, transparent: true }
-              : { transparent: true },
-          },
+          ...(resumptionHandle
+            ? {
+                config: {
+                  sessionResumption: { handle: resumptionHandle, transparent: true },
+                },
+              }
+            : {}),
           callbacks: {
             onopen: () => {
               setConnected(true);
@@ -1790,14 +1794,26 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           micStreamRef.current?.getTracks().forEach((t) => t.stop());
           micStreamRef.current = null;
         }
+        const detail = err instanceof Error ? err.message : String(err);
         const message =
           err instanceof DOMException && err.name === "NotAllowedError"
             ? "Microphone blocked. Allow mic access in your browser, then tap Start voice again."
             : err instanceof Error && err.message.includes("not supported")
               ? err.message
-              : "Could not connect to voice assistant.";
+              : detail && detail.length < 120
+                ? detail
+                : "Could not connect to voice assistant.";
+        logVoiceDemoOps({
+          kind: "session_anomaly",
+          message: "Live connect failed",
+          severity: "warn",
+          meta: { resume, detail: detail.slice(0, 240) },
+        });
         setError(message);
         setConnecting(false);
+        if (resume) {
+          optionsRef.current.onUnexpectedClose?.();
+        }
       }
     },
     [
