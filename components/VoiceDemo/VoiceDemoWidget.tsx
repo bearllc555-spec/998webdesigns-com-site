@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Mic, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
+import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
+import type { VoiceDemoCaption } from "@/lib/voice-demo-caption";
 
 type Phase = "closed" | "gate" | "verify" | "demo";
 
@@ -16,7 +18,7 @@ export function VoiceDemoWidget() {
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [status, setStatus] = useState("");
-  const [transcript, setTranscript] = useState<string[]>([]);
+  const [caption, setCaption] = useState<VoiceDemoCaption | null>(null);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [website, setWebsite] = useState("");
 
@@ -31,10 +33,10 @@ export function VoiceDemoWidget() {
       setStatus("Session paused — tap Start voice to continue.");
     },
     onConversationEnd: () => {
-      setTranscript([]);
+      setCaption(null);
     },
     onStatus: setStatus,
-    onTranscript: (line) => setTranscript((prev) => [...prev.slice(-12), line]),
+    onCaption: setCaption,
   });
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export function VoiceDemoWidget() {
     setPhase("closed");
     setFormError("");
     setStatus("");
-    setTranscript([]);
+    setCaption(null);
   }, [live]);
 
   const openWidget = () => {
@@ -91,7 +93,7 @@ export function VoiceDemoWidget() {
       setDestination("");
       setTypedCode("");
       setStatus("");
-      setTranscript([]);
+      setCaption(null);
       setBusy(false);
     }
   }, [live]);
@@ -120,7 +122,7 @@ export function VoiceDemoWidget() {
         return;
       }
       setDestination(data.destination ?? email);
-      setTranscript([]);
+      setCaption(null);
       setPhase("verify");
       setStatus("Check your email for a 6-digit code, then tap Start voice.");
     } catch {
@@ -367,16 +369,13 @@ export function VoiceDemoWidget() {
                     </form>
                   )}
 
-                  {transcript.length > 0 && (
-                    <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-rule bg-rule-soft/50 p-3 text-xs text-ink-soft">
-                      {transcript.map((line, i) => (
-                        <p key={`${i}-${line.slice(0, 12)}`}>{line}</p>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
+
+            {caption && configured && (phase === "verify" || phase === "demo") && (
+              <VoiceCaptionBar caption={caption} />
+            )}
           </div>
         </div>
       )}

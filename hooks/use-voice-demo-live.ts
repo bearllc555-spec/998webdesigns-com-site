@@ -9,6 +9,11 @@ import {
   type VoiceDemoMicHandle,
 } from "@/lib/voice-demo-audio-client";
 import { VOICE_DEMO_LIVE_MODEL } from "@/lib/voice-demo-constants";
+import {
+  mergeTranscriptChunk,
+  type VoiceDemoCaption,
+  type VoiceDemoCaptionRole,
+} from "@/lib/voice-demo-caption";
 import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
 import type { Session } from "@google/genai";
 
@@ -38,7 +43,7 @@ type UseVoiceDemoLiveOptions = {
   onUnexpectedClose?: () => void;
   onConversationEnd?: () => void;
   onStatus?: (text: string) => void;
-  onTranscript?: (line: string) => void;
+  onCaption?: (caption: VoiceDemoCaption) => void;
 };
 
 const PHASE_TAIL_MS = 450;
@@ -68,8 +73,32 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const jarvisFarewellSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
   const lastAssistantTextRef = useRef("");
+  const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
+  const captionTextRef = useRef("");
   const optionsRef = useRef(options);
   optionsRef.current = options;
+
+  const emitCaption = useCallback((role: VoiceDemoCaptionRole, chunk: string) => {
+    const trimmed = chunk.trim();
+    if (!trimmed) return;
+
+    if (captionRoleRef.current !== role) {
+      captionRoleRef.current = role;
+      captionTextRef.current = trimmed;
+    } else {
+      captionTextRef.current = mergeTranscriptChunk(captionTextRef.current, trimmed);
+    }
+
+    optionsRef.current.onCaption?.({
+      role,
+      text: captionTextRef.current,
+    });
+  }, []);
+
+  const resetCaption = useCallback(() => {
+    captionRoleRef.current = null;
+    captionTextRef.current = "";
+  }, []);
 
   const clearPendingFallback = useCallback(() => {
     if (pendingFallbackTimerRef.current) {
@@ -228,12 +257,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const outText = message.serverContent?.outputTranscription?.text;
       if (outText) {
-        lastAssistantTextRef.current = `${lastAssistantTextRef.current} ${outText}`.trim();
-        optionsRef.current.onTranscript?.(`Assistant: ${outText}`);
+        lastAssistantTextRef.current = mergeTranscriptChunk(
+          lastAssistantTextRef.current,
+          outText
+        );
+        emitCaption("assistant", outText);
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
-        optionsRef.current.onTranscript?.(`You: ${inText}`);
+        emitCaption("user", inText);
         if (
           jarvisFarewellSentRef.current &&
           isUserFarewellEcho(inText) &&
@@ -258,7 +290,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
       }
     },
-    [endCallNow, finishConversation, finishPendingPhase, queuePhaseTransition, runTool]
+    [emitCaption, endCallNow, finishConversation, finishPendingPhase, queuePhaseTransition, runTool]
   );
 
   const connect = useCallback(
@@ -270,6 +302,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       jarvisFarewellSentRef.current = false;
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
+      resetCaption();
       disconnect(true);
       setError("");
       setConnecting(true);
