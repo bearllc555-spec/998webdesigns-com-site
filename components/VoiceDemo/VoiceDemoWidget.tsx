@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Mic, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
+import { VoiceJarvisOrb } from "@/components/VoiceDemo/VoiceJarvisOrb";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
 import type { VoiceDemoCaption } from "@/lib/voice-demo-caption";
 
@@ -289,6 +290,13 @@ export function VoiceDemoWidget() {
                   )}
 
                   <div className="flex flex-col items-center gap-3 py-4">
+                    <VoiceJarvisOrb
+                      levels={live.jarvisLevels}
+                      speaking={live.jarvisSpeaking}
+                      connected={live.connected}
+                      connecting={live.connecting}
+                    />
+
                     <button
                       type="button"
                       onClick={startVoice}
@@ -300,16 +308,16 @@ export function VoiceDemoWidget() {
                             ? "Connecting voice assistant"
                             : "Start voice assistant"
                       }
-                      className={`flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border-2 transition hover:scale-[1.02] disabled:cursor-default disabled:hover:scale-100 ${
+                      className={`flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-2 transition hover:scale-[1.02] disabled:cursor-default disabled:hover:scale-100 ${
                         live.connected
-                          ? "border-accent bg-accent-soft animate-pulse"
+                          ? "border-accent bg-accent-soft"
                           : live.connecting
                             ? "border-accent/60 bg-accent-soft/40"
                             : "border-rule bg-rule-soft hover:border-accent hover:bg-accent-soft/30"
                       }`}
                     >
                       <Mic
-                        className={`h-8 w-8 ${
+                        className={`h-6 w-6 ${
                           live.connected || live.connecting ? "text-accent" : "text-ink-soft"
                         }`}
                       />
@@ -373,7 +381,7 @@ export function VoiceDemoWidget() {
               )}
             </div>
 
-            {caption && configured && (phase === "verify" || phase === "demo") && (
+            {caption?.role === "user" && configured && (phase === "verify" || phase === "demo") && (
               <VoiceCaptionBar caption={caption} />
             )}
           </div>

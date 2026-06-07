@@ -86,6 +86,8 @@ export function startVoiceDemoMic(
 export class VoiceDemoAudioPlayer {
   private ctx: AudioContext | null = null;
   private nextTime = 0;
+  private analyser: AnalyserNode | null = null;
+  private freqBuf: Uint8Array | null = null;
 
   private ensureContext(): AudioContext {
     if (!this.ctx) {
@@ -95,8 +97,31 @@ export class VoiceDemoAudioPlayer {
     return this.ctx;
   }
 
+  private ensureAnalyser(ctx: AudioContext): AnalyserNode {
+    if (!this.analyser) {
+      this.analyser = ctx.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.analyser.smoothingTimeConstant = 0.72;
+      this.analyser.connect(ctx.destination);
+      this.freqBuf = new Uint8Array(this.analyser.frequencyBinCount);
+    }
+    return this.analyser;
+  }
+
+  getAnalyser(): { analyser: AnalyserNode; freqBuf: Uint8Array } | null {
+    if (!this.ctx || !this.analyser || !this.freqBuf) return null;
+    return { analyser: this.analyser, freqBuf: this.freqBuf };
+  }
+
+  /** True while assistant PCM is still playing (or queued). */
+  isPlaying(): boolean {
+    if (!this.ctx) return false;
+    return this.ctx.currentTime < this.nextTime - 0.04;
+  }
+
   enqueueBase64Pcm(base64: string): void {
     const ctx = this.ensureContext();
+    const analyser = this.ensureAnalyser(ctx);
     const buffer = base64ToArrayBuffer(base64);
     const view = new DataView(buffer);
     const sampleCount = buffer.byteLength / 2;
@@ -108,7 +133,7 @@ export class VoiceDemoAudioPlayer {
 
     const source = ctx.createBufferSource();
     source.buffer = audioBuffer;
-    source.connect(ctx.destination);
+    source.connect(analyser);
 
     const start = Math.max(ctx.currentTime, this.nextTime);
     source.start(start);
@@ -142,5 +167,7 @@ export class VoiceDemoAudioPlayer {
     void this.ctx?.close();
     this.ctx = null;
     this.nextTime = 0;
+    this.analyser = null;
+    this.freqBuf = null;
   }
 }

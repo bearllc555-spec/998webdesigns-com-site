@@ -14,6 +14,12 @@ import {
   type VoiceDemoCaption,
   type VoiceDemoCaptionRole,
 } from "@/lib/voice-demo-caption";
+import {
+  JARVIS_AUDIO_IDLE,
+  readJarvisAudioLevels,
+  smoothJarvisAudioLevels,
+  type JarvisAudioLevels,
+} from "@/lib/voice-demo-jarvis-audio-level";
 import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
 import {
   triggerVoiceDemoOpening,
@@ -63,6 +69,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
+  const [jarvisLevels, setJarvisLevels] = useState<JarvisAudioLevels>(JARVIS_AUDIO_IDLE);
+  const [jarvisSpeaking, setJarvisSpeaking] = useState(false);
 
   const sessionRef = useRef<Session | null>(null);
   const micRef = useRef<VoiceDemoMicHandle | null>(null);
@@ -80,8 +88,45 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
+  const jarvisLevelsRef = useRef(JARVIS_AUDIO_IDLE);
+  const orbFrameRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
+
+  const stopOrbLoop = useCallback(() => {
+    if (orbFrameRef.current !== null) {
+      cancelAnimationFrame(orbFrameRef.current);
+      orbFrameRef.current = null;
+    }
+    jarvisLevelsRef.current = JARVIS_AUDIO_IDLE;
+    setJarvisLevels(JARVIS_AUDIO_IDLE);
+    setJarvisSpeaking(false);
+  }, []);
+
+  const startOrbLoop = useCallback(() => {
+    stopOrbLoop();
+    const tick = () => {
+      const player = playerRef.current;
+      const analyserPack = player?.getAnalyser();
+      const playing = player?.isPlaying() ?? false;
+
+      if (analyserPack && playing) {
+        const raw = readJarvisAudioLevels(analyserPack.analyser, analyserPack.freqBuf);
+        const smoothed = smoothJarvisAudioLevels(jarvisLevelsRef.current, raw);
+        jarvisLevelsRef.current = smoothed;
+        setJarvisLevels(smoothed);
+        setJarvisSpeaking(smoothed.volume > 0.04 || playing);
+      } else {
+        const smoothed = smoothJarvisAudioLevels(jarvisLevelsRef.current, JARVIS_AUDIO_IDLE);
+        jarvisLevelsRef.current = smoothed;
+        setJarvisLevels(smoothed);
+        setJarvisSpeaking(false);
+      }
+
+      orbFrameRef.current = requestAnimationFrame(tick);
+    };
+    orbFrameRef.current = requestAnimationFrame(tick);
+  }, [stopOrbLoop]);
 
   const sendOpeningGreeting = useCallback((session: Session) => {
     if (greetingSentRef.current) return;
@@ -105,10 +150,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       captionTextRef.current = mergeTranscriptChunk(captionTextRef.current, trimmed);
     }
 
-    optionsRef.current.onCaption?.({
-      role,
-      text: captionTextRef.current,
-    });
+    if (role === "user") {
+      optionsRef.current.onCaption?.({
+        role,
+        text: captionTextRef.current,
+      });
+    }
   }, []);
 
   const resetCaption = useCallback(() => {
@@ -137,9 +184,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     sessionRef.current = null;
     playerRef.current?.close();
     playerRef.current = null;
+    stopOrbLoop();
     setConnected(false);
     setConnecting(false);
-  }, []);
+  }, [stopOrbLoop]);
 
   const disconnectGraceful = useCallback(async () => {
     await playerRef.current?.whenPlaybackIdle(10000);
@@ -277,7 +325,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           lastAssistantTextRef.current,
           outText
         );
-        emitCaption("assistant", outText);
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
@@ -363,6 +410,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             onopen: () => {
               setConnected(true);
               setConnecting(false);
+              startOrbLoop();
               optionsRef.current.onStatus?.(voiceDemoOpeningStatus(mode));
               setTimeout(() => {
                 if (sessionRef.current) {
@@ -413,7 +461,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
       }
     },
-    [clearPendingFallback, disconnect, handleMessage, sendOpeningGreeting]
+    [clearPendingFallback, disconnect, handleMessage, sendOpeningGreeting, startOrbLoop]
   );
 
   const connectRef = useRef(connect);
@@ -434,5 +482,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     connecting,
     connected,
     error,
+    jarvisLevels,
+    jarvisSpeaking,
   };
 }

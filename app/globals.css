@@ -367,6 +367,19 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
+/* Jarvis voice orb — idle breathe when connected */
+@keyframes jarvis-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
 /* Hero headline — letter-by-letter reveal (opacity only, no blur) */
 @keyframes hero-letter-in {
   from {
