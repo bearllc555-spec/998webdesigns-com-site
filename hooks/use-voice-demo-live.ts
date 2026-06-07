@@ -39,6 +39,8 @@ import {
 import {
   buildWrapUpPauseNudge,
   isAssistantWrapUpQuestion,
+  isUserSmallTalk,
+  isUserSubstantiveQuestion,
   shouldScheduleWrapUpAfterAnswer,
   WRAPUP_POST_ANSWER_PAUSE_MS,
 } from "@/lib/voice-demo-wrapup-nudge";
@@ -140,6 +142,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const zipSilenceNudgedRef = useRef(false);
   const zipSilencePhaseRef = useRef<ZipSilencePhase>("listening");
   const zipDigitsHeardMaxRef = useRef(0);
+  const visitorAskedSubstantiveQuestionRef = useRef(false);
   const lastClientWeatherNudgeAtRef = useRef(0);
   const lastWeatherOfferSigRef = useRef("");
   const lastZipPromptSigRef = useRef("");
@@ -1009,6 +1012,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         emitCaption("user", inText);
         const userLine = captionTextRef.current.trim();
 
+        if (modeRef.current === "demo") {
+          if (isUserSmallTalk(userLine)) {
+            visitorAskedSubstantiveQuestionRef.current = false;
+            clearWrapUpTimer();
+          } else if (isUserSubstantiveQuestion(userLine)) {
+            visitorAskedSubstantiveQuestionRef.current = true;
+          }
+        }
+
         if (awaitingWeatherYesNoRef.current && isWeatherOfferDecline(userLine)) {
           sendWeatherDeclineNudge();
         } else if (awaitingWeatherYesNoRef.current && isWeatherOfferAccept(userLine)) {
@@ -1126,8 +1138,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 awaitingWeatherYesNoRef.current ||
                 awaitingWeatherForecastDeliveryRef.current,
               farewellSent: jarvisFarewellSentRef.current,
+              visitorAskedSubstantiveQuestion: visitorAskedSubstantiveQuestionRef.current,
             })
           ) {
+            visitorAskedSubstantiveQuestionRef.current = false;
             scheduleWrapUpPause(WRAPUP_POST_ANSWER_PAUSE_MS);
           } else {
             clearWrapUpTimer();
@@ -1178,6 +1192,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       greetingSentRef.current = false;
       suppressAssistantAudioRef.current = false;
       awaitingWeatherForecastDeliveryRef.current = false;
+      visitorAskedSubstantiveQuestionRef.current = false;
       zipSilenceNudgedRef.current = false;
       lastClientWeatherNudgeAtRef.current = 0;
       lastWeatherOfferSigRef.current = "";

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   buildWrapUpPauseNudge,
+  isAssistantSmallTalkReply,
   isAssistantWrapUpQuestion,
+  isUserSmallTalk,
+  isUserSubstantiveQuestion,
   shouldScheduleWrapUpAfterAnswer,
   VOICE_DEMO_WRAPUP_PAUSE_CUE,
   WRAPUP_POST_ANSWER_PAUSE_MS,
@@ -9,8 +12,30 @@ import {
 import { VOICE_DEMO_WRAPUP_QUESTIONS } from "@/lib/voice-demo-wrapup-nudge";
 
 describe("voice-demo-wrapup-nudge", () => {
-  it("uses a few-second post-answer pause", () => {
-    expect(WRAPUP_POST_ANSWER_PAUSE_MS).toBe(2500);
+  it("uses a four-second post-answer pause", () => {
+    expect(WRAPUP_POST_ANSWER_PAUSE_MS).toBe(4000);
+  });
+
+  it("detects visitor small talk vs substantive questions", () => {
+    expect(isUserSmallTalk("How are you doing today?")).toBe(true);
+    expect(isUserSubstantiveQuestion("How are you doing today?")).toBe(false);
+    expect(isUserSubstantiveQuestion("How much does the design fee cost?")).toBe(true);
+  });
+
+  it("does not schedule wrap-up after small-talk replies", () => {
+    expect(
+      isAssistantSmallTalkReply("I'm doing quite well, thank you for asking.")
+    ).toBe(true);
+    expect(
+      shouldScheduleWrapUpAfterAnswer(
+        "I'm doing quite well, thank you for asking.",
+        {
+          awaitingCollection: false,
+          farewellSent: false,
+          visitorAskedSubstantiveQuestion: true,
+        }
+      )
+    ).toBe(false);
   });
 
   it("detects wrap-up questions from the cycle", () => {
@@ -29,18 +54,28 @@ describe("voice-demo-wrapup-nudge", () => {
       shouldScheduleWrapUpAfterAnswer(answer, {
         awaitingCollection: false,
         farewellSent: false,
+        visitorAskedSubstantiveQuestion: true,
       })
     ).toBe(true);
+    expect(
+      shouldScheduleWrapUpAfterAnswer(answer, {
+        awaitingCollection: false,
+        farewellSent: false,
+        visitorAskedSubstantiveQuestion: false,
+      })
+    ).toBe(false);
     expect(
       shouldScheduleWrapUpAfterAnswer("How may I help you today?", {
         awaitingCollection: false,
         farewellSent: false,
+        visitorAskedSubstantiveQuestion: true,
       })
     ).toBe(false);
     expect(
       shouldScheduleWrapUpAfterAnswer(answer, {
         awaitingCollection: true,
         farewellSent: false,
+        visitorAskedSubstantiveQuestion: true,
       })
     ).toBe(false);
   });
