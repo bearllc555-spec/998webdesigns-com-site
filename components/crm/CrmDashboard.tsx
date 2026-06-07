@@ -51,12 +51,13 @@ export function CrmDashboard() {
     [items]
   );
   const smsItems = useMemo(() => items.filter((i) => i.source === "sms"), [items]);
+  const blogItems = useMemo(() => items.filter((i) => i.source === "blog"), [items]);
   const voiceDemoItems = useMemo(
     () => items.filter((i) => i.source === "voice_demo"),
     [items]
   );
   const unreadCount = items.filter(isCrmFeedItemUnread).length;
-  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${voiceDemoItems.length} voice`;
+  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} voice`;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
@@ -92,6 +93,7 @@ export function CrmDashboard() {
             clientItems={clientItems}
             discoveryItems={discoveryItems}
             smsItems={smsItems}
+            blogItems={blogItems}
             onItemsChange={(updater) => setItems((prev) => updater(prev))}
             onReload={load}
           />

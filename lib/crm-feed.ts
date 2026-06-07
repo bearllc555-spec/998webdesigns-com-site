@@ -4,7 +4,14 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 export type { CrmInboxFlag };
 
-export type CrmFeedSource = "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo";
+export type CrmFeedSource =
+  | "lead"
+  | "client"
+  | "contact"
+  | "discovery"
+  | "sms"
+  | "voice_demo"
+  | "blog";
 
 export type CrmFeedItem = {
   id: string;
@@ -50,8 +57,16 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     };
   }
 
-  const [leadsRes, contactsRes, discoveryRes, voiceDemoRes, inboundRes, inboundLinkedRes, inboundLeadLinkedRes] =
-    await Promise.all([
+  const [
+    leadsRes,
+    contactsRes,
+    discoveryRes,
+    voiceDemoRes,
+    blogRes,
+    inboundRes,
+    inboundLinkedRes,
+    inboundLeadLinkedRes,
+  ] = await Promise.all([
     supa
       .from("wd_leads")
       .select(
@@ -77,6 +92,11 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
         "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
+      .limit(limit),
+    supa
+      .from("blog_posts")
+      .select("id, slug, title, description, url, published_at, read_at, inbox_flag")
+      .order("published_at", { ascending: false })
       .limit(limit),
     supa
       .from("inbound_sms")
@@ -115,6 +135,10 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   if (voiceDemoRes.error && !isMissingTable(voiceDemoRes.error)) {
     console.warn("[crm-feed] voice_demo_leads:", voiceDemoRes.error.message);
     errors.push(`voice_demo: ${voiceDemoRes.error.message}`);
+  }
+  if (blogRes.error && !isMissingTable(blogRes.error)) {
+    console.warn("[crm-feed] blog_posts:", blogRes.error.message);
+    errors.push(`blog: ${blogRes.error.message}`);
   }
   if (inboundRes.error && !isMissingTable(inboundRes.error)) {
     console.warn("[crm-feed] inbound_sms:", inboundRes.error.message);
@@ -238,6 +262,29 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
         primaryChannel: row.primary_channel,
         promoCode: row.promo_code,
         promoSentAt: row.promo_sent_at,
+      },
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
+    });
+  }
+
+  for (const row of blogRes.data ?? []) {
+    items.push({
+      id: row.id,
+      source: "blog",
+      at: row.published_at as string,
+      title: row.title as string,
+      email: "",
+      businessName: "",
+      status: "published",
+      notes: null,
+      stripeSessionId: null,
+      stripeSubscriptionId: null,
+      message: (row.description as string) ?? null,
+      phone: null,
+      payload: {
+        slug: row.slug,
+        url: row.url,
       },
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),

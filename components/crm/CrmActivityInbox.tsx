@@ -11,7 +11,7 @@ import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
-  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo";
+  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo" | "blog";
   id: string;
   label: string;
   step: 1 | 2;
@@ -23,6 +23,7 @@ function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "discovery") return "Discovery";
   if (source === "sms") return "Text";
   if (source === "voice_demo") return "Voice demo";
+  if (source === "blog") return "Blog";
   return "Contact";
 }
 
@@ -94,6 +95,7 @@ type CrmActivityInboxProps = {
   clientItems: CrmFeedItem[];
   discoveryItems: CrmFeedItem[];
   smsItems: CrmFeedItem[];
+  blogItems: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
 };
@@ -345,9 +347,24 @@ function InboxRow({
                   : "Project brief — see notes and payload below."
                 : item.source === "sms"
                   ? "Inbound SMS"
-                  : undefined
+                  : item.source === "blog"
+                    ? "Field notes post"
+                    : undefined
             }
           />
+
+          {item.source === "blog" && typeof item.payload?.url === "string" && (
+            <p className="mt-4">
+              <a
+                href={item.payload.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
+              >
+                Open post
+              </a>
+            </p>
+          )}
 
           {item.source === "discovery" && !isDeleting && (
             <>
@@ -554,6 +571,7 @@ export function CrmActivityInbox({
   clientItems,
   discoveryItems,
   smsItems,
+  blogItems,
   onItemsChange,
   onReload,
 }: CrmActivityInboxProps) {
@@ -773,6 +791,13 @@ export function CrmActivityInbox({
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
         emptyLabel="No unmatched inbound texts."
+      />
+      <InboxSection
+        title="Blog"
+        items={blogItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No published posts logged yet."
       />
       <InboxSection
         title="Discovery"

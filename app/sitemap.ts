@@ -14,12 +14,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }));
 
-  const blogPosts = getAllPosts().map((post) => ({
-    url: `${BASE}/blog/${post.slug}`,
-    lastModified: new Date(post.updatedAt ?? post.publishedAt),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  const blogPosts = getAllPosts().map((post) => {
+    const raw = post.updatedAt ?? post.publishedAt;
+    const parsed = new Date(raw);
+    const postModified = Number.isNaN(parsed.getTime()) ? lastModified : parsed;
+    return {
+      url: `${BASE}/blog/${post.slug}`,
+      lastModified: postModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    };
+  });
 
   return [...staticRoutes, ...blogPosts];
 }

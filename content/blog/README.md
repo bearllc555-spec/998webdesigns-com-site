@@ -34,6 +34,17 @@ featured: false           # optional — pins to top of index
 
 Body is standard Markdown. Internal links: `/start`, `/pricing`, `/portfolio`, `/blog/other-slug`.
 
+## After publish
+
+1. Push to `main` (post goes live on Vercel).
+2. Run **`npm run blog:notify -- {slug}`** — adds a **Blog** row in CRM + Telegram with the post link.
+3. Use **`npm run blog:notify -- --all`** once after first deploy to backfill existing posts.
+4. **`--force`** re-sends Telegram even if the slug is already logged.
+
+First-time DB setup: `POST https://998webdesigns.com/api/admin/migrate-blog-posts` with `BALANCE_CAPTURE_SECRET`.
+
+Schedule and backlog: [backlog.md](./backlog.md).
+
 ## Attribution
 
 Author line shows in schema/metadata as "998 web designs" — attribution only, not voice.

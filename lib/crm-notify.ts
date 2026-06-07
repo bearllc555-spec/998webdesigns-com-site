@@ -12,7 +12,8 @@ export type CrmNotifyKind =
   | "lifetime_hosting_paid"
   | "lifetime_hosting_ach_pending"
   | "contact"
-  | "inbound_sms";
+  | "inbound_sms"
+  | "blog_published";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_submitted: "New lead — form submitted",
@@ -26,6 +27,7 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lifetime_hosting_ach_pending: "Lifetime hosting — ACH pending",
   contact: "Contact form",
   inbound_sms: "Inbound SMS",
+  blog_published: "Blog — new post published",
 };
 
 export type CrmNotifyInput = {
@@ -41,6 +43,7 @@ export type CrmNotifyInput = {
   stripeSubscriptionId?: string;
   message?: string;
   checkoutUrl?: string;
+  postUrl?: string;
   phone?: string;
 };
 
@@ -76,6 +79,9 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
   }
   if (input.checkoutUrl) {
     lines.push(`<a href="${input.checkoutUrl}">Open Checkout</a>`);
+  }
+  if (input.postUrl) {
+    lines.push(`<a href="${input.postUrl}">Read post</a>`);
   }
   if (input.stripeSessionId) {
     const dash = stripeDashBase();

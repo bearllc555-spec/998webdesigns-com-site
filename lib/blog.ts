@@ -39,7 +39,10 @@ function listMarkdownFiles(): string[] {
   if (!fs.existsSync(BLOG_DIR)) return [];
   return fs
     .readdirSync(BLOG_DIR)
-    .filter((name) => name.endsWith(".md") && name !== "README.md")
+    .filter(
+      (name) =>
+        name.endsWith(".md") && name !== "README.md" && name !== "backlog.md",
+    )
     .sort();
 }
 

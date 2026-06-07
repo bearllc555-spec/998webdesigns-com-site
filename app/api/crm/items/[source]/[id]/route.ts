@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { deleteBlogPost } from "@/lib/blog-db";
 import { deleteContactSubmission } from "@/lib/contact-db";
 import { deleteInboundSms } from "@/lib/inbound-sms-db";
 import {
@@ -37,7 +38,8 @@ export async function DELETE(
     source !== "contact" &&
     source !== "discovery" &&
     source !== "sms" &&
-    source !== "voice_demo"
+    source !== "voice_demo" &&
+    source !== "blog"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
@@ -51,7 +53,9 @@ export async function DELETE(
           ? await deleteInboundSms(id)
           : source === "voice_demo"
             ? await deleteVoiceDemoLead(id)
-            : await deleteDiscoveryProspect(id);
+            : source === "blog"
+              ? await deleteBlogPost(id)
+              : await deleteDiscoveryProspect(id);
 
   if (!ok) {
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
@@ -81,7 +85,8 @@ export async function PATCH(
     source !== "contact" &&
     source !== "discovery" &&
     source !== "sms" &&
-    source !== "voice_demo"
+    source !== "voice_demo" &&
+    source !== "blog"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }

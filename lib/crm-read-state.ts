@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase";
 
 export async function setCrmItemReadState(
-  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo",
+  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo" | "blog",
   id: string,
   read: boolean
 ): Promise<boolean> {
@@ -17,7 +17,9 @@ export async function setCrmItemReadState(
           ? "inbound_sms"
           : source === "voice_demo"
             ? "voice_demo_leads"
-            : "discovery_prospects";
+            : source === "blog"
+              ? "blog_posts"
+              : "discovery_prospects";
   const read_at = read ? new Date().toISOString() : null;
 
   const { error } = await supa.from(table).update({ read_at }).eq("id", id);
