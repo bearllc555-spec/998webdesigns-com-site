@@ -118,6 +118,7 @@ import {
   isUserWeatherZipReminder,
   WEATHER_YESNO_SILENCE_NUDGE_MS,
   ZIP_SILENCE_NUDGE_MS,
+  ZIP_STAGING_WATCHDOG_MS,
 } from "@/lib/voice-demo-zip-nudge";
 import {
   seedOnboardingFromFullName,
@@ -208,6 +209,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const awaitingPhoneConfirmRef = useRef(false);
   const phoneNudgeTranscriptRef = useRef("");
   const zipSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const zipStagingWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const weatherYesNoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const awaitingZipDigitsRef = useRef(false);
   const awaitingZipConfirmRef = useRef(false);
@@ -650,6 +652,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearZipStagingWatchdog = useCallback(() => {
+    if (zipStagingWatchdogRef.current) {
+      clearTimeout(zipStagingWatchdogRef.current);
+      zipStagingWatchdogRef.current = null;
+    }
+  }, []);
+
   const clearWeatherYesNoTimer = useCallback(() => {
     if (weatherYesNoTimerRef.current) {
       clearTimeout(weatherYesNoTimerRef.current);
@@ -686,8 +695,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     promoWeatherNudgeSentRef.current = false;
     suppressPromoAudioDuringWeatherRef.current = false;
     clearZipSilenceTimer();
+    clearZipStagingWatchdog();
     clearWeatherYesNoTimer();
-  }, [clearWeatherYesNoTimer, clearZipSilenceTimer]);
+  }, [clearWeatherYesNoTimer, clearZipSilenceTimer, clearZipStagingWatchdog]);
 
   const getWeatherZipFlowRefs = useCallback(
     () => ({
@@ -785,9 +795,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const clearInputSilenceTimers = useCallback(() => {
     clearPhoneSilenceTimer();
     clearZipSilenceTimer();
+    clearZipStagingWatchdog();
     clearWeatherYesNoTimer();
     clearWrapUpTimer();
-  }, [clearPhoneSilenceTimer, clearWeatherYesNoTimer, clearWrapUpTimer, clearZipSilenceTimer]);
+  }, [
+    clearPhoneSilenceTimer,
+    clearWeatherYesNoTimer,
+    clearWrapUpTimer,
+    clearZipSilenceTimer,
+    clearZipStagingWatchdog,
+  ]);
 
   const handleAssistantInterrupted = useCallback(() => {
     suppressAssistantAudioRef.current = true;
@@ -803,6 +820,34 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       goodbyeNudgeSentRef.current
     );
   }, []);
+
+  const scheduleZipStagingWatchdog = useCallback(() => {
+    clearZipStagingWatchdog();
+    zipStagingWatchdogRef.current = setTimeout(() => {
+      const staged = stagedZipReadbackRef.current;
+      if (!staged || zipLookupTriggeredRef.current || !awaitingZipConfirmRef.current) {
+        return;
+      }
+      if (playerRef.current?.isPlaying()) return;
+      const session = sessionRef.current;
+      if (!session || isFarewellLocked()) return;
+      markClientWeatherNudgeSent();
+      logVoiceDemoOps({
+        kind: "zip_confirm_staged",
+        message: "ZIP staging watchdog — no read-back heard within 8s",
+        severity: "warn",
+        meta: { zip: staged.zip, city: staged.city },
+      });
+      try {
+        session.sendClientContent({
+          turns: buildZipStagedSpeakNudge(staged.spokenConfirm),
+          turnComplete: true,
+        });
+      } catch (err) {
+        console.warn("[voice-demo-live] zip staging watchdog nudge", err);
+      }
+    }, ZIP_STAGING_WATCHDOG_MS);
+  }, [clearZipStagingWatchdog, isFarewellLocked, markClientWeatherNudgeSent]);
 
   const sendZipCityCorrection = useCallback(
     (message: string, selfCorrected: boolean, heardCity: string | null) => {
@@ -884,11 +929,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       zipNudgeTranscriptRef.current = trimmed;
       markClientWeatherNudgeSent();
+      suppressPromoAudioDuringWeatherRef.current = false;
       try {
         session.sendClientContent({
           turns,
           turnComplete: true,
         });
+        if (zip && stagedZipReadbackRef.current) {
+          scheduleZipStagingWatchdog();
+        }
         return true;
       } catch (err) {
         console.warn("[voice-demo-live] zip digit confirm nudge", err);
@@ -906,6 +955,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       markClientWeatherNudgeSent,
       rememberStagedZipReadback,
       runTool,
+      scheduleZipStagingWatchdog,
       stagedZipFromToolResult,
     ]
   );
@@ -1348,6 +1398,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       awaitingZipConfirmRef.current = true;
       awaitingZipDigitsRef.current = false;
       markClientWeatherNudgeSent();
+      suppressPromoAudioDuringWeatherRef.current = false;
       logVoiceDemoOps({
         kind: "zip_confirm_staged",
         message: reason,
@@ -1358,11 +1409,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           turns: buildZipStagedSpeakNudge(staged.spokenConfirm),
           turnComplete: true,
         });
+        scheduleZipStagingWatchdog();
       } catch (err) {
         console.warn("[voice-demo-live] staged zip read-back nudge", err);
       }
     },
-    [isFarewellLocked, markClientWeatherNudgeSent]
+    [isFarewellLocked, markClientWeatherNudgeSent, scheduleZipStagingWatchdog]
   );
 
   const sendWeatherZipWrapUpBlockedNudge = useCallback(() => {
@@ -1469,7 +1521,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       zipNudgeTranscriptRef.current = "";
       clearWrapUpTimer();
       clearZipSilenceTimer();
-      suppressPromoAudioDuringWeatherRef.current = true;
       playerRef.current?.hardStop();
       void sendZipDigitConfirmNudge(userLine);
     },
@@ -1482,7 +1533,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       const trimmed = assistantText.trim();
       if (!trimmed || !isAssistantPromoAsk(trimmed)) return;
 
-      suppressPromoAudioDuringWeatherRef.current = true;
       playerRef.current?.hardStop();
       promoWeatherNudgeSentRef.current = false;
 
@@ -1575,6 +1625,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         awaitingZipConfirmRef.current = true;
         zipSilenceNudgedRef.current = true;
         clearZipSilenceTimer();
+        clearZipStagingWatchdog();
       }
 
       maybeCorrectPromoDuringWeather(trimmed);
@@ -1583,6 +1634,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       clearWrapUpTimer,
       clearWeatherYesNoTimer,
       clearZipSilenceTimer,
+      clearZipStagingWatchdog,
       maybeCorrectPromoDuringWeather,
       scheduleWeatherYesNoAfterIdle,
       scheduleZipSilenceAfterIdle,
@@ -1629,6 +1681,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     zipLookupTriggeredRef.current = true;
     awaitingZipConfirmRef.current = false;
     clearZipSilenceTimer();
+    clearZipStagingWatchdog();
     clearWrapUpTimer();
 
     logVoiceDemoOps({
@@ -2342,7 +2395,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   closeQueuePhase: closeQueuePhaseRef.current,
                 }))
             ) {
-              suppressPromoAudioDuringWeatherRef.current = true;
               playerRef.current?.hardStop();
               continue;
             }
@@ -2549,16 +2601,18 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }
 
       if (message.serverContent?.turnComplete) {
+        const assistantSnapshot = lastAssistantTextRef.current;
         if (!jarvisFarewellSentRef.current) {
           suppressAssistantAudioRef.current = false;
         }
-        if (!weatherDemoStillIncomplete()) {
+        if (isAssistantPromoAsk(assistantSnapshot)) {
+          suppressPromoAudioDuringWeatherRef.current = true;
+        } else {
           suppressPromoAudioDuringWeatherRef.current = false;
         }
         if (isInWeatherZipFlow()) {
           promoWeatherNudgeSentRef.current = false;
         }
-        const assistantSnapshot = lastAssistantTextRef.current;
         const hadPostNameAtTurnStart = postNameLineSpokenRef.current;
         const wasInterrupted = assistantTurnInterruptedRef.current;
         assistantTurnInterruptedRef.current = false;

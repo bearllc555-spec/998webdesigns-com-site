@@ -36,6 +36,9 @@ export const VOICE_DEMO_ZIP_CITY_CORRECT_CUE = "[zip-city-correct]";
 /** Wait for full ZIP utterance before staging (ms). */
 export const ZIP_SILENCE_NUDGE_MS = 2500;
 
+/** Re-send staged ZIP read-back if Jarvis stays silent after client staging (ms). */
+export const ZIP_STAGING_WATCHDOG_MS = 8000;
+
 /** Wait a few seconds for yes/no before the "I didn't get that" repeat. */
 export const WEATHER_YESNO_SILENCE_NUDGE_MS = 3000;
 

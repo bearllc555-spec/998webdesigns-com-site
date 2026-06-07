@@ -43,6 +43,9 @@ describe("voice-demo-weather", () => {
     expect(normalizeSpokenUsZipCode("zero seven four two four")).toBe("07424");
     expect(normalizeSpokenUsZipCode("oh seven four two four")).toBe("07424");
     expect(normalizeSpokenUsZipCode("07424")).toBe("07424");
+    expect(
+      normalizeSpokenUsZipCode("okay , it's 0 , 7 , 4 24. That's my zip code.")
+    ).toBe("07424");
   });
 
   it("recovers leading-zero ZIPs dropped by voice or JSON numbers", () => {
