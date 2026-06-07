@@ -112,6 +112,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
+  const suppressAssistantAudioRef = useRef(false);
   const jarvisLevelsRef = useRef(JARVIS_AUDIO_IDLE);
   const orbFrameRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
@@ -277,6 +278,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearZipSilenceTimer();
     clearWeatherYesNoTimer();
   }, [clearPhoneSilenceTimer, clearWeatherYesNoTimer, clearZipSilenceTimer]);
+
+  const handleAssistantInterrupted = useCallback(() => {
+    suppressAssistantAudioRef.current = true;
+    playerRef.current?.hardStop();
+    lastAssistantTextRef.current = "";
+    clearInputSilenceTimers();
+  }, [clearInputSilenceTimers]);
 
   const sendZipSilenceNudge = useCallback(() => {
     const session = sessionRef.current;
@@ -583,19 +591,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionRef.current.sendToolResponse({ functionResponses: responses });
       }
 
-      const parts = message.serverContent?.modelTurn?.parts ?? [];
-      for (const part of parts) {
-        const data = part.inlineData?.data;
-        const mime = part.inlineData?.mimeType ?? "";
-        if (data && mime.includes("audio/pcm")) {
-          clearInputSilenceTimers();
-          playerRef.current ??= new VoiceDemoAudioPlayer();
-          playerRef.current.enqueueBase64Pcm(data);
-        }
+      if (message.serverContent?.interrupted) {
+        handleAssistantInterrupted();
       }
 
-      if (message.serverContent?.interrupted) {
-        playerRef.current?.reset();
+      const parts = message.serverContent?.modelTurn?.parts ?? [];
+      if (!suppressAssistantAudioRef.current) {
+        for (const part of parts) {
+          const data = part.inlineData?.data;
+          const mime = part.inlineData?.mimeType ?? "";
+          if (data && mime.includes("audio/pcm")) {
+            clearInputSilenceTimers();
+            playerRef.current ??= new VoiceDemoAudioPlayer();
+            playerRef.current.enqueueBase64Pcm(data);
+          }
+        }
       }
 
       const outText = message.serverContent?.outputTranscription?.text;
@@ -618,6 +628,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
+        if (inText.trim() && playerRef.current?.isPlaying()) {
+          handleAssistantInterrupted();
+        }
         emitCaption("user", inText);
         const userLine = captionTextRef.current.trim();
 
@@ -660,6 +673,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }
 
       if (message.serverContent?.turnComplete) {
+        suppressAssistantAudioRef.current = false;
         const assistantSnapshot = lastAssistantTextRef.current;
         if (
           modeRef.current === "demo" &&
@@ -679,6 +693,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     },
     [
       clearInputSilenceTimers,
+      handleAssistantInterrupted,
       detectAssistantWeatherPrompt,
       emitCaption,
       endCallNow,
@@ -708,6 +723,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
       greetingSentRef.current = false;
+      suppressAssistantAudioRef.current = false;
       resetCaption();
       disconnect(true);
       setError("");
@@ -791,7 +807,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         });
 
         sessionRef.current = session;
-        sendOpeningGreeting(session);
       } catch (err) {
         console.warn("[voice-demo-live] connect", err);
         micStreamRef.current?.getTracks().forEach((t) => t.stop());

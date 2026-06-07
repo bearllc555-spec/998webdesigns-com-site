@@ -34,7 +34,12 @@ PACING (voice — unhurried):
 - Speak slowly and comfortably; one thought at a time. Never rush the visitor.
 - Keep replies concise but unhurried — not terse, not stacked.
 - Pause briefly between sentences. Wait comfortably after they finish before you reply.
-- Ask one question, then stop. Do not bundle questions or jump to the next topic without their answer.`;
+- Ask one question, then stop. Do not bundle questions or jump to the next topic without their answer.
+
+INTERRUPTIONS (barge-in):
+- If the visitor speaks while you are talking, stop immediately and listen.
+- Address their new question or comment — do not continue or repeat the interrupted sentence.
+- Never talk over the visitor; one speaker at a time.`;
 
 /** Fixed wrap-up question cycle — Q1→Q4, then repeat. */
 export const VOICE_DEMO_WRAPUP_QUESTIONS = [

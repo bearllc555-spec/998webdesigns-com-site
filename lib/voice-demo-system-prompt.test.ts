@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   VOICE_DEMO_CLOSING,
+  VOICE_DEMO_PERSONA,
   VOICE_DEMO_WRAPUP_QUESTIONS,
   voiceDemoDemoIntroBlock,
   voiceDemoDemoSystemPrompt,
@@ -35,6 +36,14 @@ describe("voice-demo-system-prompt closing", () => {
   it("requires thank-you sign-off before end_conversation", () => {
     expect(VOICE_DEMO_CLOSING).toContain("Thank you for contacting 998 web designs");
     expect(VOICE_DEMO_CLOSING).toContain("end_conversation");
+  });
+});
+
+describe("voice-demo-system-prompt barge-in", () => {
+  it("tells Jarvis to stop and address new input when interrupted", () => {
+    expect(VOICE_DEMO_PERSONA).toMatch(/INTERRUPTIONS/i);
+    expect(VOICE_DEMO_PERSONA).toMatch(/stop immediately/i);
+    expect(VOICE_DEMO_PERSONA).toMatch(/one speaker at a time/i);
   });
 });
 

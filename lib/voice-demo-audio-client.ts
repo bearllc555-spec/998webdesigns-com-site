@@ -90,6 +90,7 @@ export class VoiceDemoAudioPlayer {
   private nextTime = 0;
   private analyser: AnalyserNode | null = null;
   private freqBuf: Uint8Array | null = null;
+  private readonly activeSources = new Set<AudioBufferSourceNode>();
 
   private ensureContext(): AudioContext {
     if (!this.ctx) {
@@ -137,14 +138,35 @@ export class VoiceDemoAudioPlayer {
     source.buffer = audioBuffer;
     source.playbackRate.value = VOICE_DEMO_PLAYBACK_RATE;
     source.connect(analyser);
+    source.onended = () => {
+      this.activeSources.delete(source);
+    };
+    this.activeSources.add(source);
 
     const start = Math.max(ctx.currentTime, this.nextTime);
     source.start(start);
     this.nextTime = start + audioBuffer.duration / VOICE_DEMO_PLAYBACK_RATE;
   }
 
+  /** Stop all queued/playing assistant audio immediately (barge-in). */
+  hardStop(): void {
+    for (const source of this.activeSources) {
+      try {
+        source.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
+    this.activeSources.clear();
+    if (this.ctx) {
+      this.nextTime = this.ctx.currentTime;
+    } else {
+      this.nextTime = 0;
+    }
+  }
+
   reset(): void {
-    this.nextTime = this.ensureContext().currentTime;
+    this.hardStop();
   }
 
   /** Resolves when queued assistant audio has finished (or maxWaitMs elapses). */
@@ -167,6 +189,7 @@ export class VoiceDemoAudioPlayer {
   }
 
   close(): void {
+    this.hardStop();
     void this.ctx?.close();
     this.ctx = null;
     this.nextTime = 0;
