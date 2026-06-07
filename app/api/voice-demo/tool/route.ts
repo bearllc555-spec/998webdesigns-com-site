@@ -1,17 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { readJsonBody } from "@/lib/read-json-body";
-import { clientIp } from "@/lib/api-rate-limit";
-import {
-  clearPendingEmailCookie,
-  readPendingEmail,
-  setPendingEmailCookie,
-} from "@/lib/voice-demo-pending-email";
-import {
-  executeVoiceDemoEmailConfirmTool,
-  executeVoiceDemoTool,
-  type VoiceDemoToolMode,
-} from "@/lib/voice-demo-tools";
+import { executeVoiceDemoTool, type VoiceDemoToolMode } from "@/lib/voice-demo-tools";
 import {
   readVoiceDemoSession,
   setVoiceDemoSessionCookie,
@@ -32,12 +22,7 @@ export async function POST(req: NextRequest) {
   }
 
   const name = typeof parsed.body.name === "string" ? parsed.body.name : "";
-  const mode: VoiceDemoToolMode =
-    parsed.body.mode === "demo"
-      ? "demo"
-      : parsed.body.mode === "confirm_email"
-        ? "confirm_email"
-        : "verify";
+  const mode: VoiceDemoToolMode = parsed.body.mode === "demo" ? "demo" : "verify";
   const args =
     parsed.body.args && typeof parsed.body.args === "object"
       ? (parsed.body.args as Record<string, unknown>)
@@ -45,33 +30,6 @@ export async function POST(req: NextRequest) {
 
   if (!name) {
     return NextResponse.json({ error: "Missing tool name." }, { status: 400 });
-  }
-
-  if (mode === "confirm_email") {
-    const pendingEmail = readPendingEmail(req);
-    if (!pendingEmail) {
-      return NextResponse.json({ error: "Session expired." }, { status: 401 });
-    }
-
-    const result = await executeVoiceDemoEmailConfirmTool(
-      pendingEmail,
-      name,
-      args,
-      clientIp(req)
-    );
-
-    const res = NextResponse.json({ ok: true, result });
-
-    if (name === "update_email_address" && result.ok === true && typeof result.email === "string") {
-      setPendingEmailCookie(res, result.email);
-    }
-
-    if (name === "confirm_email_address" && result.codeSent === true && typeof result.leadId === "string") {
-      clearPendingEmailCookie(res);
-      setVoiceDemoSessionCookie(res, result.leadId, false);
-    }
-
-    return res;
   }
 
   const session = readVoiceDemoSession(req);

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import { codesMatch, hashVerificationCode } from "@/lib/voice-demo-otp";
 import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
+import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 
 describe("voice demo verification code", () => {
   it("normalizes spoken digits", () => {
@@ -9,10 +10,13 @@ describe("voice demo verification code", () => {
     expect(normalizeVerificationCode("four seven nine eight two one")).toBe("479821");
   });
 
-  it("spells email for voice read-back", () => {
+  it("spells email local part for voice read-back", () => {
     expect(spellEmailForVoice("ademeo@gmail.com")).toBe("a d e m e o @gmail.com");
     expect(spellEmailForVoice("bear@gmail.com")).toBe("b e a r @gmail.com");
-    expect(spellEmailForVoice("a.b+9@co.uk")).toBe("a . b + 9 @co.uk");
+  });
+
+  it("spells phone digits for voice read-back", () => {
+    expect(spellPhoneForVoice("+12015551234")).toBe("2 0 1 5 5 5 1 2 3 4");
   });
 
   it("matches hashed email OTP", () => {

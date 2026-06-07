@@ -11,7 +11,7 @@ import {
 import { VOICE_DEMO_LIVE_MODEL } from "@/lib/voice-demo-constants";
 import type { Session } from "@google/genai";
 
-export type VoiceDemoLiveMode = "confirm_email" | "verify" | "demo";
+export type VoiceDemoLiveMode = "verify" | "demo";
 
 type LiveMessage = {
   toolCall?: {
@@ -30,9 +30,7 @@ type LiveMessage = {
   };
 };
 
-export type VoiceDemoPhaseTransition =
-  | { kind: "email_confirmed"; destination: string; nextMode: "verify" }
-  | { kind: "verified"; nextMode: "demo" };
+export type VoiceDemoPhaseTransition = { kind: "verified"; nextMode: "demo" };
 
 type UseVoiceDemoLiveOptions = {
   onPhaseTransition?: (transition: VoiceDemoPhaseTransition) => void;
@@ -163,17 +161,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           const args = (call.args ?? {}) as Record<string, unknown>;
           const result = await runTool(name, args);
 
-          if (
-            name === "confirm_email_address" &&
-            result.codeSent === true &&
-            typeof result.destination === "string"
-          ) {
-            queuePhaseTransition({
-              kind: "email_confirmed",
-              destination: result.destination,
-              nextMode: "verify",
-            });
-          }
           if (name === "verify_code" && result.verified === true) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
           }
@@ -228,11 +215,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setConnecting(true);
       modeRef.current = mode;
       optionsRef.current.onStatus?.(
-        mode === "confirm_email"
-          ? "Connecting — I'll confirm your email…"
-          : mode === "verify"
-            ? "Connecting — say your code when ready…"
-            : "Connecting…"
+        mode === "verify" ? "Connecting — say your code when ready…" : "Connecting…"
       );
 
       try {
@@ -271,11 +254,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               setConnected(true);
               setConnecting(false);
               optionsRef.current.onStatus?.(
-                mode === "confirm_email"
-                  ? "Listening — confirm your email when ready."
-                  : mode === "verify"
-                    ? "Listening — read your 6-digit code aloud."
-                    : "You're live — ask me anything about 998."
+                mode === "verify"
+                  ? "Listening — read your 6-digit code aloud."
+                  : "You're live — ask me anything about 998."
               );
               if (micStreamRef.current) {
                 micRef.current = startVoiceDemoMic(micStreamRef.current, (base64) => {

@@ -5,17 +5,12 @@ import { Mic, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
 
-type Phase = "closed" | "gate" | "confirm_email" | "verify" | "demo";
-
-type Channel = "email" | "sms";
+type Phase = "closed" | "gate" | "verify" | "demo";
 
 export function VoiceDemoWidget() {
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("closed");
-  const [channel, setChannel] = useState<Channel>("email");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [smsConsent, setSmsConsent] = useState(false);
   const [destination, setDestination] = useState("");
   const [typedCode, setTypedCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,11 +22,7 @@ export function VoiceDemoWidget() {
 
   const live = useVoiceDemoLive({
     onPhaseTransition: (transition) => {
-      if (transition.kind === "email_confirmed") {
-        setDestination(transition.destination);
-        setPhase("verify");
-        setStatus("Code sent — Jarvis will ask for your 6-digit code.");
-      } else {
+      if (transition.kind === "verified") {
         setPhase("demo");
         setStatus("Verified — ask Jarvis anything about 998.");
       }
@@ -56,12 +47,9 @@ export function VoiceDemoWidget() {
     if (!open) return;
     void fetch("/api/voice-demo/status")
       .then((r) => r.json())
-      .then((data: { verified?: boolean; active?: boolean; pendingEmail?: boolean; destination?: string }) => {
+      .then((data: { verified?: boolean; active?: boolean; destination?: string }) => {
         if (data.active && data.verified) {
           setPhase("demo");
-        } else if (data.active && data.pendingEmail) {
-          setDestination(data.destination ?? "");
-          setPhase("confirm_email");
         } else if (data.active) {
           setPhase("verify");
           if (data.destination) setDestination(data.destination);
@@ -92,37 +80,28 @@ export function VoiceDemoWidget() {
     setFormError("");
     setBusy(true);
     try {
-      const endpoint = channel === "email" ? "/api/voice-demo/pending-email" : "/api/voice-demo/start";
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/voice-demo/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          channel,
-          email: channel === "email" ? email : undefined,
-          phone: channel === "sms" ? phone : undefined,
-          smsConsent: channel === "sms" ? smsConsent : undefined,
+          channel: "email",
+          email,
           website,
         }),
       });
       const data = (await res.json()) as {
         ok?: boolean;
         destination?: string;
-        email?: string;
         error?: string;
       };
       if (!res.ok) {
         setFormError(data.error ?? "Could not start. Try again.");
         return;
       }
-      setDestination(data.destination ?? data.email ?? email);
+      setDestination(data.destination ?? email);
       setTranscript([]);
-      if (channel === "email") {
-        setPhase("confirm_email");
-        setStatus("Tap Start voice — J.A.R.V.I.S. will spell your email back for confirmation.");
-      } else {
-        setPhase("verify");
-        setStatus("Code sent — tap Start voice to connect your microphone.");
-      }
+      setPhase("verify");
+      setStatus("Check your email for a 6-digit code, then tap Start voice.");
     } catch {
       setFormError("Network error. Try again.");
     } finally {
@@ -155,8 +134,7 @@ export function VoiceDemoWidget() {
   }
 
   const startVoice = () => {
-    const mode =
-      phase === "demo" ? "demo" : phase === "confirm_email" ? "confirm_email" : "verify";
+    const mode = phase === "demo" ? "demo" : "verify";
     void live.connect(mode);
   };
 
@@ -192,7 +170,7 @@ export function VoiceDemoWidget() {
             <div className="flex select-none items-center justify-between border-b border-rule px-4 py-3">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-accent" aria-hidden />
-                <span className="font-display text-sm font-medium text-ink">J.A.R.V.I.S.</span>
+                <span className="font-display text-sm font-medium text-ink">Jarvis</span>
               </div>
               <button
                 type="button"
@@ -223,69 +201,24 @@ export function VoiceDemoWidget() {
               {configured && phase === "gate" && (
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
-                    Verify with email or phone to try J.A.R.V.I.S. Email sign-in spells your address
-                    back for confirmation before we send a code.
+                    Enter your email to try Jarvis. We&apos;ll send a verification code — that confirms
+                    your address. Optional SMS later in the conversation.
                   </p>
 
-                  <div className="flex gap-2">
-                    {(["email", "sms"] as const).map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setChannel(c)}
-                        className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                          channel === c
-                            ? "border-accent bg-accent-soft text-ink"
-                            : "border-rule text-ink-soft hover:bg-rule-soft"
-                        }`}
-                      >
-                        {c === "email" ? "Email" : "Phone"}
-                      </button>
-                    ))}
+                  <div>
+                    <label htmlFor="vd-email" className="mb-1 block text-sm font-medium text-ink">
+                      Email
+                    </label>
+                    <input
+                      id="vd-email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={FIXED_INPUT_CLASS}
+                    />
                   </div>
-
-                  {channel === "email" ? (
-                    <div>
-                      <label htmlFor="vd-email" className="mb-1 block text-sm font-medium text-ink">
-                        Email
-                      </label>
-                      <input
-                        id="vd-email"
-                        type="email"
-                        required
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className={FIXED_INPUT_CLASS}
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <label htmlFor="vd-phone" className="mb-1 block text-sm font-medium text-ink">
-                          Phone
-                        </label>
-                        <input
-                          id="vd-phone"
-                          type="tel"
-                          required
-                          autoComplete="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className={FIXED_INPUT_CLASS}
-                        />
-                      </div>
-                      <label className="flex items-start gap-2 text-xs text-ink-soft">
-                        <input
-                          type="checkbox"
-                          checked={smsConsent}
-                          onChange={(e) => setSmsConsent(e.target.checked)}
-                          className="mt-0.5"
-                        />
-                        I agree to receive a one-time SMS verification code from 998 web designs.
-                      </label>
-                    </>
-                  )}
 
                   <input
                     type="text"
@@ -302,33 +235,20 @@ export function VoiceDemoWidget() {
 
                   <button
                     type="submit"
-                    disabled={busy || (channel === "sms" && !smsConsent)}
+                    disabled={busy}
                     className="w-full rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
                   >
-                    {busy
-                      ? channel === "email"
-                        ? "Continuing…"
-                        : "Sending code…"
-                      : channel === "email"
-                        ? "Continue"
-                        : "Send code & start"}
+                    {busy ? "Sending code…" : "Send code & start"}
                   </button>
                 </form>
               )}
 
-              {configured && (phase === "confirm_email" || phase === "verify" || phase === "demo") && (
+              {configured && (phase === "verify" || phase === "demo") && (
                 <div className="space-y-4">
-                  {destination && phase === "confirm_email" && (
-                    <p className="text-sm text-ink-soft">
-                      Confirming <strong className="text-ink">{destination}</strong> — J.A.R.V.I.S.
-                      will spell it back before sending your code.
-                    </p>
-                  )}
-
                   {destination && phase === "verify" && (
                     <p className="text-sm text-ink-soft">
                       Code sent to <strong className="text-ink">{destination}</strong>. Read it to
-                      J.A.R.V.I.S. or type it below.
+                      Jarvis or type it below.
                     </p>
                   )}
 
@@ -388,7 +308,7 @@ export function VoiceDemoWidget() {
 
                   {phase === "demo" && !live.connected && !live.connecting && !live.error && !status && (
                     <p className="text-center text-sm text-ink-soft">
-                      Tap Start voice to talk with the assistant.
+                      Tap Start voice to talk with Jarvis.
                     </p>
                   )}
 

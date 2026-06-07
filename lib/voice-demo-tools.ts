@@ -18,39 +18,12 @@ import {
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { marketingSiteOrigin } from "@/lib/site-origin";
-import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
-import { startEmailVerificationLead } from "@/lib/voice-demo-start-email";
+import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import { Type, type ToolListUnion } from "@google/genai";
 
-export type VoiceDemoToolMode = "confirm_email" | "verify" | "demo";
+export type VoiceDemoToolMode = "verify" | "demo";
 
 export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnion {
-  if (mode === "confirm_email") {
-    return [
-      {
-        functionDeclarations: [
-          {
-            name: "confirm_email_address",
-            description:
-              "User confirmed the spelled email is correct. Sends the verification code.",
-            parameters: { type: Type.OBJECT, properties: {} },
-          },
-          {
-            name: "update_email_address",
-            description: "User gave a corrected email. Update pending email and spell it back.",
-            parameters: {
-              type: Type.OBJECT,
-              properties: {
-                email: { type: Type.STRING, description: "Full corrected email address" },
-              },
-              required: ["email"],
-            },
-          },
-        ],
-      },
-    ];
-  }
-
   if (mode === "verify") {
     return [
       {
@@ -98,20 +71,38 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
           },
         },
         {
-          name: "capture_phone_for_promo",
+          name: "stage_phone_number",
           description:
-            "Capture phone and SMS VOICE20 promo. Only when primary channel was email and phone missing. Requires consent.",
+            "Stage a US cell number for voice digit-by-digit confirmation before optional SMS.",
           parameters: {
             type: Type.OBJECT,
             properties: {
               phone: { type: Type.STRING },
               smsConsent: {
                 type: Type.BOOLEAN,
-                description: "User agreed to receive one promo SMS",
+                description: "User agreed to receive one SMS from 998 web designs",
               },
             },
             required: ["phone", "smsConsent"],
           },
+        },
+        {
+          name: "update_staged_phone",
+          description: "User corrected the phone number. Re-stage and spell digits again.",
+          parameters: {
+            type: Type.OBJECT,
+            properties: {
+              phone: { type: Type.STRING },
+              smsConsent: { type: Type.BOOLEAN },
+            },
+            required: ["phone", "smsConsent"],
+          },
+        },
+        {
+          name: "confirm_phone_number",
+          description:
+            "User confirmed the staged phone digits are correct. Sends optional SMS.",
+          parameters: { type: Type.OBJECT, properties: {} },
         },
         {
           name: "decline_secondary_contact",
@@ -264,12 +255,9 @@ export async function executeVoiceDemoTool(
     };
   }
 
-  if (name === "capture_phone_for_promo") {
-    if (row.primary_channel !== "email") {
-      return { ok: false, error: "SMS promo only offered after email verification." };
-    }
-    if (row.promo_sent_at) {
-      return { ok: false, error: "Promo already sent." };
+  if (name === "stage_phone_number" || name === "update_staged_phone") {
+    if (row.phone_verified_at) {
+      return { ok: false, error: "SMS already sent to this lead." };
     }
     if (args.smsConsent !== true) {
       return { ok: false, error: "SMS consent required." };
@@ -277,65 +265,40 @@ export async function executeVoiceDemoTool(
 
     const phone = typeof args.phone === "string" ? normalizePhoneE164(args.phone) : null;
     if (!phone) {
-      return { ok: false, error: "Invalid phone number." };
+      return { ok: false, error: "Invalid US phone number." };
     }
-    if (await promoAlreadySentForContact(null, phone)) {
-      return { ok: false, error: "Promo already sent to this number." };
+
+    await updateVoiceDemoLead(leadId, { phone });
+
+    return {
+      ok: true,
+      phone,
+      spoken: spellPhoneForVoice(phone),
+      message: "Spell each digit with brief pauses, then ask if the number is correct.",
+    };
+  }
+
+  if (name === "confirm_phone_number") {
+    if (!row.phone) {
+      return { ok: false, error: "No phone staged. Collect the number first." };
+    }
+    if (row.phone_verified_at) {
+      return { ok: false, error: "SMS already sent." };
     }
 
     const first = row.full_name?.split(" ")[0] ?? "there";
     const body = `Hi ${first} — your 998 web designs code: ${VOICE_DEMO_PROMO_CODE} (20% off design fee). Start at ${marketingSiteOrigin()}/start`;
-    const sms = await sendTwilioSms(phone, body);
+    const sms = await sendTwilioSms(row.phone, body);
     if (!sms.ok) {
       return { ok: false, error: sms.error };
     }
 
+    const now = new Date().toISOString();
     await updateVoiceDemoLead(leadId, {
-      phone,
-      promo_sent_at: new Date().toISOString(),
-      promo_code: VOICE_DEMO_PROMO_CODE,
+      phone_verified_at: now,
     });
 
-    return { ok: true, promoCode: VOICE_DEMO_PROMO_CODE, message: "Promo SMS sent." };
-  }
-
-  return { ok: false, error: `Unknown tool: ${name}` };
-}
-
-export async function executeVoiceDemoEmailConfirmTool(
-  pendingEmail: string,
-  name: string,
-  args: Record<string, unknown>,
-  ip: string | null
-): Promise<Record<string, unknown>> {
-  if (name === "update_email_address") {
-    const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
-    if (!isValidEmail(email)) {
-      return { ok: false, error: "Invalid email. Ask them to say the full address again." };
-    }
-    return {
-      ok: true,
-      email,
-      spoken: spellEmailForVoice(email),
-      message: "Updated. Spell the new email and ask for confirmation.",
-    };
-  }
-
-  if (name === "confirm_email_address") {
-    if (!isValidEmail(pendingEmail)) {
-      return { ok: false, error: "Invalid pending email." };
-    }
-    const started = await startEmailVerificationLead(pendingEmail, ip);
-    if (!started.ok) {
-      return { ok: false, error: started.error };
-    }
-    return {
-      ok: true,
-      codeSent: true,
-      leadId: started.leadId,
-      destination: started.destination,
-      message: "Verification code sent. Ask them to read it from their email.",
-    };
+    return { ok: true, promoCode: VOICE_DEMO_PROMO_CODE, message: "Optional SMS sent." };
   }
 
   return { ok: false, error: `Unknown tool: ${name}` };
