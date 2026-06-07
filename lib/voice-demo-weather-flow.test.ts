@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  isAssistantPromoAsk,
   isAssistantZipCollectionPrompt,
   isAssistantZipReadBackPrompt,
   isAssistantWeatherOfferPrompt,
+  isWeatherZipFlowActive,
 } from "@/lib/voice-demo-weather-flow";
 
 describe("voice-demo-weather-flow", () => {
@@ -23,5 +25,32 @@ describe("voice-demo-weather-flow", () => {
         "I didn't get that ZIP code — can you please repeat it? If you give me your ZIP code, I can tell you the weather forecast in your city."
       )
     ).toBe(true);
+  });
+
+  it("detects promo ask and active weather ZIP flow", () => {
+    expect(isAssistantPromoAsk("Do you mind if I send you a coupon code via email?")).toBe(
+      true
+    );
+    expect(isAssistantPromoAsk("What is your ZIP code?")).toBe(false);
+    expect(
+      isWeatherZipFlowActive({
+        awaitingWeatherYesNo: false,
+        awaitingZipDigits: false,
+        awaitingZipConfirm: false,
+        awaitingWeatherForecastDelivery: false,
+        zipDigitsHeardMax: 0,
+        weatherDemoAccepted: true,
+      })
+    ).toBe(true);
+    expect(
+      isWeatherZipFlowActive({
+        awaitingWeatherYesNo: false,
+        awaitingZipDigits: false,
+        awaitingZipConfirm: false,
+        awaitingWeatherForecastDelivery: false,
+        zipDigitsHeardMax: 0,
+        weatherDemoAccepted: false,
+      })
+    ).toBe(false);
   });
 });

@@ -27,3 +27,7 @@ export const TOOL_BLOCKED_CONFIRM_WEATHER_ZIP =
 /** Model must not call lookup_weather — client already fetched weather. */
 export const TOOL_BLOCKED_LOOKUP_WEATHER =
   "Client already fetched weather. Speak briefReport from the [weather-lookup-ready] cue only — do not call lookup_weather.";
+
+/** Promo must wait until weather ZIP flow completes or visitor declines weather. */
+export const TOOL_BLOCKED_PROMO_WEATHER =
+  "Weather demo is in progress. Do NOT offer or send promo yet — ask for their ZIP, complete the forecast, or skip weather if they decline. Promo comes after weather or after they decline.";

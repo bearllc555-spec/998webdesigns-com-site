@@ -126,14 +126,15 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
 - send_promo_email emails the code and may text their profile phone if we have it (they consented at onboarding). Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
 - If email was sent but SMS failed, apologize for the text and call send_promo_sms to retry. If they only want SMS and email already sent, send_promo_sms alone is fine.
 - If they say no / not interested / decline: accept graciously — do not send. Never bring it up again in the same session.
-- If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.`;
+- If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.
+- NEVER ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" or call send_promo_email while the weather demo is in progress (after they said yes to something cool through ZIP, forecast, or decline). Finish weather first, then promo at goodbye.`;
 
 const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
 
 PROACTIVE OFFER (once per session — end of chat only):
 - Only during FINAL GOODBYE when they are ready to leave — not mid-conversation, not during name/phone onboarding.
 - Step 1: Say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" — STOP and wait for yes or no. Never bundle ZIP in this turn.
-- Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP.
+- Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP. Never bundle promo or coupon asks in this turn or while waiting for ZIP.
 - Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
 - After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" — STOP and wait for yes or no. Do not keep talking or ask for ZIP.
 - Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent on the first ask; speak the didn't-get line and repeat question above, then wait.

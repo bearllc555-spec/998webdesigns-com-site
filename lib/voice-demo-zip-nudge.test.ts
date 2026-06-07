@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
 import {
+  buildPromoBlockedDuringWeatherNudge,
+  buildWeatherAcceptZipNudge,
   buildWeatherDeclineNudge,
   buildWeatherYesNoGiveUpNudge,
   buildWeatherYesNoPauseNudge,
@@ -13,6 +15,8 @@ import {
   isWeatherOfferDecline,
   isWeatherZipConfirmAccept,
   isWeatherZipConfirmDecline,
+  VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE,
+  VOICE_DEMO_WEATHER_ACCEPT_ZIP_CUE,
   VOICE_DEMO_WEATHER_DECLINE_CUE,
   VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE,
   VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
@@ -109,5 +113,14 @@ describe("voice-demo-zip-nudge", () => {
   it("detects ZIP read-back confirm accept and decline", () => {
     expect(isWeatherZipConfirmAccept("yes that's correct")).toBe(true);
     expect(isWeatherZipConfirmDecline("no that's wrong")).toBe(true);
+  });
+
+  it("nudges ZIP-only after weather accept and blocks promo during weather", () => {
+    const accept = buildWeatherAcceptZipNudge();
+    expect(accept).toContain(VOICE_DEMO_WEATHER_ACCEPT_ZIP_CUE);
+    expect(accept).toMatch(/Do NOT mention coupons/i);
+    const blocked = buildPromoBlockedDuringWeatherNudge();
+    expect(blocked).toContain(VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE);
+    expect(blocked).toMatch(/do NOT offer or send promo/i);
   });
 });

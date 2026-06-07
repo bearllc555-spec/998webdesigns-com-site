@@ -17,6 +17,7 @@ export type VoiceDemoOpsKind =
   | "tool_bundled_weather"
   | "tool_blocked_confirm_zip"
   | "tool_blocked_lookup_weather"
+  | "tool_blocked_promo_weather"
   | "weather_lookup_client"
   | "weather_lookup_failed"
   | "weather_lookup_success"
@@ -127,6 +128,7 @@ export function buildVoiceDemoOpsEvent(
     kind === "end_conversation_early_blocked" ||
     kind === "tool_blocked_confirm_zip" ||
     kind === "tool_blocked_lookup_weather" ||
+    kind === "tool_blocked_promo_weather" ||
     kind === "farewell_hold"
       ? "warn"
       : kind === "zip_city_self_correction" ||
@@ -230,6 +232,7 @@ export function coerceVoiceDemoOpsInput(body: Record<string, unknown>): VoiceDem
     "tool_bundled_weather",
     "tool_blocked_confirm_zip",
     "tool_blocked_lookup_weather",
+    "tool_blocked_promo_weather",
     "weather_lookup_client",
     "weather_lookup_failed",
     "weather_lookup_success",

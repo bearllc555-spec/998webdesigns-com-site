@@ -122,6 +122,28 @@ export function buildWeatherDeclineNudge(): string {
   );
 }
 
+/** Hidden cue — visitor accepted weather; Jarvis must ask for ZIP only. */
+export const VOICE_DEMO_WEATHER_ACCEPT_ZIP_CUE = "[weather-accepted]";
+
+export function buildWeatherAcceptZipNudge(): string {
+  return (
+    `${VOICE_DEMO_WEATHER_ACCEPT_ZIP_CUE} Visitor accepted the weather demo. ` +
+    `Say ONLY: "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" then STOP and wait for their five-digit ZIP. ` +
+    `Do NOT mention coupons, promo, or email until weather is finished or they decline.`
+  );
+}
+
+/** Hidden cue — promo ask during active weather ZIP flow. */
+export const VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE = "[promo-weather-blocked]";
+
+export function buildPromoBlockedDuringWeatherNudge(): string {
+  return (
+    `${VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE} Weather demo is in progress — do NOT offer or send promo yet. ` +
+    `Say ONLY: "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" then STOP and wait for their ZIP. ` +
+    `No coupon, no email ask, no goodbye until weather completes or they decline.`
+  );
+}
+
 /** Visitor transcript looks like a clear no to the weather demo. */
 export function isWeatherOfferDecline(transcript: string): boolean {
   return /\b(no|nah|nope|not really|don't|do not|pass|skip|i'm good|im good)\b/i.test(
