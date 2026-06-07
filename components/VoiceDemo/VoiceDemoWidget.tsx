@@ -171,10 +171,10 @@ export function VoiceDemoWidget() {
           type="button"
           onClick={openWidget}
           className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full border border-rule bg-bg px-4 py-3 text-sm font-medium text-ink shadow-lg transition hover:bg-rule-soft md:bottom-6 md:right-6"
-          aria-label="Talk to AI assistant"
+          aria-label="Talk to Jarvis"
         >
           <Mic className="h-4 w-4 text-accent" aria-hidden />
-          Talk to J.A.R.V.I.S.
+          Talk to Jarvis
         </button>
       )}
 
