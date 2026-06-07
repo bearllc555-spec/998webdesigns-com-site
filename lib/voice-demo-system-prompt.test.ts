@@ -6,6 +6,7 @@ import {
 } from "@/lib/voice-demo-system-prompt";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import { VOICE_DEMO_PROMO_EMAIL_ASK_LINE } from "@/lib/voice-demo-constants";
+import { VOICE_DEMO_WEATHER_OFFER_LINE } from "@/lib/voice-demo-weather";
 import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 
 describe("voice-demo-system-prompt closing", () => {
@@ -55,5 +56,12 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_PROMO_EMAIL_ASK_LINE);
     expect(prompt).toMatch(/never call send_promo_email without asking first/i);
     expect(prompt).toMatch(/STOP and wait/i);
+  });
+
+  it("offers weather demo after answering questions", () => {
+    const prompt = voiceDemoDemoSystemPrompt(baseRow);
+    expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
+    expect(prompt).toMatch(/once per session/i);
+    expect(prompt).toMatch(/before your first wrap-up question/i);
   });
 });

@@ -4,10 +4,17 @@ import {
   formatBriefWeatherReport,
   formatPossibleLocationLabel,
   normalizeUsZipCode,
+  VOICE_DEMO_WEATHER_OFFER_LINE,
   wmoWeatherLabel,
 } from "@/lib/voice-demo-weather";
 
 describe("voice-demo-weather", () => {
+  it("defines proactive weather offer copy", () => {
+    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("something cool");
+    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("ZIP code");
+    expect(VOICE_DEMO_WEATHER_OFFER_LINE).toContain("weather forecast");
+  });
+
   it("normalizes US ZIP codes", () => {
     expect(normalizeUsZipCode("07424")).toBe("07424");
     expect(normalizeUsZipCode("07424-1234")).toBe("07424");

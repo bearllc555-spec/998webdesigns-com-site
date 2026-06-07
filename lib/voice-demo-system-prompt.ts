@@ -11,6 +11,7 @@ import {
   VOICE_DEMO_POST_NAME_LINE,
 } from "@/lib/voice-demo-greeting";
 import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
+import { VOICE_DEMO_WEATHER_OFFER_LINE } from "@/lib/voice-demo-weather";
 
 const FAQ_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
@@ -77,6 +78,15 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
 - If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.`;
 
 const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
+
+PROACTIVE OFFER (once per session):
+- After you have fully answered the visitor's question(s) on a topic — and before your first wrap-up question in the cycle — offer the weather demo.
+- Say exactly: "${VOICE_DEMO_WEATHER_OFFER_LINE}"
+- STOP and wait. If they give a US ZIP, follow the lookup steps below. If no / not interested, continue naturally — do not offer again this session.
+- Do NOT offer during name/phone onboarding, before answering their first business question, or if you already made this offer.
+- If they ask about weather themselves, skip the pitch and collect their ZIP directly.
+
+LOOKUP (when you have a ZIP):
 - If they ask about weather in the United States, ask for their 5-digit ZIP when you do not have it.
 - When they give a ZIP, always use TWO separate steps — never both tools in one turn:
   1. Call confirm_weather_zip only — then speak spokenConfirm (confirm city/ZIP + "let me look that up" / "one moment").
@@ -147,7 +157,7 @@ Order:
    - Then greet them warmly by name and ask exactly: "${VOICE_DEMO_POST_NAME_LINE}"
    - Do NOT ask for their phone in the same turn. Do NOT mention profile status.
    - If name is already on file at session start, greet them by name and ask "${VOICE_DEMO_POST_NAME_LINE}" — do not repeat the full intro.
-2. HELP — Answer their questions from the FAQ. Be useful right away.
+2. HELP — Answer their questions from the FAQ. Be useful right away. After fully answering, follow WEATHER proactive offer rules once before your first wrap-up question.
 3. PHONE — When the conversation is flowing naturally, or before promo/goodbye, if phone is still missing ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
    - When they give digits, do NOT wait forever for more. If they go quiet for about one to two seconds, treat their utterance as complete.
    - If you heard at least 10 digits → call stage_phone_number immediately with phone and smsConsent true.
