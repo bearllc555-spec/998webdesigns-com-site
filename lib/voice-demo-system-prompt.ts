@@ -12,7 +12,9 @@ import {
 } from "@/lib/voice-demo-greeting";
 import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
 import {
+  VOICE_DEMO_WEATHER_DIDNT_GET_LINE,
   VOICE_DEMO_WEATHER_OFFER_LINE,
+  VOICE_DEMO_WEATHER_REPEAT_LINE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
 } from "@/lib/voice-demo-weather";
 import {
@@ -96,7 +98,8 @@ PROACTIVE OFFER (once per session — end of chat only):
 - Step 1: Say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" — STOP and wait for yes or no. Never bundle ZIP in this turn.
 - Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP.
 - Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
-- Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they went quiet after the offer; ask yes or no clearly.
+- After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" and wait again.
+- Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent; speak the didn't-get line and repeat question above.
 - If they ask about weather earlier themselves, skip the pitch; ask for ZIP directly.
 
 LOOKUP (when you have a ZIP):

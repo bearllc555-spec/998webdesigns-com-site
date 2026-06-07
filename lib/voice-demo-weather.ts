@@ -7,6 +7,12 @@ export const WEATHER_POST_CONFIRM_PAUSE_MS = 2400;
 export const VOICE_DEMO_WEATHER_OFFER_LINE =
   "Before you go, do you want to see something cool?";
 
+/** Spoken when visitor is silent after the weather offer — then repeat the question. */
+export const VOICE_DEMO_WEATHER_DIDNT_GET_LINE = "I didn't get that.";
+
+/** Repeat question after silence (no "Before you go" on the repeat). */
+export const VOICE_DEMO_WEATHER_REPEAT_LINE = "Do you want to see something cool?";
+
 /** Step 2 — after they say yes, ask for ZIP. */
 export const VOICE_DEMO_WEATHER_ZIP_ASK_LINE =
   "If you give me your ZIP code, I can tell you the weather forecast in your city.";

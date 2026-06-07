@@ -66,6 +66,8 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_ZIP_ASK_LINE);
     expect(prompt).toMatch(/wait for yes or no/i);
+    expect(prompt).toContain("I didn't get that.");
+    expect(prompt).toContain("Do you want to see something cool?");
     expect(prompt).toMatch(/\[zip-input-pause\]/);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
   });

@@ -1,4 +1,8 @@
-import { normalizeUsZipCode } from "@/lib/voice-demo-weather";
+import {
+  normalizeUsZipCode,
+  VOICE_DEMO_WEATHER_DIDNT_GET_LINE,
+  VOICE_DEMO_WEATHER_REPEAT_LINE,
+} from "@/lib/voice-demo-weather";
 
 /** Hidden client cue — never spoken aloud; nudges Jarvis after ZIP-digit silence. */
 export const VOICE_DEMO_ZIP_PAUSE_CUE = "[zip-input-pause]";
@@ -11,7 +15,8 @@ export const VOICE_DEMO_WEATHER_DECLINE_CUE = "[weather-offer-declined]";
 
 export const ZIP_SILENCE_NUDGE_MS = 1200;
 
-export const WEATHER_YESNO_SILENCE_NUDGE_MS = 1200;
+/** Wait a few seconds for yes/no before the "I didn't get that" repeat. */
+export const WEATHER_YESNO_SILENCE_NUDGE_MS = 3000;
 
 export function countSpokenZipDigits(transcript: string): number {
   return transcript.replace(/\D/g, "").length;
@@ -44,9 +49,9 @@ export function buildZipPauseNudge(transcript: string): string {
 
 export function buildWeatherYesNoPauseNudge(): string {
   return (
-    `${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE} Visitor went quiet after the weather offer. ` +
-    `Ask clearly if they want the demo — yes or no. If yes, ask for their ZIP. ` +
-    `If they said no, continue FINAL GOODBYE with promo if needed, then warm sign-off and end_conversation.`
+    `${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE} Visitor did not reply after the weather offer. ` +
+    `Say exactly "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then ask exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" ` +
+    `STOP and wait for yes or no again. Do not ask for ZIP yet.`
   );
 }
 

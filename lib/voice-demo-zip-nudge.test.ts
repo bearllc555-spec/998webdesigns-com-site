@@ -23,10 +23,12 @@ describe("voice-demo-zip-nudge", () => {
     expect(nudge).toContain("five-digit ZIP");
   });
 
-  it("nudges weather yes/no when visitor goes quiet", () => {
+  it("nudges didn't-get and repeat when visitor is silent", () => {
     const nudge = buildWeatherYesNoPauseNudge();
     expect(nudge).toContain(VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE);
-    expect(nudge).toMatch(/yes or no/i);
+    expect(nudge).toContain("I didn't get that.");
+    expect(nudge).toContain("Do you want to see something cool?");
+    expect(nudge).toMatch(/wait for yes or no again/i);
   });
 
   it("nudges goodbye path when visitor declines weather", () => {
