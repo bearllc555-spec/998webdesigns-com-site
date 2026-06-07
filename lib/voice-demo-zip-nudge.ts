@@ -17,7 +17,8 @@ export const VOICE_DEMO_WEATHER_DECLINE_CUE = "[weather-offer-declined]";
 /** Hidden cue when visitor stays silent after the repeat weather offer. */
 export const VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE = "[weather-yesno-giveup]";
 
-export const ZIP_SILENCE_NUDGE_MS = 1200;
+/** Wait for full ZIP utterance before staging (ms). */
+export const ZIP_SILENCE_NUDGE_MS = 2800;
 
 /** Wait a few seconds for yes/no before the "I didn't get that" repeat. */
 export const WEATHER_YESNO_SILENCE_NUDGE_MS = 3000;
@@ -26,7 +27,8 @@ export function countSpokenZipDigits(transcript: string): number {
   return transcript.replace(/\D/g, "").length;
 }
 
-export function buildZipPauseNudge(transcript: string): string {
+/** Returns null when a client nudge would duplicate an ask Jarvis already made. */
+export function buildZipPauseNudge(transcript: string): string | null {
   const trimmed = transcript.trim();
   const digits = countSpokenZipDigits(trimmed);
   const zip = normalizeUsZipCode(trimmed);
@@ -35,21 +37,19 @@ export function buildZipPauseNudge(transcript: string): string {
     return (
       `${VOICE_DEMO_ZIP_PAUSE_CUE} Visitor stopped speaking. Transcript: "${trimmed}". ` +
       `Call confirm_weather_zip now with zipCode "${zip}", speak spokenConfirm once, and STOP — wait for yes or no. ` +
-      `Do NOT call lookup_weather until they confirm. On yes, lookup_weather with userConfirmed true and the same ZIP.`
+      `Do NOT ask for their ZIP again. Do NOT call lookup_weather until they confirm. ` +
+      `On yes, lookup_weather with userConfirmed true and the same ZIP.`
     );
   }
 
   if (digits > 0) {
     return (
       `${VOICE_DEMO_ZIP_PAUSE_CUE} Visitor stopped speaking but only ${digits} digit(s) in transcript: "${trimmed}". ` +
-      `Say you did not catch the full five-digit ZIP and ask them to repeat it once, clearly.`
+      `Say you did not catch the full five-digit ZIP and ask them to repeat it once, clearly — do not ask twice in a row.`
     );
   }
 
-  return (
-    `${VOICE_DEMO_ZIP_PAUSE_CUE} Visitor went quiet while you were collecting their ZIP. ` +
-    `Gently ask for their five-digit US ZIP code.`
-  );
+  return null;
 }
 
 export function buildWeatherYesNoPauseNudge(): string {

@@ -30,6 +30,11 @@ describe("voice-demo-zip-nudge", () => {
     expect(nudge).toContain("five-digit ZIP");
   });
 
+  it("does not nudge a duplicate ZIP ask when transcript is empty", () => {
+    expect(buildZipPauseNudge("")).toBeNull();
+    expect(buildZipPauseNudge("   ")).toBeNull();
+  });
+
   it("nudges didn't-get and repeat when visitor is silent", () => {
     const nudge = buildWeatherYesNoPauseNudge();
     expect(nudge).toContain(VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE);
