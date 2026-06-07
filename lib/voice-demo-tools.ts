@@ -15,7 +15,7 @@ import {
   type VoiceDemoLeadRow,
 } from "@/lib/voice-demo-db";
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
-import { sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
+import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import { Type, type ToolListUnion } from "@google/genai";
@@ -267,21 +267,37 @@ export async function executeVoiceDemoTool(
   }
 
   if (name === "send_promo_email") {
-    const refreshed = (await getVoiceDemoLead(leadId)) ?? row;
-    const promo = await sendPromoToVerifiedEmailLead(refreshed);
-    if (promo.sent || promo.alreadySent) {
+    const bundle = await sendPromoBundleForLeadId(leadId);
+    const emailOk = bundle.email.sent || bundle.email.alreadySent;
+    const smsOk = bundle.sms?.ok === true;
+
+    if (emailOk) {
+      const parts = ["Promo emailed — mention casually, check spam if needed."];
+      if (bundle.sms) {
+        if (smsOk) {
+          parts.push("Text sent to their profile phone too — mention briefly if natural.");
+        } else if (!bundle.sms.ok) {
+          parts.push(
+            `SMS did not send (${bundle.sms.error}). Apologize for the text only; email is fine. They can call send_promo_sms to retry.`
+          );
+        }
+      }
       return {
         ok: true,
         promoEmailSent: true,
+        promoSmsSent: smsOk,
+        promoSmsError:
+          bundle.sms && !bundle.sms.ok ? bundle.sms.error : undefined,
         promoCode: VOICE_DEMO_PROMO_CODE,
-        message:
-          "Promo emailed. Mention it casually — check spam if needed. Offer send_promo_sms only if they want a text too.",
+        message: parts.join(" "),
       };
     }
+
     return {
       ok: false,
       promoEmailSent: false,
-      error: promo.error ?? "Could not send promo email.",
+      promoSmsSent: false,
+      error: bundle.email.error ?? "Could not send promo email.",
       message: "Apologize briefly; suggest hello@998webdesigns.com.",
     };
   }

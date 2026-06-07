@@ -14,7 +14,11 @@ export async function deliverVoiceDemoPromoSms(leadId: string): Promise<VoiceDem
   }
 
   if (row.phone_verified_at) {
-    return { ok: true, smsSent: true, promoCode: row.promo_code ?? VOICE_DEMO_PROMO_CODE };
+    return {
+      ok: true,
+      smsSent: true,
+      promoCode: row.promo_code ?? VOICE_DEMO_PROMO_CODE,
+    };
   }
 
   const smsConfigured = twilioMessagingConfigured();
@@ -31,6 +35,11 @@ export async function deliverVoiceDemoPromoSms(leadId: string): Promise<VoiceDem
   const body = `Hi ${first} — your 998 web designs code: ${VOICE_DEMO_PROMO_CODE} (20% off design fee). Start at ${marketingSiteOrigin()}/start`;
   const sms = await sendTwilioSms(row.phone, body);
   if (!sms.ok) {
+    console.warn("[voice-demo-promo-sms] Twilio send failed", {
+      leadId,
+      to: row.phone,
+      error: sms.error,
+    });
     return { ok: false, smsSent: false, error: sms.error, smsConfigured: true };
   }
 

@@ -23,8 +23,8 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
 - Do NOT mention the coupon at verify, during profile onboarding, or in your first demo answers. No upfront pitch.
 - Offer it only when the conversation is flowing naturally OR once when they seem ready to leave (before final goodbye). Tone: casual, low-pressure — e.g. "Before you go — we're running a little special; I could send a coupon code to your email if you'd like."
 - If they ask about discounts or pricing, you may mention it briefly then — still chill, not aggressive.
-- If they say yes / sure / send it: call send_promo_email. Only say it was emailed if promoEmailSent is true.
-- If they want a text too and have a phone on profile: call send_promo_sms after send_promo_email (or alone if email already sent). Only claim SMS sent if smsSent is true.
+- If they say yes / sure / send it: call send_promo_email once — it emails the code and automatically texts their profile phone if we have it (they consented at onboarding). Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
+- If email was sent but SMS failed, apologize for the text and call send_promo_sms to retry. If they only want SMS and email already sent, send_promo_sms alone is fine.
 - If they decline or ignore the offer, drop it — never bring it up again in the same session.
 - If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.`;
 

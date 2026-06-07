@@ -5,6 +5,10 @@ import {
   type VoiceDemoLeadRow,
 } from "@/lib/voice-demo-db";
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
+import {
+  deliverVoiceDemoPromoSms,
+  type VoiceDemoPromoSmsResult,
+} from "@/lib/voice-demo-promo-sms";
 
 export type PromoEmailResult = {
   sent: boolean;
@@ -49,4 +53,34 @@ export async function ensurePromoEmailForLeadId(leadId: string): Promise<PromoEm
     return { sent: false, alreadySent: false, error: "Lead not found." };
   }
   return sendPromoToVerifiedEmailLead(row);
+}
+
+export type PromoBundleResult = {
+  email: PromoEmailResult;
+  sms: VoiceDemoPromoSmsResult | null;
+};
+
+/** Email promo + automatic SMS when a profile phone exists (consent given at onboarding). */
+export async function sendPromoBundleForLeadId(leadId: string): Promise<PromoBundleResult> {
+  const row = await getVoiceDemoLead(leadId);
+  if (!row) {
+    return {
+      email: { sent: false, alreadySent: false, error: "Lead not found." },
+      sms: null,
+    };
+  }
+
+  const email = await sendPromoToVerifiedEmailLead(row);
+  const sms = row.phone ? await deliverVoiceDemoPromoSms(leadId) : null;
+
+  if (sms && !sms.ok) {
+    console.warn("[voice-demo-promo] promo SMS failed", {
+      leadId,
+      phone: row.phone,
+      error: sms.error,
+      smsConfigured: sms.smsConfigured,
+    });
+  }
+
+  return { email, sms };
 }
