@@ -23,6 +23,16 @@ function contactHint(row: VoiceDemoLeadRow): string {
   return parts.join(" ");
 }
 
+function profileHint(row: VoiceDemoLeadRow): string {
+  const missing: string[] = [];
+  if (!row.full_name?.trim()) missing.push("name");
+  if (!row.phone) missing.push("phone");
+  if (missing.length === 0) {
+    return "Profile complete: email verified, name and phone on file.";
+  }
+  return `Profile incomplete — collect ${missing.join(" and ")} before answering business questions (unless they refuse).`;
+}
+
 export function voiceDemoVerifySystemPrompt(row: VoiceDemoLeadRow): string {
   const email = row.email ?? "unknown";
 
@@ -38,41 +48,45 @@ YOUR ONLY JOB until verified:
 3. If verify_code fails, encourage retry calmly. After 3 failures, suggest the typed code field below the mic.
 4. Do NOT answer pricing, FAQ, or business questions until verified.
 
-When verify_code returns verified:true, congratulate them briefly. If promoEmailSent is true, tell them you emailed ${VOICE_DEMO_PROMO_CODE} (20% off the design fee) to their inbox — ask them to check spam if needed. Then say they may ask anything about 998 and ask: "What should I call you?"`;
+When verify_code returns verified:true, congratulate them briefly. If promoEmailSent is true, tell them you emailed ${VOICE_DEMO_PROMO_CODE} (20% off the design fee) to their inbox — ask them to check spam if needed. Then ask: "What should I call you?" — after the demo opens you will also collect their phone number.`;
 }
 
-const OPTIONAL_SMS_RULES = `OPTIONAL SMS (only if they want a text copy — never required):
-- Their VOICE20 code should already be in their verified email inbox. SMS is an extra copy only.
-- If they want SMS updates or a text copy of their code, confirm they consent to one SMS from 998 web designs.
-- Collect a US cell number, call stage_phone_number with phone and smsConsent true.
-- Read the spoken digits from the tool response exactly ONCE — one digit at a time with brief pauses — then ask "Is that correct, sir?" or "Is that correct, madam?"
-- When they say yes / correct / that's right: call confirm_phone_number immediately. Do NOT read the digits again before, during, or after that call.
-- If they correct the number → call update_staged_phone with the full corrected number, spell the new spoken digits once, ask again — still only one read-back per staging call.
-- After confirm_phone_number succeeds, say briefly that the text is on its way. Never repeat the phone digits again in this conversation.
-- Do NOT send SMS until confirm_phone_number succeeds.
-- If they decline SMS, call decline_secondary_contact.`;
+const PROFILE_AND_SMS_RULES = `PROFILE ONBOARDING (do this first in demo — before pricing/FAQ answers):
+Goal: full CRM profile — verified email (already on file), name, and US cell phone.
+
+Order:
+1. NAME — If no name on file, ask "What should I call you?" and call save_name when they answer. Use their name after that.
+2. PHONE — After name is saved (or if name already on file), ask for their US cell number. Say their email is verified and ${VOICE_DEMO_PROMO_CODE} was emailed; offer to also text the code to their phone to complete their profile. One SMS from 998 web designs — get clear verbal consent.
+   - Call stage_phone_number with phone and smsConsent true.
+   - Read the spoken digits from the tool response exactly ONCE — one digit at a time with brief pauses — then ask "Is that correct?"
+   - When they say yes / correct / that's right: call confirm_phone_number immediately. Do NOT read the digits again before, during, or after that call.
+   - If they correct the number → call update_staged_phone, spell the new spoken digits once, ask again.
+   - After confirm_phone_number succeeds, say briefly the text is on its way. Never repeat the phone digits again.
+3. QUESTIONS — Only after name is saved and phone is collected (or explicitly declined), answer 998 questions from the FAQ.
+
+If they refuse to share a phone number, call decline_secondary_contact once and move on — do not nag.
+
+Do NOT skip name and phone collection at the start of a new demo session unless they firmly refuse.`;
 
 export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
-  const nameLine = row.full_name ? `Visitor name: ${row.full_name}.` : "Name not yet collected — ask early.";
   const promoLine = row.promo_sent_at
-    ? `${VOICE_DEMO_PROMO_CODE} (20% off design fee) was emailed to their verified address. Mention it if they ask about discounts.`
-    : `After verification they should receive ${VOICE_DEMO_PROMO_CODE} by email.`;
+    ? `${VOICE_DEMO_PROMO_CODE} (20% off design fee) was emailed to their verified address${row.phone_verified_at ? " and texted to their phone" : ""}.`
+    : `${VOICE_DEMO_PROMO_CODE} should be emailed after verification; offer to text it when you collect their phone.`;
 
   return `${VOICE_DEMO_PERSONA}
 
 ${VOICE_DEMO_INTRO}
 
-${nameLine}
+${profileHint(row)}
 ${contactHint(row)}
 Site: ${marketingSiteOrigin()}
 
 RULES:
-- Answer ONLY from the FAQ and policies below. If unsure, say to email hello@998webdesigns.com or visit /start.
+- ${PROFILE_AND_SMS_RULES}
+- Answer ONLY from the FAQ and policies below once profile onboarding is done (or declined). If unsure, say to email hello@998webdesigns.com or visit /start.
 - Never invent prices beyond $5,998 design, $198/mo hosting after 30-day free trial, $2,996 lifetime hosting.
 - ${HOSTING_FREE_MONTH_SUMMARY}
-- Use save_name when they tell you their name.
 - ${promoLine}
-- ${OPTIONAL_SMS_RULES}
 - CTAs: /start to checkout, /book for discovery call, /pricing for pricing page.
 
 FAQ:

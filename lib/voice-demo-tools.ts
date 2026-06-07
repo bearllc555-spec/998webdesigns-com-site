@@ -49,7 +49,8 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
       functionDeclarations: [
         {
           name: "save_name",
-          description: "Save the visitor's name for CRM.",
+          description:
+            "Save visitor name for CRM profile. Call as soon as they give their name — first onboarding step after verify.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -73,7 +74,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "stage_phone_number",
           description:
-            "Stage a US cell number. Speak the returned spoken field once, ask if correct. On yes, call confirm_phone_number — never spell digits twice.",
+            "After name is saved: stage US cell for profile + SMS coupon. Speak spoken field once, ask if correct, then confirm_phone_number on yes.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -107,7 +108,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         },
         {
           name: "decline_secondary_contact",
-          description: "User declined to share second contact channel.",
+          description: "User declined to provide a phone number for their profile.",
           parameters: { type: Type.OBJECT, properties: {} },
         },
       ],
@@ -233,7 +234,12 @@ export async function executeVoiceDemoTool(
       return { ok: false, error: "Please provide a name." };
     }
     await updateVoiceDemoLead(leadId, { full_name: visitorName });
-    return { ok: true, name: visitorName };
+    return {
+      ok: true,
+      name: visitorName,
+      message:
+        "Name saved. Next ask for their US cell — offer to text VOICE20 to complete their profile.",
+    };
   }
 
   if (name === "decline_secondary_contact") {

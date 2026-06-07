@@ -244,8 +244,8 @@ export function VoiceDemoWidget() {
               {configured && phase === "gate" && (
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
-                    Enter your email to try Jarvis. We&apos;ll send a verification code — that confirms
-                    your address. Optional SMS later in the conversation.
+                    Enter your email to try Jarvis. We&apos;ll send a verification code, then Jarvis
+                    will ask your name and phone so we can email and text your {`VOICE20`} coupon.
                   </p>
 
                   <div>
