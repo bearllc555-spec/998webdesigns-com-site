@@ -6,6 +6,9 @@ export const VOICE_DEMO_DAILY_MAX_DEFAULT = 3;
 export const VOICE_DEMO_DAILY_LIMIT_MESSAGE =
   "You have used today's voice demo limit. Try again tomorrow, or email hello@998webdesigns.com.";
 
+/** Operator / QA emails — always unlimited; env allowlist merges on top. */
+export const VOICE_DEMO_BUILTIN_ALLOWLIST_EMAILS = ["ademeo@gmail.com"] as const;
+
 export function voiceDemoDailyMax(): number {
   const raw = process.env.VOICE_DEMO_DAILY_MAX?.trim();
   const parsed = raw ? Number.parseInt(raw, 10) : VOICE_DEMO_DAILY_MAX_DEFAULT;
@@ -29,7 +32,11 @@ function parseCsvSet(raw: string | undefined): Set<string> {
 }
 
 export function parseVoiceDemoAllowlistEmails(): Set<string> {
-  return parseCsvSet(process.env.VOICE_DEMO_ALLOWLIST_EMAILS);
+  const merged = new Set<string>(VOICE_DEMO_BUILTIN_ALLOWLIST_EMAILS);
+  for (const email of parseCsvSet(process.env.VOICE_DEMO_ALLOWLIST_EMAILS)) {
+    merged.add(email);
+  }
+  return merged;
 }
 
 export function parseVoiceDemoAllowlistIps(): Set<string> {
