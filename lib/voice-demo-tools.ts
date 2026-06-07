@@ -17,11 +17,39 @@ import {
 } from "@/lib/voice-demo-db";
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { marketingSiteOrigin } from "@/lib/site-origin";
+import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
+import { startEmailVerificationLead } from "@/lib/voice-demo-start-email";
 import { Type, type ToolListUnion } from "@google/genai";
 
-export type VoiceDemoToolMode = "verify" | "demo";
+export type VoiceDemoToolMode = "confirm_email" | "verify" | "demo";
 
 export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnion {
+  if (mode === "confirm_email") {
+    return [
+      {
+        functionDeclarations: [
+          {
+            name: "confirm_email_address",
+            description:
+              "User confirmed the spelled email is correct. Sends the verification code.",
+            parameters: { type: Type.OBJECT, properties: {} },
+          },
+          {
+            name: "update_email_address",
+            description: "User gave a corrected email. Update pending email and spell it back.",
+            parameters: {
+              type: Type.OBJECT,
+              properties: {
+                email: { type: Type.STRING, description: "Full corrected email address" },
+              },
+              required: ["email"],
+            },
+          },
+        ],
+      },
+    ];
+  }
+
   if (mode === "verify") {
     return [
       {
@@ -250,6 +278,45 @@ export async function executeVoiceDemoTool(
     });
 
     return { ok: true, promoCode: VOICE_DEMO_PROMO_CODE, message: "Promo SMS sent." };
+  }
+
+  return { ok: false, error: `Unknown tool: ${name}` };
+}
+
+export async function executeVoiceDemoEmailConfirmTool(
+  pendingEmail: string,
+  name: string,
+  args: Record<string, unknown>,
+  ip: string | null
+): Promise<Record<string, unknown>> {
+  if (name === "update_email_address") {
+    const email = typeof args.email === "string" ? args.email.trim().toLowerCase() : "";
+    if (!isValidEmail(email)) {
+      return { ok: false, error: "Invalid email. Ask them to say the full address again." };
+    }
+    return {
+      ok: true,
+      email,
+      spoken: spellEmailForVoice(email),
+      message: "Updated. Spell the new email and ask for confirmation.",
+    };
+  }
+
+  if (name === "confirm_email_address") {
+    if (!isValidEmail(pendingEmail)) {
+      return { ok: false, error: "Invalid pending email." };
+    }
+    const started = await startEmailVerificationLead(pendingEmail, ip);
+    if (!started.ok) {
+      return { ok: false, error: started.error };
+    }
+    return {
+      ok: true,
+      codeSent: true,
+      leadId: started.leadId,
+      destination: started.destination,
+      message: "Verification code sent. Ask them to read it from their email.",
+    };
   }
 
   return { ok: false, error: `Unknown tool: ${name}` };

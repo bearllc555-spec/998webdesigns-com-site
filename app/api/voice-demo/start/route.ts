@@ -5,7 +5,7 @@ import { isValidEmail } from "@/lib/validate-email";
 import { normalizePhoneE164, startSmsVerification } from "@/lib/twilio-verify";
 import { generateSixDigitCode } from "@/lib/voice-demo-code";
 import { insertVoiceDemoLead } from "@/lib/voice-demo-db";
-import { sendVoiceDemoVerificationEmail } from "@/lib/voice-demo-email";
+import { startEmailVerificationLead } from "@/lib/voice-demo-start-email";
 import { setVoiceDemoSessionCookie } from "@/lib/voice-demo-session";
 
 export const runtime = "nodejs";
@@ -48,34 +48,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
     }
 
-    const code = generateSixDigitCode();
-    const inserted = await insertVoiceDemoLead({
-      primary_channel: "email",
-      email,
-      phone: null,
-      ip,
-      verification_code: code,
-    });
-
-    if (!inserted.ok) {
-      return NextResponse.json(
-        { error: "Could not start demo. Try again or contact us." },
-        { status: 503 }
-      );
-    }
-
-    const emailed = await sendVoiceDemoVerificationEmail(email, code);
-    if (!emailed) {
-      return NextResponse.json({ error: "Could not send verification email." }, { status: 503 });
+    const started = await startEmailVerificationLead(email, ip);
+    if (!started.ok) {
+      return NextResponse.json({ error: started.error }, { status: 503 });
     }
 
     const res = NextResponse.json({
       ok: true,
-      leadId: inserted.id,
+      leadId: started.leadId,
       channel: "email",
-      destination: email,
+      destination: started.destination,
     });
-    setVoiceDemoSessionCookie(res, inserted.id, false);
+    setVoiceDemoSessionCookie(res, started.leadId, false);
     return res;
   }
 

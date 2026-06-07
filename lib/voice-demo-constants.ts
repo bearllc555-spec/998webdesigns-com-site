@@ -1,7 +1,8 @@
 /** Gemini Live model for the homepage voice assistant. */
 export const VOICE_DEMO_LIVE_MODEL = "gemini-2.5-flash-native-audio-preview-12-2025";
 
-export const VOICE_DEMO_VOICE_NAME = "Charon";
+/** Calm, even delivery — closest prebuilt match to a Jarvis-style butler. */
+export const VOICE_DEMO_VOICE_NAME = "Schedar";
 
 /** Channel-specific promo — design fee only; not on public FAQ. */
 export const VOICE_DEMO_PROMO_CODE = "VOICE20";

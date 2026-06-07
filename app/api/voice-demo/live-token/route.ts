@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
-import { createVoiceDemoLiveToken } from "@/lib/voice-demo-live-token";
+import {
+  createVoiceDemoLiveToken,
+  createVoiceDemoLiveTokenForEmailConfirm,
+} from "@/lib/voice-demo-live-token";
+import { readPendingEmail } from "@/lib/voice-demo-pending-email";
 import { readVoiceDemoSession } from "@/lib/voice-demo-session";
 import type { VoiceDemoToolMode } from "@/lib/voice-demo-tools";
 
@@ -13,17 +17,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
   }
 
-  const session = readVoiceDemoSession(req);
-  if (!session) {
-    return NextResponse.json({ error: "Session expired. Start again." }, { status: 401 });
-  }
-
   let mode: VoiceDemoToolMode = "verify";
   try {
     const body = (await req.json()) as { mode?: string };
     if (body.mode === "demo") mode = "demo";
+    else if (body.mode === "confirm_email") mode = "confirm_email";
   } catch {
     /* default verify */
+  }
+
+  if (mode === "confirm_email") {
+    const pendingEmail = readPendingEmail(req);
+    if (!pendingEmail) {
+      return NextResponse.json({ error: "Session expired. Enter your email again." }, { status: 401 });
+    }
+
+    const token = await createVoiceDemoLiveTokenForEmailConfirm(pendingEmail);
+    if (!token.ok) {
+      return NextResponse.json({ error: token.error }, { status: 503 });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      token: token.token,
+      model: token.model,
+      mode,
+    });
+  }
+
+  const session = readVoiceDemoSession(req);
+  if (!session) {
+    return NextResponse.json({ error: "Session expired. Start again." }, { status: 401 });
   }
 
   if (mode === "demo" && !session.verified) {

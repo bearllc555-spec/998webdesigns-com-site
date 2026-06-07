@@ -11,7 +11,7 @@ import {
 import { VOICE_DEMO_LIVE_MODEL } from "@/lib/voice-demo-constants";
 import type { Session } from "@google/genai";
 
-export type VoiceDemoLiveMode = "verify" | "demo";
+export type VoiceDemoLiveMode = "confirm_email" | "verify" | "demo";
 
 type LiveMessage = {
   toolCall?: {
@@ -32,6 +32,7 @@ type LiveMessage = {
 
 type UseVoiceDemoLiveOptions = {
   onVerified?: () => void;
+  onEmailConfirmed?: (destination: string) => void;
   onStatus?: (text: string) => void;
   onTranscript?: (line: string) => void;
 };
@@ -89,6 +90,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           if (name === "verify_code" && result.verified === true) {
             options.onVerified?.();
           }
+          if (
+            name === "confirm_email_address" &&
+            result.codeSent === true &&
+            typeof result.destination === "string"
+          ) {
+            options.onEmailConfirmed?.(result.destination);
+          }
           responses.push({
             id: call.id,
             name,
@@ -130,7 +138,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setError("");
       setConnecting(true);
       modeRef.current = mode;
-      options.onStatus?.(mode === "verify" ? "Connecting — say your code when ready…" : "Connecting…");
+      options.onStatus?.(
+        mode === "confirm_email"
+          ? "Connecting — I'll confirm your email…"
+          : mode === "verify"
+            ? "Connecting — say your code when ready…"
+            : "Connecting…"
+      );
 
       try {
         const stream = await requestVoiceDemoMicStream();

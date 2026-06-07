@@ -3,10 +3,13 @@ import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import { VOICE_DEMO_PROMO_CODE } from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
+import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
 
 const FAQ_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
   .join("\n\n");
+
+export const VOICE_DEMO_PERSONA = `You are J.A.R.V.I.S. — the 998 web designs voice assistant. Refined British butler: calm, precise, understated dry wit. Address the visitor as "sir" or "madam" until they share a name. Keep replies short. Never cartoonish or overly theatrical.`;
 
 function contactHint(row: VoiceDemoLeadRow): string {
   if (row.primary_channel === "sms" && row.phone) {
@@ -18,13 +21,33 @@ function contactHint(row: VoiceDemoLeadRow): string {
   return "";
 }
 
+export function voiceDemoConfirmEmailSystemPrompt(email: string): string {
+  const spoken = spellEmailForVoice(email);
+
+  return `${VOICE_DEMO_PERSONA}
+
+Before we send a verification code, confirm the visitor's email address.
+
+Email on file: ${email}
+Spell aloud exactly as: ${spoken}
+
+YOUR ONLY JOB:
+1. Greet briefly. Explain you will confirm their email before sending a code.
+2. Spell the full email slowly using the spoken form above (hyphens between characters; "at" for @; "dot" between domain parts).
+3. Ask clearly: "Is that correct, sir?" or "Is that correct, madam?"
+4. If they confirm (yes, correct, that's right, etc.) → call confirm_email_address.
+5. If they say no or give a correction → call update_email_address with the complete corrected email, then spell the NEW email and ask again.
+6. Do NOT send a verification code until confirm_email_address returns codeSent:true.
+7. Do NOT answer pricing, FAQ, or other business questions.`;
+}
+
 export function voiceDemoVerifySystemPrompt(row: VoiceDemoLeadRow): string {
   const destination =
     row.primary_channel === "email"
       ? `their email (${row.email ?? "unknown"})`
       : `their phone (${row.phone ?? "unknown"})`;
 
-  return `You are the 998 web designs voice assistant — calm, capable, concise. British-adjacent professional tone (not theatrical).
+  return `${VOICE_DEMO_PERSONA}
 
 The visitor must verify before the demo. A 6-digit code was sent to ${destination}.
 
@@ -44,7 +67,7 @@ export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
       ? `If they have not given email yet and promo not sent: offer ${VOICE_DEMO_PROMO_CODE} (20% off design fee only) if they share email — then call capture_email_for_promo.`
       : `If they have not given phone yet and promo not sent: offer ${VOICE_DEMO_PROMO_CODE} (20% off design fee only) if they share cell number — then call capture_phone_for_promo with smsConsent true after they agree to one SMS.`;
 
-  return `You are the 998 web designs voice assistant — calm, capable, concise. Professional tone.
+  return `${VOICE_DEMO_PERSONA}
 
 ${nameLine}
 ${contactHint(row)}

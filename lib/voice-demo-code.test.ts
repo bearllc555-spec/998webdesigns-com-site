@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import { codesMatch, hashVerificationCode } from "@/lib/voice-demo-otp";
+import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
 
 describe("voice demo verification code", () => {
   it("normalizes spoken digits", () => {
     expect(normalizeVerificationCode("4 7 9 8 2 1")).toBe("479821");
     expect(normalizeVerificationCode("four seven nine eight two one")).toBe("479821");
+  });
+
+  it("spells email for voice read-back", () => {
+    expect(spellEmailForVoice("bear@gmail.com")).toBe(
+      "b-e-a-r at g-m-a-i-l dot c-o-m"
+    );
+    expect(spellEmailForVoice("a.b+9@co.uk")).toBe(
+      "a-.-b-+-9 at c-o dot u-k"
+    );
   });
 
   it("matches hashed email OTP", () => {

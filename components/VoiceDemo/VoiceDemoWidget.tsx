@@ -5,7 +5,7 @@ import { Mic, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
 
-type Phase = "closed" | "gate" | "verify" | "demo";
+type Phase = "closed" | "gate" | "confirm_email" | "verify" | "demo";
 
 type Channel = "email" | "sms";
 
@@ -26,6 +26,12 @@ export function VoiceDemoWidget() {
   const [website, setWebsite] = useState("");
 
   const live = useVoiceDemoLive({
+    onEmailConfirmed: (confirmedDestination) => {
+      live.disconnect();
+      setDestination(confirmedDestination);
+      setPhase("verify");
+      setStatus("Code sent — tap Start voice and read your 6-digit code.");
+    },
     onVerified: () => {
       live.disconnect();
       setStatus("Verified — tap Start voice to talk with the assistant.");
@@ -48,11 +54,15 @@ export function VoiceDemoWidget() {
     if (!open) return;
     void fetch("/api/voice-demo/status")
       .then((r) => r.json())
-      .then((data: { verified?: boolean; active?: boolean }) => {
+      .then((data: { verified?: boolean; active?: boolean; pendingEmail?: boolean; destination?: string }) => {
         if (data.active && data.verified) {
           setPhase("demo");
+        } else if (data.active && data.pendingEmail) {
+          setDestination(data.destination ?? "");
+          setPhase("confirm_email");
         } else if (data.active) {
           setPhase("verify");
+          if (data.destination) setDestination(data.destination);
         } else {
           setPhase("gate");
         }
@@ -80,7 +90,8 @@ export function VoiceDemoWidget() {
     setFormError("");
     setBusy(true);
     try {
-      const res = await fetch("/api/voice-demo/start", {
+      const endpoint = channel === "email" ? "/api/voice-demo/pending-email" : "/api/voice-demo/start";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -94,16 +105,22 @@ export function VoiceDemoWidget() {
       const data = (await res.json()) as {
         ok?: boolean;
         destination?: string;
+        email?: string;
         error?: string;
       };
       if (!res.ok) {
         setFormError(data.error ?? "Could not start. Try again.");
         return;
       }
-      setDestination(data.destination ?? "");
-      setPhase("verify");
+      setDestination(data.destination ?? data.email ?? email);
       setTranscript([]);
-      setStatus("Code sent — tap Start voice to connect your microphone.");
+      if (channel === "email") {
+        setPhase("confirm_email");
+        setStatus("Tap Start voice — J.A.R.V.I.S. will spell your email back for confirmation.");
+      } else {
+        setPhase("verify");
+        setStatus("Code sent — tap Start voice to connect your microphone.");
+      }
     } catch {
       setFormError("Network error. Try again.");
     } finally {
@@ -138,7 +155,8 @@ export function VoiceDemoWidget() {
   }
 
   const startVoice = () => {
-    const mode = phase === "demo" ? "demo" : "verify";
+    const mode =
+      phase === "demo" ? "demo" : phase === "confirm_email" ? "confirm_email" : "verify";
     void live.connect(mode);
   };
 
@@ -156,7 +174,7 @@ export function VoiceDemoWidget() {
           aria-label="Talk to AI assistant"
         >
           <Mic className="h-4 w-4 text-accent" aria-hidden />
-          Talk to AI
+          Talk to J.A.R.V.I.S.
         </button>
       )}
 
@@ -174,7 +192,7 @@ export function VoiceDemoWidget() {
             <div className="flex select-none items-center justify-between border-b border-rule px-4 py-3">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-accent" aria-hidden />
-                <span className="font-display text-sm font-medium text-ink">998 Voice Assistant</span>
+                <span className="font-display text-sm font-medium text-ink">J.A.R.V.I.S.</span>
               </div>
               <button
                 type="button"
@@ -205,8 +223,8 @@ export function VoiceDemoWidget() {
               {configured && phase === "gate" && (
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
-                    Verify with email or phone to try our voice assistant. We&apos;ll send a code — read
-                    it aloud to unlock the demo.
+                    Verify with email or phone to try J.A.R.V.I.S. Email sign-in spells your address
+                    back for confirmation before we send a code.
                   </p>
 
                   <div className="flex gap-2">
@@ -287,17 +305,30 @@ export function VoiceDemoWidget() {
                     disabled={busy || (channel === "sms" && !smsConsent)}
                     className="w-full rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
                   >
-                    {busy ? "Sending code…" : "Send code & start"}
+                    {busy
+                      ? channel === "email"
+                        ? "Continuing…"
+                        : "Sending code…"
+                      : channel === "email"
+                        ? "Continue"
+                        : "Send code & start"}
                   </button>
                 </form>
               )}
 
-              {configured && (phase === "verify" || phase === "demo") && (
+              {configured && (phase === "confirm_email" || phase === "verify" || phase === "demo") && (
                 <div className="space-y-4">
+                  {destination && phase === "confirm_email" && (
+                    <p className="text-sm text-ink-soft">
+                      Confirming <strong className="text-ink">{destination}</strong> — J.A.R.V.I.S.
+                      will spell it back before sending your code.
+                    </p>
+                  )}
+
                   {destination && phase === "verify" && (
                     <p className="text-sm text-ink-soft">
-                      Code sent to <strong className="text-ink">{destination}</strong>. Read it to the
-                      assistant or type it below.
+                      Code sent to <strong className="text-ink">{destination}</strong>. Read it to
+                      J.A.R.V.I.S. or type it below.
                     </p>
                   )}
 
