@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse, clientIp } from "@/lib/api-rate-limit";
 import { readJsonBody } from "@/lib/read-json-body";
 import { isValidEmail } from "@/lib/validate-email";
+import {
+  getVoiceDemoDailyQuotaStatus,
+  VOICE_DEMO_DAILY_LIMIT_MESSAGE,
+} from "@/lib/voice-demo-daily-quota";
 import { startEmailVerificationLead } from "@/lib/voice-demo-start-email";
 import { setVoiceDemoSessionCookie } from "@/lib/voice-demo-session";
 
@@ -34,7 +38,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
-  const started = await startEmailVerificationLead(email, clientIp(req));
+  const ip = clientIp(req);
+  const quota = await getVoiceDemoDailyQuotaStatus(email, { ip });
+  if (!quota.allowed) {
+    return NextResponse.json(
+      {
+        error: VOICE_DEMO_DAILY_LIMIT_MESSAGE,
+        dailyQuota: {
+          used: quota.used,
+          limit: quota.limit,
+          remaining: quota.remaining,
+        },
+      },
+      {
+        status: 429,
+        headers: quota.retryAfterSec
+          ? { "Retry-After": String(quota.retryAfterSec) }
+          : undefined,
+      }
+    );
+  }
+
+  const started = await startEmailVerificationLead(email, ip);
   if (!started.ok) {
     return NextResponse.json({ error: started.error }, { status: 503 });
   }

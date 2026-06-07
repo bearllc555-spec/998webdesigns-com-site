@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { clientIp } from "@/lib/api-rate-limit";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
+import { getVoiceDemoDailyQuotaStatus } from "@/lib/voice-demo-daily-quota";
 import { geminiApiKey } from "@/lib/voice-demo-live-token";
 import { readVoiceDemoSession } from "@/lib/voice-demo-session";
 import { twilioMessagingConfigured } from "@/lib/twilio-sms";
@@ -27,6 +29,7 @@ export async function GET(req: NextRequest) {
   }
 
   const verified = Boolean(row.email_verified_at || row.phone_verified_at);
+  const dailyQuota = await getVoiceDemoDailyQuotaStatus(row.email, { ip: clientIp(req) });
 
   return NextResponse.json({
     ok: true,
@@ -41,5 +44,11 @@ export async function GET(req: NextRequest) {
     promoSent: Boolean(row.promo_sent_at),
     resendConfigured: Boolean(process.env.RESEND_API_KEY?.trim()),
     smsConfigured: twilioMessagingConfigured(),
+    dailyQuota: {
+      used: dailyQuota.used,
+      limit: dailyQuota.limit,
+      remaining: dailyQuota.remaining,
+      allowlisted: dailyQuota.allowlisted,
+    },
   });
 }

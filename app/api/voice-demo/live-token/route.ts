@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { enforceApiRateLimit, rateLimitResponse, clientIp } from "@/lib/api-rate-limit";
+import { getVoiceDemoLead } from "@/lib/voice-demo-db";
+import {
+  reserveVoiceDemoDailySlot,
+  VOICE_DEMO_DAILY_LIMIT_MESSAGE,
+} from "@/lib/voice-demo-daily-quota";
 import { createVoiceDemoLiveToken } from "@/lib/voice-demo-live-token";
 import { readVoiceDemoSession } from "@/lib/voice-demo-session";
 import type { VoiceDemoToolMode } from "@/lib/voice-demo-tools";
@@ -28,6 +33,33 @@ export async function POST(req: NextRequest) {
 
   if (mode === "demo" && !session.verified) {
     return NextResponse.json({ error: "Verify your code first." }, { status: 403 });
+  }
+
+  if (mode === "demo") {
+    const row = await getVoiceDemoLead(session.leadId);
+    const quota = await reserveVoiceDemoDailySlot({
+      email: row?.email,
+      leadId: session.leadId,
+      ip: clientIp(req),
+    });
+    if (!quota.allowed) {
+      return NextResponse.json(
+        {
+          error: VOICE_DEMO_DAILY_LIMIT_MESSAGE,
+          dailyQuota: {
+            used: quota.used,
+            limit: quota.limit,
+            remaining: quota.remaining,
+          },
+        },
+        {
+          status: 429,
+          headers: quota.retryAfterSec
+            ? { "Retry-After": String(quota.retryAfterSec) }
+            : undefined,
+        }
+      );
+    }
   }
 
   const token = await createVoiceDemoLiveToken(session.leadId, mode);

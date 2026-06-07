@@ -22,6 +22,12 @@ export function VoiceDemoWidget() {
   const [caption, setCaption] = useState<VoiceDemoCaption | null>(null);
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [website, setWebsite] = useState("");
+  const [dailyQuota, setDailyQuota] = useState<{
+    used: number;
+    limit: number;
+    remaining: number;
+    allowlisted?: boolean;
+  } | null>(null);
 
   const live = useVoiceDemoLive({
     onPhaseTransition: (transition) => {
@@ -53,16 +59,24 @@ export function VoiceDemoWidget() {
     if (!open) return;
     void fetch("/api/voice-demo/status")
       .then((r) => r.json())
-      .then((data: { verified?: boolean; active?: boolean; destination?: string }) => {
-        if (data.active && data.verified) {
-          setPhase("demo");
-        } else if (data.active) {
-          setPhase("verify");
-          if (data.destination) setDestination(data.destination);
-        } else {
-          setPhase("gate");
+      .then(
+        (data: {
+          verified?: boolean;
+          active?: boolean;
+          destination?: string;
+          dailyQuota?: { used: number; limit: number; remaining: number; allowlisted?: boolean };
+        }) => {
+          if (data.dailyQuota) setDailyQuota(data.dailyQuota);
+          if (data.active && data.verified) {
+            setPhase("demo");
+          } else if (data.active) {
+            setPhase("verify");
+            if (data.destination) setDestination(data.destination);
+          } else {
+            setPhase("gate");
+          }
         }
-      })
+      )
       .catch(() => {});
   }, [open]);
 
@@ -117,8 +131,10 @@ export function VoiceDemoWidget() {
         ok?: boolean;
         destination?: string;
         error?: string;
+        dailyQuota?: { used: number; limit: number; remaining: number };
       };
       if (!res.ok) {
+        if (data.dailyQuota) setDailyQuota(data.dailyQuota);
         setFormError(data.error ?? "Could not start. Try again.");
         return;
       }
@@ -243,7 +259,8 @@ export function VoiceDemoWidget() {
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
                     Enter your email to try Jarvis. We&apos;ll send a verification code, then chat
-                    about 998 — Jarvis will ask your name and phone to build your profile.
+                    about 998 — Jarvis will ask your name and phone to build your profile. Up to 3
+                    voice demos per day per email.
                   </p>
 
                   <div>
@@ -320,6 +337,11 @@ export function VoiceDemoWidget() {
 
               {configured && phase === "demo" && (
                 <div className="space-y-4">
+                  {dailyQuota && !dailyQuota.allowlisted && dailyQuota.remaining > 0 && (
+                    <p className="text-center text-xs text-ink-soft">
+                      {dailyQuota.remaining} of {dailyQuota.limit} demos left today
+                    </p>
+                  )}
                   <div className="flex flex-col items-center gap-3 py-4">
                     <VoiceJarvisOrb
                       levels={live.jarvisLevels}
