@@ -199,6 +199,13 @@ export async function lookupUsWeatherByZip(zip: string): Promise<UsWeatherLookup
   };
 }
 
+/** Spoken acknowledgment after the visitor gives a ZIP — before the weather fetch. */
+export function buildWeatherZipConfirmLine(
+  place: Pick<UsZipPlace, "zip" | "city" | "stateName">
+): string {
+  return `Thank you — let me look up the weather for ${place.city}, ${place.stateName}, ${place.zip}.`;
+}
+
 export function formatPossibleLocationLabel(
   city: string | null,
   state: string | null,

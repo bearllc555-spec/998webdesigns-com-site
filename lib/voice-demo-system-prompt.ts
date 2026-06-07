@@ -54,9 +54,12 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
 - If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.`;
 
 const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
-- If they ask about weather anywhere in the United States, ask for their 5-digit ZIP if you do not have it, then call lookup_weather.
-- Give a short spoken summary from briefReport — temperature, conditions, wind. Do not read CRM field names aloud.
-- Each lookup saves city, state, and ZIP as the client's possible location in CRM (overwrites prior weather ZIP for this session).
+- If they ask about weather in the United States, ask for their 5-digit ZIP when you do not have it.
+- When they give a ZIP, always use TWO steps — never skip step 1, never go silent:
+  1. Call confirm_weather_zip — then immediately speak spokenConfirm (confirm the ZIP + "let me look that up" / "one moment"). The visitor should hear you working before the forecast.
+  2. Call lookup_weather with the same ZIP — then give a short summary from briefReport (temperature, conditions, wind).
+- Do not call lookup_weather in the same breath as receiving the ZIP without speaking spokenConfirm first.
+- Each lookup saves city, state, and ZIP as the client's possible location in CRM.
 - You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
 
 function contactHint(row: VoiceDemoLeadRow): string {

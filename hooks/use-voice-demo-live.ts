@@ -285,6 +285,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         for (const call of calls) {
           const name = call.name ?? "";
           const args = (call.args ?? {}) as Record<string, unknown>;
+          if (name === "confirm_weather_zip") {
+            const zip = typeof args.zipCode === "string" ? args.zipCode.trim() : "";
+            optionsRef.current.onStatus?.(
+              zip ? `Confirming ZIP ${zip}…` : "Confirming ZIP…"
+            );
+          } else if (name === "lookup_weather") {
+            optionsRef.current.onStatus?.("Looking up weather…");
+          }
           const result = await runTool(name, args);
 
           if (name === "verify_code" && result.verified === true) {

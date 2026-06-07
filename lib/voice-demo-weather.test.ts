@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildWeatherZipConfirmLine,
   formatBriefWeatherReport,
   formatPossibleLocationLabel,
   normalizeUsZipCode,
@@ -33,6 +34,23 @@ describe("voice-demo-weather", () => {
     expect(report).toContain("Little Falls");
     expect(report).toContain("72 degrees");
     expect(report).toContain("partly cloudy");
+  });
+
+  it("builds spoken ZIP confirmation before weather fetch", () => {
+    expect(
+      buildWeatherZipConfirmLine({
+        zip: "07424",
+        city: "Little Falls",
+        stateName: "New Jersey",
+      })
+    ).toContain("07424");
+    expect(
+      buildWeatherZipConfirmLine({
+        zip: "07424",
+        city: "Little Falls",
+        stateName: "New Jersey",
+      })
+    ).toMatch(/look up the weather/i);
   });
 
   it("formats possible location label for CRM", () => {

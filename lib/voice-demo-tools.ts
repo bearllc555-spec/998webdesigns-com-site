@@ -19,7 +19,11 @@ import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
-import { lookupUsWeatherByZip } from "@/lib/voice-demo-weather";
+import {
+  buildWeatherZipConfirmLine,
+  lookupUsWeatherByZip,
+  resolveUsZipPlace,
+} from "@/lib/voice-demo-weather";
 import { Type, type ToolListUnion } from "@google/genai";
 
 export type VoiceDemoToolMode = "verify" | "demo";
@@ -136,15 +140,30 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
-          name: "lookup_weather",
+          name: "confirm_weather_zip",
           description:
-            "Look up current US weather by 5-digit ZIP code. Saves city, state, and ZIP as the client's possible location in CRM. Give a brief spoken weather report.",
+            "Step 1 of weather: visitor just gave a US ZIP. Fast — validates ZIP, saves possible location. Returns spokenConfirm — you MUST speak it (confirm ZIP + say you are looking it up) before calling lookup_weather.",
           parameters: {
             type: Type.OBJECT,
             properties: {
               zipCode: {
                 type: Type.STRING,
-                description: "US ZIP code (5 digits, or ZIP+4)",
+                description: "US ZIP code the visitor just provided",
+              },
+            },
+            required: ["zipCode"],
+          },
+        },
+        {
+          name: "lookup_weather",
+          description:
+            "Step 2 of weather: fetch current conditions after you spoke confirm_weather_zip spokenConfirm. Never call without confirm_weather_zip first in the same request.",
+          parameters: {
+            type: Type.OBJECT,
+            properties: {
+              zipCode: {
+                type: Type.STRING,
+                description: "Same US ZIP confirmed in confirm_weather_zip",
               },
             },
             required: ["zipCode"],
@@ -388,6 +407,33 @@ export async function executeVoiceDemoTool(
     };
   }
 
+  if (name === "confirm_weather_zip") {
+    const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
+    const placeResult = await resolveUsZipPlace(zipCode);
+    if (!placeResult.ok) {
+      return { ok: false, error: placeResult.error };
+    }
+    const { place } = placeResult;
+
+    await updateVoiceDemoLead(leadId, {
+      location_zip: place.zip,
+      location_city: place.city,
+      location_state: place.state,
+    });
+
+    const spokenConfirm = buildWeatherZipConfirmLine(place);
+    return {
+      ok: true,
+      zip: place.zip,
+      city: place.city,
+      state: place.state,
+      spokenConfirm,
+      message:
+        `Speak spokenConfirm now in a relaxed tone — confirm their ZIP and say you are looking it up. ` +
+        `Do NOT give weather data yet. Then call lookup_weather with zipCode "${place.zip}".`,
+    };
+  }
+
   if (name === "lookup_weather") {
     const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
     const result = await lookupUsWeatherByZip(zipCode);
@@ -408,7 +454,8 @@ export async function executeVoiceDemoTool(
       state: result.state,
       briefReport: result.briefReport,
       possibleLocation: `${result.city}, ${result.state} ${result.zip}`,
-      message: `Give a brief weather report using briefReport. City, state, and ZIP saved as client's possible location in CRM.`,
+      message:
+        "Give a brief spoken weather summary from briefReport — temperature, conditions, wind. Keep it short.",
     };
   }
 
