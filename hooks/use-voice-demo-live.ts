@@ -25,11 +25,18 @@ import {
 } from "@/lib/voice-demo-jarvis-audio-level";
 import {
   buildFarewellHoldNudge,
-  canModelEndConversation,
+  isAssistantExplicitGoodbye,
   isUserExplicitlyDone,
   isUserFarewellEcho,
   shouldClientScheduleFarewellHangup,
 } from "@/lib/voice-demo-farewell";
+import {
+  canClientScheduleHangup,
+  deriveVoiceDemoSessionPhase,
+  TOOL_END_CONVERSATION_CLIENT_OWNED,
+  type VoiceDemoHangupReason,
+  type VoiceDemoSessionPhase,
+} from "@/lib/voice-demo-phase";
 import {
   buildPostNameGreetingNudge,
   buildPostNameHelpOnlyNudge,
@@ -230,7 +237,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const goodbyeNudgeSentRef = useRef(false);
   const farewellHoldSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
-  const pendingEndConversationRef = useRef(false);
+  const pendingClientHangupRef = useRef(false);
+  const hangupReasonRef = useRef<VoiceDemoHangupReason | null>(null);
   const weatherDemoAcceptedRef = useRef(false);
   const promoWeatherNudgeSentRef = useRef(false);
   const suppressPromoAudioDuringWeatherRef = useRef(false);
@@ -323,6 +331,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     reconnectScheduledRef.current = false;
   }, []);
 
+  const getSessionPhase = useCallback((): VoiceDemoSessionPhase => {
+    return deriveVoiceDemoSessionPhase({
+      postNameLineSpoken: postNameLineSpokenRef.current,
+      awaitingWeatherYesNo: awaitingWeatherYesNoRef.current,
+      awaitingZipDigits: awaitingZipDigitsRef.current,
+      awaitingZipConfirm: awaitingZipConfirmRef.current,
+      awaitingWeatherForecastDelivery: awaitingWeatherForecastDeliveryRef.current,
+      closeQueuePhase: closeQueuePhaseRef.current,
+      jarvisFarewellSent: jarvisFarewellSentRef.current,
+      goodbyeNudgeSent: goodbyeNudgeSentRef.current,
+      wrapUpTimerActive: wrapUpTimerRef.current !== null,
+      farewellDisconnecting: farewellDisconnectingRef.current,
+      visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
+    });
+  }, []);
+
   const scheduleLiveReconnect = useCallback(
     (reason: string, meta?: Record<string, unknown>) => {
       if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
@@ -331,6 +355,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
         setConnected(false);
         stopOrbLoop();
+        hangupReasonRef.current = "reconnect_exhausted";
+        logVoiceDemoOps({
+          kind: "client_hangup_scheduled",
+          message: "Live reconnect attempts exhausted",
+          severity: "warn",
+          meta: { phase: getSessionPhase(), hangupReason: "reconnect_exhausted", reason },
+        });
         optionsRef.current.onUnexpectedClose?.();
         return;
       }
@@ -357,7 +388,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         void connectRef.current(modeRef.current, { resume: true });
       }, RECONNECT_DELAY_MS);
     },
-    [stopOrbLoop]
+    [getSessionPhase, stopOrbLoop]
   );
 
   const clearPostNameGreetingTimer = useCallback(() => {
@@ -1900,6 +1931,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             optionsRef.current.onStatus?.(
               "Muted too long — session ended. Tap Start voice to chat again."
             );
+            hangupReasonRef.current = "mic_mute_timeout";
+            logVoiceDemoOps({
+              kind: "client_hangup_scheduled",
+              message: "Mic muted too long — hangup",
+              meta: { phase: getSessionPhase(), hangupReason: "mic_mute_timeout" },
+            });
             disconnect(true);
           }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
         };
@@ -1908,7 +1945,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         optionsRef.current.onStatus?.("Microphone on — Jarvis can hear you again.");
       }
     },
-    [applyMicMuted, clearMicMuteDisconnectTimer, disconnect]
+    [applyMicMuted, clearMicMuteDisconnectTimer, disconnect, getSessionPhase]
   );
 
   const toggleMicMute = useCallback(() => {
@@ -1981,15 +2018,34 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, [disconnect, latchFarewellClosing]);
 
-  const scheduleFarewellHangup = useCallback(() => {
-    if (farewellDisconnectingRef.current || reconnectingRef.current) return;
-    if (weatherDemoStillIncomplete()) return;
-    void finishConversation();
-  }, [finishConversation, weatherDemoStillIncomplete]);
+  const scheduleFarewellHangup = useCallback(
+    (reason: VoiceDemoHangupReason) => {
+      if (farewellDisconnectingRef.current || reconnectingRef.current) return;
+      if (weatherDemoStillIncomplete()) return;
+      hangupReasonRef.current = reason;
+      logVoiceDemoOps({
+        kind: "client_hangup_scheduled",
+        message: `Client scheduling hangup: ${reason}`,
+        meta: {
+          phase: getSessionPhase(),
+          hangupReason: reason,
+          assistantTail: lastAssistantTextRef.current.slice(-120),
+        },
+      });
+      void finishConversation();
+    },
+    [finishConversation, getSessionPhase, weatherDemoStillIncomplete]
+  );
 
   const endCallNow = useCallback(() => {
     if (farewellDisconnectingRef.current) return;
     farewellDisconnectingRef.current = true;
+    hangupReasonRef.current = "visitor_farewell_echo";
+    logVoiceDemoOps({
+      kind: "client_hangup_scheduled",
+      message: "Visitor farewell echo — immediate hangup",
+      meta: { phase: getSessionPhase(), hangupReason: "visitor_farewell_echo" },
+    });
     latchFarewellClosing();
     micRef.current?.stop();
     optionsRef.current.onConversationEnd?.();
@@ -1997,7 +2053,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     disconnect(true);
     farewellDisconnectingRef.current = false;
     lastAssistantTextRef.current = "";
-  }, [disconnect, latchFarewellClosing]);
+  }, [disconnect, getSessionPhase, latchFarewellClosing]);
 
   const handleMessage = useCallback(
     async (message: LiveMessage) => {
@@ -2245,15 +2301,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
 
-            if (
-              result.endCall === true &&
-              isAssistantHiddenCueLeak(lastAssistantTextRef.current)
-            ) {
+            if (isAssistantHiddenCueLeak(lastAssistantTextRef.current)) {
               logVoiceDemoOps({
                 kind: "end_conversation_early_blocked",
                 message: "Blocked end_conversation after hidden cue leak",
                 severity: "warn",
-                meta: { assistantTail: lastAssistantTextRef.current.slice(-80) },
+                meta: {
+                  phase: getSessionPhase(),
+                  assistantTail: lastAssistantTextRef.current.slice(-80),
+                },
               });
               sendWrapUpCueLeakRecovery();
               responses.push({
@@ -2268,11 +2324,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
 
-            if (result.endCall === true && weatherDemoStillIncomplete()) {
+            if (weatherDemoStillIncomplete()) {
               logVoiceDemoOps({
                 kind: "end_conversation_blocked",
                 message: "Blocked end_conversation during incomplete weather demo",
                 meta: {
+                  phase: getSessionPhase(),
                   awaitingZipDigits: awaitingZipDigitsRef.current,
                   awaitingZipConfirm: awaitingZipConfirmRef.current,
                   awaitingForecast: awaitingWeatherForecastDeliveryRef.current,
@@ -2301,64 +2358,63 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               });
               continue;
             }
-            if (result.endCall === true) {
-              if (modeRef.current === "demo" && !postNameLineSpokenRef.current) {
-                logVoiceDemoOps({
-                  kind: "end_conversation_early_blocked",
-                  message: "Blocked end_conversation during name onboarding",
-                  severity: "warn",
-                });
-                responses.push({
-                  id: call.id,
-                  name,
-                  response: {
-                    ok: false,
-                    error:
-                      "Name onboarding is not complete. Call save_name when you hear their name, greet once with how may I help you today, then continue — do not end the call.",
-                  },
-                });
-                continue;
-              }
-              const canEnd = canModelEndConversation({
-                farewellSent: jarvisFarewellSentRef.current,
-                goodbyeNudgeSent: goodbyeNudgeSentRef.current,
-                visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
-                assistantText: lastAssistantTextRef.current,
-                weatherDemoIncomplete: weatherDemoStillIncomplete(),
+
+            if (modeRef.current === "demo" && !postNameLineSpokenRef.current) {
+              logVoiceDemoOps({
+                kind: "end_conversation_early_blocked",
+                message: "Blocked end_conversation during name onboarding",
+                severity: "warn",
+                meta: { phase: getSessionPhase() },
               });
-              if (!canEnd) {
-                logVoiceDemoOps({
-                  kind: "end_conversation_early_blocked",
-                  message: "Blocked premature end_conversation before farewell",
-                  severity: "warn",
-                  meta: {
-                    assistantTail: lastAssistantTextRef.current.slice(-120),
-                  },
-                });
-                responses.push({
-                  id: call.id,
-                  name,
-                  response: {
-                    ok: false,
-                    error:
-                      "Too early to end the call. Continue helping the visitor — ask how you may assist or answer their question. Only call end_conversation after your final goodbye.",
-                  },
-                });
-                continue;
-              }
-              pendingEndConversationRef.current = true;
               responses.push({
                 id: call.id,
                 name,
                 response: {
-                  ok: true,
-                  endCall: true,
-                  message:
-                    "Acknowledged. Finish your current sentence if any audio remains, then stay silent.",
+                  ok: false,
+                  error:
+                    "Name onboarding is not complete. Call save_name when you hear their name, greet once with how may I help you today, then continue — do not end the call.",
                 },
               });
               continue;
             }
+
+            const phase = getSessionPhase();
+            const assistantText = lastAssistantTextRef.current;
+            logVoiceDemoOps({
+              kind: "model_end_conversation_blocked",
+              message: "Blocked model end_conversation — client owns hangup",
+              severity: "warn",
+              meta: {
+                phase,
+                assistantTail: assistantText.slice(-120),
+                straySignOff:
+                  isAssistantExplicitGoodbye(assistantText) && phase === "helping",
+              },
+            });
+
+            if (
+              canClientScheduleHangup({
+                phase,
+                farewellSent: jarvisFarewellSentRef.current,
+                goodbyeNudgeSent: goodbyeNudgeSentRef.current,
+                visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
+                assistantText,
+              }) &&
+              !shouldBlockFarewellHangup()
+            ) {
+              pendingClientHangupRef.current = true;
+              hangupReasonRef.current = "model_end_conversation_blocked";
+            }
+
+            responses.push({
+              id: call.id,
+              name,
+              response: {
+                ok: false,
+                error: TOOL_END_CONVERSATION_CLIENT_OWNED,
+              },
+            });
+            continue;
           }
 
           responses.push({
@@ -2617,9 +2673,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const wasInterrupted = assistantTurnInterruptedRef.current;
         assistantTurnInterruptedRef.current = false;
         finishPostNameGreetingTurn(assistantSnapshot, hadPostNameAtTurnStart, wasInterrupted);
-        const hadPendingEndConversation = pendingEndConversationRef.current;
-        if (hadPendingEndConversation) {
-          pendingEndConversationRef.current = false;
+        const hadPendingClientHangup = pendingClientHangupRef.current;
+        if (hadPendingClientHangup) {
+          pendingClientHangupRef.current = false;
         }
 
         const shouldWrapUpAfterThisTurn =
@@ -2643,23 +2699,36 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
           if (shouldWrapUpAfterThisTurn) return;
 
-          if (hadPendingEndConversation) {
+          if (hadPendingClientHangup) {
             if (shouldBlockFarewellHangup()) {
               sendWeatherZipPrematureGoodbyeRecovery();
             } else {
-              scheduleFarewellHangup();
+              if (!jarvisFarewellSentRef.current) {
+                latchFarewellClosing();
+              }
+              scheduleFarewellHangup(
+                hangupReasonRef.current ?? "model_end_conversation_blocked"
+              );
             }
             return;
           }
 
           if (
-            shouldClientScheduleFarewellHangup(
-              assistantSnapshot,
-              visitorExplicitlyDoneRef.current
-            ) &&
+            shouldClientScheduleFarewellHangup(assistantSnapshot, {
+              visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
+              farewellSent: jarvisFarewellSentRef.current,
+              goodbyeNudgeSent: goodbyeNudgeSentRef.current,
+              phase: getSessionPhase(),
+            }) &&
             !shouldBlockFarewellHangup()
           ) {
-            scheduleFarewellHangup();
+            if (!jarvisFarewellSentRef.current) {
+              latchFarewellClosing();
+            }
+            const reason: VoiceDemoHangupReason = goodbyeNudgeSentRef.current
+              ? "goodbye_nudge_complete"
+              : "client_final_goodbye";
+            scheduleFarewellHangup(reason);
           }
         })();
         if (modeRef.current === "demo") {
@@ -2811,6 +2880,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,
       syncWeatherCollectionState,
+      getSessionPhase,
+      latchFarewellClosing,
       scheduleLiveReconnect,
       schedulePostNameGreetingNudge,
       sendPostNameGreetingNudge,
@@ -2832,7 +2903,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         goodbyeNudgeSentRef.current = false;
         farewellHoldSentRef.current = false;
         farewellDisconnectingRef.current = false;
-        pendingEndConversationRef.current = false;
+        pendingClientHangupRef.current = false;
+        hangupReasonRef.current = null;
         weatherDemoAcceptedRef.current = false;
         promoWeatherNudgeSentRef.current = false;
         suppressPromoAudioDuringWeatherRef.current = false;

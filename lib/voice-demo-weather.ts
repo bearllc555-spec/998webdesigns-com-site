@@ -41,7 +41,7 @@ export function buildWeatherLookupFailedNudge(errorDetail: string, opts?: { retr
   return (
     `${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE} lookup_weather failed after retries (${errorDetail}). ` +
     `Apologize briefly that the weather lookup is unavailable right now. ` +
-    `Do not ask for another ZIP. Go to FINAL GOODBYE — warm sign-off, then end_conversation.`
+    `Do not ask for another ZIP. Go to FINAL GOODBYE — warm sign-off once; the system ends the call. Do not call end_conversation.`
   );
 }
 

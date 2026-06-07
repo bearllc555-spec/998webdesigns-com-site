@@ -1,3 +1,7 @@
+import {
+  canClientScheduleHangup,
+  type VoiceDemoSessionPhase,
+} from "@/lib/voice-demo-phase";
 import { isAssistantHiddenCueLeak } from "@/lib/voice-demo-wrapup-nudge";
 
 /** Visitor said they are finished — allows end_conversation after farewell. */
@@ -11,28 +15,8 @@ export function isUserExplicitlyDone(text: string): boolean {
   );
 }
 
-/** Block model end_conversation until farewell was spoken (give-up nudges require goodbye first). */
-export function canModelEndConversation(opts: {
-  farewellSent: boolean;
-  goodbyeNudgeSent: boolean;
-  visitorExplicitlyDone: boolean;
-  assistantText: string;
-  weatherDemoIncomplete?: boolean;
-}): boolean {
-  if (isAssistantHiddenCueLeak(opts.assistantText)) return false;
-  if (opts.weatherDemoIncomplete) return false;
-  if (opts.farewellSent) return true;
-  if (opts.goodbyeNudgeSent) return true;
-  if (isAssistantExplicitGoodbye(opts.assistantText)) return true;
-  if (
-    isSubstantiveServiceSpeech(opts.assistantText) &&
-    !isAssistantExplicitGoodbye(opts.assistantText)
-  ) {
-    return false;
-  }
-  if (opts.visitorExplicitlyDone && isAssistantFarewell(opts.assistantText)) return true;
-  return false;
-}
+/** @deprecated Demo hangup is client-owned — see lib/voice-demo-phase.ts */
+export { canModelEndConversation } from "@/lib/voice-demo-phase";
 
 /** Visitor echoed goodbye after Jarvis already closed — end the call, do not reply again. */
 export function isUserFarewellEcho(text: string): boolean {
@@ -77,6 +61,7 @@ export function isAssistantOnboardingOrHelpSpeech(text: string): boolean {
 
 export function isSubstantiveServiceSpeech(text: string): boolean {
   const t = text.trim().toLowerCase();
+  if (!t || isAssistantExplicitGoodbye(text)) return false;
   return (
     t.length >= 60 &&
     /\b(website|design fee|hosting|portfolio|pricing|timeline|pages|mobile|998)\b/.test(t)
@@ -115,16 +100,22 @@ export function isAssistantFarewell(text: string): boolean {
   return isAssistantFarewellPhrase(assistantFarewellTail(text));
 }
 
-/** Client auto-hangup — stricter than isAssistantFarewell to avoid FAQ false positives. */
+/** Client auto-hangup — delegates to phase-aware rules (no stray FAQ sign-off). */
 export function shouldClientScheduleFarewellHangup(
   text: string,
-  visitorExplicitlyDone: boolean
+  opts: {
+    visitorExplicitlyDone: boolean;
+    farewellSent: boolean;
+    goodbyeNudgeSent: boolean;
+    phase: VoiceDemoSessionPhase;
+  }
 ): boolean {
   if (isAssistantHiddenCueLeak(text)) return false;
-  if (isSubstantiveServiceSpeech(text) && !isAssistantExplicitGoodbye(text)) {
-    return false;
-  }
-  if (isAssistantExplicitGoodbye(text)) return true;
-  if (visitorExplicitlyDone && isAssistantFarewell(text)) return true;
-  return false;
+  return canClientScheduleHangup({
+    phase: opts.phase,
+    farewellSent: opts.farewellSent,
+    goodbyeNudgeSent: opts.goodbyeNudgeSent,
+    visitorExplicitlyDone: opts.visitorExplicitlyDone,
+    assistantText: text,
+  });
 }

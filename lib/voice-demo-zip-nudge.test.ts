@@ -118,7 +118,7 @@ describe("voice-demo-zip-nudge", () => {
     const nudge = buildZipSilenceGiveUpNudge();
     expect(nudge).toContain(VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE);
     expect(nudge).toContain(VOICE_DEMO_GOODBYE_LINE);
-    expect(nudge).toMatch(/end_conversation/i);
+    expect(nudge).toMatch(/Do not call end_conversation/i);
     expect(nudge).toMatch(/Do not ask for the ZIP again/i);
   });
 
@@ -130,18 +130,18 @@ describe("voice-demo-zip-nudge", () => {
     expect(nudge).toMatch(/wait for yes or no/i);
   });
 
-  it("nudges goodbye and end_conversation after repeat weather offer silence", () => {
+  it("nudges goodbye after repeat weather offer silence", () => {
     const nudge = buildWeatherYesNoGiveUpNudge();
     expect(nudge).toContain(VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE);
     expect(nudge).toContain(VOICE_DEMO_GOODBYE_LINE);
-    expect(nudge).toMatch(/end_conversation/i);
+    expect(nudge).toMatch(/Do not call end_conversation/i);
     expect(nudge).toMatch(/Do not ask again/i);
   });
 
   it("nudges goodbye path when visitor declines weather", () => {
     const nudge = buildWeatherDeclineNudge();
     expect(nudge).toContain(VOICE_DEMO_WEATHER_DECLINE_CUE);
-    expect(nudge).toMatch(/end_conversation/i);
+    expect(nudge).toMatch(/Do not call end_conversation/i);
   });
 
   it("detects weather offer accept and decline phrases", () => {

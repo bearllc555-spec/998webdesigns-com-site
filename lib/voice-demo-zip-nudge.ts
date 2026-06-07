@@ -135,8 +135,8 @@ export function buildZipSilenceRepeatNudge(): string {
 export function buildZipSilenceGiveUpNudge(): string {
   return (
     `${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE} Visitor did not reply after the ZIP repeat ask. ` +
-    `Say exactly: "${VOICE_DEMO_GOODBYE_LINE}" once, then STOP and call end_conversation immediately. ` +
-    `Never repeat the goodbye. Do not ask for the ZIP again. Do not offer weather or promo.`
+    `Say exactly: "${VOICE_DEMO_GOODBYE_LINE}" once, then STOP — the system ends the call automatically. ` +
+    `Do not call end_conversation. Never repeat the goodbye. Do not ask for the ZIP again. Do not offer weather or promo.`
   );
 }
 
@@ -151,15 +151,15 @@ export function buildWeatherYesNoPauseNudge(): string {
 export function buildWeatherYesNoGiveUpNudge(): string {
   return (
     `${VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE} Visitor did not reply after the repeat weather offer. ` +
-    `Say exactly: "${VOICE_DEMO_GOODBYE_LINE}" once, then STOP and call end_conversation immediately. ` +
-    `Never repeat the goodbye. Do not ask again. Do not offer weather or promo.`
+    `Say exactly: "${VOICE_DEMO_GOODBYE_LINE}" once, then STOP — the system ends the call automatically. ` +
+    `Do not call end_conversation. Never repeat the goodbye. Do not ask again. Do not offer weather or promo.`
   );
 }
 
 export function buildWeatherDeclineNudge(): string {
   return (
     `${VOICE_DEMO_WEATHER_DECLINE_CUE} Visitor declined the weather demo. ` +
-    `Continue FINAL GOODBYE: follow PROMO OFFER rules if needed, then warm sign-off and call end_conversation.`
+    `Continue FINAL GOODBYE: follow PROMO OFFER rules if needed, then warm sign-off once — the system ends the call. Do not call end_conversation.`
   );
 }
 

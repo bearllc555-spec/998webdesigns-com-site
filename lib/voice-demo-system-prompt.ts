@@ -104,11 +104,12 @@ FINAL GOODBYE (end of chat — when they say they are done):
   - Hidden cue "${VOICE_DEMO_WEATHER_DECLINE_CUE}" means they declined — proceed to promo/goodbye.
 - THEN follow CLOSE QUEUE rules if they completed the weather demo; otherwise PROMO OFFER only when the close queue reaches step 3.
 - One warm sign-off in spirit of: "${VOICE_DEMO_GOODBYE_LINE}" Keep it brief and sincere.
-- Immediately call end_conversation once. Do not speak after calling end_conversation.
+- NEVER call end_conversation — the system disconnects automatically after your final goodbye. Stay silent after the sign-off.
 - Say the thank-you sign-off exactly ONCE per session — never repeat "thank you for contacting 998" or any goodbye line.
+- NEVER append sign-off or "thank you for contacting" language to FAQ answers mid-call — answer the question only, then stop.
 
 NEVER rush to goodbye without waiting for a response to the wrap-up question you just asked.
-After final goodbye + end_conversation: if they say bye / thanks / goodbye back, stay completely silent — the call disconnects automatically. Never say goodbye a second time.`;
+After final goodbye: if they say bye / thanks / goodbye back, stay completely silent — the call disconnects automatically. Never say goodbye a second time.`;
 
 export const VOICE_DEMO_INTRO = VOICE_DEMO_MANDATORY_OPENING;
 
@@ -137,7 +138,7 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
   2. STOP and wait for their answer. Do not send in the same turn as the ask.
   3. Only if they say yes / sure / go ahead / please → call send_promo_email once.
   4. After send_promo_email succeeds, tell them briefly it is on its way — never announce a send you did not ask permission for.
-- If they say no / not interested to the coupon: hidden cue "${VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE}" — ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" and wait. If they are done → goodbye and end_conversation.
+- If they say no / not interested to the coupon: hidden cue "${VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE}" — ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" and wait. If they are done → goodbye once; system ends the call.
 - send_promo_email emails the code and may text their profile phone if we have it. Only say email sent if promoEmailSent is true; only say text sent if promoSmsSent is true.
 - If email was sent but SMS failed, apologize for the text and call send_promo_sms to retry.
 - If promo already sent (promo_sent_at on file), do not re-offer.
@@ -155,7 +156,7 @@ const CLOSE_QUEUE_RULES = `CLOSE QUEUE (after weather forecast — strict order,
    - If yes → send_promo_email, brief confirmation, then wrap-up if they want more help.
    - If no → "${VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE}" → "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" → if done, goodbye.
 
-4. WRAP-UP / GOODBYE — If they decline coupon or are done: ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}". If no / that's all → "${VOICE_DEMO_GOODBYE_LINE}" once → end_conversation.
+4. WRAP-UP / GOODBYE — If they decline coupon or are done: ask "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}". If no / that's all → "${VOICE_DEMO_GOODBYE_LINE}" once — system ends the call.
 
 Never skip steps 1–2 to offer the coupon early. Never bundle two close-queue questions in one turn.`;
 
@@ -169,7 +170,7 @@ PROACTIVE OFFER (once per session — end of chat only):
 - Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
 - After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" — STOP and wait for yes or no. Do not keep talking or ask for ZIP.
 - Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent on the first ask; speak the didn't-get line and repeat question above, then wait.
-- If they are still silent after the repeat question, say exactly "${VOICE_DEMO_GOODBYE_LINE}" and call end_conversation — do not ask a third time.
+- If they are still silent after the repeat question, say exactly "${VOICE_DEMO_GOODBYE_LINE}" — system ends the call; do not ask a third time.
 - Hidden cue "${VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE}" — silent after the repeat; speak the goodbye line and end the call.
 - If they ask about weather earlier themselves, skip the pitch; ask for ZIP directly.
 
@@ -178,7 +179,7 @@ LOOKUP (when you have a ZIP):
 - NEVER use "possible location on file" or an old CRM ZIP for lookup — only the ZIP the visitor speaks in this session.
 - Ask for their ZIP exactly once per attempt, then listen — never ask for the ZIP twice in a row or talk over them.
 - If they say nothing after the ZIP ask, hidden cue "${VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE}" means: say exactly "${VOICE_DEMO_ZIP_DIDNT_GET_LINE}" then repeat the ZIP ask — STOP and wait. Do not say goodbye yet.
-- If they are still silent after that repeat, hidden cue "${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE}" means: say the goodbye line and call end_conversation — do not ask a third time.
+- If they are still silent after that repeat, hidden cue "${VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE}" means: say the goodbye line — system ends the call; do not ask a third time.
 - When they give digits, wait until they finish. Hidden cue "${VOICE_DEMO_ZIP_PAUSE_CUE}" means they stopped speaking — the client stages the ZIP; do NOT call confirm_weather_zip yourself.
 - Hidden cue "${VOICE_DEMO_ZIP_STAGED_CUE}" means the client staged the ZIP — speak the spokenConfirm in the cue word for word and wait for yes.
 - Hidden cue "${VOICE_DEMO_ZIP_CITY_CORRECT_CUE}" means you named the wrong city — speak ONLY the quoted spokenConfirm in the cue, nothing else, then wait for yes.

@@ -70,16 +70,31 @@ describe("voice demo farewell", () => {
     expect(
       isAssistantExplicitGoodbye("Thank you for contacting 998 web designs — goodbye.")
     ).toBe(true);
-    expect(shouldClientScheduleFarewellHangup("Have a pleasant day, sir.", false)).toBe(
-      false
-    );
-    expect(shouldClientScheduleFarewellHangup("Have a pleasant day, sir.", true)).toBe(
-      true
-    );
+    const hangupOpts = (overrides: Record<string, unknown> = {}) => ({
+      visitorExplicitlyDone: false,
+      farewellSent: false,
+      goodbyeNudgeSent: false,
+      phase: "helping" as const,
+      ...overrides,
+    });
+    expect(
+      shouldClientScheduleFarewellHangup("Have a pleasant day, sir.", hangupOpts())
+    ).toBe(false);
+    expect(
+      shouldClientScheduleFarewellHangup(
+        "Have a pleasant day, sir.",
+        hangupOpts({ visitorExplicitlyDone: true, phase: "final_goodbye" })
+      )
+    ).toBe(true);
     const serviceAnswer =
       "We build custom websites for local businesses, sir — mobile-friendly pages, hosting included, and a clear design timeline. Our design fee covers strategy, copy, and launch on 998 hosting.";
-    expect(shouldClientScheduleFarewellHangup(serviceAnswer, true)).toBe(false);
-    expect(shouldClientScheduleFarewellHangup(serviceAnswer, false)).toBe(false);
+    expect(
+      shouldClientScheduleFarewellHangup(
+        serviceAnswer,
+        hangupOpts({ visitorExplicitlyDone: true, phase: "final_goodbye" })
+      )
+    ).toBe(false);
+    expect(shouldClientScheduleFarewellHangup(serviceAnswer, hangupOpts())).toBe(false);
     expect(
       canModelEndConversation({
         farewellSent: false,
@@ -95,7 +110,7 @@ describe("voice demo farewell", () => {
     expect(isUserExplicitlyDone("What is hosting?")).toBe(false);
   });
 
-  it("blocks premature end_conversation until farewell", () => {
+  it("blocks model end_conversation — client owns hangup", () => {
     expect(
       canModelEndConversation({
         farewellSent: false,
@@ -106,19 +121,11 @@ describe("voice demo farewell", () => {
     ).toBe(false);
     expect(
       canModelEndConversation({
-        farewellSent: false,
-        goodbyeNudgeSent: false,
-        visitorExplicitlyDone: false,
+        farewellSent: true,
+        goodbyeNudgeSent: true,
+        visitorExplicitlyDone: true,
         assistantText: "Thank you for contacting 998 web designs — goodbye.",
       })
-    ).toBe(true);
-    expect(
-      canModelEndConversation({
-        farewellSent: false,
-        goodbyeNudgeSent: true,
-        visitorExplicitlyDone: false,
-        assistantText: "How may I help you today?",
-      })
-    ).toBe(true);
+    ).toBe(false);
   });
 });

@@ -45,9 +45,10 @@ describe("voice-demo-system-prompt closing", () => {
     expect(VOICE_DEMO_CLOSING).toMatch(/STOP and wait/i);
   });
 
-  it("requires thank-you sign-off before end_conversation", () => {
+  it("requires client-owned hangup after final sign-off", () => {
     expect(VOICE_DEMO_CLOSING).toContain("Thank you for contacting 998 web designs");
-    expect(VOICE_DEMO_CLOSING).toContain("end_conversation");
+    expect(VOICE_DEMO_CLOSING).toMatch(/NEVER call end_conversation/i);
+    expect(VOICE_DEMO_CLOSING).toMatch(/system disconnects automatically/i);
   });
 });
 

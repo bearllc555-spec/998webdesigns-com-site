@@ -123,7 +123,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "end_conversation",
           description:
-            "Call right after your final goodbye. Ends the voice call — do not speak or reply again after this.",
+            "Deprecated — do not call. The system ends the call automatically after your final goodbye.",
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {

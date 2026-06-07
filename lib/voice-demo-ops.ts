@@ -23,7 +23,9 @@ export type VoiceDemoOpsKind =
   | "weather_lookup_success"
   | "session_anomaly"
   | "session_resumption"
-  | "end_conversation_early_blocked";
+  | "end_conversation_early_blocked"
+  | "client_hangup_scheduled"
+  | "model_end_conversation_blocked";
 
 export type VoiceDemoOpsEvent = {
   at: string;
@@ -127,6 +129,8 @@ export function buildVoiceDemoOpsEvent(
     (kind === "zip_city_drift" ||
     kind === "end_conversation_blocked" ||
     kind === "end_conversation_early_blocked" ||
+    kind === "model_end_conversation_blocked" ||
+    kind === "client_hangup_scheduled" ||
     kind === "tool_blocked_confirm_zip" ||
     kind === "tool_blocked_lookup_weather" ||
     kind === "tool_blocked_promo_weather" ||
@@ -240,6 +244,8 @@ export function coerceVoiceDemoOpsInput(body: Record<string, unknown>): VoiceDem
     "session_anomaly",
     "session_resumption",
     "end_conversation_early_blocked",
+    "client_hangup_scheduled",
+    "model_end_conversation_blocked",
   ];
   if (!allowed.includes(kind as VoiceDemoOpsKind)) return null;
 

@@ -105,7 +105,7 @@ export function buildPromoDeclinedWrapUpNudge(): string {
   return (
     `${VOICE_DEMO_CLOSE_PROMO_DECLINED_CUE} Visitor declined the coupon email. ` +
     `Ask exactly: "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" then STOP and wait. ` +
-    `If they say no / that's all / nothing else → say "${VOICE_DEMO_GOODBYE_LINE}" once and call end_conversation.`
+    `If they say no / that's all / nothing else → say "${VOICE_DEMO_GOODBYE_LINE}" once — the system ends the call. Do not call end_conversation.`
   );
 }
 
@@ -113,7 +113,7 @@ export function buildCloseQueueSkipToWrapUpNudge(reason: string): string {
   return (
     `${VOICE_DEMO_CLOSE_SKIP_WRAPUP_CUE} ${reason} ` +
     `Ask exactly: "${VOICE_DEMO_WRAPUP_QUESTIONS[0]}" then STOP and wait. ` +
-    `No coupon offer this session. If they are done → goodbye and end_conversation.`
+    `No coupon offer this session. If they are done → goodbye once; system ends the call.`
   );
 }
 
