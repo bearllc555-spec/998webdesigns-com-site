@@ -13,6 +13,7 @@ import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing
 import { HOSTING_FREE_MONTH_SUMMARY, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import { hostingChoiceShortLabel } from "@/lib/hosting";
 import {
+  designFeeCents,
   designPromoSummary,
   isValidDesignPromoCode,
 } from "@/lib/design-promo";
