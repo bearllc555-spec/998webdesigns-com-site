@@ -23,16 +23,35 @@ export function isWeatherZipFlowActive(refs: WeatherZipFlowRefs): boolean {
   );
 }
 
+export type WeatherDemoProgress = WeatherZipFlowRefs & {
+  stagedZipPending: boolean;
+  zipLookupTriggered: boolean;
+  forecastComplete: boolean;
+};
+
+/** Weather pitch accepted but spoken forecast not delivered yet. */
+export function isWeatherDemoIncomplete(progress: WeatherDemoProgress): boolean {
+  if (progress.forecastComplete) return false;
+  if (progress.awaitingWeatherForecastDelivery || progress.zipLookupTriggered) return true;
+  if (
+    progress.awaitingZipConfirm ||
+    progress.awaitingZipDigits ||
+    progress.awaitingWeatherYesNo ||
+    progress.stagedZipPending
+  ) {
+    return true;
+  }
+  return progress.weatherDemoAccepted;
+}
+
 /** Block client auto-hangup until weather demo finishes or client authorizes goodbye. */
 export function shouldBlockClientFarewellHangup(opts: {
   goodbyeNudgeSent: boolean;
-  weatherZipFlow: WeatherZipFlowRefs;
-  zipLookupTriggered: boolean;
+  progress: WeatherDemoProgress;
 }): boolean {
+  if (isWeatherDemoIncomplete(opts.progress)) return true;
   if (opts.goodbyeNudgeSent) return false;
-  if (opts.weatherZipFlow.awaitingWeatherForecastDelivery) return true;
-  if (opts.zipLookupTriggered) return true;
-  return isWeatherZipFlowActive(opts.weatherZipFlow);
+  return isWeatherZipFlowActive(opts.progress);
 }
 
 /** Jarvis asked permission to email the coupon (or mentioned VOICE20 / discount). */
@@ -74,7 +93,24 @@ export function isAssistantZipCollectionPrompt(text: string): boolean {
 
 export function isAssistantZipReadBackPrompt(text: string): boolean {
   const lower = text.toLowerCase();
-  return /is that correct\?/i.test(text) && /\bzip\b/i.test(lower);
+  if (!/is that correct\??/i.test(text)) return false;
+  if (/\bzip\b/i.test(lower)) return true;
+  if (/\bfor [a-z][\w\s.'-]{1,40},\s*[a-z][\w\s.'-]{1,24}/i.test(lower)) return true;
+  return /\d/.test(lower) && /\b(correct|right)\b/i.test(lower);
+}
+
+/** Jarvis asked to confirm ZIP digits but omitted the staged city/state read-back. */
+export function assistantZipReadBackMissingStagedCity(
+  text: string,
+  staged: { city: string; spokenConfirm: string }
+): boolean {
+  const trimmed = text.trim();
+  if (!trimmed || !staged.spokenConfirm.trim()) return false;
+  if (trimmed.includes(staged.spokenConfirm)) return false;
+  if (new RegExp(`\\b${staged.city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(trimmed)) {
+    return false;
+  }
+  return /is that correct\??/i.test(trimmed) && /\d/.test(trimmed);
 }
 
 /** Minimum gap between hidden client weather nudges (avoids double prompts). */

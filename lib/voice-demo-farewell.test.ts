@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { shouldClientScheduleFarewellHangup } from "@/lib/voice-demo-farewell";
+import {
+  canModelEndConversation,
+  shouldClientScheduleFarewellHangup,
+} from "@/lib/voice-demo-farewell";
 
 describe("shouldClientScheduleFarewellHangup", () => {
   it("does not hang up on a substantive design-services FAQ answer", () => {
@@ -13,5 +16,17 @@ describe("shouldClientScheduleFarewellHangup", () => {
     const answer =
       "Happy to help with that. Thank you for contacting 998 Web Designs. Have a pleasant day.";
     expect(shouldClientScheduleFarewellHangup(answer, false)).toBe(true);
+  });
+
+  it("blocks end_conversation while weather demo is incomplete", () => {
+    expect(
+      canModelEndConversation({
+        farewellSent: false,
+        goodbyeNudgeSent: true,
+        visitorExplicitlyDone: false,
+        assistantText: "Thank you for contacting 998.",
+        weatherDemoIncomplete: true,
+      })
+    ).toBe(false);
   });
 });

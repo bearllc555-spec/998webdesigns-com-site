@@ -182,6 +182,14 @@ export function buildPromoBlockedDuringWeatherNudge(): string {
   );
 }
 
+export function buildPromoBlockedDuringZipConfirmNudge(spokenConfirm: string): string {
+  return (
+    `${VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE} Weather demo is NOT finished — do NOT offer coupon or email yet. ` +
+    `Say ONLY this exact ZIP read-back, then STOP and wait for yes or no: "${spokenConfirm}" ` +
+    `After they confirm yes, stay silent — the client will fetch weather. No goodbye.`
+  );
+}
+
 /** Hidden cue — visitor said yes but ZIP digits still needed (not promo consent). */
 export const VOICE_DEMO_ZIP_AMBIGUOUS_YES_CUE = "[zip-ambiguous-yes]";
 

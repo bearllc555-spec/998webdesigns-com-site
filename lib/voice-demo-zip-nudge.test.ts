@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
 import {
+  buildPromoBlockedDuringZipConfirmNudge,
   buildPromoBlockedDuringWeatherNudge,
   buildZipOnlyAfterAmbiguousYesNudge,
   buildWeatherAcceptZipNudge,
@@ -39,6 +40,15 @@ describe("voice-demo-zip-nudge", () => {
   it("counts spoken-word ZIP digits", () => {
     expect(countSpokenZipDigits("zero seven four two four")).toBe(5);
     expect(countSpokenZipDigits("07424")).toBe(5);
+  });
+
+  it("blocks promo during staged ZIP confirm with full read-back cue", () => {
+    const line =
+      "I have ZIP code 0 7 4 2 4 for Little Falls, New Jersey. Is that correct?";
+    const nudge = buildPromoBlockedDuringZipConfirmNudge(line);
+    expect(nudge).toContain(VOICE_DEMO_PROMO_WEATHER_BLOCKED_CUE);
+    expect(nudge).toContain(line);
+    expect(nudge).toMatch(/do NOT offer coupon/i);
   });
 
   it("blocks wrap-up questions during active weather ZIP flow", () => {

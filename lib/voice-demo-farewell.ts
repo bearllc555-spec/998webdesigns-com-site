@@ -15,7 +15,9 @@ export function canModelEndConversation(opts: {
   goodbyeNudgeSent: boolean;
   visitorExplicitlyDone: boolean;
   assistantText: string;
+  weatherDemoIncomplete?: boolean;
 }): boolean {
+  if (opts.weatherDemoIncomplete) return false;
   if (opts.farewellSent) return true;
   if (opts.goodbyeNudgeSent) return true;
   if (isAssistantExplicitGoodbye(opts.assistantText)) return true;
