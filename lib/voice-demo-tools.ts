@@ -264,7 +264,10 @@ export async function executeVoiceDemoTool(
     return {
       ok: true,
       name: visitorName,
-      message: `Name saved. Greet them warmly by name, then ask exactly: "${VOICE_DEMO_POST_NAME_LINE}" Never say profile complete or ask for their phone in this turn.`,
+      message:
+        `Name saved (${visitorName}). If you already said "${VOICE_DEMO_POST_NAME_LINE}" in your immediately prior spoken turn, ` +
+        `do not say it again — stop and listen. Otherwise one brief greeting by name plus that question once, then stop. ` +
+        `Never say the help question twice in a row. Do not ask for their phone in this turn.`,
     };
   }
 

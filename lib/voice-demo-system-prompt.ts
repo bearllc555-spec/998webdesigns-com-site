@@ -9,6 +9,7 @@ import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import {
   VOICE_DEMO_MANDATORY_OPENING,
   VOICE_DEMO_POST_NAME_LINE,
+  VOICE_DEMO_SESSION_START_CUE,
 } from "@/lib/voice-demo-greeting";
 import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
 import {
@@ -76,6 +77,22 @@ NEVER rush to goodbye without waiting for a response to the wrap-up question you
 After final goodbye + end_conversation: if they say bye / thanks / goodbye back, stay completely silent — the call disconnects automatically. Never say goodbye a second time.`;
 
 export const VOICE_DEMO_INTRO = VOICE_DEMO_MANDATORY_OPENING;
+
+/** Demo-only intro — skips re-asking the name when CRM already has it. */
+export function voiceDemoDemoIntroBlock(row: VoiceDemoLeadRow): string {
+  const name = row.full_name?.trim();
+  if (name) {
+    return `DEMO SESSION START — visitor name on file: ${name}.
+On "${VOICE_DEMO_SESSION_START_CUE}": greet them by name only (skip the full introduction; do not ask who you have the pleasure of speaking with). Ask "${VOICE_DEMO_POST_NAME_LINE}" exactly once, then stop and listen.`;
+  }
+
+  return `${VOICE_DEMO_MANDATORY_OPENING}
+
+AFTER THEIR NAME (demo only):
+- Call save_name when they answer your pleasure question.
+- "${VOICE_DEMO_POST_NAME_LINE}" must be spoken at most once — never twice in a row, never in back-to-back assistant turns.
+- Preferred single turn: brief greeting by name + the help question, then stop.`;
+}
 
 const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off design fee only):
 - Do NOT mention the coupon at verify, during profile onboarding, or in your first demo answers. No upfront pitch.
@@ -173,10 +190,9 @@ Goal: CRM profile — verified email (on file), name, US cell phone.
 NEVER say "profile complete", "profile incomplete", or any CRM status aloud. Those lines are internal only.
 
 Order:
-1. NAME — Your opening already asks who you have the pleasure of speaking with. When they answer, call save_name.
-   - Then greet them warmly by name and ask exactly: "${VOICE_DEMO_POST_NAME_LINE}"
+1. NAME — Your opening asks who you have the pleasure of speaking with (unless name is already on file — see demo intro). When they answer, call save_name.
+   - Then one spoken turn: brief greeting by name + "${VOICE_DEMO_POST_NAME_LINE}" at most ONCE — never twice in a row.
    - Do NOT ask for their phone in the same turn. Do NOT mention profile status.
-   - If name is already on file at session start, greet them by name and ask "${VOICE_DEMO_POST_NAME_LINE}" — do not repeat the full intro.
 2. HELP — Answer their questions from the FAQ. Be useful right away.
 3. PHONE — When the conversation is flowing naturally, or before promo/goodbye, if phone is still missing ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
    - When they give digits, do NOT wait forever for more. If they go quiet for about one to two seconds, treat their utterance as complete.
@@ -193,7 +209,7 @@ Do not mention ${VOICE_DEMO_PROMO_CODE} during steps 1–3.`;
 export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
   return `${VOICE_DEMO_PERSONA}
 
-${VOICE_DEMO_INTRO}
+${voiceDemoDemoIntroBlock(row)}
 
 ${VOICE_DEMO_CLOSING}
 

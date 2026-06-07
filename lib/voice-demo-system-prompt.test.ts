@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   VOICE_DEMO_CLOSING,
   VOICE_DEMO_WRAPUP_QUESTIONS,
+  voiceDemoDemoIntroBlock,
   voiceDemoDemoSystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
@@ -50,8 +51,19 @@ describe("voice-demo-system-prompt onboarding", () => {
   it("asks how may I help after name and forbids profile complete aloud", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_POST_NAME_LINE);
+    expect(prompt).toMatch(/never twice in a row/i);
     expect(prompt).toMatch(/NEVER say "profile complete"/i);
     expect(prompt).not.toMatch(/Profile complete:/);
+  });
+
+  it("skips pleasure question when name is already on file", () => {
+    const intro = voiceDemoDemoIntroBlock({
+      ...baseRow,
+      full_name: "Anthony",
+    });
+    expect(intro).toContain("Anthony");
+    expect(intro).toMatch(/do not ask who you have the pleasure/i);
+    expect(intro).toContain(VOICE_DEMO_POST_NAME_LINE);
   });
 
   it("requires permission ask before emailing coupon", () => {
