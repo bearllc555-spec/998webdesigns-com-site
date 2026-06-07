@@ -471,7 +471,14 @@ export async function executeVoiceDemoTool(
     const refreshed = await getVoiceDemoLead(leadId);
     const stagedZip = refreshed?.location_zip ?? null;
     const stagedCity = refreshed?.location_city ?? null;
-    if (stagedZip && !usZipCodesEquivalent(stagedZip, placeResult.place.zip)) {
+    if (!stagedZip || !usZipCodesEquivalent(stagedZip, normalized)) {
+      return {
+        ok: false,
+        error:
+          "ZIP not staged. Call confirm_weather_zip first with the ZIP they gave, speak spokenConfirm word for word, wait for yes, then lookup_weather with userConfirmed true.",
+      };
+    }
+    if (!usZipCodesEquivalent(stagedZip, placeResult.place.zip)) {
       return {
         ok: false,
         error:

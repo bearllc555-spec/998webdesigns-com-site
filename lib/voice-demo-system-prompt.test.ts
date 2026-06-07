@@ -133,6 +133,7 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/\[weather-forecast-done\]/);
     expect(prompt).toMatch(/Never guess or substitute a different city/i);
     expect(prompt).toMatch(/\[zip-input-pause\]/);
+    expect(prompt).toMatch(/\[zip-staged\]/);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
   });
 });

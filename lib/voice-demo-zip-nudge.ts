@@ -25,6 +25,9 @@ export const VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE = "[zip-silence-repeat]";
 /** Hidden cue — visitor still silent after ZIP repeat ask. */
 export const VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE = "[zip-silence-giveup]";
 
+/** Hidden cue — client staged ZIP via confirm_weather_zip; Jarvis must read spokenConfirm. */
+export const VOICE_DEMO_ZIP_STAGED_CUE = "[zip-staged]";
+
 /** Wait for full ZIP utterance before staging (ms). */
 export const ZIP_SILENCE_NUDGE_MS = 2500;
 
@@ -36,6 +39,14 @@ export function countSpokenZipDigits(transcript: string): number {
 }
 
 /** Returns null when a client nudge would duplicate an ask Jarvis already made. */
+export function buildZipStagedSpeakNudge(spokenConfirm: string): string {
+  return (
+    `${VOICE_DEMO_ZIP_STAGED_CUE} confirm_weather_zip succeeded. Say exactly once, word for word — ` +
+    `do not change the city or state: "${spokenConfirm}" STOP and wait for yes or no. ` +
+    `Do NOT call lookup_weather until they confirm.`
+  );
+}
+
 export function buildZipPauseNudge(transcript: string): string | null {
   const trimmed = transcript.trim();
   const digits = countSpokenZipDigits(trimmed);

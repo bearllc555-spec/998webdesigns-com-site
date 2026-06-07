@@ -7,6 +7,7 @@ import {
   buildZipPauseNudge,
   buildZipSilenceGiveUpNudge,
   buildZipSilenceRepeatNudge,
+  buildZipStagedSpeakNudge,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
   isWeatherZipConfirmAccept,
@@ -17,9 +18,20 @@ import {
   VOICE_DEMO_ZIP_PAUSE_CUE,
   VOICE_DEMO_ZIP_SILENCE_GIVEUP_CUE,
   VOICE_DEMO_ZIP_SILENCE_REPEAT_CUE,
+  VOICE_DEMO_ZIP_STAGED_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 
 describe("voice-demo-zip-nudge", () => {
+  it("stages ZIP read-back when client already confirmed", () => {
+    const nudge = buildZipStagedSpeakNudge(
+      "I have ZIP code 0 7 5 1 2 for Totowa, New Jersey. Is that correct?"
+    );
+    expect(nudge).toContain(VOICE_DEMO_ZIP_STAGED_CUE);
+    expect(nudge).toContain("Totowa");
+    expect(nudge).toMatch(/word for word/i);
+    expect(nudge).toMatch(/Do NOT call lookup_weather/i);
+  });
+
   it("nudges confirm_weather_zip when five digits heard", () => {
     const nudge = buildZipPauseNudge("07424");
     expect(nudge).toContain(VOICE_DEMO_ZIP_PAUSE_CUE);

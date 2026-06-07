@@ -126,6 +126,11 @@ export function formatSpokenTemperaturePair(tempF: number): string {
   return `${f} degrees Fahrenheit, about ${c} degrees Celsius`;
 }
 
+/** Assistant turn is the pre-fetch "one moment" line — not the forecast yet. */
+export function isAssistantWeatherLookupPending(text: string): boolean {
+  return /look up the weather for/i.test(text.trim().toLowerCase());
+}
+
 /** Assistant turn looks like the spoken briefReport weather summary. */
 export function isAssistantWeatherForecast(text: string): boolean {
   const t = text.trim().toLowerCase();

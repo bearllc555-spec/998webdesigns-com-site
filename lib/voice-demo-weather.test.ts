@@ -8,6 +8,7 @@ import {
   spellZipForVoice,
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
+  isAssistantWeatherLookupPending,
   normalizeUsZipCode,
   usZipCodesEquivalent,
   VOICE_DEMO_WEATHER_OFFER_LINE,
@@ -71,6 +72,15 @@ describe("voice-demo-weather", () => {
     expect(report).toContain("65 degrees Fahrenheit, about 18 degrees Celsius");
     expect(report).toContain("partly cloudy");
     expect(isAssistantWeatherForecast(report)).toBe(true);
+  });
+
+  it("detects pre-fetch lookup line separately from forecast", () => {
+    expect(
+      isAssistantWeatherLookupPending(
+        "Thank you — one moment while I look up the weather for Totowa, New Jersey."
+      )
+    ).toBe(true);
+    expect(isAssistantWeatherForecast("Thank you — one moment while I look up")).toBe(false);
   });
 
   it("uses a 1s pause before goodbye after forecast", () => {
