@@ -96,6 +96,13 @@ export function setVoiceDemoSessionCookie(
   res.cookies.set(VOICE_DEMO_SESSION_COOKIE, token, voiceDemoSessionCookieOptions());
 }
 
+export function clearVoiceDemoSessionCookie(res: NextResponse): void {
+  res.cookies.set(VOICE_DEMO_SESSION_COOKIE, "", {
+    ...voiceDemoSessionCookieOptions(0),
+    maxAge: 0,
+  });
+}
+
 export function readVoiceDemoSession(req: NextRequest): VoiceDemoSessionPayload | null {
   const cookie = req.cookies.get(VOICE_DEMO_SESSION_COOKIE)?.value;
   return verifyVoiceDemoSessionToken(cookie);

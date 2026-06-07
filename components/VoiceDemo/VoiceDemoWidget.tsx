@@ -71,9 +71,27 @@ export function VoiceDemoWidget() {
 
   const openWidget = () => {
     setOpen(true);
-    setPhase("gate");
     setFormError("");
   };
+
+  const startOver = useCallback(async () => {
+    live.disconnect();
+    setBusy(true);
+    setFormError("");
+    try {
+      await fetch("/api/voice-demo/reset", { method: "POST" });
+    } catch {
+      /* still reset local state */
+    } finally {
+      setPhase("gate");
+      setEmail("");
+      setDestination("");
+      setTypedCode("");
+      setStatus("");
+      setTranscript([]);
+      setBusy(false);
+    }
+  }, [live]);
 
   async function startDemo(e: React.FormEvent) {
     e.preventDefault();
@@ -172,14 +190,26 @@ export function VoiceDemoWidget() {
                 <MessageCircle className="h-4 w-4 text-accent" aria-hidden />
                 <span className="font-display text-sm font-medium text-ink">Jarvis</span>
               </div>
-              <button
-                type="button"
-                onClick={close}
-                className="rounded-lg p-1.5 text-ink-soft transition hover:bg-rule-soft hover:text-ink"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                {configured && phase !== "gate" && (
+                  <button
+                    type="button"
+                    onClick={() => void startOver()}
+                    disabled={busy}
+                    className="rounded-lg px-2 py-1.5 text-xs font-medium text-ink-soft transition hover:bg-rule-soft hover:text-ink disabled:opacity-60"
+                  >
+                    Start over
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={close}
+                  className="rounded-lg p-1.5 text-ink-soft transition hover:bg-rule-soft hover:text-ink"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-4">
