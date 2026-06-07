@@ -151,6 +151,8 @@ type UseVoiceDemoLiveOptions = {
 const PHASE_TAIL_MS = 450;
 const RECONNECT_DELAY_MS = 700;
 const PHASE_FALLBACK_MS = 12000;
+/** Wait for long FAQ answers to finish before farewell disconnect. */
+const FAREWELL_PLAYBACK_MAX_WAIT_MS = 120_000;
 const PHASE_MIN_SPOKEN_MS = 1800;
 const MAX_RECONNECT_ATTEMPTS = 2;
 
@@ -1509,13 +1511,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         optionsRef.current.onStatus?.(
           "Microphone muted — unmute within 10 seconds or the call will end."
         );
-        micMuteDisconnectTimerRef.current = setTimeout(() => {
-          micMuteDisconnectTimerRef.current = null;
-          optionsRef.current.onStatus?.(
-            "Muted too long — session ended. Tap Start voice to chat again."
-          );
-          disconnect(true);
-        }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
+        const scheduleMuteDisconnect = () => {
+          clearMicMuteDisconnectTimer();
+          micMuteDisconnectTimerRef.current = setTimeout(() => {
+            micMuteDisconnectTimerRef.current = null;
+            if (playerRef.current?.isPlaying()) {
+              scheduleMuteDisconnect();
+              return;
+            }
+            optionsRef.current.onStatus?.(
+              "Muted too long — session ended. Tap Start voice to chat again."
+            );
+            disconnect(true);
+          }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
+        };
+        scheduleMuteDisconnect();
       } else {
         optionsRef.current.onStatus?.("Microphone on — Jarvis can hear you again.");
       }
@@ -1586,7 +1596,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (farewellDisconnectingRef.current) return;
     farewellDisconnectingRef.current = true;
     try {
-      await playerRef.current?.whenPlaybackIdle(12000);
+      await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
       latchFarewellClosing();
       await sleep(PHASE_TAIL_MS);
       optionsRef.current.onConversationEnd?.();
@@ -1996,6 +2006,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             clearWrapUpTimer();
           } else if (isUserSubstantiveQuestion(userLine)) {
             visitorAskedSubstantiveQuestionRef.current = true;
+            visitorExplicitlyDoneRef.current = false;
           }
         }
 
@@ -2113,30 +2124,35 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const wasInterrupted = assistantTurnInterruptedRef.current;
         assistantTurnInterruptedRef.current = false;
         finishPostNameGreetingTurn(assistantSnapshot, hadPostNameAtTurnStart, wasInterrupted);
-        const wouldScheduleFarewell =
-          modeRef.current === "demo" &&
-          postNameLineSpokenRef.current &&
-          !reconnectingRef.current &&
-          shouldClientScheduleFarewellHangup(
-            assistantSnapshot,
-            visitorExplicitlyDoneRef.current
-          );
-
-        if (wouldScheduleFarewell) {
-          if (shouldBlockFarewellHangup()) {
-            sendWeatherZipPrematureGoodbyeRecovery();
-          } else {
-            scheduleFarewellHangup();
-          }
-        }
-        if (pendingEndConversationRef.current) {
+        const hadPendingEndConversation = pendingEndConversationRef.current;
+        if (hadPendingEndConversation) {
           pendingEndConversationRef.current = false;
-          if (shouldBlockFarewellHangup()) {
-            sendWeatherZipPrematureGoodbyeRecovery();
-          } else {
+        }
+
+        void (async () => {
+          await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
+          if (farewellDisconnectingRef.current || reconnectingRef.current) return;
+          if (modeRef.current !== "demo" || !postNameLineSpokenRef.current) return;
+
+          if (hadPendingEndConversation) {
+            if (shouldBlockFarewellHangup()) {
+              sendWeatherZipPrematureGoodbyeRecovery();
+            } else {
+              scheduleFarewellHangup();
+            }
+            return;
+          }
+
+          if (
+            shouldClientScheduleFarewellHangup(
+              assistantSnapshot,
+              visitorExplicitlyDoneRef.current
+            ) &&
+            !shouldBlockFarewellHangup()
+          ) {
             scheduleFarewellHangup();
           }
-        }
+        })();
         if (modeRef.current === "demo") {
           if (nameSavedRef.current && !postNameLineSpokenRef.current) {
             schedulePostNameGreetingNudge();

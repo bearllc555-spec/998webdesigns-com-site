@@ -19,6 +19,12 @@ export function canModelEndConversation(opts: {
   if (opts.farewellSent) return true;
   if (opts.goodbyeNudgeSent) return true;
   if (isAssistantExplicitGoodbye(opts.assistantText)) return true;
+  if (
+    isSubstantiveServiceSpeech(opts.assistantText) &&
+    !isAssistantExplicitGoodbye(opts.assistantText)
+  ) {
+    return false;
+  }
   if (opts.visitorExplicitlyDone && isAssistantFarewell(opts.assistantText)) return true;
   return false;
 }
@@ -64,7 +70,7 @@ export function isAssistantOnboardingOrHelpSpeech(text: string): boolean {
   );
 }
 
-function isSubstantiveServiceSpeech(text: string): boolean {
+export function isSubstantiveServiceSpeech(text: string): boolean {
   const t = text.trim().toLowerCase();
   return (
     t.length >= 60 &&
@@ -109,6 +115,9 @@ export function shouldClientScheduleFarewellHangup(
   text: string,
   visitorExplicitlyDone: boolean
 ): boolean {
+  if (isSubstantiveServiceSpeech(text) && !isAssistantExplicitGoodbye(text)) {
+    return false;
+  }
   if (isAssistantExplicitGoodbye(text)) return true;
   if (visitorExplicitlyDone && isAssistantFarewell(text)) return true;
   return false;

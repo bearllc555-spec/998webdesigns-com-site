@@ -76,6 +76,18 @@ describe("voice demo farewell", () => {
     expect(shouldClientScheduleFarewellHangup("Have a pleasant day, sir.", true)).toBe(
       true
     );
+    const serviceAnswer =
+      "We build custom websites for local businesses, sir — mobile-friendly pages, hosting included, and a clear design timeline. Our design fee covers strategy, copy, and launch on 998 hosting.";
+    expect(shouldClientScheduleFarewellHangup(serviceAnswer, true)).toBe(false);
+    expect(shouldClientScheduleFarewellHangup(serviceAnswer, false)).toBe(false);
+    expect(
+      canModelEndConversation({
+        farewellSent: false,
+        goodbyeNudgeSent: false,
+        visitorExplicitlyDone: true,
+        assistantText: serviceAnswer,
+      })
+    ).toBe(false);
   });
 
   it("detects explicit visitor done", () => {
