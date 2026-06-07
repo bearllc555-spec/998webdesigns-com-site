@@ -261,7 +261,7 @@ export async function executeVoiceDemoTool(
         ok: true,
         name: visitorName,
         alreadySaved: true,
-        message: buildSaveNameToolMessage(visitorName, true),
+        message: buildSaveNameToolMessage(visitorName, false),
       };
     }
     await updateVoiceDemoLead(leadId, { full_name: visitorName });

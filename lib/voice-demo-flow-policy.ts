@@ -6,7 +6,10 @@ export type VoiceDemoOnboardingSeed = {
   savedName: string;
 };
 
-/** Seed client refs when CRM already has full_name (returning visitor). */
+/**
+ * Seed client refs when CRM already has full_name (returning visitor).
+ * nameSaved is false until save_name runs this session — avoids silent skip of post-name greeting.
+ */
 export function seedOnboardingFromFullName(
   fullName: string | null | undefined
 ): VoiceDemoOnboardingSeed {
@@ -14,7 +17,7 @@ export function seedOnboardingFromFullName(
   if (!trimmed) {
     return { nameOnFile: null, nameSaved: false, savedName: "" };
   }
-  return { nameOnFile: trimmed, nameSaved: true, savedName: trimmed };
+  return { nameOnFile: trimmed, nameSaved: false, savedName: trimmed };
 }
 
 /** Model must not call confirm_weather_zip — client already staged the ZIP. */

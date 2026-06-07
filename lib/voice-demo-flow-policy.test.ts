@@ -10,10 +10,10 @@ describe("seedOnboardingFromFullName", () => {
     });
   });
 
-  it("marks returning visitor name as saved", () => {
+  it("seeds returning visitor name without marking session saved", () => {
     expect(seedOnboardingFromFullName("  Anthony  ")).toEqual({
       nameOnFile: "Anthony",
-      nameSaved: true,
+      nameSaved: false,
       savedName: "Anthony",
     });
   });

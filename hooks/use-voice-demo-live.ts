@@ -1386,19 +1386,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             const savedName = typeof result.name === "string" ? result.name.trim() : "";
             if (savedName) savedNameRef.current = savedName;
             const alreadyGreeted = isAssistantPostNameGreeting(lastAssistantTextRef.current);
-            if (alreadyGreeted || result.alreadySaved === true) {
+            if (alreadyGreeted) {
               postNameLineSpokenRef.current = true;
             }
             responses.push({
               id: call.id,
               name,
-              response:
-                result.alreadySaved === true
-                  ? result
-                  : {
-                      ...result,
-                      message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
-                    },
+              response: {
+                ...result,
+                message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
+              },
             });
             continue;
           }
@@ -1471,7 +1468,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
             if (result.endCall === true) {
-              if (modeRef.current === "demo" && !nameSavedRef.current) {
+              if (modeRef.current === "demo" && !postNameLineSpokenRef.current) {
                 logVoiceDemoOps({
                   kind: "end_conversation_early_blocked",
                   message: "Blocked end_conversation during name onboarding",
@@ -1483,7 +1480,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   response: {
                     ok: false,
                     error:
-                      "Name onboarding is not complete. Call save_name when you hear their name, greet once, then continue — do not end the call.",
+                      "Name onboarding is not complete. Call save_name when you hear their name, greet once with how may I help you today, then continue — do not end the call.",
                   },
                 });
                 continue;
@@ -1683,7 +1680,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const assistantSnapshot = lastAssistantTextRef.current;
         if (
           modeRef.current === "demo" &&
-          nameSavedRef.current &&
+          postNameLineSpokenRef.current &&
           !reconnectingRef.current &&
           isAssistantFarewell(assistantSnapshot)
         ) {
@@ -1850,8 +1847,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           const statusRes = await fetch("/api/voice-demo/status");
           const statusData = (await statusRes.json()) as { fullName?: string | null };
           const seed = seedOnboardingFromFullName(statusData.fullName);
-          if (seed.nameSaved) {
-            nameSavedRef.current = true;
+          if (seed.savedName) {
             savedNameRef.current = seed.savedName;
           }
         } catch {
