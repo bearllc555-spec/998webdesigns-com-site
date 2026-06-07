@@ -14,7 +14,12 @@ export type GrowthPackMember = (typeof GROWTH_PACK_MEMBERS)[number];
 
 /** Shared with LeadForm step 4 and CRM discovery close panel. */
 export const ADDON_OPTIONS = [
-  { id: "addon-chatbot", value: "ai-chatbot", label: "AI Chatbot", pricing: "$299 setup · $79/mo" },
+  {
+    id: "addon-chatbot",
+    value: "ai-chatbot",
+    label: "Jarvis AI Chatbot",
+    pricing: "$299 setup · $79/mo",
+  },
   {
     id: "addon-receptionist",
     value: "ai-receptionist",

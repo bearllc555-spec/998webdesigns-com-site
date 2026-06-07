@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useSelectedAddons } from "@/hooks/use-selected-addons";
 
 const ADDON_DATA: Record<string, { name: string; setup: number; monthly: number }> = {
-  "ai-chatbot": { name: "AI Chatbot", setup: 299, monthly: 79 },
+  "ai-chatbot": { name: "Jarvis AI Chatbot", setup: 299, monthly: 79 },
   "ai-receptionist": { name: "AI Receptionist", setup: 399, monthly: 149 },
   "social-media": { name: "Social Media Management", setup: 199, monthly: 299 },
   "email-sms": { name: "Email & SMS", setup: 149, monthly: 149 },

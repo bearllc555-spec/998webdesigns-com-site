@@ -12,15 +12,15 @@ import {
 const ADDONS = [
   {
     value: "ai-chatbot",
-    title: "AI Chatbot",
+    title: "Jarvis AI Chatbot",
     setup: "$299",
     monthly: "$79",
     bullets: [
-      "Answer visitor questions around the clock",
-      "Process orders and quote requests",
-      "Send brochures, pricing, and documentation",
-      "Schedule appointments and callbacks",
-      "Capture leads after hours and route urgent requests",
+      "Your on-site AI assistant — the same Jarvis visitors can try on our home page",
+      "Answers pricing, services, and FAQs in a natural voice or typed chat",
+      "Captures leads, sends promo codes, and follows up when visitors are ready",
+      "Handles after-hours questions so you do not miss serious inquiries",
+      "Runs on our cloud edge network alongside your site for fast, reliable responses",
     ],
   },
   {
@@ -328,9 +328,8 @@ export function AddonsSection() {
           <p className="mt-4 text-base leading-relaxed text-ink">
             Every build includes options for blog writing & local posts, hyper‑local SEO, Google
             Profile Optimization (including review requests), email/SMS follow‑ups, social media management,
-            booking calendar, an AI receptionist, and an on‑site AI chatbot so you get more calls,
-            more bookings, and
-            more repeat clients.
+            booking calendar, an AI receptionist, and Jarvis — our on‑site AI chatbot — so you get more
+            calls, more bookings, and more repeat clients.
           </p>
         </div>
 

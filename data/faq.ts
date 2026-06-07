@@ -60,6 +60,10 @@ export const faq: FAQItem[] = [
     a: "Logos and full copywriting are not part of the $5,998 design fee — we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional — priced clearly if you want them.",
   },
   {
+    q: "What is Jarvis, and where does it run?",
+    a: "Jarvis is our AI chatbot add-on — an on-site assistant that answers visitor questions by voice or text, captures leads, and helps close interest while you are on a job or after hours. For optimum performance, Jarvis is hosted only on our cloud edge service (the same infrastructure as your 998 site). We do not support running Jarvis on third-party hosts or self-hosted setups — edge placement keeps latency low and responses consistent when traffic spikes.",
+  },
+  {
     q: "Can you set up business texting (SMS) for my company?",
     a: "Yes — we have experience with US A2P 10DLC registration (the carrier compliance process for business texting). It includes registering your brand, submitting a messaging campaign with sample messages and opt-in details, and linking your sending number to that campaign. Approval normally takes about two to three weeks; sometimes it's faster, sometimes longer if carriers ask for changes or a resubmission is needed. Until the campaign is verified, texts can be blocked or filtered even when everything looks wired correctly in Twilio. Our Email & SMS add-on covers setup and ongoing two-way texting — ask us if you want it on your project.",
   },
