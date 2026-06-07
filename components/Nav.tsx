@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { onHomeLogoClick } from "@/lib/home-link";
@@ -10,9 +11,9 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/#addons", label: "Add\u2011ons" },
-  { href: "/portfolio", label: "Recent Work" },
-  { href: "/blog", label: "Field notes" },
-  { href: "/#how", label: "How it works" },
+  { href: "/portfolio", label: "Work" },
+  { href: "/blog", label: "Blog" },
+  { href: "/#how", label: "Process" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ] as const;
@@ -59,7 +60,7 @@ export function Nav() {
             </span>
           </Link>
 
-          <div className="hidden items-center gap-7 text-sm text-ink-soft md:flex">
+          <div className="hidden items-center gap-5 text-sm text-ink-soft md:flex">
             {NAV_LINKS.map(({ href, label }) => (
               <Link key={href} href={href} className="nav-link transition hover:text-ink">
                 {label}
@@ -90,15 +91,16 @@ export function Nav() {
             <button
               type="button"
               onClick={() => setContactOpen(true)}
-              className="hidden items-center justify-center rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink transition hover:bg-rule-soft sm:inline-flex"
+              aria-label="Contact us"
+              className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rule text-ink-soft transition hover:border-accent/50 hover:bg-rule-soft hover:text-accent sm:inline-flex"
             >
-              Contact
+              <Mail className="h-[1.15rem] w-[1.15rem]" aria-hidden="true" />
             </button>
             <Link
               href="/book"
               className="hidden items-center justify-center rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink transition hover:bg-rule-soft sm:inline-flex"
             >
-              Book a call
+              Book
             </Link>
             <Link
               href="/start"
@@ -139,7 +141,7 @@ export function Nav() {
                     onClick={closeMenu}
                     className="nav-link block rounded-lg px-3 py-2.5 font-medium text-ink-soft transition hover:bg-rule-soft hover:text-ink"
                   >
-                    Book a call
+                    Book
                   </Link>
                 </li>
                 <li className="border-t border-rule pt-2 mt-2">
