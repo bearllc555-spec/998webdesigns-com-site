@@ -22,7 +22,7 @@ export function VoiceDemoWidget() {
   const [formError, setFormError] = useState("");
   const [status, setStatus] = useState("");
   const [transcript, setTranscript] = useState<string[]>([]);
-  const [configured, setConfigured] = useState(true);
+  const [configured, setConfigured] = useState<boolean | null>(null);
   const [website, setWebsite] = useState("");
 
   const [pendingDemo, setPendingDemo] = useState(false);
@@ -49,15 +49,25 @@ export function VoiceDemoWidget() {
   }, [pendingDemo, phase]);
 
   useEffect(() => {
-    if (!open) return;
     void fetch("/api/voice-demo/status")
       .then((r) => r.json())
       .then((data: { configured?: boolean; verified?: boolean; active?: boolean }) => {
         setConfigured(data.configured !== false);
+      })
+      .catch(() => setConfigured(false));
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    void fetch("/api/voice-demo/status")
+      .then((r) => r.json())
+      .then((data: { verified?: boolean; active?: boolean }) => {
         if (data.active && data.verified) {
           setPhase("demo");
         } else if (data.active) {
           setPhase("verify");
+        } else {
+          setPhase("gate");
         }
       })
       .catch(() => {});
@@ -139,13 +149,13 @@ export function VoiceDemoWidget() {
     }
   }
 
-  if (!configured) {
+  if (configured === null) {
     return null;
   }
 
   return (
     <>
-      {!open && (
+      {!open && configured && (
         <button
           type="button"
           onClick={openWidget}
@@ -180,7 +190,22 @@ export function VoiceDemoWidget() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-4">
-              {phase === "gate" && (
+              {!configured && (
+                <div className="space-y-4 text-center">
+                  <p className="text-sm text-ink-soft">
+                    Voice assistant is not configured on this environment yet (missing GEMINI_API_KEY).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={close}
+                    className="rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink hover:bg-rule-soft"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+
+              {configured && phase === "gate" && (
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
                     Verify with email or phone to try our voice assistant. We&apos;ll send a code — read
@@ -270,7 +295,7 @@ export function VoiceDemoWidget() {
                 </form>
               )}
 
-              {(phase === "verify" || phase === "demo") && (
+              {configured && (phase === "verify" || phase === "demo") && (
                 <div className="space-y-4">
                   {destination && phase === "verify" && (
                     <p className="text-sm text-ink-soft">
