@@ -12,7 +12,7 @@ export const VOICE_DEMO_WRAPUP_QUESTIONS = [
 export const VOICE_DEMO_WRAPUP_PAUSE_CUE = "[wrap-up-pause]";
 
 /** Comfortable beat after an answer before the next wrap-up question (ms). */
-export const WRAPUP_POST_ANSWER_PAUSE_MS = 3000;
+export const WRAPUP_POST_ANSWER_PAUSE_MS = 2500;
 
 const WRAPUP_EXCLUDE_PATTERNS = [
   /how may i help/i,

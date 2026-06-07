@@ -10,7 +10,7 @@ import { VOICE_DEMO_WRAPUP_QUESTIONS } from "@/lib/voice-demo-wrapup-nudge";
 
 describe("voice-demo-wrapup-nudge", () => {
   it("uses a few-second post-answer pause", () => {
-    expect(WRAPUP_POST_ANSWER_PAUSE_MS).toBe(3000);
+    expect(WRAPUP_POST_ANSWER_PAUSE_MS).toBe(2500);
   });
 
   it("detects wrap-up questions from the cycle", () => {

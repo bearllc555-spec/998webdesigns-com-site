@@ -1,7 +1,7 @@
 /** Hidden client cue — never spoken aloud; nudges Jarvis after phone-digit silence. */
 export const VOICE_DEMO_PHONE_PAUSE_CUE = "[phone-input-pause]";
 
-export const PHONE_SILENCE_NUDGE_MS = 1800;
+export const PHONE_SILENCE_NUDGE_MS = 2000;
 
 /** Count digits in a spoken or transcribed phone utterance. */
 export function countSpokenPhoneDigits(transcript: string): number {

@@ -1,10 +1,10 @@
 const FETCH_TIMEOUT_MS = 9000;
 
 /** Pause after ZIP confirmation audio before weather API fetch (ms). */
-export const WEATHER_POST_CONFIRM_PAUSE_MS = 900;
+export const WEATHER_POST_CONFIRM_PAUSE_MS = 1200;
 
 /** Beat after the spoken forecast before the next wrap-up question (ms). */
-export const WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS = 2000;
+export const WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS = 2500;
 
 /** Step 1 — yes/no weather offer at end of chat (wait for answer before ZIP). */
 export const VOICE_DEMO_WEATHER_OFFER_LINE =

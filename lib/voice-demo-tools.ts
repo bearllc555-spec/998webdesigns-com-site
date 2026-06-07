@@ -69,7 +69,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "stage_phone_number",
           description:
-            "Stage US cell for profile after visitor stops speaking (about 1-2s silence): spell digits, then confirm on yes (userConfirmed true). No coupon SMS here.",
+            "Stage US cell for profile after visitor stops speaking (about 2s silence): spell digits, then confirm on yes (userConfirmed true). No coupon SMS here.",
           parameters: {
             type: Type.OBJECT,
             properties: {

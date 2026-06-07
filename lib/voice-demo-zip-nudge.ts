@@ -18,7 +18,7 @@ export const VOICE_DEMO_WEATHER_DECLINE_CUE = "[weather-offer-declined]";
 export const VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE = "[weather-yesno-giveup]";
 
 /** Wait for full ZIP utterance before staging (ms). */
-export const ZIP_SILENCE_NUDGE_MS = 2800;
+export const ZIP_SILENCE_NUDGE_MS = 2500;
 
 /** Wait a few seconds for yes/no before the "I didn't get that" repeat. */
 export const WEATHER_YESNO_SILENCE_NUDGE_MS = 3000;

@@ -70,8 +70,8 @@ describe("voice-demo-weather", () => {
     expect(isAssistantWeatherForecast(report)).toBe(true);
   });
 
-  it("uses a two-second pause before wrap-up after forecast", () => {
-    expect(WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS).toBe(2000);
+  it("uses a 2.5s pause before wrap-up after forecast", () => {
+    expect(WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS).toBe(2500);
     expect(isAssistantWeatherForecast("Our design fee is five thousand dollars.")).toBe(
       false
     );

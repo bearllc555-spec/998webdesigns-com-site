@@ -125,7 +125,7 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_GOODBYE_LINE);
     expect(prompt).toMatch(/\[weather-yesno-giveup\]/);
     expect(prompt).toMatch(/do not ask a third time/i);
-    expect(prompt).toMatch(/two seconds/i);
+    expect(prompt).toMatch(/2\.5 seconds/i);
     expect(prompt).toMatch(/\[wrap-up-pause\]/);
     expect(prompt).toMatch(/\[zip-input-pause\]/);
     expect(prompt).toMatch(/FINAL GOODBYE/i);

@@ -142,7 +142,7 @@ LOOKUP (when you have a ZIP):
   3. Only after yes → call lookup_weather alone with the same zipCode and userConfirmed true — then brief summary from briefReport.
 - Temperature: always Fahrenheit first, then Celsius — briefReport includes both; read both aloud every time (including "feels like" when present).
 - Never call confirm_weather_zip and lookup_weather in the same turn.
-- After you deliver the weather summary from briefReport, STOP — do not ask a wrap-up question in the same turn. Wait about two seconds; hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" will prompt the next wrap-up question.
+- After you deliver the weather summary from briefReport, STOP — do not ask a wrap-up question in the same turn. Wait about 2.5 seconds; hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" will prompt the next wrap-up question.
 - Each lookup saves city, state, and ZIP as the client's possible location in CRM.
 - You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
 
@@ -213,7 +213,7 @@ Order:
    - Do NOT ask for their phone in the same turn. Do NOT mention profile status.
 2. HELP — Answer their questions from the FAQ. Be useful right away.
 3. PHONE — When the conversation is flowing naturally, or before promo/goodbye, if phone is still missing ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
-   - When they give digits, do NOT wait forever for more. If they go quiet for about one to two seconds, treat their utterance as complete.
+   - When they give digits, do NOT wait forever for more. If they go quiet for about two seconds, treat their utterance as complete.
    - If you heard at least 10 digits → call stage_phone_number immediately with phone and smsConsent true.
    - If you heard fewer than 10 digits or are unsure → say you did not catch the full number and ask them to repeat it once.
    - Hidden client cue "${VOICE_DEMO_PHONE_PAUSE_CUE}" means they stopped speaking — follow the rules above right away; never read the cue aloud.
