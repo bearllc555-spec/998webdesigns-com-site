@@ -3,6 +3,9 @@ const FETCH_TIMEOUT_MS = 9000;
 /** Pause after ZIP confirmation audio before weather API fetch (ms). */
 export const WEATHER_POST_CONFIRM_PAUSE_MS = 2400;
 
+/** Beat after the spoken forecast before the next wrap-up question (ms). */
+export const WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS = 2000;
+
 /** Step 1 — yes/no weather offer at end of chat (wait for answer before ZIP). */
 export const VOICE_DEMO_WEATHER_OFFER_LINE =
   "Before you go, do you want to see something cool?";
@@ -71,6 +74,16 @@ export function wmoWeatherLabel(code: number): string {
   if (code <= 86) return "snow showers";
   if (code <= 99) return "thunderstorms";
   return "mixed conditions";
+}
+
+/** Assistant turn looks like the spoken briefReport weather summary. */
+export function isAssistantWeatherForecast(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return (
+    /\bin .+, .+, it's \d+ degrees\b/.test(t) ||
+    (/\d+\s*degrees/.test(t) && /humidity/.test(t) && /\bwind/.test(t))
+  );
 }
 
 export function formatBriefWeatherReport(

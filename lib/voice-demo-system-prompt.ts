@@ -138,6 +138,7 @@ LOOKUP (when you have a ZIP):
   1. Call confirm_weather_zip only — then speak spokenConfirm (confirm city/ZIP + "let me look that up" / "one moment").
   2. Pause briefly after spokenConfirm (a relaxed beat — do not rush). Then call lookup_weather alone with the same ZIP — then give a short summary from briefReport.
 - Never call confirm_weather_zip and lookup_weather in the same turn. The visitor should hear your confirmation, then a natural pause, then the forecast.
+- After you deliver the weather summary from briefReport, STOP — do not ask a wrap-up question in the same turn. Wait about two seconds; hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" will prompt the next wrap-up question.
 - Each lookup saves city, state, and ZIP as the client's possible location in CRM.
 - You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
 

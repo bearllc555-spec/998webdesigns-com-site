@@ -29,7 +29,11 @@ import {
   buildPhonePauseNudge,
   PHONE_SILENCE_NUDGE_MS,
 } from "@/lib/voice-demo-phone-nudge";
-import { WEATHER_POST_CONFIRM_PAUSE_MS } from "@/lib/voice-demo-weather";
+import {
+  isAssistantWeatherForecast,
+  WEATHER_POST_CONFIRM_PAUSE_MS,
+  WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS,
+} from "@/lib/voice-demo-weather";
 import {
   buildWrapUpPauseNudge,
   isAssistantWrapUpQuestion,
@@ -115,6 +119,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const zipNudgeTranscriptRef = useRef("");
   const weatherYesNoPhaseRef = useRef<WeatherYesNoPhase>("first");
   const wrapUpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingWeatherForecastWrapUpRef = useRef(false);
   const finishingPhaseRef = useRef(false);
   const jarvisFarewellSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
@@ -406,13 +411,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, [clearWrapUpTimer]);
 
-  const scheduleWrapUpPause = useCallback(() => {
-    if (modeRef.current !== "demo") return;
-    clearWrapUpTimer();
-    wrapUpTimerRef.current = setTimeout(() => {
-      sendWrapUpPauseNudge();
-    }, WRAPUP_POST_ANSWER_PAUSE_MS);
-  }, [clearWrapUpTimer, sendWrapUpPauseNudge]);
+  const scheduleWrapUpPause = useCallback(
+    (delayMs = WRAPUP_POST_ANSWER_PAUSE_MS) => {
+      if (modeRef.current !== "demo") return;
+      clearWrapUpTimer();
+      wrapUpTimerRef.current = setTimeout(() => {
+        sendWrapUpPauseNudge();
+      }, delayMs);
+    },
+    [clearWrapUpTimer, sendWrapUpPauseNudge]
+  );
 
   const sendWeatherDeclineNudge = useCallback(() => {
     const session = sessionRef.current;
@@ -460,6 +468,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       if (name === "lookup_weather" && result.ok === true) {
         clearWeatherZipState();
+        pendingWeatherForecastWrapUpRef.current = true;
       }
     },
     [clearWeatherZipState, clearZipSilenceTimer]
@@ -764,18 +773,32 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           detectAssistantWeatherPrompt(assistantSnapshot);
           if (isAssistantWrapUpQuestion(assistantSnapshot)) {
             clearWrapUpTimer();
-          } else if (
-            shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
-              awaitingCollection:
-                awaitingPhoneDigitsRef.current ||
-                awaitingZipDigitsRef.current ||
-                awaitingWeatherYesNoRef.current,
-              farewellSent: jarvisFarewellSentRef.current,
-            })
-          ) {
-            scheduleWrapUpPause();
+            pendingWeatherForecastWrapUpRef.current = false;
           } else {
-            clearWrapUpTimer();
+            const weatherForecastTurn =
+              pendingWeatherForecastWrapUpRef.current ||
+              isAssistantWeatherForecast(assistantSnapshot);
+            if (weatherForecastTurn) {
+              pendingWeatherForecastWrapUpRef.current = false;
+            }
+            if (
+              weatherForecastTurn ||
+              shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
+                awaitingCollection:
+                  awaitingPhoneDigitsRef.current ||
+                  awaitingZipDigitsRef.current ||
+                  awaitingWeatherYesNoRef.current,
+                farewellSent: jarvisFarewellSentRef.current,
+              })
+            ) {
+              scheduleWrapUpPause(
+                weatherForecastTurn
+                  ? WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS
+                  : WRAPUP_POST_ANSWER_PAUSE_MS
+              );
+            } else {
+              clearWrapUpTimer();
+            }
           }
         }
         lastAssistantTextRef.current = "";
@@ -820,6 +843,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       lastAssistantTextRef.current = "";
       greetingSentRef.current = false;
       suppressAssistantAudioRef.current = false;
+      pendingWeatherForecastWrapUpRef.current = false;
       resetCaption();
       disconnect(true);
       setError("");

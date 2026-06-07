@@ -3,9 +3,11 @@ import {
   buildWeatherZipConfirmLine,
   formatBriefWeatherReport,
   formatPossibleLocationLabel,
+  isAssistantWeatherForecast,
   normalizeUsZipCode,
   VOICE_DEMO_WEATHER_OFFER_LINE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
+  WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS,
   wmoWeatherLabel,
 } from "@/lib/voice-demo-weather";
 
@@ -44,6 +46,14 @@ describe("voice-demo-weather", () => {
     expect(report).toContain("Little Falls");
     expect(report).toContain("72 degrees");
     expect(report).toContain("partly cloudy");
+    expect(isAssistantWeatherForecast(report)).toBe(true);
+  });
+
+  it("uses a two-second pause before wrap-up after forecast", () => {
+    expect(WRAPUP_POST_WEATHER_FORECAST_PAUSE_MS).toBe(2000);
+    expect(isAssistantWeatherForecast("Our design fee is five thousand dollars.")).toBe(
+      false
+    );
   });
 
   it("builds spoken ZIP confirmation before weather fetch", () => {
