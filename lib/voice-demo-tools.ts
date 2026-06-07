@@ -19,6 +19,7 @@ import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
+import { lookupUsWeatherByZip } from "@/lib/voice-demo-weather";
 import { Type, type ToolListUnion } from "@google/genai";
 
 export type VoiceDemoToolMode = "verify" | "demo";
@@ -133,6 +134,21 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
           name: "decline_secondary_contact",
           description: "User declined to provide a phone number for their profile.",
           parameters: { type: Type.OBJECT, properties: {} },
+        },
+        {
+          name: "lookup_weather",
+          description:
+            "Look up current US weather by 5-digit ZIP code. Saves city, state, and ZIP as the client's possible location in CRM. Give a brief spoken weather report.",
+          parameters: {
+            type: Type.OBJECT,
+            properties: {
+              zipCode: {
+                type: Type.STRING,
+                description: "US ZIP code (5 digits, or ZIP+4)",
+              },
+            },
+            required: ["zipCode"],
+          },
         },
       ],
     },
@@ -369,6 +385,30 @@ export async function executeVoiceDemoTool(
       ok: true,
       phoneConfirmed: true,
       message: "Phone saved to profile. Continue — no coupon unless they accept a later promo offer.",
+    };
+  }
+
+  if (name === "lookup_weather") {
+    const zipCode = typeof args.zipCode === "string" ? args.zipCode : "";
+    const result = await lookupUsWeatherByZip(zipCode);
+    if (!result.ok) {
+      return { ok: false, error: result.error };
+    }
+
+    await updateVoiceDemoLead(leadId, {
+      location_zip: result.zip,
+      location_city: result.city,
+      location_state: result.state,
+    });
+
+    return {
+      ok: true,
+      zip: result.zip,
+      city: result.city,
+      state: result.state,
+      briefReport: result.briefReport,
+      possibleLocation: `${result.city}, ${result.state} ${result.zip}`,
+      message: `Give a brief weather report using briefReport. City, state, and ZIP saved as client's possible location in CRM.`,
     };
   }
 

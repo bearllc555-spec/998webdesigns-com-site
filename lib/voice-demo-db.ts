@@ -20,6 +20,9 @@ export type VoiceDemoLeadRow = {
   promo_code: string | null;
   secondary_declined_at: string | null;
   session_summary: string | null;
+  location_zip: string | null;
+  location_city: string | null;
+  location_state: string | null;
   ip: string | null;
   read_at: string | null;
   inbox_flag: string | null;
@@ -132,6 +135,9 @@ export async function updateVoiceDemoLead(
       | "promo_code"
       | "secondary_declined_at"
       | "session_summary"
+      | "location_zip"
+      | "location_city"
+      | "location_state"
     >
   >
 ): Promise<boolean> {

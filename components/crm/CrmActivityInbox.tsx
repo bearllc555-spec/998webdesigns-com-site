@@ -353,6 +353,24 @@ function InboxRow({
             }
           />
 
+          {item.source === "voice_demo" && (() => {
+            const loc = item.payload?.possibleLocation as
+              | { label?: string; city?: string; state?: string; zip?: string }
+              | null
+              | undefined;
+            if (!loc || typeof loc !== "object") return null;
+            const label =
+              loc.label ??
+              [loc.city, loc.state, loc.zip].filter(Boolean).join(", ");
+            if (!label) return null;
+            return (
+              <p className="mt-4 rounded-xl border border-rule bg-rule-soft/50 px-4 py-3 text-sm text-ink-soft">
+                <span className="font-medium text-ink">Client&apos;s possible location: </span>
+                {label}
+              </p>
+            );
+          })()}
+
           {item.source === "blog" && typeof item.payload?.url === "string" && (
             <p className="mt-4">
               <a

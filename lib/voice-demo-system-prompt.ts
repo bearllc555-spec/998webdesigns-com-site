@@ -53,6 +53,12 @@ const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off des
 - If they decline or ignore the offer, drop it — never bring it up again in the same session.
 - If promo already sent (promo_sent_at on file), do not re-offer — just remind them to check email or texts if they ask.`;
 
+const WEATHER_RULES = `US WEATHER (demo perk — brief and chill):
+- If they ask about weather anywhere in the United States, ask for their 5-digit ZIP if you do not have it, then call lookup_weather.
+- Give a short spoken summary from briefReport — temperature, conditions, wind. Do not read CRM field names aloud.
+- Each lookup saves city, state, and ZIP as the client's possible location in CRM (overwrites prior weather ZIP for this session).
+- You cannot forecast beyond current conditions. For non-US locations, apologize and suggest a US ZIP.`;
+
 function contactHint(row: VoiceDemoLeadRow): string {
   const parts: string[] = [];
   if (row.email) {
@@ -60,6 +66,11 @@ function contactHint(row: VoiceDemoLeadRow): string {
   }
   if (row.phone) {
     parts.push(`Phone on file: ${row.phone}${row.phone_verified_at ? " (promo SMS sent)" : ""}.`);
+  }
+  if (row.location_zip && row.location_city && row.location_state) {
+    parts.push(
+      `Possible location on file: ${row.location_city}, ${row.location_state} ${row.location_zip}.`
+    );
   }
   if (row.promo_sent_at) {
     parts.push(`Promo ${row.promo_code ?? VOICE_DEMO_PROMO_CODE} already delivered — do not pitch again.`);
@@ -122,6 +133,8 @@ ${VOICE_DEMO_INTRO}
 ${VOICE_DEMO_CLOSING}
 
 ${PROMO_OFFER_RULES}
+
+${WEATHER_RULES}
 
 ${profileHint(row)}
 ${contactHint(row)}

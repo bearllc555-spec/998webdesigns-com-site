@@ -1,6 +1,7 @@
 import { isCrmInboxFlag, type CrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { wdLeadCrmFeedSource } from "@/lib/crm-wd-lead-segment";
 import { supabaseAdmin } from "@/lib/supabase";
+import { formatPossibleLocationLabel } from "@/lib/voice-demo-weather";
 
 export type { CrmInboxFlag };
 
@@ -89,7 +90,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("voice_demo_leads")
       .select(
-        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, read_at, inbox_flag"
+        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, location_zip, location_city, location_state, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -243,6 +244,11 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
 
   for (const row of voiceDemoRes.data ?? []) {
     const verified = Boolean(row.email_verified_at || row.phone_verified_at);
+    const locationLabel = formatPossibleLocationLabel(
+      (row.location_city as string | null) ?? null,
+      (row.location_state as string | null) ?? null,
+      (row.location_zip as string | null) ?? null
+    );
     items.push({
       id: row.id,
       source: "voice_demo",
@@ -254,14 +260,24 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       notes: (row.session_summary as string) ?? null,
       stripeSessionId: null,
       stripeSubscriptionId: null,
-      message: row.promo_sent_at
-        ? `Promo ${row.promo_code ?? "sent"}`
-        : `Channel: ${row.primary_channel}`,
+      message: locationLabel
+        ? `Possible location: ${locationLabel}`
+        : row.promo_sent_at
+          ? `Promo ${row.promo_code ?? "sent"}`
+          : `Channel: ${row.primary_channel}`,
       phone: (row.phone as string) ?? null,
       payload: {
         primaryChannel: row.primary_channel,
         promoCode: row.promo_code,
         promoSentAt: row.promo_sent_at,
+        possibleLocation: locationLabel
+          ? {
+              zip: row.location_zip,
+              city: row.location_city,
+              state: row.location_state,
+              label: locationLabel,
+            }
+          : null,
       },
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
