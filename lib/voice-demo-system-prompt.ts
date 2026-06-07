@@ -2,6 +2,7 @@ import { faq, faqPlainAnswer } from "@/data/faq";
 import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import {
+  VOICE_DEMO_GOODBYE_LINE,
   VOICE_DEMO_PROMO_CODE,
   VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
 } from "@/lib/voice-demo-constants";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/voice-demo-weather";
 import {
   VOICE_DEMO_WEATHER_DECLINE_CUE,
+  VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE,
   VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE,
   VOICE_DEMO_ZIP_PAUSE_CUE,
 } from "@/lib/voice-demo-zip-nudge";
@@ -75,7 +77,7 @@ FINAL GOODBYE (end of chat — when they say they are done):
   - If no / not interested: accept graciously, then continue below (promo if needed, then sign-off) — do not ask for ZIP.
   - Hidden cue "${VOICE_DEMO_WEATHER_DECLINE_CUE}" means they declined — proceed to promo/goodbye.
 - THEN follow PROMO OFFER rules if you have not offered the coupon yet.
-- One warm sign-off in spirit of: "Thank you for contacting 998 web designs — goodbye." Keep it brief and sincere.
+- One warm sign-off in spirit of: "${VOICE_DEMO_GOODBYE_LINE}" Keep it brief and sincere.
 - Immediately call end_conversation. Do not speak after calling end_conversation.
 
 NEVER rush to goodbye without waiting for a response to the wrap-up question you just asked.
@@ -120,8 +122,10 @@ PROACTIVE OFFER (once per session — end of chat only):
 - Step 1: Say exactly "${VOICE_DEMO_WEATHER_OFFER_LINE}" — STOP and wait for yes or no. Never bundle ZIP in this turn.
 - Step 2 (only if yes): Say "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" — STOP and wait for ZIP.
 - Step 3 (decline): If no / not interested → warm acknowledgment, then promo (if needed) and sign-off — do not offer weather again this session.
-- After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" and wait again.
-- Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent; speak the didn't-get line and repeat question above.
+- After the offer, wait a few seconds for yes or no. If they say nothing, say "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then repeat exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" — STOP and wait for yes or no. Do not keep talking or ask for ZIP.
+- Hidden cue "${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE}" — they were silent on the first ask; speak the didn't-get line and repeat question above, then wait.
+- If they are still silent after the repeat question, say exactly "${VOICE_DEMO_GOODBYE_LINE}" and call end_conversation — do not ask a third time.
+- Hidden cue "${VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE}" — silent after the repeat; speak the goodbye line and end the call.
 - If they ask about weather earlier themselves, skip the pitch; ask for ZIP directly.
 
 LOOKUP (when you have a ZIP):

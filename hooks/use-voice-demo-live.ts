@@ -32,6 +32,7 @@ import {
 import { WEATHER_POST_CONFIRM_PAUSE_MS } from "@/lib/voice-demo-weather";
 import {
   buildWeatherDeclineNudge,
+  buildWeatherYesNoGiveUpNudge,
   buildWeatherYesNoPauseNudge,
   buildZipPauseNudge,
   isWeatherOfferAccept,
@@ -42,6 +43,8 @@ import {
 import type { Session } from "@google/genai";
 
 export type VoiceDemoLiveMode = "verify" | "demo";
+
+type WeatherYesNoPhase = "first" | "repeat";
 
 type LiveMessage = {
   toolCall?: {
@@ -104,7 +107,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const awaitingZipDigitsRef = useRef(false);
   const awaitingWeatherYesNoRef = useRef(false);
   const zipNudgeTranscriptRef = useRef("");
-  const weatherYesNoNudgedRef = useRef(false);
+  const weatherYesNoPhaseRef = useRef<WeatherYesNoPhase>("first");
   const finishingPhaseRef = useRef(false);
   const jarvisFarewellSentRef = useRef(false);
   const farewellDisconnectingRef = useRef(false);
@@ -268,7 +271,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     awaitingZipDigitsRef.current = false;
     awaitingWeatherYesNoRef.current = false;
     zipNudgeTranscriptRef.current = "";
-    weatherYesNoNudgedRef.current = false;
+    weatherYesNoPhaseRef.current = "first";
     clearZipSilenceTimer();
     clearWeatherYesNoTimer();
   }, [clearWeatherYesNoTimer, clearZipSilenceTimer]);
@@ -316,20 +319,40 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const sendWeatherYesNoNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || !awaitingWeatherYesNoRef.current) return;
-    if (weatherYesNoNudgedRef.current) return;
-    if (playerRef.current?.isPlaying()) return;
+    if (playerRef.current?.isPlaying()) {
+      clearWeatherYesNoTimer();
+      weatherYesNoTimerRef.current = setTimeout(() => {
+        sendWeatherYesNoNudge();
+      }, 400);
+      return;
+    }
 
-    weatherYesNoNudgedRef.current = true;
+    if (weatherYesNoPhaseRef.current === "first") {
+      weatherYesNoPhaseRef.current = "repeat";
+      try {
+        session.sendClientContent({
+          turns: buildWeatherYesNoPauseNudge(),
+          turnComplete: true,
+        });
+      } catch (err) {
+        console.warn("[voice-demo-live] weather yes/no nudge", err);
+        weatherYesNoPhaseRef.current = "first";
+      }
+      return;
+    }
+
+    clearWeatherYesNoTimer();
+    awaitingWeatherYesNoRef.current = false;
     try {
       session.sendClientContent({
-        turns: buildWeatherYesNoPauseNudge(),
+        turns: buildWeatherYesNoGiveUpNudge(),
         turnComplete: true,
       });
     } catch (err) {
-      console.warn("[voice-demo-live] weather yes/no nudge", err);
-      weatherYesNoNudgedRef.current = false;
+      console.warn("[voice-demo-live] weather yes/no give-up", err);
+      awaitingWeatherYesNoRef.current = true;
     }
-  }, []);
+  }, [clearWeatherYesNoTimer]);
 
   const scheduleWeatherYesNoNudge = useCallback(() => {
     if (!awaitingWeatherYesNoRef.current || modeRef.current !== "demo") return;
@@ -357,17 +380,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     const lower = assistantText.toLowerCase();
     if (/something cool/.test(lower)) {
       awaitingWeatherYesNoRef.current = true;
-      weatherYesNoNudgedRef.current = false;
       awaitingZipDigitsRef.current = false;
       zipNudgeTranscriptRef.current = "";
       clearZipSilenceTimer();
+      weatherYesNoPhaseRef.current = /before you go/.test(lower) ? "first" : "repeat";
       scheduleWeatherYesNoNudge();
       return;
     }
 
     if (/give me your zip|your zip code|five-digit zip|5-digit zip|zip code.*forecast/i.test(lower)) {
       awaitingWeatherYesNoRef.current = false;
-      weatherYesNoNudgedRef.current = false;
+      weatherYesNoPhaseRef.current = "first";
       clearWeatherYesNoTimer();
       awaitingZipDigitsRef.current = true;
       zipNudgeTranscriptRef.current = "";
@@ -638,7 +661,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           sendWeatherDeclineNudge();
         } else if (awaitingWeatherYesNoRef.current && isWeatherOfferAccept(userLine)) {
           awaitingWeatherYesNoRef.current = false;
-          weatherYesNoNudgedRef.current = false;
+          weatherYesNoPhaseRef.current = "first";
           clearWeatherYesNoTimer();
         } else if (awaitingWeatherYesNoRef.current) {
           scheduleWeatherYesNoNudge();
@@ -653,7 +676,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           if (awaitingZipDigitsRef.current || awaitingWeatherYesNoRef.current) {
             if (awaitingWeatherYesNoRef.current) {
               awaitingWeatherYesNoRef.current = false;
-              weatherYesNoNudgedRef.current = false;
+              weatherYesNoPhaseRef.current = "first";
               clearWeatherYesNoTimer();
             }
             awaitingZipDigitsRef.current = true;

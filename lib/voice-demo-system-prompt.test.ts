@@ -7,7 +7,10 @@ import {
   voiceDemoDemoSystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
-import { VOICE_DEMO_PROMO_EMAIL_ASK_LINE } from "@/lib/voice-demo-constants";
+import {
+  VOICE_DEMO_GOODBYE_LINE,
+  VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
+} from "@/lib/voice-demo-constants";
 import {
   VOICE_DEMO_WEATHER_OFFER_LINE,
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
@@ -89,6 +92,9 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/wait for yes or no/i);
     expect(prompt).toContain("I didn't get that.");
     expect(prompt).toContain("Do you want to see something cool?");
+    expect(prompt).toContain(VOICE_DEMO_GOODBYE_LINE);
+    expect(prompt).toMatch(/\[weather-yesno-giveup\]/);
+    expect(prompt).toMatch(/do not ask a third time/i);
     expect(prompt).toMatch(/\[zip-input-pause\]/);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
   });

@@ -1,3 +1,4 @@
+import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
 import {
   normalizeUsZipCode,
   VOICE_DEMO_WEATHER_DIDNT_GET_LINE,
@@ -12,6 +13,9 @@ export const VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE = "[weather-yesno-pause]";
 
 /** Hidden cue when visitor declines the weather demo. */
 export const VOICE_DEMO_WEATHER_DECLINE_CUE = "[weather-offer-declined]";
+
+/** Hidden cue when visitor stays silent after the repeat weather offer. */
+export const VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE = "[weather-yesno-giveup]";
 
 export const ZIP_SILENCE_NUDGE_MS = 1200;
 
@@ -51,7 +55,15 @@ export function buildWeatherYesNoPauseNudge(): string {
   return (
     `${VOICE_DEMO_WEATHER_YESNO_PAUSE_CUE} Visitor did not reply after the weather offer. ` +
     `Say exactly "${VOICE_DEMO_WEATHER_DIDNT_GET_LINE}" then ask exactly: "${VOICE_DEMO_WEATHER_REPEAT_LINE}" ` +
-    `STOP and wait for yes or no again. Do not ask for ZIP yet.`
+    `STOP and wait for yes or no — do not say anything else in that turn. Do not ask for ZIP yet.`
+  );
+}
+
+export function buildWeatherYesNoGiveUpNudge(): string {
+  return (
+    `${VOICE_DEMO_WEATHER_YESNO_GIVEUP_CUE} Visitor did not reply after the repeat weather offer. ` +
+    `Say exactly: "${VOICE_DEMO_GOODBYE_LINE}" then STOP and call end_conversation immediately. ` +
+    `Do not ask again. Do not offer weather or promo.`
   );
 }
 
