@@ -124,8 +124,17 @@ describe("voice-demo-weather", () => {
     expect(nudge).toContain(report);
   });
 
-  it("nudges graceful goodbye when lookup fails", () => {
+  it("nudges retry before goodbye when lookup fails once", () => {
     const nudge = buildWeatherLookupFailedNudge("Weather service is unavailable.");
+    expect(nudge).toContain("[weather-lookup-failed]");
+    expect(nudge).toMatch(/try that weather lookup again/i);
+    expect(nudge).not.toMatch(/FINAL GOODBYE/i);
+  });
+
+  it("nudges graceful goodbye when lookup retries are exhausted", () => {
+    const nudge = buildWeatherLookupFailedNudge("Weather service is unavailable.", {
+      retriesExhausted: true,
+    });
     expect(nudge).toContain("[weather-lookup-failed]");
     expect(nudge).toMatch(/unavailable/i);
     expect(nudge).toMatch(/FINAL GOODBYE/i);

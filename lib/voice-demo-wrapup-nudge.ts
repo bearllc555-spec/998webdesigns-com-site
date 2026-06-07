@@ -97,13 +97,14 @@ export function shouldScheduleWrapUpAfterAnswer(
   text: string,
   opts: {
     awaitingCollection: boolean;
+    weatherFlowActive: boolean;
     farewellSent: boolean;
     visitorAskedSubstantiveQuestion: boolean;
   }
 ): boolean {
   const trimmed = text.trim();
   if (!trimmed || trimmed.length < 24) return false;
-  if (opts.awaitingCollection || opts.farewellSent) return false;
+  if (opts.awaitingCollection || opts.weatherFlowActive || opts.farewellSent) return false;
   if (!opts.visitorAskedSubstantiveQuestion) return false;
   if (isAssistantWrapUpQuestion(trimmed)) return false;
   if (isAssistantFarewell(trimmed)) return false;

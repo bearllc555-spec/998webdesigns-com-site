@@ -48,6 +48,28 @@ export function countSpokenZipDigits(transcript: string): number {
 /** Hidden cue — Jarvis said goodbye before ZIP read-back; recover the flow. */
 export const VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE = "[zip-goodbye-blocked]";
 
+/** Hidden cue — wrap-up question during active weather ZIP flow; redirect to ZIP. */
+export const VOICE_DEMO_ZIP_WRAPUP_BLOCKED_CUE = "[zip-wrapup-blocked]";
+
+export function buildWeatherZipWrapUpBlockedNudge(): string {
+  return (
+    `${VOICE_DEMO_ZIP_WRAPUP_BLOCKED_CUE} Weather demo is still in progress — do NOT ask wrap-up questions yet. ` +
+    `Say ONLY: "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" then STOP and wait for their five-digit ZIP. ` +
+    `No "anything else", no goodbye, no promo until weather finishes or they decline.`
+  );
+}
+
+/** Visitor reminds Jarvis they asked for ZIP / weather. */
+export function isUserWeatherZipReminder(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return (
+    /\b(you (just |already )?asked|asked (me )?for).{0,40}\b(zip|weather)\b/i.test(t) ||
+    /\b(we were|still).{0,32}\b(zip|weather)\b/i.test(t) ||
+    /\bzip code.{0,24}\b(you|asked)\b/i.test(t)
+  );
+}
+
 export function buildWeatherZipPrematureGoodbyeRecoveryNudge(): string {
   return (
     `${VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE} You must NOT say goodbye or call end_conversation yet. ` +

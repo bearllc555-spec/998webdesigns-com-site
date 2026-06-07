@@ -30,11 +30,18 @@ export function buildWeatherLookupSpeakNudge(
   );
 }
 
-export function buildWeatherLookupFailedNudge(errorDetail: string): string {
+export function buildWeatherLookupFailedNudge(errorDetail: string, opts?: { retriesExhausted?: boolean }): string {
+  if (!opts?.retriesExhausted) {
+    return (
+      `${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE} lookup_weather failed (${errorDetail}). ` +
+      `Say "One moment — let me try that weather lookup again." Stay silent — the client will retry. ` +
+      `Do not say goodbye or ask wrap-up questions yet.`
+    );
+  }
   return (
-    `${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE} lookup_weather failed (${errorDetail}). ` +
+    `${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE} lookup_weather failed after retries (${errorDetail}). ` +
     `Apologize briefly that the weather lookup is unavailable right now. ` +
-    `Do not retry or ask for another ZIP. Go to FINAL GOODBYE — warm sign-off, then end_conversation.`
+    `Do not ask for another ZIP. Go to FINAL GOODBYE — warm sign-off, then end_conversation.`
   );
 }
 

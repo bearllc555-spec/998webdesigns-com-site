@@ -13,6 +13,8 @@ import {
   buildZipCityCorrectionNudge,
   buildZipStagedSpeakNudge,
   buildWeatherZipPrematureGoodbyeRecoveryNudge,
+  buildWeatherZipWrapUpBlockedNudge,
+  isUserWeatherZipReminder,
   countSpokenZipDigits,
   isWeatherOfferAccept,
   isWeatherOfferDecline,
@@ -30,12 +32,24 @@ import {
   VOICE_DEMO_ZIP_CITY_CORRECT_CUE,
   VOICE_DEMO_ZIP_STAGED_CUE,
   VOICE_DEMO_ZIP_GOODBYE_BLOCKED_CUE,
+  VOICE_DEMO_ZIP_WRAPUP_BLOCKED_CUE,
 } from "@/lib/voice-demo-zip-nudge";
 
 describe("voice-demo-zip-nudge", () => {
   it("counts spoken-word ZIP digits", () => {
     expect(countSpokenZipDigits("zero seven four two four")).toBe(5);
     expect(countSpokenZipDigits("07424")).toBe(5);
+  });
+
+  it("blocks wrap-up questions during active weather ZIP flow", () => {
+    const nudge = buildWeatherZipWrapUpBlockedNudge();
+    expect(nudge).toContain(VOICE_DEMO_ZIP_WRAPUP_BLOCKED_CUE);
+    expect(nudge).toMatch(/do NOT ask wrap-up/i);
+  });
+
+  it("detects visitor reminders about the ZIP ask", () => {
+    expect(isUserWeatherZipReminder("You just asked for my zip code")).toBe(true);
+    expect(isUserWeatherZipReminder("How much is hosting?")).toBe(false);
   });
 
   it("recovers when Jarvis says goodbye before ZIP read-back", () => {

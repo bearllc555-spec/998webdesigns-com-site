@@ -31,6 +31,7 @@ describe("voice-demo-wrapup-nudge", () => {
         "I'm doing quite well, thank you for asking.",
         {
           awaitingCollection: false,
+          weatherFlowActive: false,
           farewellSent: false,
           visitorAskedSubstantiveQuestion: true,
         }
@@ -53,6 +54,7 @@ describe("voice-demo-wrapup-nudge", () => {
     expect(
       shouldScheduleWrapUpAfterAnswer(answer, {
         awaitingCollection: false,
+        weatherFlowActive: false,
         farewellSent: false,
         visitorAskedSubstantiveQuestion: true,
       })
@@ -60,6 +62,7 @@ describe("voice-demo-wrapup-nudge", () => {
     expect(
       shouldScheduleWrapUpAfterAnswer(answer, {
         awaitingCollection: false,
+        weatherFlowActive: false,
         farewellSent: false,
         visitorAskedSubstantiveQuestion: false,
       })
@@ -67,6 +70,7 @@ describe("voice-demo-wrapup-nudge", () => {
     expect(
       shouldScheduleWrapUpAfterAnswer("How may I help you today?", {
         awaitingCollection: false,
+        weatherFlowActive: false,
         farewellSent: false,
         visitorAskedSubstantiveQuestion: true,
       })
@@ -74,6 +78,15 @@ describe("voice-demo-wrapup-nudge", () => {
     expect(
       shouldScheduleWrapUpAfterAnswer(answer, {
         awaitingCollection: true,
+        weatherFlowActive: false,
+        farewellSent: false,
+        visitorAskedSubstantiveQuestion: true,
+      })
+    ).toBe(false);
+    expect(
+      shouldScheduleWrapUpAfterAnswer(answer, {
+        awaitingCollection: false,
+        weatherFlowActive: true,
         farewellSent: false,
         visitorAskedSubstantiveQuestion: true,
       })

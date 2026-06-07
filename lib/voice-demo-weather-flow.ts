@@ -62,8 +62,10 @@ export function isAssistantZipCollectionPrompt(text: string): boolean {
     /give me your zip|your zip code|five-digit zip|5-digit zip|zip code.*forecast/i.test(
       lower
     ) ||
-    /\bwhat(?:'s| is) your zip\b/i.test(lower) ||
+    /\bwhat(?:'s| is) your (?:zip|five.?digit)/i.test(lower) ||
     /\brepeat.*zip\b/i.test(lower) ||
+    /\b(share|tell|give|provide|need|repeat).{0,48}\bzip\b/i.test(lower) ||
+    /\bzip\b.{0,48}\b(forecast|weather)\b/i.test(lower) ||
     (/\bzip\b/.test(lower) &&
       /\b(code|forecast|weather)\b/.test(lower) &&
       /\b(give|share|tell|need|provide|repeat)\b/.test(lower))

@@ -26,6 +26,7 @@ describe("voice-demo-weather-flow", () => {
         "I didn't get that ZIP code — can you please repeat it? If you give me your ZIP code, I can tell you the weather forecast in your city."
       )
     ).toBe(true);
+    expect(isAssistantZipCollectionPrompt("What's your five-digit ZIP?")).toBe(true);
   });
 
   it("detects promo ask and active weather ZIP flow", () => {
