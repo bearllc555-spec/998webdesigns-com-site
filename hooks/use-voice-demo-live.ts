@@ -969,7 +969,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       setConnecting(true);
       modeRef.current = mode;
       optionsRef.current.onStatus?.(
-        mode === "verify" ? "Connecting — say your code when ready…" : "Connecting…"
+        "Connecting…"
       );
 
       try {

@@ -125,7 +125,7 @@ export function VoiceDemoWidget() {
       setDestination(data.destination ?? email);
       setCaption(null);
       setPhase("verify");
-      setStatus("Check your email for a 6-digit code, then tap Start voice.");
+      setStatus("Check your email for a 6-digit code, then enter it below.");
     } catch {
       setFormError("Network error. Try again.");
     } finally {
@@ -149,8 +149,8 @@ export function VoiceDemoWidget() {
         return;
       }
       setTypedCode("");
+      setPhase("demo");
       setStatus("Verified — tap Start voice to talk with Jarvis.");
-      void live.transitionToDemo();
     } catch {
       setFormError("Network error.");
     } finally {
@@ -159,8 +159,8 @@ export function VoiceDemoWidget() {
   }
 
   const startVoice = () => {
-    const mode = phase === "demo" ? "demo" : "verify";
-    void live.connect(mode);
+    if (phase !== "demo") return;
+    void live.connect("demo");
   };
 
   if (configured === null) {
@@ -280,15 +280,42 @@ export function VoiceDemoWidget() {
                 </form>
               )}
 
-              {configured && (phase === "verify" || phase === "demo") && (
+              {configured && phase === "verify" && (
                 <div className="space-y-4">
-                  {destination && phase === "verify" && (
+                  {destination && (
                     <p className="text-sm text-ink-soft">
-                      Code sent to <strong className="text-ink">{destination}</strong>. Read it to
-                      Jarvis or type it below.
+                      Code sent to <strong className="text-ink">{destination}</strong>.
                     </p>
                   )}
+                  <p className="text-sm font-medium text-ink">
+                    Enter the verification code by typing
+                  </p>
+                  <form onSubmit={submitTypedCode} className="flex gap-2">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      placeholder="6-digit code"
+                      value={typedCode}
+                      onChange={(e) => setTypedCode(e.target.value)}
+                      className={`${FIXED_INPUT_CLASS} flex-1`}
+                      maxLength={8}
+                    />
+                    <button
+                      type="submit"
+                      disabled={busy || !typedCode.trim()}
+                      className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-on-accent transition hover:bg-accent-deep disabled:opacity-60"
+                    >
+                      Verify
+                    </button>
+                  </form>
+                  {status && <p className="text-sm text-ink-soft">{status}</p>}
+                  {formError && <p className="text-sm text-warn">{formError}</p>}
+                </div>
+              )}
 
+              {configured && phase === "demo" && (
+                <div className="space-y-4">
                   <div className="flex flex-col items-center gap-3 py-4">
                     <VoiceJarvisOrb
                       levels={live.jarvisLevels}
@@ -350,38 +377,16 @@ export function VoiceDemoWidget() {
                     </div>
                   )}
 
-                  {phase === "demo" && !live.connected && !live.connecting && !live.error && !status && (
+                  {!live.connected && !live.connecting && !live.error && !status && (
                     <p className="text-center text-sm text-ink-soft">
                       Tap Start voice to talk with Jarvis.
                     </p>
                   )}
-
-                  {phase === "verify" && (
-                    <form onSubmit={submitTypedCode} className="flex gap-2">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="6-digit code"
-                        value={typedCode}
-                        onChange={(e) => setTypedCode(e.target.value)}
-                        className={`${FIXED_INPUT_CLASS} flex-1`}
-                        maxLength={8}
-                      />
-                      <button
-                        type="submit"
-                        disabled={busy || !typedCode.trim()}
-                        className="rounded-lg border border-rule px-3 py-2 text-sm font-medium text-ink transition hover:bg-rule-soft disabled:opacity-60"
-                      >
-                        Verify
-                      </button>
-                    </form>
-                  )}
-
                 </div>
               )}
             </div>
 
-            {caption?.role === "user" && configured && (phase === "verify" || phase === "demo") && (
+            {caption?.role === "user" && configured && phase === "demo" && (
               <VoiceCaptionBar caption={caption} />
             )}
           </div>

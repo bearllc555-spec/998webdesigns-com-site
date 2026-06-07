@@ -5,6 +5,7 @@ import {
   VOICE_DEMO_WRAPUP_QUESTIONS,
   voiceDemoDemoIntroBlock,
   voiceDemoDemoSystemPrompt,
+  voiceDemoVerifySystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import {
@@ -53,6 +54,25 @@ describe("voice-demo-system-prompt barge-in", () => {
     expect(VOICE_DEMO_PERSONA).toMatch(/INTERRUPTIONS/i);
     expect(VOICE_DEMO_PERSONA).toMatch(/stop immediately/i);
     expect(VOICE_DEMO_PERSONA).toMatch(/one speaker at a time/i);
+  });
+});
+
+describe("voice-demo-system-prompt verify", () => {
+  const unverifiedRow = {
+    id: "lead-1",
+    primary_channel: "email",
+    email: "test@example.com",
+    phone: null,
+    full_name: null,
+    email_verified_at: null,
+  } as VoiceDemoLeadRow;
+
+  it("requires typed verification only — no spoken codes", () => {
+    const prompt = voiceDemoVerifySystemPrompt(unverifiedRow);
+    expect(prompt).toMatch(/TYPED ONLY/i);
+    expect(prompt).toMatch(/typing field/i);
+    expect(prompt).toMatch(/Do NOT ask them to read, say, or speak/i);
+    expect(prompt).toMatch(/do not call verify_code from voice/i);
   });
 });
 

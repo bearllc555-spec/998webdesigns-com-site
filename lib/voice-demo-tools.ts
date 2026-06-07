@@ -34,23 +34,7 @@ export type VoiceDemoToolMode = "verify" | "demo";
 
 export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnion {
   if (mode === "verify") {
-    return [
-      {
-        functionDeclarations: [
-          {
-            name: "verify_code",
-            description: "Verify the 6-digit code the user spoke or typed.",
-            parameters: {
-              type: Type.OBJECT,
-              properties: {
-                code: { type: Type.STRING, description: "Six-digit verification code" },
-              },
-              required: ["code"],
-            },
-          },
-        ],
-      },
-    ];
+    return [];
   }
 
   return [
