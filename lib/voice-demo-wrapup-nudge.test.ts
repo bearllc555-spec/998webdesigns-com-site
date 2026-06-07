@@ -6,7 +6,8 @@ import {
   isUserSmallTalk,
   isUserSubstantiveQuestion,
   shouldScheduleWrapUpAfterAnswer,
-  VOICE_DEMO_WRAPUP_PAUSE_CUE,
+  VOICE_DEMO_WRAPUP_READY_CUE,
+  isAssistantHiddenCueLeak,
   WRAPUP_POST_ANSWER_PAUSE_MS,
 } from "@/lib/voice-demo-wrapup-nudge";
 import { VOICE_DEMO_WRAPUP_QUESTIONS } from "@/lib/voice-demo-wrapup-nudge";
@@ -93,10 +94,17 @@ describe("voice-demo-wrapup-nudge", () => {
     ).toBe(false);
   });
 
-  it("nudges one wrap-up question after the pause cue", () => {
-    const nudge = buildWrapUpPauseNudge();
-    expect(nudge).toContain(VOICE_DEMO_WRAPUP_PAUSE_CUE);
-    expect(nudge).toMatch(/WRAP-UP QUESTION CYCLE/i);
+  it("nudges one exact wrap-up question without saying pause", () => {
+    const nudge = buildWrapUpPauseNudge(0);
+    expect(nudge).toContain(VOICE_DEMO_WRAPUP_READY_CUE);
+    expect(nudge).toContain(VOICE_DEMO_WRAPUP_QUESTIONS[0]);
+    expect(nudge).toMatch(/Never say the word pause/i);
     expect(nudge).toMatch(/STOP and wait/i);
+  });
+
+  it("detects hidden cue leaks", () => {
+    expect(isAssistantHiddenCueLeak("pause")).toBe(true);
+    expect(isAssistantHiddenCueLeak("[wrap-up-pause]")).toBe(true);
+    expect(isAssistantHiddenCueLeak(VOICE_DEMO_WRAPUP_QUESTIONS[0])).toBe(false);
   });
 });

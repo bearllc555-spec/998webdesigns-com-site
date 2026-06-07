@@ -9,8 +9,11 @@ export const VOICE_DEMO_WRAPUP_QUESTIONS = [
   "Did I address all your concerns today?",
 ] as const;
 
-/** Hidden client cue — never spoken aloud; nudges Jarvis after a post-answer pause. */
-export const VOICE_DEMO_WRAPUP_PAUSE_CUE = "[wrap-up-pause]";
+/** Hidden client cue — never spoken aloud; nudges Jarvis to ask the next wrap-up question. */
+export const VOICE_DEMO_WRAPUP_READY_CUE = "[wrapup-ready]";
+
+/** @deprecated Use VOICE_DEMO_WRAPUP_READY_CUE — old tag caused Jarvis to say "pause" aloud. */
+export const VOICE_DEMO_WRAPUP_PAUSE_CUE = VOICE_DEMO_WRAPUP_READY_CUE;
 
 /** Comfortable beat after a substantive FAQ answer before the next wrap-up question (ms). */
 export const WRAPUP_POST_ANSWER_PAUSE_MS = 4000;
@@ -117,11 +120,39 @@ export function shouldScheduleWrapUpAfterAnswer(
   return true;
 }
 
-export function buildWrapUpPauseNudge(): string {
+/** Jarvis read a hidden cue or meta instruction aloud — recover with the real wrap-up line. */
+export function isAssistantHiddenCueLeak(text: string): boolean {
+  const t = text.trim();
+  if (!t) return false;
+  if (/\[[a-z0-9-]+\]/i.test(t)) return true;
+  if (/^pause[.!?,]?\s*$/i.test(t)) return true;
+  if (/wrap[- ]?up[- ]?pause/i.test(t)) return true;
+  if (/comfortable pause/i.test(t)) return true;
+  if (/\bwrapup[- ]?ready\b/i.test(t)) return true;
+  if (t.length <= 64 && /\b(hidden|internal)\s+cue\b/i.test(t)) return true;
+  return false;
+}
+
+export function wrapUpQuestionAtIndex(index: number): string {
+  const safe = ((index % VOICE_DEMO_WRAPUP_QUESTIONS.length) + VOICE_DEMO_WRAPUP_QUESTIONS.length) %
+    VOICE_DEMO_WRAPUP_QUESTIONS.length;
+  return VOICE_DEMO_WRAPUP_QUESTIONS[safe]!;
+}
+
+export function buildWrapUpPauseNudge(questionIndex = 0): string {
+  const q = wrapUpQuestionAtIndex(questionIndex);
   return (
-    `${VOICE_DEMO_WRAPUP_PAUSE_CUE} You finished answering the visitor's substantive question. ` +
-    `The comfortable pause is over — ask exactly ONE next wrap-up question from the WRAP-UP QUESTION CYCLE (advance to the next Q in order), ` +
-    `then STOP and wait for their answer. Do not add another topic or question in the same turn. ` +
-    `Never use wrap-up questions after small talk or name onboarding — only after a real FAQ answer.`
+    `${VOICE_DEMO_WRAPUP_READY_CUE} Say ONLY this exact question — no preamble, no meta commentary: ` +
+    `"${q}" STOP and wait for their answer. ` +
+    `Never read bracketed tags aloud. Never say the word pause.`
+  );
+}
+
+export function buildWrapUpCueLeakRecoveryNudge(questionIndex = 0): string {
+  const q = wrapUpQuestionAtIndex(questionIndex);
+  return (
+    `[wrapup-cue-leak] You leaked a hidden system tag or said pause — visitor heard gibberish. ` +
+    `Apologize briefly for the hiccup, then say ONLY: "${q}" STOP and wait. ` +
+    `Do not end the call. Do not read any bracketed text aloud.`
   );
 }

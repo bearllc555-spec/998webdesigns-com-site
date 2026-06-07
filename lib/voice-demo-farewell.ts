@@ -1,3 +1,5 @@
+import { isAssistantHiddenCueLeak } from "@/lib/voice-demo-wrapup-nudge";
+
 /** Visitor said they are finished — allows end_conversation after farewell. */
 export function isUserExplicitlyDone(text: string): boolean {
   const t = text.trim().toLowerCase();
@@ -17,6 +19,7 @@ export function canModelEndConversation(opts: {
   assistantText: string;
   weatherDemoIncomplete?: boolean;
 }): boolean {
+  if (isAssistantHiddenCueLeak(opts.assistantText)) return false;
   if (opts.weatherDemoIncomplete) return false;
   if (opts.farewellSent) return true;
   if (opts.goodbyeNudgeSent) return true;
@@ -117,6 +120,7 @@ export function shouldClientScheduleFarewellHangup(
   text: string,
   visitorExplicitlyDone: boolean
 ): boolean {
+  if (isAssistantHiddenCueLeak(text)) return false;
   if (isSubstantiveServiceSpeech(text) && !isAssistantExplicitGoodbye(text)) {
     return false;
   }

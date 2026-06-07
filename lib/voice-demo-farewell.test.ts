@@ -18,6 +18,18 @@ describe("shouldClientScheduleFarewellHangup", () => {
     expect(shouldClientScheduleFarewellHangup(answer, false)).toBe(true);
   });
 
+  it("blocks end_conversation after hidden cue leak", () => {
+    expect(
+      canModelEndConversation({
+        farewellSent: false,
+        goodbyeNudgeSent: false,
+        visitorExplicitlyDone: false,
+        assistantText: "pause",
+        weatherDemoIncomplete: false,
+      })
+    ).toBe(false);
+  });
+
   it("blocks end_conversation while weather demo is incomplete", () => {
     expect(
       canModelEndConversation({

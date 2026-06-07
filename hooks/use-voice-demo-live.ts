@@ -70,11 +70,14 @@ import {
   WEATHER_POST_FORECAST_GOODBYE_PAUSE_MS,
 } from "@/lib/voice-demo-weather";
 import {
+  buildWrapUpCueLeakRecoveryNudge,
   buildWrapUpPauseNudge,
+  isAssistantHiddenCueLeak,
   isAssistantWrapUpQuestion,
   isUserSmallTalk,
   isUserSubstantiveQuestion,
   shouldScheduleWrapUpAfterAnswer,
+  VOICE_DEMO_WRAPUP_QUESTIONS,
   WRAPUP_POST_ANSWER_PAUSE_MS,
 } from "@/lib/voice-demo-wrapup-nudge";
 import {
@@ -238,6 +241,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const weatherForecastCompleteRef = useRef(false);
   const lastUserWeatherZipRef = useRef<string | null>(null);
   const closeQueuePhaseRef = useRef<CloseQueuePhase>("idle");
+  const wrapUpQuestionIndexRef = useRef(0);
+  const wrapUpCueLeakRecoverySentRef = useRef(false);
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const greetingSentRef = useRef(false);
@@ -1234,6 +1239,28 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const sendWrapUpCueLeakRecovery = useCallback(() => {
+    const session = sessionRef.current;
+    if (!session || modeRef.current !== "demo" || isFarewellLocked()) return;
+    if (wrapUpCueLeakRecoverySentRef.current) return;
+    wrapUpCueLeakRecoverySentRef.current = true;
+    clearWrapUpTimer();
+    logVoiceDemoOps({
+      kind: "session_anomaly",
+      message: "Jarvis leaked hidden cue — wrap-up recovery nudge sent",
+      severity: "warn",
+    });
+    try {
+      session.sendClientContent({
+        turns: buildWrapUpCueLeakRecoveryNudge(wrapUpQuestionIndexRef.current),
+        turnComplete: true,
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] wrap-up cue leak recovery", err);
+      wrapUpCueLeakRecoverySentRef.current = false;
+    }
+  }, [clearWrapUpTimer, isFarewellLocked]);
+
   const sendWrapUpPauseNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || modeRef.current !== "demo") return;
@@ -1255,11 +1282,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       return;
     }
 
+    wrapUpCueLeakRecoverySentRef.current = false;
+    const questionIndex = wrapUpQuestionIndexRef.current;
     try {
       session.sendClientContent({
-        turns: buildWrapUpPauseNudge(),
+        turns: buildWrapUpPauseNudge(questionIndex),
         turnComplete: true,
       });
+      wrapUpQuestionIndexRef.current =
+        (questionIndex + 1) % VOICE_DEMO_WRAPUP_QUESTIONS.length;
     } catch (err) {
       console.warn("[voice-demo-live] wrap-up pause nudge", err);
     }
@@ -1992,6 +2023,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           detectAssistantWeatherPrompt(lastAssistantTextRef.current);
           detectCloseQueuePrompt(lastAssistantTextRef.current);
           maybeCorrectPromoDuringWeather(lastAssistantTextRef.current);
+          if (isAssistantHiddenCueLeak(lastAssistantTextRef.current)) {
+            sendWrapUpCueLeakRecovery();
+          }
         }
       }
 
@@ -2153,6 +2187,29 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   ok: true,
                   endCall: true,
                   message: "Call already ending. Stay completely silent.",
+                },
+              });
+              continue;
+            }
+
+            if (
+              result.endCall === true &&
+              isAssistantHiddenCueLeak(lastAssistantTextRef.current)
+            ) {
+              logVoiceDemoOps({
+                kind: "end_conversation_early_blocked",
+                message: "Blocked end_conversation after hidden cue leak",
+                severity: "warn",
+                meta: { assistantTail: lastAssistantTextRef.current.slice(-80) },
+              });
+              sendWrapUpCueLeakRecovery();
+              responses.push({
+                id: call.id,
+                name,
+                response: {
+                  ok: false,
+                  error:
+                    "You leaked a hidden system tag. Apologize briefly, ask the wrap-up question, and do not end the call yet.",
                 },
               });
               continue;
@@ -2562,6 +2619,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           detectAssistantWeatherPrompt(assistantSnapshot);
           detectCloseQueuePrompt(assistantSnapshot);
           recoverWeatherZipAfterPromoSkip(assistantSnapshot);
+          if (isAssistantHiddenCueLeak(assistantSnapshot)) {
+            sendWrapUpCueLeakRecovery();
+          } else if (isAssistantWrapUpQuestion(assistantSnapshot)) {
+            wrapUpCueLeakRecoverySentRef.current = false;
+            clearWrapUpTimer();
+          }
           if (
             stagedZipReadbackRef.current &&
             !zipLookupTriggeredRef.current &&
@@ -2677,6 +2740,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       sendCloseQueuePromoDeclinedWrapUp,
       sendCloseQueueSkipToWrapUp,
       scheduleWrapUpPause,
+      sendWrapUpCueLeakRecovery,
+      isAssistantHiddenCueLeak,
+      isAssistantWrapUpQuestion,
       sendWeatherDeclineNudge,
       sendWeatherLookupAfterZipConfirm,
       sendStagedZipReadBackNudge,
@@ -2744,6 +2810,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         weatherForecastCompleteRef.current = false;
         lastUserWeatherZipRef.current = null;
         closeQueuePhaseRef.current = "idle";
+        wrapUpQuestionIndexRef.current = 0;
+        wrapUpCueLeakRecoverySentRef.current = false;
         resetCaption();
         disconnect(true);
       } else if (reconnectingRef.current) {
