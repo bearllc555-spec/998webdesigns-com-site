@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   buildWeatherZipConfirmLine,
   buildWeatherZipLookupLine,
+  fahrenheitToCelsiusRounded,
   formatBriefWeatherReport,
+  formatSpokenTemperaturePair,
   spellZipForVoice,
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
@@ -42,19 +44,28 @@ describe("voice-demo-weather", () => {
     expect(wmoWeatherLabel(61)).toBe("rain");
   });
 
-  it("formats a brief spoken weather report", () => {
+  it("converts Fahrenheit to Celsius for spoken reports", () => {
+    expect(fahrenheitToCelsiusRounded(32)).toBe(0);
+    expect(fahrenheitToCelsiusRounded(72)).toBe(22);
+    expect(formatSpokenTemperaturePair(72)).toBe(
+      "72 degrees Fahrenheit, about 22 degrees Celsius"
+    );
+  });
+
+  it("formats a brief spoken weather report with F then C", () => {
     const report = formatBriefWeatherReport(
       { city: "Little Falls", stateName: "New Jersey" },
       {
         temperatureF: 72,
-        apparentTemperatureF: 70,
+        apparentTemperatureF: 65,
         humidityPct: 55,
         windMph: 8,
         conditions: "partly cloudy",
       }
     );
     expect(report).toContain("Little Falls");
-    expect(report).toContain("72 degrees");
+    expect(report).toContain("72 degrees Fahrenheit, about 22 degrees Celsius");
+    expect(report).toContain("65 degrees Fahrenheit, about 18 degrees Celsius");
     expect(report).toContain("partly cloudy");
     expect(isAssistantWeatherForecast(report)).toBe(true);
   });

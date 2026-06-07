@@ -503,7 +503,7 @@ export async function executeVoiceDemoTool(
       spokenLookup,
       possibleLocation: `${result.city}, ${result.state} ${result.zip}`,
       message:
-        `Speak spokenLookup, then give a brief weather summary from briefReport for ZIP ${result.zip} only — temperature, conditions, wind. Keep it short.`,
+        `Speak spokenLookup, then give a brief weather summary from briefReport for ZIP ${result.zip} only — Fahrenheit then Celsius, conditions, wind. Keep it short.`,
     };
   }
 

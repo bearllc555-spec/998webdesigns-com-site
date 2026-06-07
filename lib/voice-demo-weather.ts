@@ -97,13 +97,28 @@ export function wmoWeatherLabel(code: number): string {
   return "mixed conditions";
 }
 
+/** Round Fahrenheit to integer Celsius for spoken weather reports. */
+export function fahrenheitToCelsiusRounded(tempF: number): number {
+  return Math.round((tempF - 32) * (5 / 9));
+}
+
+/** Spoken "72 degrees Fahrenheit, about 22 degrees Celsius". */
+export function formatSpokenTemperaturePair(tempF: number): string {
+  const f = Math.round(tempF);
+  const c = fahrenheitToCelsiusRounded(tempF);
+  return `${f} degrees Fahrenheit, about ${c} degrees Celsius`;
+}
+
 /** Assistant turn looks like the spoken briefReport weather summary. */
 export function isAssistantWeatherForecast(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
   return (
-    /\bin .+, .+, it's \d+ degrees\b/.test(t) ||
-    (/\d+\s*degrees/.test(t) && /humidity/.test(t) && /\bwind/.test(t))
+    (/\bin .+, .+, it's \d+ degrees fahrenheit/i.test(t) && /celsius/.test(t)) ||
+    (/\d+\s*degrees fahrenheit/.test(t) &&
+      /celsius/.test(t) &&
+      /humidity/.test(t) &&
+      /\bwind/.test(t))
   );
 }
 
@@ -116,9 +131,11 @@ export function formatBriefWeatherReport(
   const wind = Math.round(weather.windMph);
   const humidity = Math.round(weather.humidityPct);
   const feelsNote =
-    Math.abs(feels - temp) >= 4 ? `, feels like ${feels} degrees` : "";
+    Math.abs(feels - temp) >= 4
+      ? `, feels like ${formatSpokenTemperaturePair(feels)}`
+      : "";
   return (
-    `In ${place.city}, ${place.stateName}, it's ${temp} degrees with ${weather.conditions}` +
+    `In ${place.city}, ${place.stateName}, it's ${formatSpokenTemperaturePair(temp)} with ${weather.conditions}` +
     `${feelsNote}, ${humidity}% humidity, and winds around ${wind} miles per hour.`
   );
 }

@@ -140,6 +140,7 @@ LOOKUP (when you have a ZIP):
   1. Call confirm_weather_zip only — speak spokenConfirm (read ZIP digits + city/state + "Is that correct?") and STOP.
   2. Wait for yes / correct. On no or correction → call confirm_weather_zip again with the ZIP they give.
   3. Only after yes → call lookup_weather alone with the same zipCode and userConfirmed true — then brief summary from briefReport.
+- Temperature: always Fahrenheit first, then Celsius — briefReport includes both; read both aloud every time (including "feels like" when present).
 - Never call confirm_weather_zip and lookup_weather in the same turn.
 - After you deliver the weather summary from briefReport, STOP — do not ask a wrap-up question in the same turn. Wait about two seconds; hidden cue "${VOICE_DEMO_WRAPUP_PAUSE_CUE}" will prompt the next wrap-up question.
 - Each lookup saves city, state, and ZIP as the client's possible location in CRM.

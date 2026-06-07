@@ -118,6 +118,7 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/wait for yes or no/i);
     expect(prompt).toMatch(/Is that correct\?/i);
     expect(prompt).toMatch(/userConfirmed true/i);
+    expect(prompt).toMatch(/Fahrenheit first, then Celsius/i);
     expect(prompt).toMatch(/NEVER use "possible location on file"/i);
     expect(prompt).toContain("I didn't get that.");
     expect(prompt).toContain("Do you want to see something cool?");
