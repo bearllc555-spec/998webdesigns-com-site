@@ -17,8 +17,14 @@ export const ADDON_OPTIONS = [
   {
     id: "addon-chatbot",
     value: "ai-chatbot",
-    label: "Jarvis AI Chatbot",
+    label: "AI Agent Chatbot",
     pricing: "$299 setup · $79/mo",
+  },
+  {
+    id: "addon-jarvis-voice",
+    value: "jarvis-voice",
+    label: "Jarvis AI Voice Chatbot",
+    pricing: "$499 setup · $149/mo",
   },
   {
     id: "addon-receptionist",

@@ -181,13 +181,13 @@ function checkoutSessionPaymentLabel(session: Stripe.Checkout.Session): string {
   return "Card";
 }
 
-/** Day-31 lifetime hosting Checkout cleared ($2,996). */
+/** Day-31 10-year hosting Checkout cleared ($2,996). */
 export async function sendInternalLifetimeHostingPaidEmail(
   session: Stripe.Checkout.Session,
   options?: { settledAfterAch?: boolean }
 ): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[webhook] RESEND_API_KEY not set, skipping lifetime hosting paid alert");
+    console.warn("[webhook] RESEND_API_KEY not set, skipping 10-year hosting paid alert");
     return;
   }
 
@@ -209,11 +209,11 @@ export async function sendInternalLifetimeHostingPaidEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] Lifetime hosting paid — ${meta.businessName || email}`,
+    subject: `[998] 10-year hosting paid — ${meta.businessName || email}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
-        <h2 style="margin: 0 0 12px;">Lifetime hosting payment cleared</h2>
-        <p><strong>Status:</strong> Lifetime hosting active</p>
+        <h2 style="margin: 0 0 12px;">10-year hosting payment cleared</h2>
+        <p><strong>Status:</strong> 10-year hosting active</p>
         <p><strong>Payment method:</strong> ${escapeHtml(checkoutSessionPaymentLabel(session))}</p>
         ${achNote}
         <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
@@ -221,13 +221,13 @@ export async function sendInternalLifetimeHostingPaidEmail(
         <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
-        <p style="font-size: 14px; color: #52525b;">Day-31 lifetime hosting payment. Hosting is active for life.</p>
+        <p style="font-size: 14px; color: #52525b;">Day-31 10-year hosting payment. Hosting is active for ten years.</p>
       </div>
     `,
   });
 
   if (error) {
-    console.error("[webhook] Lifetime hosting paid alert failed:", error);
+    console.error("[webhook] 10-year hosting paid alert failed:", error);
   }
 }
 

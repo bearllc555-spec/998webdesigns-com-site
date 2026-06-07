@@ -41,8 +41,8 @@ export function CrmDiscoveryClosePanel({
   businessName: initialBusinessName,
   closeDraft,
 }: Props) {
-  const [hostingChoice, setHostingChoice] = useState<"lifetime" | "monthly">(
-    closeDraft?.hostingChoice ?? "lifetime"
+  const [hostingChoice, setHostingChoice] = useState<"ten_year" | "monthly">(
+    closeDraft?.hostingChoice ?? "ten_year"
   );
   const [paymentChannel, setPaymentChannel] = useState<"card" | "ach">(
     closeDraft?.paymentChannel ?? "card"
@@ -168,10 +168,10 @@ export function CrmDiscoveryClosePanel({
           Hosting
           <select
             value={hostingChoice}
-            onChange={(e) => setHostingChoice(e.target.value as "lifetime" | "monthly")}
+            onChange={(e) => setHostingChoice(e.target.value as "ten_year" | "monthly")}
             className="mt-1 w-full rounded border border-rule bg-bg px-2 py-1.5 text-ink"
           >
-            <option value="lifetime">Lifetime ($2,996 day 31)</option>
+            <option value="ten_year">10-year ($2,996 day 31)</option>
             <option value="monthly">Monthly ($198/mo)</option>
           </select>
         </label>

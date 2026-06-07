@@ -12,15 +12,28 @@ import {
 const ADDONS = [
   {
     value: "ai-chatbot",
-    title: "Jarvis AI Chatbot",
+    title: "AI Agent Chatbot",
     setup: "$299",
     monthly: "$79",
     bullets: [
-      "Your on-site AI assistant — the same Jarvis visitors can try on our home page",
-      "Answers pricing, services, and FAQs in a natural voice or typed chat",
-      "Captures leads, sends promo codes, and follows up when visitors are ready",
+      "Answer visitor questions around the clock — typed chat on your site",
+      "Process orders and quote requests",
+      "Send brochures, pricing, and documentation",
+      "Schedule appointments and callbacks",
+      "Capture leads after hours and route urgent requests",
+    ],
+  },
+  {
+    value: "jarvis-voice",
+    title: "Jarvis AI Voice Chatbot",
+    setup: "$499",
+    monthly: "$149",
+    bullets: [
+      "Talk to your site — the same voice assistant visitors can try on our home page",
+      "Visitors speak or type; Jarvis answers in a natural, on-brand voice",
+      "Captures name, email, and phone; sends promo codes when visitors are ready",
       "Handles after-hours questions so you do not miss serious inquiries",
-      "Runs on our cloud edge network alongside your site for fast, reliable responses",
+      "Hosted on our cloud edge service only — low latency for real-time voice",
     ],
   },
   {
@@ -328,8 +341,8 @@ export function AddonsSection() {
           <p className="mt-4 text-base leading-relaxed text-ink">
             Every build includes options for blog writing & local posts, hyper‑local SEO, Google
             Profile Optimization (including review requests), email/SMS follow‑ups, social media management,
-            booking calendar, an AI receptionist, and Jarvis — our on‑site AI chatbot — so you get more
-            calls, more bookings, and more repeat clients.
+            booking calendar, an AI receptionist, a typed AI agent chatbot, and Jarvis — our voice
+            chatbot — so you get more calls, more bookings, and more repeat clients.
           </p>
         </div>
 

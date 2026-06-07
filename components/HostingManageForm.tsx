@@ -88,7 +88,7 @@ export function HostingManageForm() {
             at the end of your current billing period).
           </p>
           <p className="mt-3 text-sm text-ink-soft">
-            Lifetime hosting clients have no recurring subscription to manage. Questions?{" "}
+            10-year hosting clients have no recurring subscription to manage. Questions?{" "}
             <a href="mailto:hello@998webdesigns.com" className="text-accent underline-offset-2 hover:underline">
               hello@998webdesigns.com
             </a>

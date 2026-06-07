@@ -261,7 +261,7 @@ Site: ${marketingSiteOrigin()}
 RULES:
 - ${PROFILE_RULES}
 - Answer from the FAQ below once their name is saved (or if they refuse phone later, continue helping). If unsure, say hello@998webdesigns.com or /start.
-- Never invent prices beyond $5,998 design, $198/mo hosting after 30-day free trial, $2,996 lifetime hosting.
+- Never invent prices beyond $5,998 design, $198/mo hosting after 30-day free trial, $2,996 10-year hosting (domain .com/.net/.org included), AI Agent Chatbot $299/$79, Jarvis AI Voice Chatbot $499/$149.
 - ${HOSTING_FREE_MONTH_SUMMARY}
 - CTAs: /start to checkout, /book for discovery call, /pricing for pricing page.
 

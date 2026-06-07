@@ -44,7 +44,7 @@ const baseProspect: DiscoveryProspectRow = {
 describe("discoveryProspectToLead", () => {
   it("maps prospect + close draft to validated lead", () => {
     const result = discoveryProspectToLead(baseProspect, baseProspect.intake!, {
-      hostingChoice: "lifetime",
+      hostingChoice: "ten_year",
       paymentChannel: "card",
       addons: ["ai-chatbot"],
       promoCode: "",

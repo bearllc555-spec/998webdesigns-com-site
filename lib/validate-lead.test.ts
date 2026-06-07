@@ -63,8 +63,14 @@ describe("validateLeadPayload", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("rejects legacy ten_year hostingChoice", () => {
+  it("accepts ten_year hostingChoice", () => {
     const result = validateLeadPayload({ ...validBase, hostingChoice: "ten_year" });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.hostingChoice).toBe("ten_year");
+  });
+
+  it("rejects legacy lifetime hostingChoice", () => {
+    const result = validateLeadPayload({ ...validBase, hostingChoice: "lifetime" });
     expect(result.ok).toBe(false);
   });
 

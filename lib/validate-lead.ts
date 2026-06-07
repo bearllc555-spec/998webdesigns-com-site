@@ -5,7 +5,7 @@ import {
 import { isValidDesignPromoCode } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 
-export type HostingChoice = "lifetime" | "monthly";
+export type HostingChoice = "ten_year" | "monthly";
 export type PaymentOption = "full" | "deposit";
 export type PaymentChannel = "ach" | "card";
 export type ContactPref = "email" | "phone" | "text";
@@ -43,6 +43,7 @@ export type ValidatedLead = {
 const ALLOWED_ADDONS = new Set([
   "growth-pack",
   "ai-chatbot",
+  "jarvis-voice",
   "ai-receptionist",
   "social-media",
   "email-sms",
@@ -92,8 +93,8 @@ export function validateLeadPayload(
   if (!projectType || !["new", "redesign"].includes(projectType)) {
     return { ok: false, error: "Missing or invalid projectType" };
   }
-  if (!hostingChoice || !["lifetime", "monthly"].includes(hostingChoice)) {
-    return { ok: false, error: "Missing or invalid hostingChoice (lifetime or monthly)" };
+  if (!hostingChoice || !["ten_year", "monthly"].includes(hostingChoice)) {
+    return { ok: false, error: "Missing or invalid hostingChoice (ten_year or monthly)" };
   }
   const resolvedPaymentOption: PaymentOption =
     paymentOption === "full" ? "full" : paymentOption === "deposit" ? "deposit" : "deposit";

@@ -10,7 +10,7 @@ export function Pricing() {
           </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $5,998 design fee. Your first 30 days of hosting are free —
-            monthly or lifetime billing starts on day 31. The pricing below is the whole list — no
+            monthly or 10-year billing starts on day 31. The pricing below is the whole list — no
             tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;
           </p>
         </div>
@@ -40,14 +40,14 @@ export function Pricing() {
           {/* Hosting choice */}
           <article className="card-lift rounded-2xl border border-rule bg-bg p-8 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wider text-slate">
-              Lifetime hosting
+              10-year hosting
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
               $2,996 <span className="text-xl text-ink-soft">/one-time</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Pay once after your first 30 days of free hosting. We host your site for life,
-              including domain registration (com, net, org). Lifetime hosting begins when that
+              Pay once after your first 30 days of free hosting. We host your site for ten years,
+              including domain registration (.com, .net, .org). 10-year hosting begins when that
               payment clears.
             </p>
           </article>
@@ -61,7 +61,7 @@ export function Pricing() {
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               First 30 days free, then $198/mo. Cancel anytime before day 31 and you will not be
-              charged for hosting. Upgrade to lifetime hosting whenever you want for $2,996.
+              charged for hosting. Upgrade to 10-year hosting whenever you want for $2,996.
             </p>
           </article>
 
@@ -105,8 +105,8 @@ export function Pricing() {
               Upgrading hosting
             </p>
             <p className="mt-3 text-base leading-relaxed text-ink">
-              Start month-to-month, switch to lifetime hosting whenever you want for $2,996. Past
-              monthly payments don&rsquo;t apply toward the lifetime price &mdash; we say this up
+              Start month-to-month, switch to 10-year hosting whenever you want for $2,996. Past
+              monthly payments don&rsquo;t apply toward the 10-year price &mdash; we say this up
               front so it&rsquo;s never a surprise.
             </p>
           </aside>

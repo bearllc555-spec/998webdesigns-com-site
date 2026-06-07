@@ -37,8 +37,8 @@ function lead(overrides: Partial<ValidatedLead> = {}): ValidatedLead {
 }
 
 describe("buildCheckoutLineItems", () => {
-  it("charges design fee only for lifetime at signup (ACH)", () => {
-    const items = buildCheckoutLineItems(lead({ hostingChoice: "lifetime" }), "ach");
+  it("charges design fee only for ten_year at signup (ACH)", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "ach");
     expect(items).toHaveLength(1);
     expect(items[0].price_data?.unit_amount).toBe(599800);
   });
@@ -57,15 +57,15 @@ describe("buildCheckoutLineItems", () => {
     expect(items[2].price_data?.unit_amount).toBe(17994);
   });
 
-  it("card fee applies to design only for lifetime", () => {
-    const items = buildCheckoutLineItems(lead({ hostingChoice: "lifetime" }), "card");
+  it("card fee applies to design only for ten_year", () => {
+    const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "card");
     expect(items).toHaveLength(2);
     expect(items[1].price_data?.unit_amount).toBe(17994);
   });
 
   it("LINKEDIN20 discounts design line only", () => {
     const items = buildCheckoutLineItems(
-      lead({ hostingChoice: "lifetime", promoCode: LINKEDIN20 }),
+      lead({ hostingChoice: "ten_year", promoCode: LINKEDIN20 }),
       "ach"
     );
     expect(items[0].price_data?.unit_amount).toBe(479840);

@@ -17,7 +17,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "How is the $5,998 design fee paid?",
-    a: "On a 50 / 40 / 10 schedule — the same structure for every project. You pay 50% ($2,999) at checkout to enter the queue. The remaining 40% ($2,399.20) is due after design approval or when development starts. The final 10% ($599.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only — not hosting or the card fee). Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from your cleared deposit, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or lifetime hosting is a one-time $2,996 (we email a secure payment link on day 31). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.",
+    a: "On a 50 / 40 / 10 schedule — the same structure for every project. You pay 50% ($2,999) at checkout to enter the queue. The remaining 40% ($2,399.20) is due after design approval or when development starts. The final 10% ($599.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only — not hosting or the card fee). Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from your cleared deposit, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or 10-year hosting is a one-time $2,996 (we email a secure payment link on day 31; domain registration for .com, .net, or .org is included). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.",
   },
   {
     q: "Can I pay by card or bank?",
@@ -41,15 +41,15 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What are the hosting limits?",
-    a: "Built for a standard small-business website — not a media server or app platform.\n\n• Pages: Up to 6 (same as your design package)\n• Storage: ~500 MB for site files — enough for a full local business site with optimized photos\n• Bandwidth: Unmetered for normal business traffic (forms, calls, maps, everyday browsing)\n• Traffic spikes: Local news mentions, busy seasons, viral posts — included; the site scales automatically\n• SSL & security: HTTPS included and auto-renewed; DDoS protection at the edge\n• Domain: .com, .net, or .org included with hosting\n\nFair use: Hosting covers your business website. It is not for large file downloads, video streaming, heavy e-commerce catalogs, or custom software. If your needs grow beyond this, we'll talk before anything changes — routine growth and traffic spikes are already covered in your hosting fee.",
+    a: "Built for a standard small-business website — not a media server or app platform.\n\n• Pages: Up to 6 (same as your design package)\n• Storage: ~500 MB for site files — enough for a full local business site with optimized photos\n• Bandwidth: Unmetered for normal business traffic (forms, calls, maps, everyday browsing)\n• Traffic spikes: Local news mentions, busy seasons, viral posts — included; the site scales automatically\n• SSL & security: HTTPS included and auto-renewed; DDoS protection at the edge\n• Domain: .com, .net, or .org registration included with 10-year hosting\n\nFair use: Hosting covers your business website. It is not for large file downloads, video streaming, heavy e-commerce catalogs, or custom software. If your needs grow beyond this, we'll talk before anything changes — routine growth and traffic spikes are already covered in your hosting fee.",
   },
   {
     q: "What if I want to leave?",
-    a: "Month-to-month hosting: cancel anytime. Lifetime hosting: your site stays hosted with us for life — and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
+    a: "Month-to-month hosting: cancel anytime. 10-year hosting: your site stays hosted with us for ten years — and you can migrate and transfer your domain elsewhere whenever you want; we'll hand over the files. You are responsible for all domain transfer fees.",
   },
   {
     q: "How do I manage hosting billing?",
-    a: "Month-to-month clients can update a card, view invoices, or cancel hosting anytime. Go to [manage hosting billing](/hosting/manage), enter the email on your account, and we'll email a secure one-time link to Stripe's billing portal. Cancellation takes effect at the end of your current billing period. Lifetime hosting is a one-time charge — there is no recurring subscription to manage.",
+    a: "Month-to-month clients can update a card, view invoices, or cancel hosting anytime. Go to [manage hosting billing](/hosting/manage), enter the email on your account, and we'll email a secure one-time link to Stripe's billing portal. Cancellation takes effect at the end of your current billing period. 10-year hosting is a one-time charge — there is no recurring subscription to manage.",
   },
   {
     q: "What's the edit policy after month three?",
@@ -61,7 +61,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "What is Jarvis, and where does it run?",
-    a: "Jarvis is our AI chatbot add-on — an on-site assistant that answers visitor questions by voice or text, captures leads, and helps close interest while you are on a job or after hours. For optimum performance, Jarvis is hosted only on our cloud edge service (the same infrastructure as your 998 site). We do not support running Jarvis on third-party hosts or self-hosted setups — edge placement keeps latency low and responses consistent when traffic spikes.",
+    a: "Jarvis is our AI voice chatbot add-on ($499 setup, $149/mo) — visitors talk to your site in real time, the same way they can try Jarvis on our home page. It is separate from the typed AI Agent Chatbot ($299 setup, $79/mo). For optimum performance, Jarvis runs only on our cloud edge service (the same infrastructure as your 998 site). We do not support third-party or self-hosted setups — edge placement keeps voice latency low and responses consistent when traffic spikes.",
   },
   {
     q: "Can you set up business texting (SMS) for my company?",

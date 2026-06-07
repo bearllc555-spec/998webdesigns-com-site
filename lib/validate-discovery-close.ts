@@ -5,6 +5,7 @@ import type { PaymentOption } from "@/lib/validate-lead";
 const ALLOWED_ADDONS = new Set([
   "growth-pack",
   "ai-chatbot",
+  "jarvis-voice",
   "ai-receptionist",
   "social-media",
   "email-sms",
@@ -30,8 +31,8 @@ export function validateDiscoveryCloseDraft(
   const paymentChannel = str(body.paymentChannel);
   const paymentOptionRaw = str(body.paymentOption) ?? "deposit";
 
-  if (!hostingChoice || !["lifetime", "monthly"].includes(hostingChoice)) {
-    return { ok: false, error: "hostingChoice must be lifetime or monthly" };
+  if (!hostingChoice || !["ten_year", "monthly"].includes(hostingChoice)) {
+    return { ok: false, error: "hostingChoice must be ten_year or monthly" };
   }
   if (!paymentChannel || !["ach", "card"].includes(paymentChannel)) {
     return { ok: false, error: "paymentChannel must be ach or card" };

@@ -7,12 +7,12 @@ import { Pricing } from "@/components/Pricing";
 export const metadata: Metadata = {
   title: "Pricing — 998 web designs",
   description:
-    "Flat $5,998 design fee. First 30 days of hosting free — then $198/mo or $2,996 lifetime. No tiers, no hidden fees.",
+    "Flat $5,998 design fee. First 30 days of hosting free — then $198/mo or $2,996 10-year. No tiers, no hidden fees.",
   robots: { index: true, follow: true },
   openGraph: {
     title: "Pricing — 998 web designs",
     description:
-      "Flat $5,998 design fee. First 30 days of hosting free — then $198/mo or $2,996 lifetime.",
+      "Flat $5,998 design fee. First 30 days of hosting free — then $198/mo or $2,996 10-year.",
     url: "https://998webdesigns.com/pricing",
   },
 };

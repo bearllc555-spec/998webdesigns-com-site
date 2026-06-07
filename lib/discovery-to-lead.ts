@@ -7,7 +7,7 @@ export function discoveryProspectToLead(
   intake: DiscoveryIntake,
   close: DiscoveryCloseDraft
 ): { ok: true; data: ValidatedLead } | { ok: false; error: string } {
-  if (!["lifetime", "monthly"].includes(close.hostingChoice)) {
+  if (!["ten_year", "monthly"].includes(close.hostingChoice)) {
     return { ok: false, error: "Invalid hostingChoice on close draft" };
   }
   if (!["ach", "card"].includes(close.paymentChannel)) {

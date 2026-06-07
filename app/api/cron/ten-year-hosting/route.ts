@@ -14,7 +14,7 @@ function cronSecret(): string | null {
   );
 }
 
-/** Daily: email lifetime hosting Checkout to leads whose 30-day free period ended. */
+/** Daily: email 10-year hosting Checkout to leads whose 30-day free period ended. */
 export async function GET(req: NextRequest) {
   const secret = cronSecret();
   if (!secret) {

@@ -3,8 +3,8 @@ import type { HostingChoice } from "@/lib/validate-lead";
 
 export function hostingChoiceLabel(choice: HostingChoice): string {
   switch (choice) {
-    case "lifetime":
-      return `Lifetime hosting ($2,996 after ${HOSTING_TRIAL_DAYS}-day free period)`;
+    case "ten_year":
+      return `10-year hosting ($2,996 after ${HOSTING_TRIAL_DAYS}-day free period)`;
     case "monthly":
       return `Month-to-month hosting ($198/mo after ${HOSTING_TRIAL_DAYS}-day free period)`;
   }
@@ -12,8 +12,8 @@ export function hostingChoiceLabel(choice: HostingChoice): string {
 
 export function hostingChoiceShortLabel(choice: HostingChoice): string {
   switch (choice) {
-    case "lifetime":
-      return "Lifetime hosting — $2,996";
+    case "ten_year":
+      return "10-year hosting — $2,996";
     case "monthly":
       return "Month-to-month — $198/mo";
   }
