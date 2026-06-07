@@ -1222,12 +1222,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   }, [disconnect, latchFarewellClosing]);
 
   const scheduleFarewellHangup = useCallback(() => {
-    if (farewellDisconnectingRef.current) return;
+    if (farewellDisconnectingRef.current || reconnectingRef.current) return;
     void (async () => {
       await playerRef.current?.whenPlaybackIdle(12000);
       if (
         jarvisFarewellSentRef.current &&
         !farewellDisconnectingRef.current &&
+        !reconnectingRef.current &&
         sessionRef.current
       ) {
         void finishConversation();
@@ -1271,6 +1272,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             timeLeft: message.goAway.timeLeft ?? null,
           },
         });
+        optionsRef.current.onStatus?.("Connection refreshing — one moment…");
         scheduleLiveReconnect("goAway", {
           durationMs,
           timeLeft: message.goAway.timeLeft ?? null,
@@ -1679,7 +1681,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           suppressAssistantAudioRef.current = false;
         }
         const assistantSnapshot = lastAssistantTextRef.current;
-        if (modeRef.current === "demo" && isAssistantFarewell(assistantSnapshot)) {
+        if (
+          modeRef.current === "demo" &&
+          nameSavedRef.current &&
+          !reconnectingRef.current &&
+          isAssistantFarewell(assistantSnapshot)
+        ) {
           if (!jarvisFarewellSentRef.current) {
             latchFarewellClosing();
             scheduleFarewellHangup();

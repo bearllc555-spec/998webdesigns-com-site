@@ -57,6 +57,9 @@ describe("voice demo farewell", () => {
     expect(
       isAssistantFarewell("Good day, Anthony. How may I help you today?")
     ).toBe(false);
+    expect(isAssistantFarewell("We take care of hosting, SSL, and updates.")).toBe(false);
+    expect(isAssistantFarewell("I'll take care of that for you, sir.")).toBe(false);
+    expect(isAssistantFarewell("Take care, sir — goodbye.")).toBe(true);
   });
 
   it("detects explicit visitor done", () => {
