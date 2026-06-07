@@ -1,7 +1,6 @@
 import { designFeeCents } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 import { normalizePhoneE164, checkSmsVerification } from "@/lib/twilio-verify";
-import { sendTwilioSms } from "@/lib/twilio-sms";
 import {
   VOICE_DEMO_MAX_VERIFY_ATTEMPTS,
   VOICE_DEMO_PROMO_CODE,
@@ -17,7 +16,7 @@ import {
 } from "@/lib/voice-demo-db";
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
-import { marketingSiteOrigin } from "@/lib/site-origin";
+import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import { Type, type ToolListUnion } from "@google/genai";
 
@@ -74,7 +73,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "stage_phone_number",
           description:
-            "After name is saved: stage US cell for profile + SMS coupon. Speak spoken field once, ask if correct, then confirm_phone_number on yes.",
+            "Stage US cell: first call with userConfirmed false to spell digits; when visitor says yes, call again with same phone and userConfirmed true to send SMS.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -83,6 +82,10 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
                 type: Type.BOOLEAN,
                 description: "User agreed to receive one SMS from 998 web designs",
               },
+              userConfirmed: {
+                type: Type.BOOLEAN,
+                description: "True when visitor said yes/correct after digit read-back — sends SMS immediately",
+              },
             },
             required: ["phone", "smsConsent"],
           },
@@ -90,12 +93,13 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "update_staged_phone",
           description:
-            "User corrected the phone number. Re-stage; speak the new spoken field once, ask if correct.",
+            "User corrected the phone number. Re-stage; spell once unless userConfirmed true (then sends SMS).",
           parameters: {
             type: Type.OBJECT,
             properties: {
               phone: { type: Type.STRING },
               smsConsent: { type: Type.BOOLEAN },
+              userConfirmed: { type: Type.BOOLEAN },
             },
             required: ["phone", "smsConsent"],
           },
@@ -103,7 +107,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "confirm_phone_number",
           description:
-            "Call when user said yes/correct after the one-time digit read-back. Sends SMS. Do not speak digits again.",
+            "REQUIRED when visitor said yes/correct after digit read-back. Sends VOICE20 SMS. Alternative: stage_phone_number with userConfirmed true.",
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
@@ -299,46 +303,25 @@ export async function executeVoiceDemoTool(
 
     await updateVoiceDemoLead(leadId, { phone });
 
+    if (args.userConfirmed === true) {
+      const smsResult = await deliverVoiceDemoPromoSms(leadId);
+      return promoSmsToolPayload(smsResult);
+    }
+
     return {
       ok: true,
       phone,
       spoken: spellPhoneForVoice(phone),
       spellOnce: true,
+      smsSent: false,
       message:
-        "Speak the spoken field once, ask if correct. On yes, call confirm_phone_number — do not read digits again.",
+        "Speak the spoken field once, ask if correct. When they say yes, you MUST call confirm_phone_number or stage_phone_number again with userConfirmed true — do not say SMS was sent until smsSent is true.",
     };
   }
 
   if (name === "confirm_phone_number") {
-    if (!row.phone) {
-      return { ok: false, error: "No phone staged. Collect the number first." };
-    }
-    if (row.phone_verified_at) {
-      return { ok: false, error: "SMS already sent." };
-    }
-
-    const first = row.full_name?.split(" ")[0] ?? "there";
-    const body = `Hi ${first} — your 998 web designs code: ${VOICE_DEMO_PROMO_CODE} (20% off design fee). Start at ${marketingSiteOrigin()}/start`;
-    const sms = await sendTwilioSms(row.phone, body);
-    if (!sms.ok) {
-      return { ok: false, error: sms.error };
-    }
-
-    const now = new Date().toISOString();
-    await updateVoiceDemoLead(leadId, {
-      phone_verified_at: now,
-      promo_sent_at: now,
-      promo_code: VOICE_DEMO_PROMO_CODE,
-    });
-
-    return {
-      ok: true,
-      promoCode: VOICE_DEMO_PROMO_CODE,
-      smsSent: true,
-      spellOnce: false,
-      message:
-        "SMS sent with VOICE20. Tell them briefly the text is on its way. Do not repeat or spell the phone number.",
-    };
+    const smsResult = await deliverVoiceDemoPromoSms(leadId);
+    return promoSmsToolPayload(smsResult);
   }
 
   return { ok: false, error: `Unknown tool: ${name}` };

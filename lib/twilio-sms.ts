@@ -31,7 +31,14 @@ export async function sendTwilioSms(
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     console.warn("[twilio-sms] send failed:", res.status, detail);
-    return { ok: false, error: "Could not send SMS" };
+    let error = "Could not send SMS";
+    try {
+      const parsed = JSON.parse(detail) as { message?: string };
+      if (parsed.message) error = parsed.message;
+    } catch {
+      /* keep generic */
+    }
+    return { ok: false, error };
   }
 
   return { ok: true };
