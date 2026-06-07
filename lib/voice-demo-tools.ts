@@ -73,7 +73,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "stage_phone_number",
           description:
-            "Stage a US cell number for voice digit-by-digit confirmation before optional SMS.",
+            "Stage a US cell number. Speak the returned spoken field once, ask if correct. On yes, call confirm_phone_number — never spell digits twice.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -88,7 +88,8 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         },
         {
           name: "update_staged_phone",
-          description: "User corrected the phone number. Re-stage and spell digits again.",
+          description:
+            "User corrected the phone number. Re-stage; speak the new spoken field once, ask if correct.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -101,7 +102,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "confirm_phone_number",
           description:
-            "User confirmed the staged phone digits are correct. Sends optional SMS.",
+            "Call when user said yes/correct after the one-time digit read-back. Sends SMS. Do not speak digits again.",
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
@@ -274,7 +275,9 @@ export async function executeVoiceDemoTool(
       ok: true,
       phone,
       spoken: spellPhoneForVoice(phone),
-      message: "Spell each digit with brief pauses, then ask if the number is correct.",
+      spellOnce: true,
+      message:
+        "Speak the spoken field once, ask if correct. On yes, call confirm_phone_number — do not read digits again.",
     };
   }
 
@@ -298,7 +301,13 @@ export async function executeVoiceDemoTool(
       phone_verified_at: now,
     });
 
-    return { ok: true, promoCode: VOICE_DEMO_PROMO_CODE, message: "Optional SMS sent." };
+    return {
+      ok: true,
+      promoCode: VOICE_DEMO_PROMO_CODE,
+      spellOnce: false,
+      message:
+        "SMS sent. Tell them briefly the text is on its way. Do not repeat or spell the phone number.",
+    };
   }
 
   return { ok: false, error: `Unknown tool: ${name}` };

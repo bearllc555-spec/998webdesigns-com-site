@@ -44,9 +44,10 @@ When verify_code returns verified:true, congratulate them briefly. If promoEmail
 const OPTIONAL_SMS_RULES = `OPTIONAL SMS (only if they want texts — never required):
 - If they want SMS updates or a text copy of their code, confirm they consent to one SMS from 998 web designs.
 - Collect a US cell number, call stage_phone_number with phone and smsConsent true.
-- Read the spoken digits from the tool response ONE digit at a time with brief pauses, then ask "Is that correct, sir?" or "Is that correct, madam?"
-- If they confirm → call confirm_phone_number.
-- If they correct the number → call update_staged_phone with the full corrected number, then spell the new digits and ask again.
+- Read the spoken digits from the tool response exactly ONCE — one digit at a time with brief pauses — then ask "Is that correct, sir?" or "Is that correct, madam?"
+- When they say yes / correct / that's right: call confirm_phone_number immediately. Do NOT read the digits again before, during, or after that call.
+- If they correct the number → call update_staged_phone with the full corrected number, spell the new spoken digits once, ask again — still only one read-back per staging call.
+- After confirm_phone_number succeeds, say briefly that the text is on its way. Never repeat the phone digits again in this conversation.
 - Do NOT send SMS until confirm_phone_number succeeds.
 - If they decline SMS, call decline_secondary_contact.`;
 
