@@ -136,6 +136,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingWeatherForecastWrapUpRef = useRef(false);
   const zipSilenceNudgedRef = useRef(false);
   const zipSilencePhaseRef = useRef<ZipSilencePhase>("listening");
+  const zipDigitsHeardMaxRef = useRef(0);
   const lastClientWeatherNudgeAtRef = useRef(0);
   const lastWeatherOfferSigRef = useRef("");
   const lastZipPromptSigRef = useRef("");
@@ -312,6 +313,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     zipNudgeTranscriptRef.current = "";
     zipSilenceNudgedRef.current = false;
     zipSilencePhaseRef.current = "listening";
+    zipDigitsHeardMaxRef.current = 0;
     lastWeatherOfferSigRef.current = "";
     lastZipPromptSigRef.current = "";
     weatherYesNoPhaseRef.current = "first";
@@ -341,6 +343,39 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearInputSilenceTimers();
   }, [clearInputSilenceTimers]);
 
+  const sendZipDigitConfirmNudge = useCallback(
+    (transcript: string): boolean => {
+      const session = sessionRef.current;
+      const trimmed = transcript.trim();
+      if (!session || !trimmed || awaitingZipConfirmRef.current) return false;
+      if (zipNudgeTranscriptRef.current === trimmed) return false;
+      if (!canSendClientWeatherNudge()) return false;
+      if (playerRef.current?.isPlaying()) return false;
+
+      const nudge = buildZipPauseNudge(trimmed);
+      if (!nudge) return false;
+
+      zipNudgeTranscriptRef.current = trimmed;
+      if (normalizeUsZipCode(trimmed)) {
+        awaitingZipDigitsRef.current = false;
+      }
+      markClientWeatherNudgeSent();
+      try {
+        session.sendClientContent({
+          turns: nudge,
+          turnComplete: true,
+        });
+        return true;
+      } catch (err) {
+        console.warn("[voice-demo-live] zip digit confirm nudge", err);
+        zipNudgeTranscriptRef.current = "";
+        awaitingZipDigitsRef.current = true;
+        return false;
+      }
+    },
+    [canSendClientWeatherNudge, markClientWeatherNudgeSent]
+  );
+
   const sendZipSilenceNudge = useCallback(() => {
     const session = sessionRef.current;
     const transcript = captionTextRef.current.trim();
@@ -356,26 +391,19 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
 
     if (transcript) {
-      if (zipNudgeTranscriptRef.current === transcript) return;
+      if (sendZipDigitConfirmNudge(transcript)) return;
+      return;
+    }
 
-      const nudge = buildZipPauseNudge(transcript);
-      if (!nudge) return;
-
-      zipNudgeTranscriptRef.current = transcript;
-      if (normalizeUsZipCode(transcript)) {
-        awaitingZipDigitsRef.current = false;
-      }
-      markClientWeatherNudgeSent();
-      try {
-        session.sendClientContent({
-          turns: nudge,
-          turnComplete: true,
-        });
-      } catch (err) {
-        console.warn("[voice-demo-live] zip silence nudge", err);
-        zipNudgeTranscriptRef.current = "";
-        awaitingZipDigitsRef.current = true;
-      }
+    if (
+      zipDigitsHeardMaxRef.current > 0 ||
+      countSpokenZipDigits(captionTextRef.current) > 0
+    ) {
+      zipSilencePhaseRef.current = "listening";
+      clearZipSilenceTimer();
+      zipSilenceTimerRef.current = setTimeout(() => {
+        sendZipSilenceNudge();
+      }, ZIP_SILENCE_NUDGE_MS);
       return;
     }
 
@@ -419,7 +447,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       awaitingZipDigitsRef.current = true;
       zipSilencePhaseRef.current = "repeat";
     }
-  }, [canSendClientWeatherNudge, clearWeatherYesNoTimer, clearZipSilenceTimer, markClientWeatherNudgeSent]);
+  }, [
+    canSendClientWeatherNudge,
+    clearWeatherYesNoTimer,
+    clearZipSilenceTimer,
+    markClientWeatherNudgeSent,
+    sendZipDigitConfirmNudge,
+  ]);
 
   const scheduleZipSilenceNudge = useCallback(() => {
     if (!awaitingZipDigitsRef.current || modeRef.current !== "demo") return;
@@ -437,9 +471,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     await playerRef.current?.whenPlaybackIdle(10000);
     if (!awaitingZipDigitsRef.current || awaitingZipConfirmRef.current) return;
     if (zipSilenceNudgedRef.current) return;
-    if (countSpokenZipDigits(captionTextRef.current) > 0) return;
+
+    const transcript = captionTextRef.current.trim();
+    const zip = normalizeUsZipCode(transcript);
+    if (zip && sendZipDigitConfirmNudge(transcript)) return;
+    if (countSpokenZipDigits(transcript) > 0) {
+      scheduleZipSilenceNudge();
+      return;
+    }
     scheduleZipSilenceNudge();
-  }, [scheduleZipSilenceNudge]);
+  }, [scheduleZipSilenceNudge, sendZipDigitConfirmNudge]);
 
   const sendWeatherYesNoNudge = useCallback(() => {
     const session = sessionRef.current;
@@ -573,6 +614,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         zipNudgeTranscriptRef.current = "";
         zipSilenceNudgedRef.current = false;
         zipSilencePhaseRef.current = "listening";
+        zipDigitsHeardMaxRef.current = 0;
         lastZipPromptSigRef.current = "";
         clearZipSilenceTimer();
         weatherYesNoPhaseRef.current = /before you go/.test(sig) ? "first" : "repeat";
@@ -593,6 +635,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         zipNudgeTranscriptRef.current = "";
         zipSilenceNudgedRef.current = false;
         zipSilencePhaseRef.current = "listening";
+        zipDigitsHeardMaxRef.current = 0;
         void scheduleZipSilenceAfterIdle();
         return;
       }
@@ -813,9 +856,27 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             queuePhaseTransition({ kind: "verified", nextMode: "demo" });
           }
 
-          if (name === "end_conversation" && result.endCall === true) {
-            jarvisFarewellSentRef.current = true;
-            void finishConversation();
+          if (name === "end_conversation") {
+            const inWeatherZipFlow =
+              awaitingZipDigitsRef.current ||
+              awaitingZipConfirmRef.current ||
+              zipDigitsHeardMaxRef.current > 0;
+            if (inWeatherZipFlow && result.endCall === true) {
+              responses.push({
+                id: call.id,
+                name,
+                response: {
+                  ok: false,
+                  error:
+                    "Weather ZIP flow is incomplete. Call confirm_weather_zip with the ZIP you heard, read it back, wait for yes, then lookup_weather. Do not end the call yet.",
+                },
+              });
+              continue;
+            }
+            if (result.endCall === true) {
+              jarvisFarewellSentRef.current = true;
+              void finishConversation();
+            }
           }
 
           responses.push({
@@ -878,6 +939,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           weatherYesNoPhaseRef.current = "first";
           lastWeatherOfferSigRef.current = "";
           clearWeatherYesNoTimer();
+          awaitingZipDigitsRef.current = true;
+          zipSilenceNudgedRef.current = false;
+          zipSilencePhaseRef.current = "listening";
+          zipDigitsHeardMaxRef.current = 0;
+          zipNudgeTranscriptRef.current = "";
         }
 
         if (awaitingZipConfirmRef.current && isWeatherZipConfirmDecline(userLine)) {
@@ -905,6 +971,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (awaitingZipDigitsRef.current && !zipSilenceNudgedRef.current) {
           zipSilencePhaseRef.current = "listening";
           zipNudgeTranscriptRef.current = "";
+          const heard = countSpokenZipDigits(userLine);
+          if (heard > zipDigitsHeardMaxRef.current) {
+            zipDigitsHeardMaxRef.current = heard;
+          }
+        }
+
+        if (awaitingZipDigitsRef.current && normalizeUsZipCode(userLine)) {
+          clearZipSilenceTimer();
+          if (!playerRef.current?.isPlaying()) {
+            sendZipDigitConfirmNudge(userLine);
+          } else {
+            void playerRef.current.whenPlaybackIdle(10000).then(() => {
+              if (!awaitingZipDigitsRef.current || awaitingZipConfirmRef.current) return;
+              sendZipDigitConfirmNudge(captionTextRef.current.trim());
+            });
+          }
         }
 
         if (/\d/.test(inText)) {
@@ -1001,6 +1083,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       scheduleWeatherYesNoNudge,
       scheduleWrapUpPause,
       sendWeatherDeclineNudge,
+      sendZipDigitConfirmNudge,
       setAwaitingPhoneDigits,
       syncPhoneCollectionState,
       syncWeatherCollectionState,
