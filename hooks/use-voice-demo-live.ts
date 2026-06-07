@@ -15,6 +15,10 @@ import {
   type VoiceDemoCaptionRole,
 } from "@/lib/voice-demo-caption";
 import { isAssistantFarewell, isUserFarewellEcho } from "@/lib/voice-demo-farewell";
+import {
+  triggerVoiceDemoOpening,
+  voiceDemoOpeningStatus,
+} from "@/lib/voice-demo-greeting";
 import type { Session } from "@google/genai";
 
 export type VoiceDemoLiveMode = "verify" | "demo";
@@ -75,8 +79,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const lastAssistantTextRef = useRef("");
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
+  const greetingSentRef = useRef(false);
   const optionsRef = useRef(options);
   optionsRef.current = options;
+
+  const sendOpeningGreeting = useCallback((session: Session) => {
+    if (greetingSentRef.current) return;
+    greetingSentRef.current = true;
+    try {
+      triggerVoiceDemoOpening(session);
+    } catch (err) {
+      console.warn("[voice-demo-live] opening trigger", err);
+      greetingSentRef.current = false;
+    }
+  }, []);
 
   const emitCaption = useCallback((role: VoiceDemoCaptionRole, chunk: string) => {
     const trimmed = chunk.trim();
@@ -302,6 +318,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       jarvisFarewellSentRef.current = false;
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
+      greetingSentRef.current = false;
       resetCaption();
       disconnect(true);
       setError("");
@@ -346,11 +363,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             onopen: () => {
               setConnected(true);
               setConnecting(false);
-              optionsRef.current.onStatus?.(
-                mode === "verify"
-                  ? "Listening — read your 6-digit code aloud."
-                  : "You're live — ask me anything about 998."
-              );
+              optionsRef.current.onStatus?.(voiceDemoOpeningStatus(mode));
+              setTimeout(() => {
+                if (sessionRef.current) {
+                  sendOpeningGreeting(sessionRef.current);
+                }
+              }, 0);
               if (micStreamRef.current) {
                 micRef.current = startVoiceDemoMic(micStreamRef.current, (base64) => {
                   sessionRef.current?.sendRealtimeInput({
@@ -380,6 +398,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         });
 
         sessionRef.current = session;
+        sendOpeningGreeting(session);
       } catch (err) {
         console.warn("[voice-demo-live] connect", err);
         micStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -394,7 +413,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         setConnecting(false);
       }
     },
-    [clearPendingFallback, disconnect, handleMessage]
+    [clearPendingFallback, disconnect, handleMessage, sendOpeningGreeting]
   );
 
   const connectRef = useRef(connect);

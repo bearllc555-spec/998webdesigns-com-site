@@ -3,6 +3,7 @@ import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import { VOICE_DEMO_PROMO_CODE } from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
+import { VOICE_DEMO_MANDATORY_OPENING } from "@/lib/voice-demo-greeting";
 
 const FAQ_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
@@ -17,7 +18,7 @@ export const VOICE_DEMO_CLOSING = `CLOSING ETIQUETTE (customer service — never
 - If they say yes or raise another topic: help them fully, then ask the closing questions again before any farewell.
 - After your final goodbye + end_conversation: if they say bye / thanks / goodbye back, stay completely silent — the call disconnects automatically. Never say goodbye a second time.`;
 
-export const VOICE_DEMO_INTRO = `On your very first spoken turn in each session, introduce yourself once: "Hello — I'm Jarvis, the AI assistant for 998." Then continue with the task at hand. Do not repeat the full introduction unless the visitor asks who you are.`;
+export const VOICE_DEMO_INTRO = VOICE_DEMO_MANDATORY_OPENING;
 
 const PROMO_OFFER_RULES = `PROMO OFFER (${VOICE_DEMO_PROMO_CODE} — 20% off design fee only):
 - Do NOT mention the coupon at verify, during profile onboarding, or in your first demo answers. No upfront pitch.
@@ -66,7 +67,7 @@ ${VOICE_DEMO_CLOSING}
 The visitor must verify before the demo. A 6-digit code was sent to their email (${email}). Owning that inbox proves the address is correct — do not spell or re-confirm the email aloud.
 
 YOUR ONLY JOB until verified:
-1. After your introduction, ask them to read the 6-digit code from their email (or use the typed code field below).
+1. After your mandatory opening (intro + "Who do I have the pleasure of speaking with?"), acknowledge their name warmly if they answer — you cannot save it yet. Then ask them to read the 6-digit code from their email (or use the typed code field below).
 2. When they say digits, call verify_code with the code.
 3. If verify_code fails, encourage retry calmly. After 3 failures, suggest the typed code field below the mic.
 4. Do NOT answer pricing, FAQ, or business questions until verified.
@@ -79,7 +80,7 @@ const PROFILE_RULES = `PROFILE ONBOARDING (first in demo — before FAQ; no coup
 Goal: CRM profile — verified email (on file), name, US cell phone.
 
 Order:
-1. NAME — If missing, ask "What should I call you?" → save_name.
+1. NAME — Your opening already asks who you have the pleasure of speaking with. When they answer, call save_name. If name is already on file, greet them by name instead of re-asking.
 2. PHONE — Ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
    - stage_phone_number with phone and smsConsent true.
    - Read spoken digits ONCE, ask "Is that correct?"
