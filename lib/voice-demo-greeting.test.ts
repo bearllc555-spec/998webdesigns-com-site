@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPostNameGreetingNudge,
+  buildPostNameHelpOnlyNudge,
   buildPostNameHoldNudge,
   buildSaveNameToolMessage,
   buildSessionResumeNudge,
+  isAssistantNameSalutation,
   isAssistantPartialPostNameGreeting,
   isAssistantPostNameGreeting,
+  VOICE_DEMO_POST_NAME_HELP_ONLY_CUE,
   VOICE_DEMO_INTRO_LINE,
   VOICE_DEMO_MANDATORY_OPENING,
   VOICE_DEMO_POST_NAME_HOLD_CUE,
@@ -43,11 +46,20 @@ describe("voice-demo-greeting", () => {
     );
   });
 
-  it("detects partial good-day greeting without help line", () => {
-    expect(isAssistantPartialPostNameGreeting("Good day, Anthony.")).toBe(true);
+  it("detects partial name salutation without help line", () => {
+    expect(isAssistantPartialPostNameGreeting("Good day, Anthony.", "Anthony")).toBe(true);
+    expect(isAssistantPartialPostNameGreeting("Hello Anthony.", "Anthony")).toBe(true);
+    expect(isAssistantNameSalutation("Hello Anthony", "Anthony")).toBe(true);
     expect(
-      isAssistantPartialPostNameGreeting("Good day, Anthony. How may I help you today?")
+      isAssistantPartialPostNameGreeting("Good day, Anthony. How may I help you today?", "Anthony")
     ).toBe(false);
+  });
+
+  it("builds help-only nudge after salutation without repeating the name", () => {
+    const nudge = buildPostNameHelpOnlyNudge();
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_HELP_ONLY_CUE);
+    expect(nudge).toContain(VOICE_DEMO_POST_NAME_LINE);
+    expect(nudge).toMatch(/do not repeat their name/i);
   });
 
   it("save_name tool message stays silent when already greeted", () => {

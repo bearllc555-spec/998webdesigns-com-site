@@ -31,11 +31,23 @@ export function isAssistantPostNameGreeting(text: string): boolean {
   return /how may i help you today/i.test(text.trim().toLowerCase());
 }
 
-/** Good-day opener without the help line — greeting was cut off mid-stream. */
-export function isAssistantPartialPostNameGreeting(text: string): boolean {
+/** Name salutation after save_name — hello/hi/good day + visitor first name. */
+export function isAssistantNameSalutation(text: string, firstName?: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  const name = firstName?.trim().toLowerCase();
+  if (name && name.length >= 2) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b(hello|hi|hey|good day),?\\s+${escaped}\\b`, "i").test(t);
+  }
+  return /\b(hello|hi|hey|good day),?\s+[a-z]{2,}\b/i.test(t);
+}
+
+/** Name salutation without the help line — greeting was cut off or help line missing. */
+export function isAssistantPartialPostNameGreeting(text: string, firstName?: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t || isAssistantPostNameGreeting(text)) return false;
-  return /\bgood day,\s+\w+/i.test(t);
+  return isAssistantNameSalutation(text, firstName);
 }
 
 export function buildSaveNameToolMessage(visitorName: string, alreadyGreeted: boolean): string {
@@ -64,6 +76,16 @@ export function buildPostNameGreetingNudge(visitorName: string): string {
     `${VOICE_DEMO_POST_NAME_PENDING_CUE} Name is saved. Speak NOW exactly once: ` +
     `"Good day, ${first}. ${VOICE_DEMO_POST_NAME_LINE}" ` +
     `Then stop and listen. Do NOT say "how are you". Do NOT ask for phone. Do NOT call save_name again.`
+  );
+}
+
+/** Hidden cue — name salutation already spoken; only the help question is missing. */
+export const VOICE_DEMO_POST_NAME_HELP_ONLY_CUE = "[post-name-help-only]";
+
+export function buildPostNameHelpOnlyNudge(): string {
+  return (
+    `${VOICE_DEMO_POST_NAME_HELP_ONLY_CUE} You already greeted them by name. ` +
+    `Speak ONLY: "${VOICE_DEMO_POST_NAME_LINE}" — do not repeat their name or say hello again.`
   );
 }
 
