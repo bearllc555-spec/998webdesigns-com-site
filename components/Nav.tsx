@@ -12,10 +12,10 @@ import { ThemeToggle } from "./ThemeToggle";
 const NAV_LINKS = [
   { href: "/#addons", label: "Add\u2011ons" },
   { href: "/portfolio", label: "Work" },
-  { href: "/blog", label: "Blog" },
   { href: "/#how", label: "Process" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
+  { href: "/blog", label: "Blog" },
 ] as const;
 
 export function Nav() {
