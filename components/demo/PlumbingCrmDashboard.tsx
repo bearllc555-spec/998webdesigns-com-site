@@ -7,7 +7,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { type CrmFeedItem, isCrmFeedItemUnread } from "@/lib/crm-feed";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
+import { VoiceDemoOpsTimeline } from "@/components/demo/VoiceDemoOpsTimeline";
 import { PLUMBING_CRM_VERSION } from "@/lib/plumbing-crm-version";
+import { parseVoiceDemoOpsLog, type VoiceDemoOpsEvent } from "@/lib/voice-demo-ops";
 import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants";
 
 type PlumbingJobPayload = {
@@ -40,6 +42,10 @@ function jobFromItem(item: CrmFeedItem): PlumbingJobPayload | null {
   const raw = item.payload?.plumbingJob;
   if (!raw || typeof raw !== "object") return null;
   return raw as PlumbingJobPayload;
+}
+
+function opsFromItem(item: CrmFeedItem): VoiceDemoOpsEvent[] {
+  return parseVoiceDemoOpsLog(item.payload?.opsLog);
 }
 
 type PendingDelete = {
@@ -343,6 +349,11 @@ export function PlumbingCrmDashboard() {
                         {item.notes}
                       </pre>
                     )}
+
+                    <VoiceDemoOpsTimeline
+                      events={opsFromItem(item)}
+                      defaultExpanded={Boolean(item.payload?.opsWarningCount)}
+                    />
 
                     {!isDeleting && (
                       <div className="mt-4 flex flex-wrap gap-2">

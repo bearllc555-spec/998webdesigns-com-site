@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Mic, MicOff, X } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
+import { VoiceDemoLiveOpsTrace } from "@/components/demo/VoiceDemoLiveOpsTrace";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
 import { VoiceJarvisOrb } from "@/components/VoiceDemo/VoiceJarvisOrb";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
@@ -287,6 +288,7 @@ export function PlumbingDemoWidget() {
                 Ask about water heaters, drain cleaning, emergencies, or book an appointment.
               </p>
             )}
+            <VoiceDemoLiveOpsTrace />
           </div>
         )}
       </div>

@@ -10,7 +10,8 @@
     "test": "vitest run",
     "capture-portfolio-poster": "node scripts/capture-portfolio-poster.mjs",
     "capture-logo-png": "node scripts/capture-logo-png.mjs",
-    "blog:notify": "node scripts/notify-blog-post.mjs"
+    "blog:notify": "node scripts/notify-blog-post.mjs",
+    "voice-demo:ops-report": "node --env-file=.env.local scripts/voice-demo-ops-report.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
