@@ -26,6 +26,8 @@ describe("voice-demo-plumbing-session", () => {
     expect(isPlumbingBookingContinuation("123 Main Street")).toBe(true);
     expect(isPlumbingBookingContinuation("Thursday morning works")).toBe(true);
     expect(isPlumbingBookingContinuation("bearllc555@gmail.com")).toBe(true);
+    expect(isPlumbingBookingContinuation("yes that's right")).toBe(true);
+    expect(isPlumbingBookingContinuation("42 Oak Drive")).toBe(true);
     expect(isPlumbingBookingContinuation("bye")).toBe(false);
   });
 

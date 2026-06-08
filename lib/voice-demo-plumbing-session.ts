@@ -26,7 +26,11 @@ export function isPlumbingBookingContinuation(text: string): boolean {
     ) ||
     /\b\d{1,2}(:\d{2})?\s*(am|pm)\b/.test(t) ||
     /\b(my address is|address is|email is|@)\b/.test(t) ||
-    /\b(toilet|water heater|drain|leak|clog|faucet|pipe|sewer|garbage disposal)\b/.test(t)
+    /\b(toilet|water heater|drain|leak|clog|faucet|pipe|sewer|garbage disposal)\b/.test(t) ||
+    /\b(yes|yeah|yep|correct|that'?s right|that'?s correct)\b/.test(t) ||
+    /\b\d+\s+[a-z0-9]+(\s+(street|st|avenue|ave|road|rd|drive|dr|lane|ln|court|ct|way|blvd))?\b/.test(
+      t
+    )
   );
 }
 

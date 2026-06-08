@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
   const res = NextResponse.json({ ok: true, result });
   if (name === "verify_code" && result.verified === true) {
     setVoiceDemoSessionCookie(res, session.leadId, true, session.vertical);
+  } else if (mode === "demo") {
+    setVoiceDemoSessionCookie(res, session.leadId, session.verified, session.vertical);
   }
   return res;
 }

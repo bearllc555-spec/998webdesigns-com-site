@@ -61,7 +61,7 @@ export async function createVoiceDemoLiveToken(
     apiKey,
     httpOptions: { apiVersion: "v1alpha" },
   });
-  const expireTime = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+  const expireTime = new Date(Date.now() + 45 * 60 * 1000).toISOString();
   const newSessionExpireTime = new Date(Date.now() + 2 * 60 * 1000).toISOString();
 
   try {

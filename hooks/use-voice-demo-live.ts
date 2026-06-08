@@ -190,6 +190,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
   const reconnectExhaustedBonusRef = useRef(false);
+  const handleMessageChainRef = useRef(Promise.resolve());
+  const toolInFlightRef = useRef(0);
+  const pendingReconnectRef = useRef<{
+    reason: string;
+    meta?: Record<string, unknown>;
+  } | null>(null);
   const connectedAtRef = useRef(0);
   const reconnectAttemptRef = useRef(0);
   const reconnectingRef = useRef(false);
@@ -333,6 +339,35 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       }, RECONNECT_DELAY_MS);
     },
     [getSessionPhase, maxReconnectAttempts, stopOrbLoop]
+  );
+
+  const flushPendingReconnect = useCallback(() => {
+    const pending = pendingReconnectRef.current;
+    if (!pending || toolInFlightRef.current > 0 || farewellDisconnectingRef.current) return;
+    pendingReconnectRef.current = null;
+    setConnecting(true);
+    optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+    scheduleLiveReconnect(pending.reason, pending.meta);
+  }, [scheduleLiveReconnect]);
+
+  const requestLiveReconnect = useCallback(
+    (reason: string, meta?: Record<string, unknown>) => {
+      if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
+      if (toolInFlightRef.current > 0) {
+        pendingReconnectRef.current = { reason, meta };
+        logVoiceDemoOps({
+          kind: "session_anomaly",
+          message: `Deferred live reconnect until tool completes: ${reason}`,
+          severity: "warn",
+          meta: { ...meta, toolInFlight: toolInFlightRef.current },
+        });
+        return;
+      }
+      setConnecting(true);
+      optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+      scheduleLiveReconnect(reason, meta);
+    },
+    [scheduleLiveReconnect]
   );
 
   const clearPostNameGreetingTimer = useCallback(() => {
@@ -995,11 +1030,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           meta: {
             durationMs,
             timeLeft: message.goAway.timeLeft ?? null,
+            toolInFlight: toolInFlightRef.current,
           },
         });
-        setConnecting(true);
-        optionsRef.current.onStatus?.("Connection refreshing — one moment…");
-        scheduleLiveReconnect("goAway", {
+        requestLiveReconnect("goAway", {
           durationMs,
           timeLeft: message.goAway.timeLeft ?? null,
         });
@@ -1033,34 +1067,60 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const calls = message.toolCall?.functionCalls ?? [];
       if (calls.length > 0 && sessionRef.current) {
+        const activeSession = sessionRef.current;
         const responses: VoiceDemoToolResponseEntry[] = [];
+        toolInFlightRef.current += 1;
 
-        for (const call of calls) {
-          const name = call.name ?? "";
-          const args = (call.args ?? {}) as Record<string, unknown>;
+        try {
+          for (const call of calls) {
+            const name = call.name ?? "";
+            const args = (call.args ?? {}) as Record<string, unknown>;
 
-          const result = await runTool(name, args);
-          syncPhoneCollectionState(name, result);
+            const result = await runTool(name, args);
+            syncPhoneCollectionState(name, result);
 
-          if (name === "save_name" && result.ok === true) {
-            nameSavedRef.current = true;
-            const savedName = typeof result.name === "string" ? result.name.trim() : "";
-            if (savedName) savedNameRef.current = savedName;
-            const alreadyGreeted = postNameLineSpokenRef.current;
-            responses.push(buildVoiceDemoToolResponse(call.id, name, {
-                ...result,
-                message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
-              }));
-            continue;
+            if (name === "save_name" && result.ok === true) {
+              nameSavedRef.current = true;
+              const savedName = typeof result.name === "string" ? result.name.trim() : "";
+              if (savedName) savedNameRef.current = savedName;
+              const alreadyGreeted = postNameLineSpokenRef.current;
+              responses.push(
+                buildVoiceDemoToolResponse(call.id, name, {
+                  ...result,
+                  message: buildSaveNameToolMessage(savedName || "visitor", alreadyGreeted),
+                })
+              );
+              continue;
+            }
+
+            if (name === "verify_code" && result.verified === true) {
+              queuePhaseTransition({ kind: "verified", nextMode: "demo" });
+            }
+
+            responses.push(buildVoiceDemoToolResponse(call.id, name, result));
           }
 
-          if (name === "verify_code" && result.verified === true) {
-            queuePhaseTransition({ kind: "verified", nextMode: "demo" });
+          if (
+            activeSession === sessionRef.current &&
+            !reconnectingRef.current &&
+            !farewellDisconnectingRef.current
+          ) {
+            activeSession.sendToolResponse({ functionResponses: responses });
+          } else {
+            logVoiceDemoOps({
+              kind: "session_anomaly",
+              message: "Skipped tool response — session closed or reconnecting",
+              severity: "warn",
+              meta: {
+                toolCount: responses.length,
+                reconnecting: reconnectingRef.current,
+              },
+            });
           }
-
-          responses.push(buildVoiceDemoToolResponse(call.id, name, result));
+        } finally {
+          toolInFlightRef.current = Math.max(0, toolInFlightRef.current - 1);
+          flushPendingReconnect();
         }
-        sessionRef.current.sendToolResponse({ functionResponses: responses });
       }
 
       if (message.serverContent?.interrupted) {
@@ -1285,7 +1345,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       syncPhoneCollectionState,
       getSessionPhase,
       latchFarewellClosing,
+      requestLiveReconnect,
       scheduleLiveReconnect,
+      flushPendingReconnect,
       schedulePostNameGreetingNudge,
       sendPostNameGreetingNudge,
     ]
@@ -1323,6 +1385,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionResumptionHandleRef.current = null;
         reconnectAttemptRef.current = 0;
         reconnectExhaustedBonusRef.current = false;
+        handleMessageChainRef.current = Promise.resolve();
+        toolInFlightRef.current = 0;
+        pendingReconnectRef.current = null;
         clearReconnectTimer();
         suppressAssistantAudioRef.current = false;
         visitorAskedSubstantiveQuestionRef.current = false;
@@ -1479,7 +1544,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               }
             },
             onmessage: (msg) => {
-              void handleMessage(msg as LiveMessage);
+              handleMessageChainRef.current = handleMessageChainRef.current
+                .then(() => handleMessage(msg as LiveMessage))
+                .catch((err) => {
+                  console.warn("[voice-demo-live] handleMessage", err);
+                });
             },
             onerror: (e) => {
               console.warn("[voice-demo-live]", e);
@@ -1509,7 +1578,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                     attempt: reconnectAttemptRef.current,
                   },
                 });
-                scheduleLiveReconnect("websocket_close", { durationMs });
+                requestLiveReconnect("websocket_close", { durationMs });
               } else {
                 stopOrbLoop();
                 setConnecting(false);
@@ -1556,6 +1625,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       disconnect,
       handleMessage,
       clearReconnectTimer,
+      requestLiveReconnect,
       sendOpeningGreeting,
       sendSessionResumeNudge,
       startOrbLoop,

@@ -1,11 +1,30 @@
 import { Type, type ToolListUnion } from "@google/genai";
+import { after } from "next/server";
 import { isValidEmail } from "@/lib/validate-email";
 import { getVoiceDemoLead, updateVoiceDemoLead } from "@/lib/voice-demo-db";
 import { upsertPlumbingJob } from "@/lib/voice-demo-plumbing-db";
 import {
   sendPlumbingDemoEmail,
+  type PlumbingEmailPayload,
   type PlumbingEmailTemplate,
 } from "@/lib/voice-demo-plumbing-email";
+
+/** Return tool response immediately; Resend runs after the HTTP response (keeps live WS responsive). */
+function schedulePlumbingBookingEmail(
+  leadId: string,
+  template: PlumbingEmailTemplate,
+  payload: PlumbingEmailPayload
+): void {
+  after(async () => {
+    const sent = await sendPlumbingDemoEmail(template, payload);
+    if (sent) {
+      await upsertPlumbingJob({
+        leadId,
+        confirmationEmailSentAt: new Date().toISOString(),
+      });
+    }
+  });
+}
 
 export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
   return [
@@ -170,7 +189,7 @@ export async function executeVoiceDemoPlumbingTool(
     }
 
     const template: PlumbingEmailTemplate = isEmergency ? "emergency" : "appointment";
-    const sent = await sendPlumbingDemoEmail(template, {
+    schedulePlumbingBookingEmail(leadId, template, {
       to: email,
       firstName: firstName(visitorName),
       serviceType,
@@ -182,21 +201,13 @@ export async function executeVoiceDemoPlumbingTool(
       promoApplied,
     });
 
-    if (sent) {
-      await upsertPlumbingJob({
-        leadId,
-        confirmationEmailSentAt: new Date().toISOString(),
-      });
-    }
-
     return {
       ok: true,
       booked: true,
-      emailSent: sent,
+      emailSent: true,
       status,
-      message: sent
-        ? "Appointment booked and confirmation email sent. Confirm details warmly with the caller."
-        : "Appointment saved but email did not send — confirm details on the call and apologize briefly for email delay.",
+      message:
+        "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
     };
   }
 
