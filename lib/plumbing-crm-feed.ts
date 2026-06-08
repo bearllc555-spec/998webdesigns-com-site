@@ -36,6 +36,7 @@ function mapPlumbingJobPayload(job: PlumbingJobRow | null): Record<string, unkno
     priceRange: job.price_range,
     isEmergency: job.is_emergency,
     promoApplied: job.promo_applied,
+    promoCode: job.promo_code,
     customerEmail: job.customer_email,
     confirmationEmailSentAt: job.confirmation_email_sent_at,
     flowName: job.flow_name,

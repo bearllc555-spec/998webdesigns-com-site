@@ -21,6 +21,7 @@ export type PlumbingEmailPayload = {
   priceRange?: string;
   issueDescription?: string;
   promoApplied?: boolean;
+  promoCode?: string;
   inquirySummary?: string;
 };
 
@@ -116,12 +117,19 @@ export function buildPlumbingEmail(
   const window = escapeHtml(payload.timeWindow ?? "TBD");
   const address = escapeHtml(payload.serviceAddress ?? "On file");
   const price = escapeHtml(payload.priceRange ?? "Free estimate");
-  const promoBlock = payload.promoApplied
-    ? `<p style="margin-top: 20px; padding: 16px; border: 1px solid #2563eb; border-radius: 8px; background: #f8fafc;">
+  const promoCode = payload.promoCode?.trim().toUpperCase() ?? "";
+  const promoBlock =
+    payload.promoApplied || promoCode
+      ? `<p style="margin-top: 20px; padding: 16px; border: 1px solid #2563eb; border-radius: 8px; background: #f8fafc;">
           <strong>Your $${PLUMBING_DEMO_PROMO_AMOUNT} coupon</strong> is enclosed with this confirmation.<br />
-          Mention your name when we arrive — it applies to this visit.
+          ${
+            promoCode
+              ? `Your code: <strong style="font-size: 18px; letter-spacing: 0.06em;">${escapeHtml(promoCode)}</strong><br />`
+              : ""
+          }
+          Present this code when we arrive — $${PLUMBING_DEMO_PROMO_AMOUNT} off this visit.
         </p>`
-    : "";
+      : "";
 
   switch (template) {
     case "appointment":
@@ -175,16 +183,22 @@ export function buildPlumbingEmail(
           <p>If your situation becomes urgent — active leak, burst pipe, sewage backup — call back and tell Jarvis it's an emergency. We dispatch 24/7 within 2 hours.</p>
         `),
       };
-    case "promo":
+    case "promo": {
+      const codeLine = promoCode
+        ? `<p>Your unique coupon code:<br />
+          <strong style="font-size: 20px; letter-spacing: 0.06em;">${escapeHtml(promoCode)}</strong></p>`
+        : "";
       return {
         subject: `Your $${PLUMBING_DEMO_PROMO_AMOUNT} Discount — Metro Plumbing & Drain`,
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>Here's your $${PLUMBING_DEMO_PROMO_AMOUNT} discount from ${escapeHtml(PLUMBING_DEMO_BUSINESS_NAME)}, as discussed.</p>
+          ${codeLine}
           <p><strong>Applied to:</strong> ${service} — or any service you book.</p>
-          <p>Reply to this email or mention your name when you confirm — we'll apply it automatically.</p>
+          <p>Present this code when you confirm or when we arrive — we'll apply it automatically.</p>
         `),
       };
+    }
   }
 }
 

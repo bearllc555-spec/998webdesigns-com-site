@@ -15,12 +15,14 @@ describe("buildPlumbingEmail", () => {
       serviceAddress: "123 Main St",
       priceRange: "$150–$250",
       promoApplied: true,
+      promoCode: "MPD-K7N2P4",
     });
     expect(subject).toContain("Confirmed");
     expect(html).toContain("Alex");
     expect(html).toContain("Drain cleaning");
     expect(html).toContain("$50 coupon");
-    expect(html).toContain("enclosed");
+    expect(html).toContain("MPD-K7N2P4");
+    expect(html).toContain("Present this code");
   });
 
   it("formats ISO appointment dates for customers", () => {
@@ -42,15 +44,17 @@ describe("buildPlumbingEmail", () => {
     expect(html).not.toContain("2026-06-10");
   });
 
-  it("builds standalone $50 promo email", () => {
+  it("builds standalone $50 promo email with unique code", () => {
     const { subject, html } = buildPlumbingEmail("promo", {
       to: "test@example.com",
       firstName: "Anthony",
       serviceType: "Water Heater Replacement",
+      promoCode: "MPD-X3H8M2",
     });
     expect(subject).toContain("$50");
     expect(html).toContain("Anthony");
     expect(html).toContain("Water Heater Replacement");
+    expect(html).toContain("MPD-X3H8M2");
   });
 
   it("builds emergency dispatch email", () => {

@@ -12,6 +12,7 @@ import {
   type PlumbingEmailPayload,
   type PlumbingEmailTemplate,
 } from "@/lib/voice-demo-plumbing-email";
+import { resolvePlumbingPromoCodeForLead } from "@/lib/voice-demo-plumbing-promo-code";
 
 /** Return tool response immediately; Resend runs after the HTTP response (keeps live WS responsive). */
 function schedulePlumbingBookingEmail(
@@ -27,13 +28,6 @@ function schedulePlumbingBookingEmail(
         confirmationEmailSentAt: new Date().toISOString(),
       });
     }
-  });
-}
-
-function schedulePlumbingPromoEmail(leadId: string, payload: PlumbingEmailPayload): void {
-  after(async () => {
-    await sendPlumbingDemoEmail("promo", payload);
-    await upsertPlumbingJob({ leadId, promoApplied: true });
   });
 }
 
@@ -56,6 +50,7 @@ function bookingEmailPayloadFromJob(
         ? job.notes.issueDescription
         : (job.service_type ?? undefined),
     promoApplied: job.promo_applied,
+    promoCode: job.promo_code ?? undefined,
   };
 }
 
@@ -94,7 +89,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "book_plumbing_appointment",
           description:
-            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends one confirmation email with the $50 coupon enclosed (standard bookings).",
+            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends one confirmation email with a unique $50 coupon code enclosed (standard bookings).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -220,17 +215,22 @@ export async function executeVoiceDemoPlumbingTool(
         const nameForEmail = visitorName || row.full_name?.trim() || "Guest";
         if (refreshedJob) {
           if (
-            !refreshedJob.promo_applied &&
             refreshedJob.status === "booked" &&
-            !refreshedJob.is_emergency
+            !refreshedJob.is_emergency &&
+            (!refreshedJob.promo_applied || !refreshedJob.promo_code)
           ) {
-            await upsertPlumbingJob({ leadId, promoApplied: true });
+            const promoCode = await resolvePlumbingPromoCodeForLead(leadId, true);
+            await upsertPlumbingJob({
+              leadId,
+              promoApplied: true,
+              promoCode: promoCode ?? null,
+            });
             refreshedJob = (await getLatestPlumbingJobForLead(leadId)) ?? refreshedJob;
           }
           scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail);
         }
         emailMessage =
-          "Contact saved. Confirmation email (with $50 coupon enclosed) is sending to the updated address — tell the caller to check inbox and spam.";
+          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) is sending to the updated address — tell the caller to check inbox and spam.";
       }
     }
 
@@ -267,6 +267,7 @@ export async function executeVoiceDemoPlumbingTool(
     });
 
     const status = isEmergency ? "emergency" : "booked";
+    const promoCode = await resolvePlumbingPromoCodeForLead(leadId, grantPromo);
     const saved = await upsertPlumbingJob({
       leadId,
       status,
@@ -278,6 +279,7 @@ export async function executeVoiceDemoPlumbingTool(
       priceRange: priceRange || null,
       isEmergency,
       promoApplied: grantPromo,
+      promoCode: promoCode ?? null,
       customerEmail: email,
       notes: issueDescription ? { issueDescription } : undefined,
     });
@@ -300,6 +302,7 @@ export async function executeVoiceDemoPlumbingTool(
       price_range: priceRange || null,
       is_emergency: isEmergency,
       promo_applied: grantPromo,
+      promo_code: promoCode,
       customer_email: email,
       notes: issueDescription ? { issueDescription } : {},
       confirmation_email_sent_at: null,
@@ -313,7 +316,7 @@ export async function executeVoiceDemoPlumbingTool(
       emailSent: true,
       status,
       message: grantPromo
-        ? "Appointment booked. One confirmation email is sending with the $50 coupon enclosed — tell the caller to check inbox and spam, recap address/date/time, and stay on the line."
+        ? `Appointment booked. One confirmation email is sending with unique coupon code ${promoCode ?? "enclosed"} — tell the caller to check inbox and spam, mention the code when they arrive, recap address/date/time, and stay on the line.`
         : "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
     };
   }
@@ -336,12 +339,18 @@ export async function executeVoiceDemoPlumbingTool(
     }
 
     const template = templateRaw as PlumbingEmailTemplate;
+    let promoCode: string | null = null;
+    if (template === "promo") {
+      promoCode = await resolvePlumbingPromoCodeForLead(leadId, true);
+    }
     const emailPayload: PlumbingEmailPayload = {
       to: email,
       firstName: firstName(visitorName),
       serviceType: serviceType || undefined,
       priceRange: priceRange || undefined,
       inquirySummary: inquirySummary || undefined,
+      promoApplied: template === "promo",
+      promoCode: promoCode ?? undefined,
     };
 
     after(async () => {
@@ -357,7 +366,12 @@ export async function executeVoiceDemoPlumbingTool(
         });
       }
       if (template === "promo") {
-        await upsertPlumbingJob({ leadId, promoApplied: true, customerEmail: email });
+        await upsertPlumbingJob({
+          leadId,
+          promoApplied: true,
+          promoCode: promoCode ?? null,
+          customerEmail: email,
+        });
       }
     });
 

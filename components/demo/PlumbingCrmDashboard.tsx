@@ -19,6 +19,7 @@ type PlumbingJobPayload = {
   priceRange?: string | null;
   isEmergency?: boolean;
   promoApplied?: boolean;
+  promoCode?: string | null;
   customerEmail?: string | null;
   confirmationEmailSentAt?: string | null;
 };
@@ -265,8 +266,14 @@ export function PlumbingCrmDashboard() {
                             <dd>{job.customerEmail || item.email || "—"}</dd>
                           </div>
                           <div>
-                            <dt className="text-ink-soft">$50 promo</dt>
-                            <dd>{job.promoApplied ? "Applied" : "Not applied"}</dd>
+                            <dt className="text-ink-soft">Coupon code</dt>
+                            <dd>
+                              {job.promoCode
+                                ? job.promoCode
+                                : job.promoApplied
+                                  ? "Applied (no code yet)"
+                                  : "—"}
+                            </dd>
                           </div>
                           <div>
                             <dt className="text-ink-soft">Confirmation email</dt>

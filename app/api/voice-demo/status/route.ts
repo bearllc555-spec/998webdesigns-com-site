@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
           customerEmail: plumbingJob.customer_email,
           appointmentDate: plumbingJob.appointment_date,
           timeWindow: plumbingJob.time_window,
+          promoCode: plumbingJob.promo_code,
         }
       : null,
   });

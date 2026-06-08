@@ -16,6 +16,7 @@ export type PlumbingJobRow = {
   price_range: string | null;
   is_emergency: boolean;
   promo_applied: boolean;
+  promo_code: string | null;
   customer_email: string | null;
   notes: Record<string, unknown>;
   confirmation_email_sent_at: string | null;
@@ -33,6 +34,7 @@ export type UpsertPlumbingJobInput = {
   priceRange?: string | null;
   isEmergency?: boolean;
   promoApplied?: boolean;
+  promoCode?: string | null;
   customerEmail?: string | null;
   notes?: Record<string, unknown>;
   confirmationEmailSentAt?: string | null;
@@ -76,6 +78,7 @@ export async function upsertPlumbingJob(
     if (input.priceRange !== undefined) patch.price_range = input.priceRange;
     if (input.isEmergency !== undefined) patch.is_emergency = input.isEmergency;
     if (input.promoApplied !== undefined) patch.promo_applied = input.promoApplied;
+    if (input.promoCode !== undefined) patch.promo_code = input.promoCode;
     if (input.customerEmail !== undefined) patch.customer_email = input.customerEmail;
     if (input.notes !== undefined) {
       patch.notes = { ...(existing.notes ?? {}), ...input.notes };
@@ -106,6 +109,7 @@ export async function upsertPlumbingJob(
       price_range: input.priceRange ?? null,
       is_emergency: input.isEmergency ?? false,
       promo_applied: input.promoApplied ?? false,
+      promo_code: input.promoCode ?? null,
       customer_email: input.customerEmail ?? null,
       notes: input.notes ?? {},
       created_at: now,
