@@ -33,7 +33,9 @@ export function PlumbingDemoWidget() {
   const live = useVoiceDemoLive({
     vertical: "plumbers",
     onUnexpectedClose: () => {
-      setStatus("Connection paused — tap Start voice to pick up where you left off.");
+      setStatus(
+        "Connection paused — your booking progress is saved. Tap Start voice to continue."
+      );
     },
     onConversationEnd: () => {
       setCaption(null);

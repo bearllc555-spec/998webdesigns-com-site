@@ -3,7 +3,9 @@ import { clientIp } from "@/lib/api-rate-limit";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
 import { getVoiceDemoDailyQuotaStatus } from "@/lib/voice-demo-daily-quota";
 import { geminiApiKey } from "@/lib/voice-demo-live-token";
+import { getLatestPlumbingJobForLead } from "@/lib/voice-demo-plumbing-db";
 import { readVoiceDemoSession } from "@/lib/voice-demo-session";
+import { isPlumbingVertical } from "@/lib/voice-demo-vertical";
 import { twilioMessagingConfigured } from "@/lib/twilio-sms";
 
 export const runtime = "nodejs";
@@ -31,6 +33,11 @@ export async function GET(req: NextRequest) {
   const verified = Boolean(row.email_verified_at || row.phone_verified_at);
   const dailyQuota = await getVoiceDemoDailyQuotaStatus(row.email, { ip: clientIp(req) });
 
+  const plumbingJob =
+    isPlumbingVertical(session.vertical) ?
+      await getLatestPlumbingJobForLead(session.leadId)
+    : null;
+
   return NextResponse.json({
     ok: true,
     active: true,
@@ -51,5 +58,15 @@ export async function GET(req: NextRequest) {
       remaining: dailyQuota.remaining,
       allowlisted: dailyQuota.allowlisted,
     },
+    plumbingJob: plumbingJob
+      ? {
+          status: plumbingJob.status,
+          serviceType: plumbingJob.service_type,
+          serviceAddress: plumbingJob.service_address,
+          customerEmail: plumbingJob.customer_email,
+          appointmentDate: plumbingJob.appointment_date,
+          timeWindow: plumbingJob.time_window,
+        }
+      : null,
   });
 }

@@ -28,6 +28,8 @@ describe("voice-demo-plumbing-session", () => {
     expect(isPlumbingBookingContinuation("bearllc555@gmail.com")).toBe(true);
     expect(isPlumbingBookingContinuation("yes that's right")).toBe(true);
     expect(isPlumbingBookingContinuation("42 Oak Drive")).toBe(true);
+    expect(isPlumbingBookingContinuation("Can we schedule an appointment?")).toBe(true);
+    expect(isPlumbingBookingContinuation("Thursday afternoon works for me")).toBe(true);
     expect(isPlumbingBookingContinuation("bye")).toBe(false);
   });
 

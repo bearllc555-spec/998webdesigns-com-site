@@ -24,6 +24,10 @@ export function isPlumbingBookingContinuation(text: string): boolean {
     /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|morning|afternoon|evening)\b/.test(
       t
     ) ||
+    /\b(schedule|scheduling|appointment|book|booking|come out|time slot|time works|works for me)\b/.test(
+      t
+    ) ||
+    /\b(next week|this week|today|tonight)\b/.test(t) ||
     /\b\d{1,2}(:\d{2})?\s*(am|pm)\b/.test(t) ||
     /\b(my address is|address is|email is|@)\b/.test(t) ||
     /\b(toilet|water heater|drain|leak|clog|faucet|pipe|sewer|garbage disposal)\b/.test(t) ||

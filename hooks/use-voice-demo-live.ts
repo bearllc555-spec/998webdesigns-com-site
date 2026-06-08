@@ -61,6 +61,7 @@ import {
   plumbingDemoOpeningStatus,
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
+import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
 import {
   isPlumbingBookingContinuation,
   isPlumbingVisitorEndingCall,
@@ -133,10 +134,15 @@ const PHASE_FALLBACK_MS = 12000;
 const FAREWELL_PLAYBACK_MAX_WAIT_MS = 120_000;
 const PHASE_MIN_SPOKEN_MS = 1800;
 const MAX_RECONNECT_ATTEMPTS = 2;
-const PLUMBING_MAX_RECONNECT_ATTEMPTS = 8;
+const PLUMBING_MAX_RECONNECT_ATTEMPTS = 12;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function liveReconnectDelayMs(vertical: VoiceDemoVertical, attempt: number): number {
+  if (vertical !== "plumbers") return RECONNECT_DELAY_MS;
+  return Math.min(350 * 2 ** Math.min(attempt, 4), 5000);
 }
 
 export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
@@ -192,6 +198,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const reconnectExhaustedBonusRef = useRef(false);
   const handleMessageChainRef = useRef(Promise.resolve());
   const toolInFlightRef = useRef(0);
+  const pendingToolResponsesRef = useRef<VoiceDemoToolResponseEntry[] | null>(null);
   const pendingReconnectRef = useRef<{
     reason: string;
     meta?: Record<string, unknown>;
@@ -329,14 +336,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           ...meta,
         },
       });
+      const delayMs = liveReconnectDelayMs(
+        verticalRef.current,
+        reconnectAttemptRef.current
+      );
       reconnectTimerRef.current = setTimeout(() => {
         reconnectScheduledRef.current = false;
         reconnectTimerRef.current = null;
         if (reconnectAttemptRef.current >= maxReconnectAttempts()) return;
-        if (reconnectingRef.current) return;
+        if (reconnectingRef.current) {
+          scheduleLiveReconnect("connect_in_flight", meta);
+          return;
+        }
         reconnectAttemptRef.current += 1;
         void connectRef.current(modeRef.current, { resume: true });
-      }, RECONNECT_DELAY_MS);
+      }, delayMs);
     },
     [getSessionPhase, maxReconnectAttempts, stopOrbLoop]
   );
@@ -456,20 +470,46 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   }, []);
 
   const sendSessionResumeNudge = useCallback(
-    (session: Session) => {
-      void sendVoiceDemoClientNudge(
-        session,
-        playerRef.current,
-        buildSessionResumeNudge({
-          nameOnFile: savedNameRef.current || undefined,
-          nameSavedThisSession: postNameLineSpokenRef.current,
-        })
-      ).catch((err) => {
+    (session: Session, plumbingJob?: {
+      status?: string;
+      serviceType?: string | null;
+      serviceAddress?: string | null;
+      customerEmail?: string | null;
+      appointmentDate?: string | null;
+      timeWindow?: string | null;
+    } | null) => {
+      const turns =
+        verticalRef.current === "plumbers"
+          ? buildPlumbingSessionResumeNudge({
+              nameOnFile: savedNameRef.current || undefined,
+              job: plumbingJob ?? null,
+            })
+          : buildSessionResumeNudge({
+              nameOnFile: savedNameRef.current || undefined,
+              nameSavedThisSession: postNameLineSpokenRef.current,
+            });
+      void sendVoiceDemoClientNudge(session, playerRef.current, turns).catch((err) => {
         console.warn("[voice-demo-live] session resume nudge", err);
       });
     },
     []
   );
+
+  const flushPendingToolResponses = useCallback((session: Session) => {
+    const pending = pendingToolResponsesRef.current;
+    if (!pending?.length) return;
+    try {
+      session.sendToolResponse({ functionResponses: pending });
+      pendingToolResponsesRef.current = null;
+      logVoiceDemoOps({
+        kind: "session_anomaly",
+        message: "Flushed deferred tool responses after reconnect",
+        meta: { count: pending.length },
+      });
+    } catch (err) {
+      console.warn("[voice-demo-live] flush pending tool responses", err);
+    }
+  }, []);
 
   const visitorFirstName = useCallback(() => {
     const name = savedNameRef.current.trim();
@@ -1106,10 +1146,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             !farewellDisconnectingRef.current
           ) {
             activeSession.sendToolResponse({ functionResponses: responses });
+            pendingToolResponsesRef.current = null;
           } else {
+            pendingToolResponsesRef.current = responses;
             logVoiceDemoOps({
               kind: "session_anomaly",
-              message: "Skipped tool response — session closed or reconnecting",
+              message: "Deferred tool response until reconnect completes",
               severity: "warn",
               meta: {
                 toolCount: responses.length,
@@ -1250,7 +1292,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
           if (shouldWrapUpAfterThisTurn) return;
 
-          if (hadPendingClientHangup) {
+          if (hadPendingClientHangup && verticalRef.current !== "plumbers") {
             if (!jarvisFarewellSentRef.current) {
               latchFarewellClosing();
             }
@@ -1387,6 +1429,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         reconnectExhaustedBonusRef.current = false;
         handleMessageChainRef.current = Promise.resolve();
         toolInFlightRef.current = 0;
+        pendingToolResponsesRef.current = null;
         pendingReconnectRef.current = null;
         clearReconnectTimer();
         suppressAssistantAudioRef.current = false;
@@ -1466,11 +1509,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           if (!resume) {
             stream.getTracks().forEach((t) => t.stop());
             micStreamRef.current = null;
-          }
-          setError(tokenData.error ?? "Could not start voice session.");
-          setConnecting(false);
-          if (resume) {
-            optionsRef.current.onUnexpectedClose?.();
+            setError(tokenData.error ?? "Could not start voice session.");
+            setConnecting(false);
+          } else {
+            scheduleLiveReconnect("token_fetch_failed", {
+              status: tokenRes.status,
+              error: tokenData.error,
+            });
           }
           return;
         }
@@ -1521,15 +1566,47 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   }
                 }, 0);
               } else if (sessionRef.current) {
-                const sendResumeWhenQuiet = () => {
+                const sendResumeWhenQuiet = async () => {
                   if (!sessionRef.current) return;
                   if (playerRef.current?.isPlaying()) {
                     void playerRef.current.whenPlaybackIdle(30_000).then(sendResumeWhenQuiet);
                     return;
                   }
-                  sendSessionResumeNudge(sessionRef.current);
+                  flushPendingToolResponses(sessionRef.current);
+                  let plumbingJob:
+                    | {
+                        status?: string;
+                        serviceType?: string | null;
+                        serviceAddress?: string | null;
+                        customerEmail?: string | null;
+                        appointmentDate?: string | null;
+                        timeWindow?: string | null;
+                      }
+                    | null
+                    | undefined;
+                  if (verticalRef.current === "plumbers") {
+                    try {
+                      const statusRes = await fetch("/api/voice-demo/status");
+                      const statusData = (await statusRes.json()) as {
+                        plumbingJob?: typeof plumbingJob;
+                        fullName?: string | null;
+                      };
+                      plumbingJob = statusData.plumbingJob ?? null;
+                      const name = statusData.fullName?.trim();
+                      if (name && !savedNameRef.current) {
+                        savedNameRef.current = name;
+                      }
+                    } catch {
+                      plumbingJob = null;
+                    }
+                  }
+                  if (sessionRef.current) {
+                    sendSessionResumeNudge(sessionRef.current, plumbingJob);
+                  }
                 };
-                setTimeout(sendResumeWhenQuiet, 0);
+                setTimeout(() => {
+                  void sendResumeWhenQuiet();
+                }, 0);
               }
               micRef.current?.stop();
               if (micStreamRef.current) {
@@ -1555,11 +1632,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               const durationMs = Date.now() - connectedAtRef.current;
               logVoiceDemoOps({
                 kind: "session_anomaly",
-                message: "Live session error",
+                message: "Live session error — scheduling reconnect",
                 severity: "warn",
                 meta: { durationMs },
               });
-              setError("Voice connection error.");
+              if (!farewellDisconnectingRef.current && !intentionalDisconnectRef.current) {
+                setConnecting(true);
+                optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+                requestLiveReconnect("websocket_error", { durationMs });
+              } else {
+                setError("Voice connection error.");
+              }
             },
             onclose: () => {
               const intentional =
@@ -1612,10 +1695,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           severity: "warn",
           meta: { resume, detail: detail.slice(0, 240) },
         });
-        setError(message);
-        setConnecting(false);
         if (resume) {
-          optionsRef.current.onUnexpectedClose?.();
+          scheduleLiveReconnect("connect_failed", { detail: detail.slice(0, 120) });
+        } else {
+          setError(message);
+          setConnecting(false);
         }
       }
     },
@@ -1626,8 +1710,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       handleMessage,
       clearReconnectTimer,
       requestLiveReconnect,
+      scheduleLiveReconnect,
       sendOpeningGreeting,
       sendSessionResumeNudge,
+      flushPendingToolResponses,
       startOrbLoop,
       stopOrbLoop,
     ]
