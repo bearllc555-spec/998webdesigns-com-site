@@ -8,6 +8,6 @@ describe("voiceDemoToolDeclarations", () => {
     const names = decls.map((d) => d.name);
     expect(names).not.toContain("end_conversation");
     expect(names).toContain("save_name");
-    expect(names).toContain("confirm_weather_zip");
+    expect(names).toContain("send_promo_email");
   });
 });

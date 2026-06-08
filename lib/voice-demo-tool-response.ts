@@ -7,8 +7,6 @@ export type VoiceDemoToolResponseEntry = FunctionResponse;
 
 /** Tools where the model should act on the result without narrating the tool call. */
 const SILENT_ON_SUCCESS = new Set([
-  "confirm_weather_zip",
-  "lookup_weather",
   "decline_secondary_contact",
   "confirm_phone_number",
   "capture_email_for_promo",

@@ -1,15 +1,9 @@
 import { faq, faqPlainAnswer } from "@/data/faq";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import {
-  VOICE_DEMO_CLOSE_IMPLEMENT_CUE,
-  VOICE_DEMO_CLOSE_PROMO_CUE,
-} from "@/lib/voice-demo-close-queue";
-import {
   VOICE_DEMO_GOODBYE_LINE,
   VOICE_DEMO_PROMO_CODE,
   VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
-  VOICE_DEMO_WEATHER_COOL_REACTION_LINE,
-  VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE,
 } from "@/lib/voice-demo-constants";
 import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
 import {
@@ -18,14 +12,6 @@ import {
   VOICE_DEMO_SESSION_START_CUE,
 } from "@/lib/voice-demo-greeting";
 import { VOICE_DEMO_PHONE_PAUSE_CUE } from "@/lib/voice-demo-phone-nudge";
-import {
-  VOICE_DEMO_WEATHER_FORECAST_DONE_CUE,
-  VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE,
-  VOICE_DEMO_WEATHER_LOOKUP_READY_CUE,
-  VOICE_DEMO_WEATHER_OFFER_LINE,
-  VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
-} from "@/lib/voice-demo-weather";
-import { VOICE_DEMO_ZIP_STAGED_CUE } from "@/lib/voice-demo-zip-nudge";
 import {
   PRICING_WHEN_ASKED_RULES,
   stripFaqPrices,
@@ -83,7 +69,7 @@ Q5: "${VOICE_DEMO_WRAPUP_QUESTIONS[4]}"
 - If they are done → FINAL GOODBYE path below.
 
 FINAL GOODBYE (when they say they are done):
-- Weather offer once: "${VOICE_DEMO_WEATHER_OFFER_LINE}" — wait for yes/no. If yes → "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" and wait for ZIP. Client owns ZIP staging and close queue via hidden cues.
+- If promo not yet sent, you may ask once: "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" — wait for yes before send_promo_email.
 - One warm sign-off like: "${VOICE_DEMO_GOODBYE_LINE}" — once per session. Stay silent after; system ends the call.
 - NEVER append goodbye or "thank you for contacting" to FAQ answers mid-call.`;
 
@@ -107,22 +93,8 @@ AFTER THEIR NAME (demo only):
 }
 
 const PROMO_OFFER_RULES = `PROMO (${VOICE_DEMO_PROMO_CODE} — 20% off design fee):
-- Promo is LAST — only when client cue "${VOICE_DEMO_CLOSE_PROMO_CUE}" fires after weather close queue.
-- Ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and wait for yes before send_promo_email. Say nothing about tool results.
+- Offer only at FINAL GOODBYE when promo not yet sent — ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and wait for yes before send_promo_email. Say nothing about tool results.
 - If promo already sent, do not re-offer.`;
-
-const CLOSE_QUEUE_RULES = `CLOSE QUEUE (client-driven after forecast — one step per turn):
-- "${VOICE_DEMO_WEATHER_FORECAST_DONE_CUE}" → say "${VOICE_DEMO_WEATHER_COOL_REACTION_LINE}" only.
-- "${VOICE_DEMO_CLOSE_IMPLEMENT_CUE}" → say "${VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE}" only.
-- "${VOICE_DEMO_CLOSE_PROMO_CUE}" → promo rules. Never offer coupon before these cues.`;
-
-const WEATHER_RULES = `US WEATHER (demo — client stages ZIP and fetches forecast):
-- Offer once at goodbye: "${VOICE_DEMO_WEATHER_OFFER_LINE}" then "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" if yes.
-- Never use CRM "possible location on file" — only ZIP spoken now.
-- Client cues: "${VOICE_DEMO_ZIP_STAGED_CUE}" (speak spokenConfirm), "${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE}" (speak spokenLookup then briefReport verbatim), "${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE}" (apologize, goodbye).
-- NEVER call confirm_weather_zip or lookup_weather — the client stages the ZIP and runs the weather API after they say yes.
-- When [weather-lookup-ready] fires, speak the forecast from the cue — do not invent temperatures.
-- After forecast, wait for close-queue cues — no promo yet.`;
 
 function contactHint(row: VoiceDemoLeadRow): string {
   const parts: string[] = [];
@@ -131,11 +103,6 @@ function contactHint(row: VoiceDemoLeadRow): string {
   }
   if (row.phone) {
     parts.push(`Phone on file: ${row.phone}${row.phone_verified_at ? " (promo SMS sent)" : ""}.`);
-  }
-  if (row.location_zip && row.location_city && row.location_state) {
-    parts.push(
-      `Possible location on file: ${row.location_city}, ${row.location_state} ${row.location_zip} — reference only; never weather-lookup this ZIP unless the visitor speaks it again now.`
-    );
   }
   if (row.promo_sent_at) {
     parts.push(`Promo ${row.promo_code ?? VOICE_DEMO_PROMO_CODE} already delivered — do not pitch again.`);
@@ -211,11 +178,7 @@ ${voiceDemoDemoIntroBlock(row)}
 
 ${VOICE_DEMO_CLOSING}
 
-${CLOSE_QUEUE_RULES}
-
 ${PROMO_OFFER_RULES}
-
-${WEATHER_RULES}
 
 ${profileHint(row)}
 ${contactHint(row)}

@@ -1,26 +1,13 @@
-import { isAssistantZipReadBackPrompt } from "@/lib/voice-demo-weather-flow";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export type VoiceDemoOpsSeverity = "info" | "warn" | "error";
 
 export type VoiceDemoOpsKind =
-  | "zip_confirm_staged"
-  | "zip_city_drift"
-  | "zip_city_self_correction"
-  | "zip_city_correction_sent"
   | "end_conversation_blocked"
   | "farewell_hold"
   | "goodbye_nudge"
-  | "forecast_goodbye_scheduled"
   | "wrap_up_scheduled"
-  | "tool_bundled_weather"
-  | "tool_blocked_confirm_zip"
-  | "tool_blocked_lookup_weather"
-  | "tool_blocked_promo_weather"
-  | "weather_lookup_client"
-  | "weather_lookup_failed"
-  | "weather_lookup_success"
   | "session_anomaly"
   | "session_resumption"
   | "end_conversation_early_blocked"
@@ -35,88 +22,7 @@ export type VoiceDemoOpsEvent = {
   meta?: Record<string, unknown>;
 };
 
-export type StagedZipReadback = {
-  zip: string;
-  city: string;
-  stateName?: string;
-  spokenConfirm: string;
-};
-
 const OPS_LOG_MAX = 80;
-
-const KNOWN_ZIP_CITY_HALLUCINATIONS: Record<string, string[]> = {
-  "07424": ["ramsey", "fair lawn", "wayne", "totowa", "paterson"],
-  "07512": ["paterson", "patterson", "little falls", "wayne", "clifton"],
-};
-
-/** City Jarvis named in a ZIP read-back ("for City, State"). */
-export function extractZipReadbackCity(assistantText: string): string | null {
-  const match = assistantText.match(/for\s+([^,]+),\s*([^.?\n]+)/i);
-  return match?.[1]?.trim() ?? null;
-}
-
-export function citiesMatchForZipReadback(a: string, b: string): boolean {
-  return a.trim().toLowerCase() === b.trim().toLowerCase();
-}
-
-function knownHallucinatedCities(zip: string): string[] {
-  const digits = zip.replace(/\D/g, "").slice(0, 5);
-  return KNOWN_ZIP_CITY_HALLUCINATIONS[digits] ?? [];
-}
-
-/** True when assistant names a wrong city before or instead of the staged city. */
-export function detectZipCityDrift(
-  assistantText: string,
-  expected: StagedZipReadback
-): { drift: boolean; heardCity: string | null; selfCorrected: boolean } {
-  const lower = assistantText.trim().toLowerCase();
-  if (!lower) {
-    return { drift: false, heardCity: null, selfCorrected: false };
-  }
-
-  const expectedCity = expected.city.trim().toLowerCase();
-  const heard = extractZipReadbackCity(assistantText);
-  const hallucinations = knownHallucinatedCities(expected.zip);
-  const mentionedWrong = hallucinations.some((w) => lower.includes(w));
-  const mentionedExpected = lower.includes(expectedCity);
-
-  if (mentionedWrong && mentionedExpected) {
-    return {
-      drift: true,
-      heardCity: heard ?? hallucinations.find((w) => lower.includes(w)) ?? null,
-      selfCorrected: true,
-    };
-  }
-
-  if (!isAssistantZipReadBackPrompt(assistantText) && !mentionedWrong) {
-    return { drift: false, heardCity: heard, selfCorrected: false };
-  }
-
-  if (heard && !citiesMatchForZipReadback(heard, expected.city)) {
-    return { drift: true, heardCity: heard, selfCorrected: false };
-  }
-
-  if (mentionedWrong && !mentionedExpected) {
-    return {
-      drift: true,
-      heardCity: hallucinations.find((w) => lower.includes(w)) ?? heard,
-      selfCorrected: false,
-    };
-  }
-
-  return { drift: false, heardCity: heard, selfCorrected: false };
-}
-
-/** Interrupt streaming audio when Jarvis starts the wrong city mid read-back. */
-export function shouldInterruptZipCityDrift(
-  partialText: string,
-  expected: StagedZipReadback
-): boolean {
-  const trimmed = partialText.trim();
-  if (!trimmed || trimmed.length < 12) return false;
-  const { drift, selfCorrected } = detectZipCityDrift(trimmed, expected);
-  return drift && !selfCorrected;
-}
 
 export function buildVoiceDemoOpsEvent(
   kind: VoiceDemoOpsKind,
@@ -126,19 +32,13 @@ export function buildVoiceDemoOpsEvent(
 ): VoiceDemoOpsEvent {
   const resolvedSeverity =
     severity ??
-    (kind === "zip_city_drift" ||
-    kind === "end_conversation_blocked" ||
+    (kind === "end_conversation_blocked" ||
     kind === "end_conversation_early_blocked" ||
     kind === "model_end_conversation_blocked" ||
     kind === "client_hangup_scheduled" ||
-    kind === "tool_blocked_confirm_zip" ||
-    kind === "tool_blocked_lookup_weather" ||
-    kind === "tool_blocked_promo_weather" ||
     kind === "farewell_hold"
       ? "warn"
-      : kind === "zip_city_self_correction" ||
-          kind === "session_anomaly" ||
-          kind === "session_resumption"
+      : kind === "session_anomaly" || kind === "session_resumption"
         ? "warn"
         : "info");
 
@@ -225,22 +125,10 @@ export function coerceVoiceDemoOpsInput(body: Record<string, unknown>): VoiceDem
   if (!kind || !message) return null;
 
   const allowed: VoiceDemoOpsKind[] = [
-    "zip_confirm_staged",
-    "zip_city_drift",
-    "zip_city_self_correction",
-    "zip_city_correction_sent",
     "end_conversation_blocked",
     "farewell_hold",
     "goodbye_nudge",
-    "forecast_goodbye_scheduled",
     "wrap_up_scheduled",
-    "tool_bundled_weather",
-    "tool_blocked_confirm_zip",
-    "tool_blocked_lookup_weather",
-    "tool_blocked_promo_weather",
-    "weather_lookup_client",
-    "weather_lookup_failed",
-    "weather_lookup_success",
     "session_anomaly",
     "session_resumption",
     "end_conversation_early_blocked",

@@ -105,15 +105,7 @@ export const VOICE_DEMO_SESSION_RESUME_CUE = "[session-resume]";
 export function buildSessionResumeNudge(opts: {
   nameOnFile?: string;
   nameSavedThisSession: boolean;
-  weatherForecastInProgress?: boolean;
 }): string {
-  if (opts.weatherForecastInProgress) {
-    return (
-      `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed during the weather demo. ` +
-      `Finish speaking the forecast if it was cut off — do NOT ask for their ZIP again. ` +
-      `Then one warm sign-off — the system ends the call. Do not call end_conversation.`
-    );
-  }
   if (opts.nameSavedThisSession && opts.nameOnFile) {
     return (
       `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed. ${opts.nameOnFile} is on file. ` +

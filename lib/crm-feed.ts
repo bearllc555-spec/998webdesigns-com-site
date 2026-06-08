@@ -6,7 +6,7 @@ import {
   parseVoiceDemoOpsLog,
   summarizeVoiceDemoOpsWarnings,
 } from "@/lib/voice-demo-ops";
-import { formatPossibleLocationLabel } from "@/lib/voice-demo-weather";
+import { formatPossibleLocationLabel } from "@/lib/voice-demo-location";
 
 export type { CrmInboxFlag };
 

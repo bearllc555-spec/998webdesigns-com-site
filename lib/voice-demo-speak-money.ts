@@ -53,7 +53,7 @@ function speakUnder1000(n: number): string {
   return `${head} and ${speakUnder100(remainder, false)}`;
 }
 
-/** Whole numbers for spoken weather (0–199). */
+/** Whole numbers for spoken amounts (0–199). */
 export function speakInteger(n: number): string {
   if (!Number.isFinite(n) || n < 0 || n > 199 || !Number.isInteger(n)) {
     throw new Error(`speakInteger expects an integer 0–199, got ${n}`);

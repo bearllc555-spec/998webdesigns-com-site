@@ -1,22 +1,14 @@
-import type { CloseQueuePhase } from "@/lib/voice-demo-close-queue";
-import { isCloseQueueActive } from "@/lib/voice-demo-close-queue";
 import {
   isAssistantExplicitGoodbye,
   isAssistantFarewell,
   isSubstantiveServiceSpeech,
 } from "@/lib/voice-demo-farewell";
-import { isAssistantPostForecastDerail } from "@/lib/voice-demo-weather";
 
 /** Single session lane — client owns transitions and hangup. */
 export type VoiceDemoSessionPhase =
   | "onboarding"
   | "helping"
   | "wrap_up_pending"
-  | "weather_offer"
-  | "weather_zip"
-  | "weather_confirm"
-  | "weather_forecast"
-  | "close_queue"
   | "final_goodbye"
   | "ended";
 
@@ -33,11 +25,6 @@ export type VoiceDemoHangupReason =
 
 export type VoiceDemoPhaseInput = {
   postNameLineSpoken: boolean;
-  awaitingWeatherYesNo: boolean;
-  awaitingZipDigits: boolean;
-  awaitingZipConfirm: boolean;
-  awaitingWeatherForecastDelivery: boolean;
-  closeQueuePhase: CloseQueuePhase;
   jarvisFarewellSent: boolean;
   goodbyeNudgeSent: boolean;
   wrapUpTimerActive: boolean;
@@ -49,12 +36,7 @@ export function deriveVoiceDemoSessionPhase(input: VoiceDemoPhaseInput): VoiceDe
   if (input.farewellDisconnecting) return "ended";
   if (!input.postNameLineSpoken) return "onboarding";
   if (input.jarvisFarewellSent || input.goodbyeNudgeSent) return "final_goodbye";
-  if (input.visitorExplicitlyDone && !input.awaitingWeatherYesNo) return "final_goodbye";
-  if (isCloseQueueActive(input.closeQueuePhase)) return "close_queue";
-  if (input.awaitingWeatherForecastDelivery) return "weather_forecast";
-  if (input.awaitingZipConfirm) return "weather_confirm";
-  if (input.awaitingZipDigits) return "weather_zip";
-  if (input.awaitingWeatherYesNo) return "weather_offer";
+  if (input.visitorExplicitlyDone) return "final_goodbye";
   if (input.wrapUpTimerActive) return "wrap_up_pending";
   return "helping";
 }
@@ -72,12 +54,9 @@ export function canClientScheduleHangup(opts: {
 }): boolean {
   const text = opts.assistantText.trim();
   if (!text || opts.phase === "ended" || opts.phase === "onboarding") return false;
-  if (opts.phase === "weather_forecast" || opts.phase === "close_queue") return false;
-  if (isAssistantPostForecastDerail(text)) return false;
   if (opts.farewellSent) return true;
 
   if (opts.goodbyeNudgeSent) {
-    // Give-up nudges expect a short sign-off only — not a bundled FAQ answer.
     if (
       text.length >= 100 ||
       /\b(design fee|hosting|portfolio|pricing|timeline|pages|mobile-friendly)\b/i.test(text)
@@ -101,7 +80,6 @@ export function canModelEndConversation(_opts: {
   goodbyeNudgeSent: boolean;
   visitorExplicitlyDone: boolean;
   assistantText: string;
-  weatherDemoIncomplete?: boolean;
   demoMode?: boolean;
 }): boolean {
   return false;

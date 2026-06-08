@@ -12,10 +12,6 @@ import {
   VOICE_DEMO_GOODBYE_LINE,
   VOICE_DEMO_PROMO_EMAIL_ASK_LINE,
 } from "@/lib/voice-demo-constants";
-import {
-  VOICE_DEMO_WEATHER_OFFER_LINE,
-  VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
-} from "@/lib/voice-demo-weather";
 import { VOICE_DEMO_POST_NAME_LINE } from "@/lib/voice-demo-greeting";
 
 describe("voice-demo-system-prompt closing", () => {
@@ -110,9 +106,7 @@ describe("voice-demo-system-prompt onboarding", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_PROMO_EMAIL_ASK_LINE);
     expect(prompt).toMatch(/wait for yes before send_promo_email/i);
-    expect(prompt).toMatch(/CLOSE QUEUE/i);
-    expect(prompt).toContain("Isn't that pretty cool?");
-    expect(prompt).toContain("implement into your website");
+    expect(prompt).toMatch(/FINAL GOODBYE/i);
   });
 
   it("requires full-word price pronunciation only when pricing is asked", () => {
@@ -125,18 +119,10 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toMatch(/FAQ FEATURES/i);
   });
 
-  it("offers weather demo at end of chat with client-owned ZIP flow", () => {
+  it("includes final goodbye line in closing rules", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
-    expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
-    expect(prompt).toContain(VOICE_DEMO_WEATHER_ZIP_ASK_LINE);
-    expect(prompt).toMatch(/client stages ZIP/i);
-    expect(prompt).toMatch(/NEVER call confirm_weather_zip or lookup_weather/i);
-    expect(prompt).toMatch(/do not invent temperatures/i);
-    expect(prompt).toMatch(/possible location on file/i);
-    expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
     expect(prompt).toContain(VOICE_DEMO_GOODBYE_LINE);
-    expect(prompt).toMatch(/\[weather-forecast-done\]/i);
-    expect(prompt).toMatch(/\[zip-staged\]/i);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
+    expect(prompt).toMatch(/system ends the call/i);
   });
 });

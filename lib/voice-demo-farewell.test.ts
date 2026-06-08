@@ -52,7 +52,6 @@ describe("shouldClientScheduleFarewellHangup", () => {
         goodbyeNudgeSent: false,
         visitorExplicitlyDone: false,
         assistantText: "pause",
-        weatherDemoIncomplete: false,
       })
     ).toBe(false);
   });
@@ -64,7 +63,6 @@ describe("shouldClientScheduleFarewellHangup", () => {
         goodbyeNudgeSent: true,
         visitorExplicitlyDone: true,
         assistantText: "Thank you for contacting 998.",
-        weatherDemoIncomplete: false,
       })
     ).toBe(false);
   });

@@ -21,16 +21,6 @@ import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/vo
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
 import { buildSaveNameToolMessage } from "@/lib/voice-demo-greeting";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
-import { coerceToolBoolean, coerceToolString } from "@/lib/voice-demo-tool-args";
-import {
-  buildWeatherZipConfirmLine,
-  buildWeatherZipLookupLine,
-  normalizeUsZipCode,
-  lookupUsWeatherByZip,
-  resolveUsZipPlace,
-  usZipCodesEquivalent,
-  weatherZipConfirmSpeakInstruction,
-} from "@/lib/voice-demo-weather";
 import { Type, type ToolListUnion } from "@google/genai";
 
 export type VoiceDemoToolMode = "verify" | "demo";
@@ -124,41 +114,6 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
           name: "decline_secondary_contact",
           description: "User declined to provide a phone number for their profile.",
           parameters: { type: Type.OBJECT, properties: {} },
-        },
-        {
-          name: "confirm_weather_zip",
-          description:
-            "SILENT EXECUTION. Step 1 of weather: visitor just gave a US ZIP. Client stages location — speak spokenConfirm from the client cue, not from this tool. STOP and wait for yes before lookup.",
-          parameters: {
-            type: Type.OBJECT,
-            properties: {
-              zipCode: {
-                type: Type.STRING,
-                description: "US ZIP code the visitor just provided",
-              },
-            },
-            required: ["zipCode"],
-          },
-        },
-        {
-          name: "lookup_weather",
-          description:
-            "NEVER CALL — client fetches weather after ZIP confirmation. Wait for [weather-lookup-ready], then speak spokenLookup and briefReport from that cue only.",
-          parameters: {
-            type: Type.OBJECT,
-            properties: {
-              zipCode: {
-                type: Type.STRING,
-                description: "Same US ZIP staged in confirm_weather_zip",
-              },
-              userConfirmed: {
-                type: Type.BOOLEAN,
-                description:
-                  "True only when visitor said yes/correct/that's right after the ZIP read-back",
-              },
-            },
-            required: ["zipCode", "userConfirmed"],
-          },
         },
       ],
     },
@@ -402,116 +357,6 @@ export async function executeVoiceDemoTool(
       ok: true,
       phoneConfirmed: true,
       message: "Phone saved to profile. Continue — no coupon unless they accept a later promo offer.",
-    };
-  }
-
-  if (name === "confirm_weather_zip") {
-    const zipCode = coerceToolString(args.zipCode);
-    const placeResult = await resolveUsZipPlace(zipCode);
-    if (!placeResult.ok) {
-      return {
-        ok: false,
-        error: `${placeResult.error} Say you did not catch the full five-digit ZIP and ask them to repeat it once.`,
-      };
-    }
-    const { place } = placeResult;
-
-    await updateVoiceDemoLead(leadId, {
-      location_zip: place.zip,
-      location_city: place.city,
-      location_state: place.state,
-    });
-
-    const spokenConfirm = buildWeatherZipConfirmLine(place);
-    return {
-      ok: true,
-      zip: place.zip,
-      city: place.city,
-      state: place.state,
-      spokenConfirm,
-      zipReadBack: true,
-      message:
-        `${weatherZipConfirmSpeakInstruction(spokenConfirm)} ` +
-        `On yes → lookup_weather with zipCode "${place.zip}" and userConfirmed true. ` +
-        `On no or correction → call confirm_weather_zip again with the ZIP they give.`,
-    };
-  }
-
-  if (name === "lookup_weather") {
-    if (!coerceToolBoolean(args.userConfirmed)) {
-      return {
-        ok: false,
-        error:
-          "Visitor must confirm the ZIP read-back first. Speak spokenConfirm, wait for yes, then call lookup_weather with userConfirmed true.",
-      };
-    }
-
-    const zipCode = coerceToolString(args.zipCode);
-    const normalized = normalizeUsZipCode(zipCode);
-    if (!normalized) {
-      return {
-        ok: false,
-        error:
-          "Could not read a valid 5-digit ZIP. Call confirm_weather_zip with the ZIP you heard, read it back, wait for yes, then lookup with the same ZIP.",
-      };
-    }
-
-    const placeResult = await resolveUsZipPlace(normalized);
-    if (!placeResult.ok) {
-      return { ok: false, error: placeResult.error };
-    }
-
-    const refreshed = await getVoiceDemoLead(leadId);
-    const stagedZip = refreshed?.location_zip ?? null;
-    const stagedCity = refreshed?.location_city ?? null;
-    if (!stagedZip || !usZipCodesEquivalent(stagedZip, normalized)) {
-      return {
-        ok: false,
-        error:
-          "ZIP not staged. Call confirm_weather_zip first with the ZIP they gave, speak spokenConfirm word for word, wait for yes, then lookup_weather with userConfirmed true.",
-      };
-    }
-    if (!usZipCodesEquivalent(stagedZip, placeResult.place.zip)) {
-      return {
-        ok: false,
-        error:
-          "ZIP does not match what you confirmed. Call confirm_weather_zip with the ZIP they gave, read it back, wait for yes, then lookup with the same ZIP.",
-      };
-    }
-
-    const confirmCity =
-      stagedZip && stagedCity && usZipCodesEquivalent(stagedZip, placeResult.place.zip)
-        ? stagedCity
-        : placeResult.place.city;
-
-    const result = await lookupUsWeatherByZip(placeResult.place.zip, { confirmCity });
-    if (!result.ok) {
-      return { ok: false, error: result.error };
-    }
-
-    await updateVoiceDemoLead(leadId, {
-      location_zip: result.zip,
-      location_city: result.city,
-      location_state: result.state,
-    });
-
-    const spokenLookup = buildWeatherZipLookupLine({
-      city: confirmCity,
-      stateName: result.stateName,
-    });
-
-    return {
-      ok: true,
-      zip: result.zip,
-      city: confirmCity,
-      state: result.state,
-      temperatureF: Math.round(result.weather.temperatureF),
-      briefReport: result.briefReport,
-      spokenLookup,
-      possibleLocation: `${confirmCity}, ${result.state} ${result.zip}`,
-      message:
-        `Speak spokenLookup, then give a brief weather summary from briefReport for ${confirmCity} (ZIP ${result.zip}) only — ` +
-        `use the city in briefReport exactly; Fahrenheit then Celsius, conditions, wind. Keep it short.`,
     };
   }
 

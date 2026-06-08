@@ -7,11 +7,6 @@ import {
 
 const basePhaseInput = {
   postNameLineSpoken: true,
-  awaitingWeatherYesNo: false,
-  awaitingZipDigits: false,
-  awaitingZipConfirm: false,
-  awaitingWeatherForecastDelivery: false,
-  closeQueuePhase: "idle" as const,
   jarvisFarewellSent: false,
   goodbyeNudgeSent: false,
   wrapUpTimerActive: false,
@@ -26,19 +21,14 @@ describe("deriveVoiceDemoSessionPhase", () => {
     ).toBe("onboarding");
   });
 
-  it("returns weather_zip when collecting digits", () => {
-    expect(
-      deriveVoiceDemoSessionPhase({ ...basePhaseInput, awaitingZipDigits: true })
-    ).toBe("weather_zip");
+  it("returns helping during normal demo conversation", () => {
+    expect(deriveVoiceDemoSessionPhase(basePhaseInput)).toBe("helping");
   });
 
-  it("returns close_queue when close queue is active", () => {
+  it("returns wrap_up_pending when wrap-up timer is active", () => {
     expect(
-      deriveVoiceDemoSessionPhase({
-        ...basePhaseInput,
-        closeQueuePhase: "awaiting_promo_consent",
-      })
-    ).toBe("close_queue");
+      deriveVoiceDemoSessionPhase({ ...basePhaseInput, wrapUpTimerActive: true })
+    ).toBe("wrap_up_pending");
   });
 
   it("returns final_goodbye when goodbye nudge was sent", () => {

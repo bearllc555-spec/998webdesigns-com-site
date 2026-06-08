@@ -6,9 +6,9 @@ import {
 } from "@/lib/voice-demo-tool-response";
 
 describe("voice-demo-tool-response", () => {
-  it("silences blocked and weather tool successes", () => {
-    expect(shouldUseSilentToolScheduling("confirm_weather_zip", { ok: true })).toBe(true);
-    expect(shouldUseSilentToolScheduling("lookup_weather", { ok: true })).toBe(true);
+  it("silences promo and error tool responses", () => {
+    expect(shouldUseSilentToolScheduling("send_promo_email", { ok: true })).toBe(true);
+    expect(shouldUseSilentToolScheduling("capture_email_for_promo", { ok: true })).toBe(true);
     expect(shouldUseSilentToolScheduling("save_name", { ok: false, error: "nope" })).toBe(true);
   });
 
@@ -18,7 +18,7 @@ describe("voice-demo-tool-response", () => {
   });
 
   it("adds scheduling SILENT on build when appropriate", () => {
-    const silent = buildVoiceDemoToolResponse("id-1", "lookup_weather", { ok: true });
+    const silent = buildVoiceDemoToolResponse("id-1", "send_promo_email", { ok: true });
     expect(silent.scheduling).toBe(FunctionResponseScheduling.SILENT);
 
     const spoken = buildVoiceDemoToolResponse("id-2", "save_name", { ok: true, name: "Anthony" });
