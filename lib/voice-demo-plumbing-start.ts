@@ -13,6 +13,7 @@ export async function startPlumbingDemoLead(
     phone: null,
     ip,
     verification_code: code,
+    vertical: "plumbers",
   });
 
   if (!inserted.ok) {

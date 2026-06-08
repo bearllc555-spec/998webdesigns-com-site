@@ -2,7 +2,11 @@ import { Type, type ToolListUnion } from "@google/genai";
 import { after } from "next/server";
 import { isValidEmail } from "@/lib/validate-email";
 import { getVoiceDemoLead, updateVoiceDemoLead } from "@/lib/voice-demo-db";
-import { upsertPlumbingJob } from "@/lib/voice-demo-plumbing-db";
+import {
+  getLatestPlumbingJobForLead,
+  upsertPlumbingJob,
+  type PlumbingJobRow,
+} from "@/lib/voice-demo-plumbing-db";
 import {
   sendPlumbingDemoEmail,
   type PlumbingEmailPayload,
@@ -24,6 +28,54 @@ function schedulePlumbingBookingEmail(
       });
     }
   });
+}
+
+function schedulePlumbingPromoEmail(leadId: string, payload: PlumbingEmailPayload): void {
+  after(async () => {
+    await sendPlumbingDemoEmail("promo", payload);
+    await upsertPlumbingJob({ leadId, promoApplied: true });
+  });
+}
+
+function bookingEmailPayloadFromJob(
+  job: PlumbingJobRow,
+  email: string,
+  visitorName: string
+): PlumbingEmailPayload {
+  const isEmergency = job.is_emergency;
+  return {
+    to: email,
+    firstName: firstName(visitorName),
+    serviceType: job.service_type ?? undefined,
+    appointmentDate: job.appointment_date ?? (isEmergency ? "Emergency dispatch" : undefined),
+    timeWindow: job.time_window ?? (isEmergency ? "Within 2 hours" : undefined),
+    serviceAddress: job.service_address ?? undefined,
+    priceRange: job.price_range ?? undefined,
+    issueDescription:
+      typeof job.notes?.issueDescription === "string"
+        ? job.notes.issueDescription
+        : (job.service_type ?? undefined),
+    promoApplied: job.promo_applied,
+  };
+}
+
+function scheduleEmailsForBookedJob(
+  leadId: string,
+  job: PlumbingJobRow,
+  email: string,
+  visitorName: string,
+  opts?: { includePromo?: boolean }
+): void {
+  const payload = bookingEmailPayloadFromJob(job, email, visitorName);
+  const template: PlumbingEmailTemplate = job.is_emergency ? "emergency" : "appointment";
+  schedulePlumbingBookingEmail(leadId, template, payload);
+  if (opts?.includePromo || job.promo_applied) {
+    schedulePlumbingPromoEmail(leadId, {
+      to: email,
+      firstName: firstName(visitorName),
+      serviceType: job.service_type ?? undefined,
+    });
+  }
 }
 
 export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
@@ -137,9 +189,31 @@ export async function executeVoiceDemoPlumbingTool(
       });
     }
 
+    let emailMessage = "Contact saved. Continue the conversation naturally.";
+    if (email && isValidEmail(email)) {
+      const job = await getLatestPlumbingJobForLead(leadId);
+      const priorEmail = job?.customer_email?.trim().toLowerCase() ?? "";
+      if (
+        job &&
+        (job.status === "booked" || job.status === "emergency") &&
+        email !== priorEmail
+      ) {
+        await upsertPlumbingJob({ leadId, customerEmail: email });
+        const refreshedJob = await getLatestPlumbingJobForLead(leadId);
+        const nameForEmail = visitorName || row.full_name?.trim() || "Guest";
+        if (refreshedJob) {
+          scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail, {
+            includePromo: refreshedJob.promo_applied,
+          });
+        }
+        emailMessage =
+          "Contact saved. Confirmation and promo emails are sending to the updated address — tell the caller to check inbox and spam.";
+      }
+    }
+
     return {
       ok: true,
-      message: "Contact saved. Continue the conversation naturally.",
+      message: emailMessage,
     };
   }
 
@@ -189,25 +263,21 @@ export async function executeVoiceDemoPlumbingTool(
     }
 
     const template: PlumbingEmailTemplate = isEmergency ? "emergency" : "appointment";
-    schedulePlumbingBookingEmail(leadId, template, {
-      to: email,
-      firstName: firstName(visitorName),
-      serviceType,
-      appointmentDate: appointmentDate || (isEmergency ? "Emergency dispatch" : undefined),
-      timeWindow: timeWindow || (isEmergency ? "Within 2 hours" : undefined),
-      serviceAddress,
-      priceRange: priceRange || undefined,
-      issueDescription: issueDescription || serviceType,
-      promoApplied,
-    });
+    const refreshedJob = await getLatestPlumbingJobForLead(leadId);
+    if (refreshedJob) {
+      scheduleEmailsForBookedJob(leadId, refreshedJob, email, visitorName, {
+        includePromo: promoApplied,
+      });
+    }
 
     return {
       ok: true,
       booked: true,
       emailSent: true,
       status,
-      message:
-        "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
+      message: promoApplied
+        ? "Appointment booked. Confirmation and $50 promo emails are sending — confirm details and stay on the line."
+        : "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
     };
   }
 
@@ -229,27 +299,30 @@ export async function executeVoiceDemoPlumbingTool(
     }
 
     const template = templateRaw as PlumbingEmailTemplate;
-    const sent = await sendPlumbingDemoEmail(template, {
+    const emailPayload: PlumbingEmailPayload = {
       to: email,
       firstName: firstName(visitorName),
       serviceType: serviceType || undefined,
       priceRange: priceRange || undefined,
       inquirySummary: inquirySummary || undefined,
+    };
+
+    after(async () => {
+      const sent = await sendPlumbingDemoEmail(template, emailPayload);
+      if (!sent) return;
+      if (template === "quote_followup") {
+        await upsertPlumbingJob({
+          leadId,
+          status: "quote_sent",
+          customerEmail: email,
+          serviceType: serviceType || null,
+          priceRange: priceRange || null,
+        });
+      }
+      if (template === "promo") {
+        await upsertPlumbingJob({ leadId, promoApplied: true, customerEmail: email });
+      }
     });
-
-    if (!sent) {
-      return { ok: false, error: "Could not send email." };
-    }
-
-    if (template === "quote_followup") {
-      await upsertPlumbingJob({
-        leadId,
-        status: "quote_sent",
-        customerEmail: email,
-        serviceType: serviceType || null,
-        priceRange: priceRange || null,
-      });
-    }
 
     return {
       ok: true,

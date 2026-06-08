@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { hashVerificationCode, verificationExpiresAt } from "@/lib/voice-demo-otp";
+import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
 
 export type VoiceDemoChannel = "email" | "sms";
 
@@ -27,6 +28,7 @@ export type VoiceDemoLeadRow = {
   ip: string | null;
   read_at: string | null;
   inbox_flag: string | null;
+  vertical: VoiceDemoVertical | null;
 };
 
 export type InsertVoiceDemoLeadInput = {
@@ -35,6 +37,7 @@ export type InsertVoiceDemoLeadInput = {
   phone: string | null;
   ip: string | null;
   verification_code: string;
+  vertical?: VoiceDemoVertical;
 };
 
 export async function insertVoiceDemoLead(
@@ -51,6 +54,7 @@ export async function insertVoiceDemoLead(
       email: input.email,
       phone: input.phone,
       ip: input.ip,
+      vertical: input.vertical ?? "marketing",
       verification_code_hash: hashVerificationCode(input.verification_code),
       verification_expires_at: verificationExpiresAt(),
       verification_attempts: 0,

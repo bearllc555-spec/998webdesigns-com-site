@@ -65,7 +65,7 @@ export async function upsertPlumbingJob(
   const existing = await getLatestPlumbingJobForLead(input.leadId);
   const now = new Date().toISOString();
 
-  if (existing && existing.status === "draft") {
+  if (existing) {
     const patch: Record<string, unknown> = { updated_at: now };
     if (input.status !== undefined) patch.status = input.status;
     if (input.flowName !== undefined) patch.flow_name = input.flowName;

@@ -248,6 +248,8 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   }
 
   for (const row of voiceDemoRes.data ?? []) {
+    const vertical = (row as { vertical?: string | null }).vertical;
+    if (vertical === "plumbers") continue;
     const verified = Boolean(row.email_verified_at || row.phone_verified_at);
     const locationLabel = formatPossibleLocationLabel(
       (row.location_city as string | null) ?? null,
