@@ -58,6 +58,11 @@ import {
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
 import {
+  plumbingDemoOpeningStatus,
+  triggerPlumbingDemoOpening,
+} from "@/lib/voice-demo-plumbing-greeting";
+import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
+import {
   buildPhonePauseNudge,
   PHONE_SILENCE_NUDGE_MS,
 } from "@/lib/voice-demo-phone-nudge";
@@ -108,6 +113,7 @@ type ConnectOptions = {
 export type VoiceDemoPhaseTransition = { kind: "verified"; nextMode: "demo" };
 
 type UseVoiceDemoLiveOptions = {
+  vertical?: VoiceDemoVertical;
   onPhaseTransition?: (transition: VoiceDemoPhaseTransition) => void;
   onUnexpectedClose?: () => void;
   onConversationEnd?: () => void;
@@ -128,6 +134,9 @@ function sleep(ms: number): Promise<void> {
 }
 
 export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
+  const verticalRef = useRef<VoiceDemoVertical>(options.vertical ?? "marketing");
+  const isPlumbingDemo = verticalRef.current === "plumbers";
+
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
@@ -225,12 +234,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (greetingSentRef.current) return;
     greetingSentRef.current = true;
     try {
-      triggerVoiceDemoOpening(session);
+      if (isPlumbingDemo) {
+        triggerPlumbingDemoOpening(session);
+      } else {
+        triggerVoiceDemoOpening(session);
+      }
     } catch (err) {
       console.warn("[voice-demo-live] opening trigger", err);
       greetingSentRef.current = false;
     }
-  }, []);
+  }, [isPlumbingDemo]);
 
   const clearReconnectTimer = useCallback(() => {
     if (reconnectTimerRef.current) {
@@ -1248,7 +1261,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         greetingSentRef.current = false;
         nameSavedRef.current = false;
         savedNameRef.current = "";
-        postNameLineSpokenRef.current = false;
+        postNameLineSpokenRef.current = isPlumbingDemo;
         postNameSalutationSpokenRef.current = false;
         postNameHoldSentRef.current = false;
         postNameGreetingNudgeSentRef.current = false;
@@ -1373,7 +1386,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               }
               startOrbLoop();
               optionsRef.current.onStatus?.(
-                resume ? "Back with you — keep talking." : voiceDemoOpeningStatus(mode)
+                resume
+                  ? "Back with you — keep talking."
+                  : isPlumbingDemo
+                    ? plumbingDemoOpeningStatus()
+                    : voiceDemoOpeningStatus(mode)
               );
               if (!resume) {
                 setTimeout(() => {

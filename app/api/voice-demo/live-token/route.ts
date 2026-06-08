@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const token = await createVoiceDemoLiveToken(session.leadId, mode);
+  const token = await createVoiceDemoLiveToken(session.leadId, mode, session.vertical);
   if (!token.ok) {
     return NextResponse.json({ error: token.error }, { status: 503 });
   }

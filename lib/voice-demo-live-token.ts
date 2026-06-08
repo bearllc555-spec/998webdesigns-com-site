@@ -4,10 +4,18 @@ import {
   VOICE_DEMO_VOICE_NAME,
 } from "@/lib/voice-demo-constants";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
+import { voiceDemoPlumbingSystemPrompt } from "@/lib/voice-demo-plumbing-system-prompt";
+import {
+  voiceDemoPlumbingToolDeclarations,
+} from "@/lib/voice-demo-plumbing-tools";
 import {
   voiceDemoDemoSystemPrompt,
   voiceDemoVerifySystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
+import {
+  isPlumbingVertical,
+  type VoiceDemoVertical,
+} from "@/lib/voice-demo-vertical";
 import {
   voiceDemoToolDeclarations,
   type VoiceDemoToolMode,
@@ -19,7 +27,8 @@ export function geminiApiKey(): string | null {
 
 export async function createVoiceDemoLiveToken(
   leadId: string,
-  mode: VoiceDemoToolMode
+  mode: VoiceDemoToolMode,
+  vertical: VoiceDemoVertical = "marketing"
 ): Promise<{ ok: true; token: string; model: string } | { ok: false; error: string }> {
   const apiKey = geminiApiKey();
   if (!apiKey) {
@@ -35,8 +44,18 @@ export async function createVoiceDemoLiveToken(
     return { ok: false, error: "Verify your code first." };
   }
 
+  const plumbing = isPlumbingVertical(vertical);
   const systemInstruction =
-    mode === "verify" ? voiceDemoVerifySystemPrompt(row) : voiceDemoDemoSystemPrompt(row);
+    mode === "verify"
+      ? voiceDemoVerifySystemPrompt(row)
+      : plumbing
+        ? voiceDemoPlumbingSystemPrompt(row)
+        : voiceDemoDemoSystemPrompt(row);
+
+  const tools =
+    mode === "demo" && plumbing
+      ? voiceDemoPlumbingToolDeclarations()
+      : voiceDemoToolDeclarations(mode);
 
   const ai = new GoogleGenAI({
     apiKey,
@@ -56,7 +75,7 @@ export async function createVoiceDemoLiveToken(
           config: {
             responseModalities: [Modality.AUDIO],
             systemInstruction,
-            tools: voiceDemoToolDeclarations(mode),
+            tools,
             speechConfig: {
               voiceConfig: {
                 prebuiltVoiceConfig: { voiceName: VOICE_DEMO_VOICE_NAME },

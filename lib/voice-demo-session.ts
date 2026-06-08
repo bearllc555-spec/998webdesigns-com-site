@@ -2,10 +2,15 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import type { NextRequest, NextResponse } from "next/server";
 import { VOICE_DEMO_SESSION_COOKIE, VOICE_DEMO_SESSION_TTL_MS } from "@/lib/voice-demo-constants";
+import {
+  parseVoiceDemoVertical,
+  type VoiceDemoVertical,
+} from "@/lib/voice-demo-vertical";
 
 export type VoiceDemoSessionPayload = {
   leadId: string;
   verified: boolean;
+  vertical: VoiceDemoVertical;
   exp: number;
 };
 
@@ -20,6 +25,7 @@ function signPayload(encoded: string, secret: string): string {
 export function createVoiceDemoSessionToken(
   leadId: string,
   verified: boolean,
+  vertical: VoiceDemoVertical = "marketing",
   now = Date.now()
 ): string | null {
   const secret = signingSecret();
@@ -28,6 +34,7 @@ export function createVoiceDemoSessionToken(
   const payload: VoiceDemoSessionPayload = {
     leadId,
     verified,
+    vertical,
     exp: now + VOICE_DEMO_SESSION_TTL_MS,
   };
   const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
@@ -72,6 +79,8 @@ export function verifyVoiceDemoSessionToken(
     return null;
   }
 
+  payload.vertical = parseVoiceDemoVertical(payload.vertical);
+
   if (payload.exp < now) return null;
   return payload;
 }
@@ -89,9 +98,10 @@ export function voiceDemoSessionCookieOptions(maxAgeSec = VOICE_DEMO_SESSION_TTL
 export function setVoiceDemoSessionCookie(
   res: NextResponse,
   leadId: string,
-  verified: boolean
+  verified: boolean,
+  vertical: VoiceDemoVertical = "marketing"
 ): void {
-  const token = createVoiceDemoSessionToken(leadId, verified);
+  const token = createVoiceDemoSessionToken(leadId, verified, vertical);
   if (!token) return;
   res.cookies.set(VOICE_DEMO_SESSION_COOKIE, token, voiceDemoSessionCookieOptions());
 }

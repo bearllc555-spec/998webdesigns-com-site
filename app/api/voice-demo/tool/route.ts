@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { readJsonBody } from "@/lib/read-json-body";
+import { executeVoiceDemoPlumbingTool } from "@/lib/voice-demo-plumbing-tools";
 import { executeVoiceDemoTool, type VoiceDemoToolMode } from "@/lib/voice-demo-tools";
+import { isPlumbingVertical } from "@/lib/voice-demo-vertical";
 import {
   readVoiceDemoSession,
   setVoiceDemoSessionCookie,
@@ -41,11 +43,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not verified." }, { status: 403 });
   }
 
-  const result = await executeVoiceDemoTool(session.leadId, mode, name, args);
+  const result =
+    mode === "demo" && isPlumbingVertical(session.vertical)
+      ? await executeVoiceDemoPlumbingTool(session.leadId, name, args)
+      : await executeVoiceDemoTool(session.leadId, mode, name, args);
 
   const res = NextResponse.json({ ok: true, result });
   if (name === "verify_code" && result.verified === true) {
-    setVoiceDemoSessionCookie(res, session.leadId, true);
+    setVoiceDemoSessionCookie(res, session.leadId, true, session.vertical);
   }
   return res;
 }

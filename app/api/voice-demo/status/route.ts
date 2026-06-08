@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
     active: true,
     leadId: row.id,
     verified: session.verified && verified,
+    vertical: session.vertical,
     channel: row.primary_channel,
     destination: row.primary_channel === "email" ? row.email : row.phone,
     fullName: row.full_name,

@@ -46,6 +46,6 @@ export async function POST(req: NextRequest) {
   }
 
   const res = NextResponse.json({ ok: true, verified: true });
-  setVoiceDemoSessionCookie(res, session.leadId, true);
+  setVoiceDemoSessionCookie(res, session.leadId, true, session.vertical);
   return res;
 }
