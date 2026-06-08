@@ -61,6 +61,10 @@ import {
   plumbingDemoOpeningStatus,
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
+import {
+  isPlumbingVisitorEndingCall,
+  shouldPlumbingClientHangup,
+} from "@/lib/voice-demo-plumbing-session";
 import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
 import {
   buildPhonePauseNudge,
@@ -128,6 +132,7 @@ const PHASE_FALLBACK_MS = 12000;
 const FAREWELL_PLAYBACK_MAX_WAIT_MS = 120_000;
 const PHASE_MIN_SPOKEN_MS = 1800;
 const MAX_RECONNECT_ATTEMPTS = 2;
+const PLUMBING_MAX_RECONNECT_ATTEMPTS = 5;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -264,10 +269,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     });
   }, []);
 
+  const maxReconnectAttempts = useCallback(
+    () => (verticalRef.current === "plumbers" ? PLUMBING_MAX_RECONNECT_ATTEMPTS : MAX_RECONNECT_ATTEMPTS),
+    []
+  );
+
   const scheduleLiveReconnect = useCallback(
     (reason: string, meta?: Record<string, unknown>) => {
       if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
-      if (reconnectAttemptRef.current >= MAX_RECONNECT_ATTEMPTS) {
+      if (reconnectAttemptRef.current >= maxReconnectAttempts()) {
         reconnectingRef.current = false;
         setConnecting(false);
         setConnected(false);
@@ -299,13 +309,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       reconnectTimerRef.current = setTimeout(() => {
         reconnectScheduledRef.current = false;
         reconnectTimerRef.current = null;
-        if (reconnectAttemptRef.current >= MAX_RECONNECT_ATTEMPTS) return;
+        if (reconnectAttemptRef.current >= maxReconnectAttempts()) return;
         if (reconnectingRef.current) return;
         reconnectAttemptRef.current += 1;
         void connectRef.current(modeRef.current, { resume: true });
       }, RECONNECT_DELAY_MS);
     },
-    [getSessionPhase, stopOrbLoop]
+    [getSessionPhase, maxReconnectAttempts, stopOrbLoop]
   );
 
   const clearPostNameGreetingTimer = useCallback(() => {
@@ -674,6 +684,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const sendWrapUpPauseNudge = useCallback(() => {
     const session = sessionRef.current;
     if (!session || modeRef.current !== "demo") return;
+    if (verticalRef.current === "plumbers") return;
     if (isFarewellLocked()) return;
     if (awaitingPhoneDigitsRef.current) {
       return;
@@ -699,6 +710,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const scheduleWrapUpPause = useCallback(
     (delayMs = WRAPUP_POST_ANSWER_PAUSE_MS) => {
+      if (verticalRef.current === "plumbers") return;
       if (modeRef.current !== "demo" || isFarewellLocked()) return;
       clearWrapUpTimer();
       wrapUpTimerRef.current = setTimeout(() => {
@@ -1081,7 +1093,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const userLine = captionTextRef.current.trim();
 
         if (modeRef.current === "demo") {
-          if (isUserExplicitlyDone(userLine)) {
+          if (verticalRef.current === "plumbers") {
+            if (isPlumbingVisitorEndingCall(userLine)) {
+              visitorExplicitlyDoneRef.current = true;
+            }
+          } else if (isUserExplicitlyDone(userLine)) {
             visitorExplicitlyDoneRef.current = true;
           }
           if (
@@ -1108,13 +1124,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
           schedulePhoneSilenceNudge();
         }
-        if (
-          jarvisFarewellSentRef.current &&
-          isUserFarewellEcho(inText) &&
-          modeRef.current === "demo"
-        ) {
-          endCallNow();
-          return;
+        if (jarvisFarewellSentRef.current && modeRef.current === "demo") {
+          const shouldEchoHangup =
+            verticalRef.current === "plumbers"
+              ? isPlumbingVisitorEndingCall(userLine)
+              : isUserFarewellEcho(inText);
+          if (shouldEchoHangup) {
+            endCallNow();
+            return;
+          }
         }
       }
 
@@ -1158,14 +1176,21 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             return;
           }
 
-          if (
+          const plumbingHangup =
+            verticalRef.current === "plumbers" &&
+            shouldPlumbingClientHangup({
+              visitorEndingCall: visitorExplicitlyDoneRef.current,
+              assistantText: assistantSnapshot,
+            });
+          const marketingHangup =
+            verticalRef.current !== "plumbers" &&
             shouldClientScheduleFarewellHangup(assistantSnapshot, {
               visitorExplicitlyDone: visitorExplicitlyDoneRef.current,
               farewellSent: jarvisFarewellSentRef.current,
               goodbyeNudgeSent: goodbyeNudgeSentRef.current,
               phase: getSessionPhase(),
-            })
-          ) {
+            });
+          if (plumbingHangup || marketingHangup) {
             if (!jarvisFarewellSentRef.current) {
               latchFarewellClosing();
             }
@@ -1190,6 +1215,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             clearWrapUpTimer();
           }
           if (
+            verticalRef.current !== "plumbers" &&
             shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
               awaitingCollection: awaitingPhoneDigitsRef.current,
               farewellSent: jarvisFarewellSentRef.current,
@@ -1198,7 +1224,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           ) {
             visitorAskedSubstantiveQuestionRef.current = false;
             scheduleWrapUpPause(WRAPUP_POST_ANSWER_PAUSE_MS);
-          } else {
+          } else if (verticalRef.current !== "plumbers") {
             clearWrapUpTimer();
           }
         }
