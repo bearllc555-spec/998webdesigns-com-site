@@ -63,19 +63,11 @@ function scheduleEmailsForBookedJob(
   leadId: string,
   job: PlumbingJobRow,
   email: string,
-  visitorName: string,
-  opts?: { includePromo?: boolean }
+  visitorName: string
 ): void {
   const payload = bookingEmailPayloadFromJob(job, email, visitorName);
   const template: PlumbingEmailTemplate = job.is_emergency ? "emergency" : "appointment";
   schedulePlumbingBookingEmail(leadId, template, payload);
-  if (opts?.includePromo || job.promo_applied) {
-    schedulePlumbingPromoEmail(leadId, {
-      to: email,
-      firstName: firstName(visitorName),
-      serviceType: job.service_type ?? undefined,
-    });
-  }
 }
 
 export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
@@ -102,7 +94,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "book_plumbing_appointment",
           description:
-            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends confirmation email plus a separate $50 promo email automatically (standard bookings).",
+            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends one confirmation email with the $50 coupon enclosed (standard bookings).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -224,17 +216,21 @@ export async function executeVoiceDemoPlumbingTool(
         email !== priorEmail
       ) {
         await upsertPlumbingJob({ leadId, customerEmail: email });
-        const refreshedJob = await getLatestPlumbingJobForLead(leadId);
+        let refreshedJob = await getLatestPlumbingJobForLead(leadId);
         const nameForEmail = visitorName || row.full_name?.trim() || "Guest";
         if (refreshedJob) {
-          scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail, {
-            includePromo:
-              refreshedJob.promo_applied ||
-              (refreshedJob.status === "booked" && !refreshedJob.is_emergency),
-          });
+          if (
+            !refreshedJob.promo_applied &&
+            refreshedJob.status === "booked" &&
+            !refreshedJob.is_emergency
+          ) {
+            await upsertPlumbingJob({ leadId, promoApplied: true });
+            refreshedJob = (await getLatestPlumbingJobForLead(leadId)) ?? refreshedJob;
+          }
+          scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail);
         }
         emailMessage =
-          "Contact saved. Confirmation and promo emails are sending to the updated address — tell the caller to check inbox and spam.";
+          "Contact saved. Confirmation email (with $50 coupon enclosed) is sending to the updated address — tell the caller to check inbox and spam.";
       }
     }
 
@@ -309,18 +305,15 @@ export async function executeVoiceDemoPlumbingTool(
       confirmation_email_sent_at: null,
       reminder_email_sent_at: null,
     };
-    scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, {
-      includePromo: grantPromo,
-    });
+    scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName);
 
     return {
       ok: true,
       booked: true,
       emailSent: true,
-      promoEmailSent: grantPromo,
       status,
       message: grantPromo
-        ? "Appointment booked. Two emails are sending separately: appointment confirmation and $50 discount coupon. Tell the caller to check inbox and spam for both — recap address, date, and time and stay on the line."
+        ? "Appointment booked. One confirmation email is sending with the $50 coupon enclosed — tell the caller to check inbox and spam, recap address/date/time, and stay on the line."
         : "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
     };
   }

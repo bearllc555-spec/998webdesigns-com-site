@@ -116,8 +116,11 @@ export function buildPlumbingEmail(
   const window = escapeHtml(payload.timeWindow ?? "TBD");
   const address = escapeHtml(payload.serviceAddress ?? "On file");
   const price = escapeHtml(payload.priceRange ?? "Free estimate");
-  const promoLine = payload.promoApplied
-    ? `<p>Your $${PLUMBING_DEMO_PROMO_AMOUNT} discount has been applied to your appointment.</p>`
+  const promoBlock = payload.promoApplied
+    ? `<p style="margin-top: 20px; padding: 16px; border: 1px solid #2563eb; border-radius: 8px; background: #f8fafc;">
+          <strong>Your $${PLUMBING_DEMO_PROMO_AMOUNT} coupon</strong> is enclosed with this confirmation.<br />
+          Mention your name when we arrive — it applies to this visit.
+        </p>`
     : "";
 
   switch (template) {
@@ -132,7 +135,7 @@ export function buildPlumbingEmail(
           <strong>Time window:</strong> ${window}<br />
           <strong>Address:</strong> ${address}<br />
           <strong>Estimated cost:</strong> ${price}</p>
-          ${promoLine}
+          ${promoBlock}
           <p>Your technician will call or text about 30 minutes before arriving. Reply to this email if you need to reschedule.</p>
         `),
       };

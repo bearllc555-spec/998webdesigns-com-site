@@ -19,7 +19,8 @@ describe("buildPlumbingEmail", () => {
     expect(subject).toContain("Confirmed");
     expect(html).toContain("Alex");
     expect(html).toContain("Drain cleaning");
-    expect(html).toContain("$50 discount");
+    expect(html).toContain("$50 coupon");
+    expect(html).toContain("enclosed");
   });
 
   it("formats ISO appointment dates for customers", () => {
