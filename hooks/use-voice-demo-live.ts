@@ -62,6 +62,7 @@ import {
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
+import { PLUMBING_IDLE_HANGUP_MS } from "@/lib/voice-demo-plumbing-constants";
 import {
   isPlumbingBookingContinuation,
   isPlumbingVisitorEndingCall,
@@ -195,6 +196,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingClientHangupRef = useRef(false);
   const hangupReasonRef = useRef<VoiceDemoHangupReason | null>(null);
   const micMuteDisconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const plumbingIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const plumbingCallWindingDownRef = useRef(false);
   const lastAssistantTextRef = useRef("");
   const wrapUpQuestionIndexRef = useRef(0);
   const wrapUpCueLeakRecoverySentRef = useRef(false);
@@ -904,6 +907,18 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearPlumbingIdleTimer = useCallback(() => {
+    if (plumbingIdleTimerRef.current) {
+      clearTimeout(plumbingIdleTimerRef.current);
+      plumbingIdleTimerRef.current = null;
+    }
+  }, []);
+
+  const touchPlumbingConversation = useCallback(() => {
+    if (verticalRef.current !== "plumbers") return;
+    clearPlumbingIdleTimer();
+  }, [clearPlumbingIdleTimer]);
+
   const applyMicMuted = useCallback(
     (muted: boolean) => {
       micRef.current?.setMuted(muted);
@@ -919,6 +934,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearReconnectTimer();
     clearPostNameGreetingTimer();
     clearMicMuteDisconnectTimer();
+    clearPlumbingIdleTimer();
+    plumbingCallWindingDownRef.current = false;
     applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
     if (intentional) {
@@ -963,36 +980,44 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (!sessionRef.current) return;
       clearMicMuteDisconnectTimer();
       applyMicMuted(muted);
+      const plumbing = verticalRef.current === "plumbers";
       if (muted) {
         optionsRef.current.onStatus?.(
-          "Microphone muted — unmute within 10 seconds or the call will end."
+          plumbing
+            ? "Microphone paused — tap the mic to resume."
+            : "Microphone muted — unmute within 10 seconds or the call will end."
         );
-        const scheduleMuteDisconnect = () => {
-          clearMicMuteDisconnectTimer();
-          micMuteDisconnectTimerRef.current = setTimeout(() => {
-            micMuteDisconnectTimerRef.current = null;
-            if (playerRef.current?.isPlaying()) {
-              scheduleMuteDisconnect();
-              return;
-            }
-            optionsRef.current.onStatus?.(
-              "Muted too long — session ended. Tap Start voice to chat again."
-            );
-            hangupReasonRef.current = "mic_mute_timeout";
-            logVoiceDemoOps({
-              kind: "client_hangup_scheduled",
-              message: "Mic muted too long — hangup",
-              meta: { phase: getSessionPhase(), hangupReason: "mic_mute_timeout" },
-            });
-            disconnect(true);
-          }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
-        };
-        scheduleMuteDisconnect();
+        if (!plumbing) {
+          const scheduleMuteDisconnect = () => {
+            clearMicMuteDisconnectTimer();
+            micMuteDisconnectTimerRef.current = setTimeout(() => {
+              micMuteDisconnectTimerRef.current = null;
+              if (playerRef.current?.isPlaying()) {
+                scheduleMuteDisconnect();
+                return;
+              }
+              optionsRef.current.onStatus?.(
+                "Muted too long — session ended. Tap Start voice to chat again."
+              );
+              hangupReasonRef.current = "mic_mute_timeout";
+              logVoiceDemoOps({
+                kind: "client_hangup_scheduled",
+                message: "Mic muted too long — hangup",
+                meta: { phase: getSessionPhase(), hangupReason: "mic_mute_timeout" },
+              });
+              disconnect(true);
+            }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
+          };
+          scheduleMuteDisconnect();
+        }
       } else {
-        optionsRef.current.onStatus?.("Microphone on — Jarvis can hear you again.");
+        optionsRef.current.onStatus?.(
+          plumbing ? "Microphone on — Jarvis can hear you." : "Microphone on — Jarvis can hear you again."
+        );
+        touchPlumbingConversation();
       }
     },
-    [applyMicMuted, clearMicMuteDisconnectTimer, disconnect, getSessionPhase]
+    [applyMicMuted, clearMicMuteDisconnectTimer, disconnect, getSessionPhase, touchPlumbingConversation]
   );
 
   const toggleMicMute = useCallback(() => {
@@ -1065,6 +1090,28 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, [disconnect, latchFarewellClosing]);
 
+  const schedulePlumbingIdleHangup = useCallback(() => {
+    if (verticalRef.current !== "plumbers" || !plumbingCallWindingDownRef.current) return;
+    if (farewellDisconnectingRef.current || reconnectingRef.current) return;
+    clearPlumbingIdleTimer();
+    plumbingIdleTimerRef.current = setTimeout(() => {
+      plumbingIdleTimerRef.current = null;
+      if (verticalRef.current !== "plumbers" || !plumbingCallWindingDownRef.current) return;
+      if (farewellDisconnectingRef.current || reconnectingRef.current) return;
+      if (playerRef.current?.isPlaying() || toolInFlightRef.current > 0) {
+        schedulePlumbingIdleHangup();
+        return;
+      }
+      hangupReasonRef.current = "plumbing_idle_silence";
+      logVoiceDemoOps({
+        kind: "client_hangup_scheduled",
+        message: "Plumbing idle silence — ending call",
+        meta: { phase: getSessionPhase(), hangupReason: "plumbing_idle_silence" },
+      });
+      void finishConversation();
+    }, PLUMBING_IDLE_HANGUP_MS);
+  }, [clearPlumbingIdleTimer, finishConversation, getSessionPhase]);
+
   const scheduleFarewellHangup = useCallback(
     (reason: VoiceDemoHangupReason) => {
       if (farewellDisconnectingRef.current || reconnectingRef.current) return;
@@ -1082,6 +1129,18 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     },
     [finishConversation, getSessionPhase]
   );
+
+  const endCall = useCallback(() => {
+    if (!sessionRef.current || farewellDisconnectingRef.current) return;
+    clearPlumbingIdleTimer();
+    hangupReasonRef.current = "user_disconnect";
+    logVoiceDemoOps({
+      kind: "client_hangup_scheduled",
+      message: "Caller tapped End call",
+      meta: { phase: getSessionPhase(), hangupReason: "user_disconnect" },
+    });
+    void finishConversation();
+  }, [clearPlumbingIdleTimer, finishConversation, getSessionPhase]);
 
   const endCallNow = useCallback(() => {
     if (farewellDisconnectingRef.current) return;
@@ -1106,13 +1165,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (message.sessionResumptionUpdate) {
         const resumable = message.sessionResumptionUpdate.resumable === true;
         sessionResumableRef.current = resumable;
-        if (message.sessionResumptionUpdate.newHandle) {
-          sessionResumptionHandleRef.current = message.sessionResumptionUpdate.newHandle;
+        const nextHandle = message.sessionResumptionUpdate.newHandle;
+        if (nextHandle && nextHandle !== sessionResumptionHandleRef.current) {
+          sessionResumptionHandleRef.current = nextHandle;
           logVoiceDemoOps({
             kind: "session_resumption",
             message: "Stored session resumption handle",
             meta: { resumable },
           });
+        } else if (nextHandle) {
+          sessionResumptionHandleRef.current = nextHandle;
         } else if (!resumable) {
           logVoiceDemoOps({
             kind: "session_resumption",
@@ -1207,6 +1269,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               queuePhaseTransition({ kind: "verified", nextMode: "demo" });
             }
 
+            if (
+              verticalRef.current === "plumbers" &&
+              name === "book_plumbing_appointment" &&
+              result.booked === true
+            ) {
+              plumbingCallWindingDownRef.current = true;
+            }
+
             responses.push(buildVoiceDemoToolResponse(call.id, name, result));
           }
 
@@ -1269,6 +1339,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
             clearInputSilenceTimers();
+            touchPlumbingConversation();
             playerRef.current ??= new VoiceDemoAudioPlayer();
             playerRef.current.enqueueBase64Pcm(data);
           }
@@ -1277,6 +1348,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
+        touchPlumbingConversation();
         if (inText.trim() && playerRef.current?.isPlaying()) {
           if (!(nameSavedRef.current && !postNameLineSpokenRef.current)) {
             handleAssistantInterrupted();
@@ -1292,6 +1364,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               visitorExplicitlyDoneRef.current = false;
             } else if (isPlumbingVisitorEndingCall(userLine)) {
               visitorExplicitlyDoneRef.current = true;
+              plumbingCallWindingDownRef.current = true;
             }
           } else if (isUserExplicitlyDone(userLine)) {
             visitorExplicitlyDoneRef.current = true;
@@ -1394,6 +1467,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               ? "goodbye_nudge_complete"
               : "client_final_goodbye";
             scheduleFarewellHangup(reason);
+          } else if (
+            verticalRef.current === "plumbers" &&
+            plumbingCallWindingDownRef.current
+          ) {
+            schedulePlumbingIdleHangup();
           }
         })();
         if (modeRef.current === "demo") {
@@ -1462,6 +1540,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       flushPendingReconnect,
       schedulePostNameGreetingNudge,
       sendPostNameGreetingNudge,
+      schedulePlumbingIdleHangup,
+      touchPlumbingConversation,
     ]
   );
 
@@ -1505,6 +1585,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
         sessionResumableRef.current = true;
+        plumbingCallWindingDownRef.current = false;
+        clearPlumbingIdleTimer();
         reconnectAttemptRef.current = 0;
         reconnectExhaustedBonusRef.current = false;
         handleMessageChainRef.current = Promise.resolve();
@@ -1840,6 +1922,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     hadPlumbingLiveSessionRef.current = false;
     sessionResumptionHandleRef.current = null;
     sessionResumableRef.current = true;
+    plumbingCallWindingDownRef.current = false;
     reconnectPausedRef.current = false;
     reconnectAttemptRef.current = 0;
     reconnectExhaustedBonusRef.current = false;
@@ -1852,6 +1935,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   return {
     connect,
     disconnect: () => disconnect(true),
+    endCall,
     disconnectAndReset,
     disconnectGraceful,
     transitionToDemo,

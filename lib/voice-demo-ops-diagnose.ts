@@ -65,6 +65,12 @@ export function diagnoseVoiceDemoOpsSession(
   if (events.some((e) => /Flushed deferred tool responses/i.test(e.message))) {
     findings.push("Deferred tool responses were flushed after reconnect — check CRM job row.");
   }
+  if (events.some((e) => /Plumbing idle silence/i.test(e.message))) {
+    findings.push("Call ended after 4s quiet following booking or goodbye — expected plumbing wind-down.");
+  }
+  if (events.some((e) => /Caller tapped End call/i.test(e.message))) {
+    findings.push("Caller ended the call with the End call button.");
+  }
   if (events.some((e) => /token_fetch_failed|connect_failed/i.test(e.message))) {
     findings.push("Live token or connect failed — check GEMINI_API_KEY / network, not caller behavior.");
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Mic, MicOff, X } from "lucide-react";
+import { Mic, MicOff, PhoneOff } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceDemoLiveOpsTrace } from "@/components/demo/VoiceDemoLiveOpsTrace";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
@@ -216,28 +216,43 @@ export function PlumbingDemoWidget() {
               />
               <button
                 type="button"
-                onClick={startVoice}
-                disabled={live.connecting || live.connected}
+                onClick={() => {
+                  if (live.connected) {
+                    live.toggleMicMute();
+                    return;
+                  }
+                  startVoice();
+                }}
+                disabled={live.connecting}
+                aria-pressed={live.connected ? live.micMuted : undefined}
                 aria-label={
                   live.connected
-                    ? "Microphone active"
+                    ? live.micMuted
+                      ? "Resume microphone"
+                      : "Pause microphone"
                     : live.connecting
                       ? "Connecting"
                       : "Start voice call"
                 }
                 className={`flex h-16 w-16 items-center justify-center rounded-full border-2 transition hover:scale-[1.02] disabled:cursor-default disabled:hover:scale-100 ${
-                  live.connected
-                    ? "border-accent bg-accent-soft"
-                    : live.connecting
-                      ? "border-accent/60 bg-accent-soft/40"
-                      : "border-rule bg-rule-soft hover:border-accent hover:bg-accent-soft/30"
+                  live.connected && live.micMuted
+                    ? "border-red-500 bg-red-50 dark:bg-red-950/40"
+                    : live.connected
+                      ? "border-accent bg-accent-soft"
+                      : live.connecting
+                        ? "border-accent/60 bg-accent-soft/40"
+                        : "border-rule bg-rule-soft hover:border-accent hover:bg-accent-soft/30"
                 }`}
               >
-                <Mic
-                  className={`h-6 w-6 ${
-                    live.connected || live.connecting ? "text-accent" : "text-ink-soft"
-                  }`}
-                />
+                {live.connected && live.micMuted ? (
+                  <MicOff className="h-6 w-6 text-red-600" aria-hidden />
+                ) : (
+                  <Mic
+                    className={`h-6 w-6 ${
+                      live.connected || live.connecting ? "text-accent" : "text-ink-soft"
+                    }`}
+                  />
+                )}
               </button>
               {!live.connected && !live.connecting && (
                 <button
@@ -251,20 +266,11 @@ export function PlumbingDemoWidget() {
               {live.connected && (
                 <button
                   type="button"
-                  onClick={() => live.toggleMicMute()}
-                  aria-pressed={live.micMuted}
-                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
-                    live.micMuted
-                      ? "border-warn bg-warn/10 text-warn"
-                      : "border-rule bg-bg text-ink-soft hover:border-accent hover:text-ink"
-                  }`}
+                  onClick={() => live.endCall()}
+                  className="flex items-center gap-2 rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink-soft transition hover:border-warn hover:bg-warn/10 hover:text-warn"
                 >
-                  {live.micMuted ? (
-                    <MicOff className="h-4 w-4" aria-hidden />
-                  ) : (
-                    <Mic className="h-4 w-4" aria-hidden />
-                  )}
-                  {live.micMuted ? "Unmute mic" : "Mute mic"}
+                  <PhoneOff className="h-4 w-4" aria-hidden />
+                  End call
                 </button>
               )}
             </div>

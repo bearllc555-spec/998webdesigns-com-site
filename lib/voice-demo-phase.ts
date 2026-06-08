@@ -21,6 +21,7 @@ export type VoiceDemoHangupReason =
   | "websocket_close"
   | "mic_mute_timeout"
   | "user_disconnect"
+  | "plumbing_idle_silence"
   | "reconnect_exhausted";
 
 export type VoiceDemoPhaseInput = {

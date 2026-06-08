@@ -13,3 +13,6 @@ export const PLUMBING_DEMO_SESSION_START_CUE = "[plumbing-session-start]";
 
 export const PLUMBING_DEMO_OPENING_LINE =
   "Thanks for calling Metro Plumbing and Drain — I'm Jarvis. How can I help you today?";
+
+/** After booking or goodbye, end the call when both sides are quiet this long. */
+export const PLUMBING_IDLE_HANGUP_MS = 4_000;
