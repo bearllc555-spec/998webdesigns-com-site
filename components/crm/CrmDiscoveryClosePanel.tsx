@@ -76,7 +76,7 @@ export function CrmDiscoveryClosePanel({
   const dueToday = formatCheckoutUsd(
     checkoutDueTodayCents(hostingChoice, paymentChannel, promoCode, "deposit")
   );
-  const scheduleLines = designPaymentScheduleLines(promoCode);
+  const scheduleLines = designPaymentScheduleLines(promoCode, hostingChoice);
 
   async function sendCloseLink() {
     if (!sendEmail && !sendSms) {

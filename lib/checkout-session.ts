@@ -39,8 +39,10 @@ export function buildCheckoutSessionParams(
     paymentChannel: channel,
     hostingChoice: lead.hostingChoice,
     submittedAt: options.submittedAt,
-    designTotalCents: String(designTotalCents(lead.promoCode)),
-    designBalanceCents: String(designBalanceAfterDepositCents(lead.promoCode)),
+    designTotalCents: String(designTotalCents(lead.promoCode, lead.hostingChoice)),
+    designBalanceCents: String(
+      designBalanceAfterDepositCents(lead.promoCode, lead.hostingChoice)
+    ),
     ...(lead.promoCode.trim() ? { promoCode: lead.promoCode.trim().toUpperCase() } : {}),
     ...(lead.hearAboutSources.length
       ? {

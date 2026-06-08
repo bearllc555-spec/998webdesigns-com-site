@@ -12,6 +12,7 @@ import {
   milestonePaymentType,
 } from "@/lib/design-milestone-payments";
 import { checkoutPaymentMethodTypes } from "@/lib/checkout-session";
+import type { HostingChoice } from "@/lib/validate-lead";
 
 export type MilestoneCheckoutLead = {
   fullName: string;
@@ -19,6 +20,7 @@ export type MilestoneCheckoutLead = {
   businessName: string;
   promoCode: string;
   paymentChannel: PaymentChannel;
+  hostingChoice?: HostingChoice;
 };
 
 export function buildMilestoneCheckoutSessionParams(
@@ -32,14 +34,18 @@ export function buildMilestoneCheckoutSessionParams(
   }
 ): Stripe.Checkout.SessionCreateParams {
   const channel = lead.paymentChannel;
-  const subtotal = milestoneAmountCents(milestone, lead.promoCode);
+  const subtotal = milestoneAmountCents(milestone, lead.promoCode, lead.hostingChoice);
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
     {
       price_data: {
         currency: "usd",
         product_data: {
           name: milestoneLineItemName(milestone),
-          description: milestoneLineItemDescription(milestone, lead.promoCode),
+          description: milestoneLineItemDescription(
+            milestone,
+            lead.promoCode,
+            lead.hostingChoice
+          ),
         },
         unit_amount: subtotal,
       },

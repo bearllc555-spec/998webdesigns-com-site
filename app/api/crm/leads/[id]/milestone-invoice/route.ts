@@ -17,7 +17,7 @@ import { isCrmRequestAuthorized } from "@/lib/crm-session";
 import { readJsonBody } from "@/lib/read-json-body";
 import { stripe } from "@/lib/stripe";
 import { warnIfProductionStripeTestMode } from "@/lib/stripe-env";
-import type { PaymentChannel } from "@/lib/validate-lead";
+import type { HostingChoice, PaymentChannel } from "@/lib/validate-lead";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +38,13 @@ function leadPaymentChannel(
 
 function leadPromoCode(payload: Record<string, unknown>): string {
   return typeof payload.promoCode === "string" ? payload.promoCode : "";
+}
+
+function leadHostingChoice(payload: Record<string, unknown>): HostingChoice | undefined {
+  const value = payload.hostingChoice;
+  if (value === "ten_year" || value === "monthly") return value;
+  if (value === "lifetime") return "ten_year";
+  return undefined;
 }
 
 function leadPhone(payload: Record<string, unknown>): string {
@@ -114,6 +121,7 @@ export async function POST(
           businessName: lead.business_name,
           promoCode,
           paymentChannel,
+          hostingChoice: leadHostingChoice(lead.payload),
         },
         milestone,
         {

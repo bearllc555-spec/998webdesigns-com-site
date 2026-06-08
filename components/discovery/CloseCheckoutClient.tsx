@@ -78,7 +78,9 @@ export function CloseCheckoutClient({ token }: { token: string }) {
     )
   );
   const scheduleLines =
-    paymentOption === "deposit" ? designPaymentScheduleLines(data.closeDraft.promoCode) : [];
+    paymentOption === "deposit"
+      ? designPaymentScheduleLines(data.closeDraft.promoCode, data.closeDraft.hostingChoice)
+      : [];
 
   return (
     <div className="mx-auto max-w-xl">

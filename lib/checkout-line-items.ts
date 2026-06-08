@@ -16,8 +16,8 @@ function designLineItem(lead: ValidatedLead): Stripe.Checkout.SessionCreateParam
   const promo = resolveDesignPromo(lead.promoCode);
   const isDeposit = lead.paymentOption === "deposit";
   const amount = checkoutSubtotalCents(lead.hostingChoice, lead.promoCode, lead.paymentOption);
-  const promoLabel = designPromoSummary(lead.promoCode);
-  const totalLabel = `$${(designTotalCents(lead.promoCode) / 100).toLocaleString()} total design fee`;
+  const promoLabel = designPromoSummary(lead.promoCode, lead.hostingChoice);
+  const totalLabel = `$${(designTotalCents(lead.promoCode, lead.hostingChoice) / 100).toLocaleString()} total design fee`;
   const scheduleNote = isDeposit
     ? `50% deposit today; 40% after design approval; 10% at launch (${totalLabel}).`
     : FULL_PRODUCT.description;

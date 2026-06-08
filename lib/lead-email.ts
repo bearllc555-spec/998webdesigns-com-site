@@ -41,11 +41,14 @@ export async function sendLeadCheckoutEmail(
   );
   const scheduleHtml =
     lead.paymentOption === "deposit"
-      ? `<ul style="margin: 12px 0; padding-left: 20px; font-size: 14px; color: #52525b;">${designPaymentScheduleLines(lead.promoCode)
+      ? `<ul style="margin: 12px 0; padding-left: 20px; font-size: 14px; color: #52525b;">${designPaymentScheduleLines(
+          lead.promoCode,
+          lead.hostingChoice
+        )
           .map((line) => `<li>${escapeHtml(line)}</li>`)
           .join("")}</ul>`
       : "";
-  const promoLabel = designPromoSummary(lead.promoCode);
+  const promoLabel = designPromoSummary(lead.promoCode, lead.hostingChoice);
   const promoNote =
     lead.promoCode.trim() && promoLabel
       ? `<p><strong>Promo:</strong> ${escapeHtml(lead.promoCode.trim().toUpperCase())} (${escapeHtml(promoLabel)})</p>`

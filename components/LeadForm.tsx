@@ -13,9 +13,11 @@ import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing
 import { HOSTING_FREE_MONTH_SUMMARY, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import { hostingChoiceShortLabel } from "@/lib/hosting";
 import {
+  bundleTotalCents,
   designFeeCents,
   designPromoSummary,
   isValidDesignPromoCode,
+  promoValidationError,
 } from "@/lib/design-promo";
 import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import { HEAR_ABOUT_SOURCES } from "@/lib/hear-about-sources";
@@ -532,11 +534,36 @@ export function LeadForm() {
               />
               {form.promoCode.trim() && (
                 <p
-                  className={`text-sm ${isValidDesignPromoCode(form.promoCode) ? "text-success" : "text-warn"}`}
+                  className={`text-sm ${
+                    isValidDesignPromoCode(form.promoCode, {
+                      hostingChoice:
+                        form.hostingChoice === "ten_year" || form.hostingChoice === "monthly"
+                          ? form.hostingChoice
+                          : undefined,
+                    })
+                      ? "text-success"
+                      : "text-warn"
+                  }`}
                 >
-                  {isValidDesignPromoCode(form.promoCode)
-                    ? `${designPromoSummary(form.promoCode)} — ${formatCheckoutUsd(designFeeCents(form.promoCode))} design (hosting unchanged)`
-                    : "Code not recognized. Contact us at hello@998webdesigns.com if you expected a discount."}
+                  {(() => {
+                    const hostingChoice =
+                      form.hostingChoice === "ten_year" || form.hostingChoice === "monthly"
+                        ? form.hostingChoice
+                        : undefined;
+                    const promoCtx = { hostingChoice };
+                    if (isValidDesignPromoCode(form.promoCode, promoCtx)) {
+                      const summary = designPromoSummary(form.promoCode, hostingChoice);
+                      const bundle = bundleTotalCents(form.promoCode, hostingChoice);
+                      if (bundle != null && summary) return summary;
+                      return `${summary} — ${formatCheckoutUsd(
+                        designFeeCents(form.promoCode, hostingChoice)
+                      )} design`;
+                    }
+                    return (
+                      promoValidationError(form.promoCode, hostingChoice) ??
+                      "Code not recognized. Contact us at hello@998webdesigns.com if you expected a discount."
+                    );
+                  })()}
                 </p>
               )}
 
@@ -589,7 +616,12 @@ export function LeadForm() {
                       : ""}
                   </span>
                   <ul className="mt-2 space-y-1 text-xs text-ink-soft">
-                    {designPaymentScheduleLines(form.promoCode).map((line) => (
+                    {designPaymentScheduleLines(
+                      form.promoCode,
+                      form.hostingChoice === "ten_year" || form.hostingChoice === "monthly"
+                        ? form.hostingChoice
+                        : undefined
+                    ).map((line) => (
                       <li key={line}>{line}</li>
                     ))}
                   </ul>

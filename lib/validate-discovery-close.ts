@@ -1,6 +1,6 @@
-import { isValidDesignPromoCode } from "@/lib/design-promo";
+import { isValidDesignPromoCode, promoValidationError } from "@/lib/design-promo";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
-import type { PaymentOption } from "@/lib/validate-lead";
+import type { HostingChoice, PaymentOption } from "@/lib/validate-lead";
 
 const ALLOWED_ADDONS = new Set([
   "growth-pack",
@@ -42,8 +42,12 @@ export function validateDiscoveryCloseDraft(
   }
 
   const promoCode = str(body.promoCode) ?? "";
-  if (promoCode && !isValidDesignPromoCode(promoCode)) {
-    return { ok: false, error: "Invalid promo code" };
+  if (promoCode) {
+    const promoErr = promoValidationError(promoCode, hostingChoice as HostingChoice);
+    if (promoErr) return { ok: false, error: promoErr };
+    if (!isValidDesignPromoCode(promoCode, { hostingChoice: hostingChoice as HostingChoice })) {
+      return { ok: false, error: "Invalid promo code" };
+    }
   }
 
   return {

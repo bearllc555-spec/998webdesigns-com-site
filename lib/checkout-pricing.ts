@@ -18,7 +18,7 @@ export function checkoutSubtotalCents(
   promoCode?: string,
   paymentOption: PaymentOption = "full"
 ): number {
-  return checkoutDesignSubtotalCents(paymentOption, promoCode);
+  return checkoutDesignSubtotalCents(paymentOption, promoCode, _hostingChoice);
 }
 
 export function cardProcessingFeeCents(subtotalCents: number): number {

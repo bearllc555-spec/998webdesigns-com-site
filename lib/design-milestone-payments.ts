@@ -7,7 +7,7 @@ import {
   designMilestone2Cents,
   designMilestone3Cents,
 } from "@/lib/design-payment-schedule";
-import type { PaymentOption } from "@/lib/validate-lead";
+import type { HostingChoice, PaymentOption } from "@/lib/validate-lead";
 
 export type DesignMilestoneKey = "milestone2" | "milestone3";
 export type DesignMilestonePaymentType = "milestone_2" | "milestone_3";
@@ -62,18 +62,23 @@ function parseMilestoneRecord(value: unknown): DesignMilestoneRecord | undefined
   return Object.keys(record).length ? record : undefined;
 }
 
-export function milestoneAmountCents(key: DesignMilestoneKey, promoCode?: string): number {
+export function milestoneAmountCents(
+  key: DesignMilestoneKey,
+  promoCode?: string,
+  hostingChoice?: HostingChoice
+): number {
   return key === "milestone2"
-    ? designMilestone2Cents(promoCode)
-    : designMilestone3Cents(promoCode);
+    ? designMilestone2Cents(promoCode, hostingChoice)
+    : designMilestone3Cents(promoCode, hostingChoice);
 }
 
 export function milestoneCheckoutTotalCents(
   key: DesignMilestoneKey,
   channel: PaymentChannel,
-  promoCode?: string
+  promoCode?: string,
+  hostingChoice?: HostingChoice
 ): number {
-  const subtotal = milestoneAmountCents(key, promoCode);
+  const subtotal = milestoneAmountCents(key, promoCode, hostingChoice);
   if (channel === "card") return subtotal + cardProcessingFeeCents(subtotal);
   return subtotal;
 }
@@ -94,8 +99,12 @@ export function milestoneLineItemName(key: DesignMilestoneKey): string {
     : "Website Design — 10% (launch & handover)";
 }
 
-export function milestoneLineItemDescription(key: DesignMilestoneKey, promoCode?: string): string {
-  const amount = formatCheckoutUsd(milestoneAmountCents(key, promoCode));
+export function milestoneLineItemDescription(
+  key: DesignMilestoneKey,
+  promoCode?: string,
+  hostingChoice?: HostingChoice
+): string {
+  const amount = formatCheckoutUsd(milestoneAmountCents(key, promoCode, hostingChoice));
   return key === "milestone2"
     ? `${amount} due after design approval or development start (design fee balance).`
     : `${amount} due at launch and handover (final design fee balance).`;

@@ -110,6 +110,30 @@ describe("validateLeadPayload", () => {
     if (!result.ok) expect(result.error).toMatch(/promo/i);
   });
 
+  it("accepts LAUNCHPADJUNE26 on monthly hosting", () => {
+    const result = validateLeadPayload({ ...validBase, promoCode: "LAUNCHPADJUNE26" });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rejects GROWTHSYSTEMJUNE26 without ten_year hosting", () => {
+    const result = validateLeadPayload({
+      ...validBase,
+      hostingChoice: "monthly",
+      promoCode: "GROWTHSYSTEMJUNE26",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/10-year hosting/i);
+  });
+
+  it("accepts GROWTHSYSTEMJUNE26 with ten_year hosting", () => {
+    const result = validateLeadPayload({
+      ...validBase,
+      hostingChoice: "ten_year",
+      promoCode: "GROWTHSYSTEMJUNE26",
+    });
+    expect(result.ok).toBe(true);
+  });
+
   it("requires phone when contactPref is phone", () => {
     const result = validateLeadPayload({ ...validBase, contactPref: "phone", phone: "" });
     expect(result.ok).toBe(false);

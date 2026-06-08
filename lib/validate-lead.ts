@@ -2,7 +2,7 @@ import {
   filterHearAboutSources,
   type HearAboutSource,
 } from "@/lib/hear-about-sources";
-import { isValidDesignPromoCode } from "@/lib/design-promo";
+import { isValidDesignPromoCode, promoValidationError } from "@/lib/design-promo";
 import { isValidEmail } from "@/lib/validate-email";
 
 export type HostingChoice = "ten_year" | "monthly";
@@ -118,8 +118,16 @@ export function validateLeadPayload(
   }
 
   const promoCode = str(body.promoCode) ?? "";
-  if (promoCode && !isValidDesignPromoCode(promoCode)) {
-    return { ok: false, error: "Invalid promo code — remove it or contact us if you expected a discount" };
+  const promoContext = { hostingChoice: hostingChoice as HostingChoice };
+  if (promoCode) {
+    const promoErr = promoValidationError(promoCode, hostingChoice as HostingChoice);
+    if (promoErr) return { ok: false, error: promoErr };
+    if (!isValidDesignPromoCode(promoCode, promoContext)) {
+      return {
+        ok: false,
+        error: "Invalid promo code — remove it or contact us if you expected a discount",
+      };
+    }
   }
 
   return {

@@ -1,8 +1,14 @@
 import type Stripe from "stripe";
 import { findTenYearHostingDueLeads, updateWdLead, type TenYearDueLead } from "@/lib/leads-db";
 import { sendTenYearHostingCheckoutEmail } from "@/lib/ten-year-hosting-email";
+import { tenYearHostingFeeCents } from "@/lib/design-promo";
 import { HOSTING_TEN_YEAR_DEFERRED_PRODUCT } from "@/lib/products";
 import { stripe } from "@/lib/stripe";
+
+function promoCodeFromPayload(payload: Record<string, unknown>): string {
+  const raw = payload.promoCode;
+  return typeof raw === "string" ? raw.trim() : "";
+}
 
 export type TenYearBillingResult = {
   processed: number;
@@ -14,6 +20,13 @@ export function buildTenYearHostingCheckoutParams(
   lead: TenYearDueLead,
   origin: string
 ): Stripe.Checkout.SessionCreateParams {
+  const promoCode = promoCodeFromPayload(lead.payload);
+  const hostingCents = tenYearHostingFeeCents(promoCode, { ignoreExpiry: true });
+  const promoNote =
+    promoCode && hostingCents < HOSTING_TEN_YEAR_DEFERRED_PRODUCT.priceInCents
+      ? ` (${promoCode.toUpperCase()} bundle rate)`
+      : "";
+
   return {
     mode: "payment",
     customer: lead.stripe_customer_id ?? undefined,
@@ -25,9 +38,9 @@ export function buildTenYearHostingCheckoutParams(
           currency: "usd",
           product_data: {
             name: HOSTING_TEN_YEAR_DEFERRED_PRODUCT.name,
-            description: HOSTING_TEN_YEAR_DEFERRED_PRODUCT.description,
+            description: `${HOSTING_TEN_YEAR_DEFERRED_PRODUCT.description}${promoNote}`,
           },
-          unit_amount: HOSTING_TEN_YEAR_DEFERRED_PRODUCT.priceInCents,
+          unit_amount: hostingCents,
         },
         quantity: 1,
       },
@@ -39,6 +52,7 @@ export function buildTenYearHostingCheckoutParams(
       businessName: lead.business_name,
       email: lead.email,
       hostingChoice: "ten_year",
+      ...(promoCode ? { promoCode: promoCode.toUpperCase() } : {}),
     },
     success_url: `${origin}/thanks?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/pricing`,

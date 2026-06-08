@@ -15,7 +15,10 @@ export function discoveryProspectToLead(
   }
 
   const promoCode = close.promoCode?.trim() ?? "";
-  if (promoCode && !isValidDesignPromoCode(promoCode)) {
+  if (
+    promoCode &&
+    !isValidDesignPromoCode(promoCode, { hostingChoice: close.hostingChoice })
+  ) {
     return { ok: false, error: "Invalid promo code on close draft" };
   }
 

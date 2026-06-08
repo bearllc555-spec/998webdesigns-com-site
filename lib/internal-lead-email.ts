@@ -56,7 +56,10 @@ export async function sendInternalLeadSubmittedEmail(
         <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel, lead.promoCode, lead.paymentOption)))}</p>
         ${
           lead.paymentOption === "deposit"
-            ? `<ul style="margin: 8px 0; padding-left: 20px;">${designPaymentScheduleLines(lead.promoCode)
+            ? `<ul style="margin: 8px 0; padding-left: 20px;">${designPaymentScheduleLines(
+                lead.promoCode,
+                lead.hostingChoice
+              )
                 .map((line) => `<li>${escapeHtml(line)}</li>`)
                 .join("")}</ul>`
             : ""
