@@ -1,5 +1,4 @@
 import { faq, faqPlainAnswer } from "@/data/faq";
-import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import {
   VOICE_DEMO_CLOSE_IMPLEMENT_CUE,
@@ -27,6 +26,11 @@ import {
   VOICE_DEMO_WEATHER_ZIP_ASK_LINE,
 } from "@/lib/voice-demo-weather";
 import { VOICE_DEMO_ZIP_STAGED_CUE } from "@/lib/voice-demo-zip-nudge";
+import {
+  PRICING_WHEN_ASKED_RULES,
+  stripFaqPrices,
+  VOICE_DEMO_PRICE_REFERENCE,
+} from "@/lib/voice-demo-pricing-policy";
 import { VOICE_DEMO_PRICE_SPEAKING_RULES } from "@/lib/voice-demo-speak-money";
 import {
   VOICE_DEMO_WRAPUP_READY_CUE,
@@ -35,7 +39,14 @@ import {
 
 export { VOICE_DEMO_WRAPUP_QUESTIONS };
 
-const FAQ_BLOCK = faq
+const FAQ_FEATURE_BLOCK = faq
+  .map(
+    (item) =>
+      `Q: ${stripFaqPrices(item.q)}\nA: ${stripFaqPrices(faqPlainAnswer(item.a))}`
+  )
+  .join("\n\n");
+
+const FAQ_PRICING_DETAIL_BLOCK = faq
   .map((item) => `Q: ${item.q}\nA: ${faqPlainAnswer(item.a)}`)
   .join("\n\n");
 
@@ -177,7 +188,7 @@ Order:
 1. NAME — Your opening asks who you have the pleasure of speaking with (unless name is already on file — see demo intro). When they answer, call save_name.
    - Then one spoken turn only: "Good day, {name}. ${VOICE_DEMO_POST_NAME_LINE}" — never "how are you", never twice.
    - Do NOT ask for their phone in the same turn. Do NOT mention profile status.
-2. HELP — Answer their questions from the FAQ. Be useful right away.
+2. HELP — Answer from the FAQ. Lead with features and how things work — do not volunteer prices or dollar amounts unless they explicitly ask about cost, price, fees, or payment.
    - Small talk (how are you, how's your day): reply warmly in one short sentence, then STOP and listen — no wrap-up questions yet.
    - Wait for a real question about 998 before using the wrap-up question cycle.
 3. PHONE — When the conversation is flowing naturally, or before promo/goodbye, if phone is still missing ask for their US cell to complete their profile. One optional SMS from 998 web designs may be used later if they accept a coupon by text — get consent to save the number and for possible future SMS.
@@ -209,15 +220,21 @@ ${profileHint(row)}
 ${contactHint(row)}
 Site: ${marketingSiteOrigin()}
 
+${PRICING_WHEN_ASKED_RULES}
+
 ${VOICE_DEMO_PRICE_SPEAKING_RULES}
+
+${VOICE_DEMO_PRICE_REFERENCE}
 
 RULES:
 - ${PROFILE_RULES}
-- Answer from the FAQ below once their name is saved (or if they refuse phone later, continue helping). If unsure, say hello@998webdesigns.com or /start.
-- Never invent prices beyond $5,998 design, $198/mo hosting after 30-day free trial, $2,996 10-year hosting (domain .com/.net/.org included), AI Agent Chatbot $299/$79, Jarvis AI Voice Chatbot $499/$149.
-- ${HOSTING_FREE_MONTH_SUMMARY}
-- CTAs: /start to checkout, /book for discovery call, /pricing for pricing page.
+- Answer from FAQ FEATURES below once their name is saved (or if they refuse phone later, continue helping). If unsure, say hello@998webdesigns.com.
+- When they ask about price or cost, use PRICING REFERENCE, PRICE PRONUNCIATION, and FAQ PRICING DETAIL — never invent beyond those amounts.
+- CTAs when ready: /start to checkout, /book for discovery call, /pricing for the pricing page (only when they ask about cost or want to buy).
 
-FAQ:
-${FAQ_BLOCK}`;
+FAQ FEATURES (default — no prices; use for all questions unless they ask about cost):
+${FAQ_FEATURE_BLOCK}
+
+FAQ PRICING DETAIL (only when visitor explicitly asks about price, cost, fees, or payment):
+${FAQ_PRICING_DETAIL_BLOCK}`;
 }

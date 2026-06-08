@@ -115,12 +115,14 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain("implement into your website");
   });
 
-  it("requires full-word price pronunciation", () => {
+  it("requires full-word price pronunciation only when pricing is asked", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toMatch(/PRICE PRONUNCIATION/i);
+    expect(prompt).toMatch(/when visitor asks about price/i);
     expect(prompt).toContain("four hundred and ninety nine dollars");
     expect(prompt).toMatch(/never digit-by-digit/i);
-    expect(prompt).toMatch(/four ninety-nine/i);
+    expect(prompt).toMatch(/do not volunteer/i);
+    expect(prompt).toMatch(/FAQ FEATURES/i);
   });
 
   it("offers weather demo at end of chat with client-owned ZIP flow", () => {

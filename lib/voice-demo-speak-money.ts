@@ -106,7 +106,7 @@ export const VOICE_DEMO_PRICE_VOICE_EXAMPLES: ReadonlyArray<{
   { amount: 79, label: "AI Agent Chatbot monthly" },
 ];
 
-export const VOICE_DEMO_PRICE_SPEAKING_RULES = `PRICE PRONUNCIATION (mandatory — voice):
+export const VOICE_DEMO_PRICE_SPEAKING_RULES = `PRICE PRONUNCIATION (mandatory when visitor asks about price or cost — voice):
 - Speak every dollar amount in full English words, never digit-by-digit and never shorthand like "four ninety-nine" or "five nine nine eight".
 - Use "and" between hundreds and the remainder (e.g. four hundred and ninety nine dollars).
 - Say "dollars" after the amount. For monthly fees say "per month" after the spoken amount.
