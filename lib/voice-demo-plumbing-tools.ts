@@ -102,7 +102,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "book_plumbing_appointment",
           description:
-            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends confirmation email automatically.",
+            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends confirmation email plus a separate $50 promo email automatically (standard bookings).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -228,7 +228,9 @@ export async function executeVoiceDemoPlumbingTool(
         const nameForEmail = visitorName || row.full_name?.trim() || "Guest";
         if (refreshedJob) {
           scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail, {
-            includePromo: refreshedJob.promo_applied,
+            includePromo:
+              refreshedJob.promo_applied ||
+              (refreshedJob.status === "booked" && !refreshedJob.is_emergency),
           });
         }
         emailMessage =
@@ -256,7 +258,8 @@ export async function executeVoiceDemoPlumbingTool(
     const issueDescription =
       typeof args.issueDescription === "string" ? args.issueDescription.trim() : "";
     const isEmergency = args.isEmergency === true;
-    const promoApplied = args.promoApplied === true;
+    /** Every standard booking gets the $50 promo email — do not rely on the model flag. */
+    const grantPromo = !isEmergency;
 
     if (!visitorName || !email || !isValidEmail(email) || !serviceAddress || !serviceType) {
       return { ok: false, error: "Need name, valid email, address, and service type." };
@@ -278,7 +281,7 @@ export async function executeVoiceDemoPlumbingTool(
       timeWindow: timeWindow || null,
       priceRange: priceRange || null,
       isEmergency,
-      promoApplied,
+      promoApplied: grantPromo,
       customerEmail: email,
       notes: issueDescription ? { issueDescription } : undefined,
     });
@@ -300,23 +303,24 @@ export async function executeVoiceDemoPlumbingTool(
       time_window: timeWindow || null,
       price_range: priceRange || null,
       is_emergency: isEmergency,
-      promo_applied: promoApplied,
+      promo_applied: grantPromo,
       customer_email: email,
       notes: issueDescription ? { issueDescription } : {},
       confirmation_email_sent_at: null,
       reminder_email_sent_at: null,
     };
     scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, {
-      includePromo: promoApplied,
+      includePromo: grantPromo,
     });
 
     return {
       ok: true,
       booked: true,
       emailSent: true,
+      promoEmailSent: grantPromo,
       status,
-      message: promoApplied
-        ? "Appointment booked. Confirmation and $50 promo emails are sending — confirm details and stay on the line."
+      message: grantPromo
+        ? "Appointment booked. Two emails are sending separately: appointment confirmation and $50 discount coupon. Tell the caller to check inbox and spam for both — recap address, date, and time and stay on the line."
         : "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
     };
   }

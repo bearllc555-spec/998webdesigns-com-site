@@ -41,6 +41,17 @@ describe("buildPlumbingEmail", () => {
     expect(html).not.toContain("2026-06-10");
   });
 
+  it("builds standalone $50 promo email", () => {
+    const { subject, html } = buildPlumbingEmail("promo", {
+      to: "test@example.com",
+      firstName: "Anthony",
+      serviceType: "Water Heater Replacement",
+    });
+    expect(subject).toContain("$50");
+    expect(html).toContain("Anthony");
+    expect(html).toContain("Water Heater Replacement");
+  });
+
   it("builds emergency dispatch email", () => {
     const { subject, html } = buildPlumbingEmail("emergency", {
       to: "test@example.com",
