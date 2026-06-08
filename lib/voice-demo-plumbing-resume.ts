@@ -1,3 +1,7 @@
+import {
+  isPlumbingBookingReady,
+  plumbingBookingMissingLabels,
+} from "@/lib/voice-demo-plumbing-booking-readiness";
 import { VOICE_DEMO_SESSION_RESUME_CUE } from "@/lib/voice-demo-greeting";
 
 export type PlumbingResumeJob = {
@@ -32,12 +36,6 @@ export function buildPlumbingSessionResumeNudge(opts: {
     return msg;
   }
 
-  if (job?.customerEmail && job.appointmentDate) {
-    msg +=
-      ` Caller gave email (${job.customerEmail}) and schedule (${job.appointmentDate}${job.timeWindow ? ` ${job.timeWindow}` : ""}). ` +
-      `If book_plumbing_appointment has not run yet, call it now with all on-file details, then confirm warmly.`;
-  }
-
   const parts: string[] = [];
   if (job?.serviceType) parts.push(`service: ${job.serviceType}`);
   if (job?.serviceAddress) parts.push(`address: ${job.serviceAddress}`);
@@ -45,10 +43,22 @@ export function buildPlumbingSessionResumeNudge(opts: {
   if (job?.appointmentDate) parts.push(`date: ${job.appointmentDate}`);
   if (job?.timeWindow) parts.push(`time: ${job.timeWindow}`);
 
-  if (parts.length > 0) {
+  const missing = plumbingBookingMissingLabels({ fullName: name, job });
+  const ready = isPlumbingBookingReady({ fullName: name, job });
+
+  if (ready) {
     msg +=
-      ` Mid-booking on file (${parts.join("; ")}). ` +
-      `Continue scheduling — ask only for what is still missing.`;
+      ` All booking fields are on file (${parts.join("; ")}${name ? `; name: ${name}` : ""}). ` +
+      `The line had a brief hiccup — apologize once, then call book_plumbing_appointment immediately with on-file details. ` +
+      `Do NOT re-ask name, address, email, date, or time.`;
+    return msg;
+  }
+
+  if (parts.length > 0 || name) {
+    msg +=
+      ` Mid-booking on file (${[name ? `name: ${name}` : null, ...parts].filter(Boolean).join("; ")}). ` +
+      `Connection hiccup — do NOT restart intake or say "real quick what's your name/address" for fields already on file. ` +
+      `Ask ONLY for: ${missing.join(", ")}.`;
   } else {
     msg += " Pick up the conversation naturally and keep helping with their plumbing issue.";
   }

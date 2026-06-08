@@ -498,18 +498,22 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   }, []);
 
   const sendSessionResumeNudge = useCallback(
-    (session: Session, plumbingJob?: {
-      status?: string;
-      serviceType?: string | null;
-      serviceAddress?: string | null;
-      customerEmail?: string | null;
-      appointmentDate?: string | null;
-      timeWindow?: string | null;
-    } | null) => {
+    (
+      session: Session,
+      plumbingJob?: {
+        status?: string;
+        serviceType?: string | null;
+        serviceAddress?: string | null;
+        customerEmail?: string | null;
+        appointmentDate?: string | null;
+        timeWindow?: string | null;
+      } | null,
+      nameOnFile?: string
+    ) => {
       const turns =
         verticalRef.current === "plumbers"
           ? buildPlumbingSessionResumeNudge({
-              nameOnFile: savedNameRef.current || undefined,
+              nameOnFile: nameOnFile || savedNameRef.current || undefined,
               job: plumbingJob ?? null,
             })
           : buildSessionResumeNudge({
@@ -1490,12 +1494,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           /* ignore */
         }
         sessionRef.current = null;
-        // Keep the audio player so an in-flight answer can finish during resume.
-        const playerStillPlaying = playerRef.current?.isPlaying() ?? false;
-        if (!playerStillPlaying) {
+        if (verticalRef.current === "plumbers") {
+          // Stale audio from the dropped socket causes re-asks and blocks resume nudges.
+          playerRef.current?.hardStop();
           stopOrbLoop();
-        } else if (orbFrameRef.current === null) {
-          startOrbLoop();
+        } else {
+          const playerStillPlaying = playerRef.current?.isPlaying() ?? false;
+          if (!playerStillPlaying) {
+            stopOrbLoop();
+          } else if (orbFrameRef.current === null) {
+            startOrbLoop();
+          }
         }
         setConnecting(true);
         setConnected(false);
@@ -1609,7 +1618,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               } else if (sessionRef.current) {
                 const sendResumeWhenQuiet = async () => {
                   if (!sessionRef.current) return;
-                  if (playerRef.current?.isPlaying()) {
+                  const isPlumbingResume = verticalRef.current === "plumbers";
+                  if (isPlumbingResume) {
+                    playerRef.current?.hardStop();
+                  } else if (playerRef.current?.isPlaying()) {
                     void playerRef.current.whenPlaybackIdle(30_000).then(sendResumeWhenQuiet);
                     return;
                   }
@@ -1625,6 +1637,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                       }
                     | null
                     | undefined;
+                  let nameOnFile = savedNameRef.current.trim() || undefined;
                   if (verticalRef.current === "plumbers") {
                     try {
                       const statusRes = await fetch("/api/voice-demo/status");
@@ -1634,19 +1647,26 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                       };
                       plumbingJob = statusData.plumbingJob ?? null;
                       const name = statusData.fullName?.trim();
-                      if (name && !savedNameRef.current) {
+                      if (name) {
                         savedNameRef.current = name;
+                        nameOnFile = name;
                       }
                     } catch {
                       plumbingJob = null;
                     }
                   }
                   if (sessionRef.current) {
+                    const midBooking =
+                      Boolean(plumbingJob?.serviceAddress) ||
+                      Boolean(plumbingJob?.appointmentDate) ||
+                      Boolean(plumbingJob?.customerEmail) ||
+                      Boolean(nameOnFile);
                     const nudgeCooldownOk =
+                      midBooking ||
                       Date.now() - lastResumeNudgeAtRef.current >= RESUME_NUDGE_COOLDOWN_MS;
                     if (nudgeCooldownOk) {
                       lastResumeNudgeAtRef.current = Date.now();
-                      sendSessionResumeNudge(sessionRef.current, plumbingJob);
+                      sendSessionResumeNudge(sessionRef.current, plumbingJob, nameOnFile);
                     }
                   }
                 };

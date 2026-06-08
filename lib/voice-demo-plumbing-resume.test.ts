@@ -21,6 +21,37 @@ describe("buildPlumbingSessionResumeNudge", () => {
     expect(nudge).toContain("replay the full opening");
   });
 
+  it("tells Jarvis to book immediately when all fields are on file", () => {
+    const nudge = buildPlumbingSessionResumeNudge({
+      nameOnFile: "Anthony",
+      job: {
+        status: "draft",
+        serviceType: "Estimate",
+        serviceAddress: "25 Hughes Place",
+        customerEmail: "anthony@example.com",
+        appointmentDate: "Thursday",
+        timeWindow: "Morning",
+      },
+    });
+    expect(nudge).toContain("book_plumbing_appointment immediately");
+    expect(nudge).toContain("Do NOT re-ask");
+  });
+
+  it("lists only missing fields after a hiccup", () => {
+    const nudge = buildPlumbingSessionResumeNudge({
+      nameOnFile: "Anthony",
+      job: {
+        status: "draft",
+        serviceType: "Estimate",
+        serviceAddress: "25 Hughes Place",
+        appointmentDate: "Thursday",
+        timeWindow: "Morning",
+      },
+    });
+    expect(nudge).toContain("Ask ONLY for: email");
+    expect(nudge).toContain('real quick what\'s your name/address');
+  });
+
   it("tells Jarvis not to restart when appointment is already booked", () => {
     const nudge = buildPlumbingSessionResumeNudge({
       job: {
