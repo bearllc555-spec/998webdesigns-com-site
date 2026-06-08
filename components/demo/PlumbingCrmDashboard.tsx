@@ -42,11 +42,19 @@ function jobFromItem(item: CrmFeedItem): PlumbingJobPayload | null {
   return raw as PlumbingJobPayload;
 }
 
+type PendingDelete = {
+  id: string;
+  label: string;
+  step: 1 | 2;
+};
+
 export function PlumbingCrmDashboard() {
   const [items, setItems] = useState<CrmFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -121,6 +129,47 @@ export function PlumbingCrmDashboard() {
     window.location.href = "/crm/login?next=/demo/plumbers/crm";
   }
 
+  function startDelete(item: CrmFeedItem) {
+    setPendingDelete({
+      id: item.id,
+      label: item.title || item.email || "this caller",
+      step: 1,
+    });
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete) return;
+    if (pendingDelete.step === 1) {
+      setPendingDelete({ ...pendingDelete, step: 2 });
+      return;
+    }
+
+    setDeleting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/crm/items/voice_demo/${pendingDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.status === 401) {
+        window.location.href = "/crm/login?next=/demo/plumbers/crm";
+        return;
+      }
+      if (!res.ok) throw new Error("Delete failed");
+      if (expandedId === pendingDelete.id) setExpandedId(null);
+      setPendingDelete(null);
+      setItems((prev) => prev.filter((item) => item.id !== pendingDelete.id));
+    } catch {
+      setError("Could not delete caller record.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function cancelDelete() {
+    setPendingDelete(null);
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <header className="shrink-0 border-b border-rule bg-bg">
@@ -187,6 +236,7 @@ export function PlumbingCrmDashboard() {
             const expanded = expandedId === item.id;
             const unread = isCrmFeedItemUnread(item);
             const job = jobFromItem(item);
+            const isDeleting = pendingDelete?.id === item.id;
             return (
               <li
                 key={item.id}
@@ -292,6 +342,53 @@ export function PlumbingCrmDashboard() {
                       <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-rule bg-rule-soft/40 p-3 text-xs text-ink-soft">
                         {item.notes}
                       </pre>
+                    )}
+
+                    {!isDeleting && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startDelete(item)}
+                          className="rounded-full border border-warn/40 px-3 py-1 text-xs font-medium text-warn hover:bg-warn-soft/40"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+
+                    {isDeleting && pendingDelete && (
+                      <div className="mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4">
+                        <p className="text-sm font-medium text-ink">
+                          {pendingDelete.step === 1
+                            ? `Delete ${pendingDelete.label}?`
+                            : "Final confirmation — this cannot be undone"}
+                        </p>
+                        <p className="mt-1 text-xs text-ink-soft">
+                          Removes the caller and any saved appointment from demo CRM.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={deleting}
+                            onClick={() => void confirmDelete()}
+                            className="rounded-full bg-warn px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                          >
+                            {deleting
+                              ? "Deleting…"
+                              : pendingDelete.step === 1
+                                ? "Continue"
+                                : "Delete permanently"}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={deleting}
+                            onClick={cancelDelete}
+                            className="rounded-full border border-rule px-4 py-2 text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
