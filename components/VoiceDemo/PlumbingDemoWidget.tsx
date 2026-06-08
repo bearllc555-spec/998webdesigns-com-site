@@ -33,7 +33,7 @@ export function PlumbingDemoWidget() {
   const live = useVoiceDemoLive({
     vertical: "plumbers",
     onUnexpectedClose: () => {
-      setStatus("Session paused — tap Start voice to continue.");
+      setStatus("Connection paused — tap Start voice to pick up where you left off.");
     },
     onConversationEnd: () => {
       setCaption(null);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isPlumbingBookingContinuation,
   isPlumbingVisitorEndingCall,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
@@ -10,15 +11,25 @@ describe("voice-demo-plumbing-session", () => {
     expect(isPlumbingVisitorEndingCall("I'm good")).toBe(false);
     expect(isPlumbingVisitorEndingCall("sounds good")).toBe(false);
     expect(isPlumbingVisitorEndingCall("okay got it")).toBe(false);
+    expect(isPlumbingVisitorEndingCall("no, nothing else")).toBe(false);
+    expect(isPlumbingVisitorEndingCall("we're done with the toilet")).toBe(false);
   });
 
   it("detects explicit call endings", () => {
     expect(isPlumbingVisitorEndingCall("bye")).toBe(true);
     expect(isPlumbingVisitorEndingCall("that's all for now, bye")).toBe(true);
     expect(isPlumbingVisitorEndingCall("I gotta go")).toBe(true);
+    expect(isPlumbingVisitorEndingCall("that's all for now")).toBe(true);
   });
 
-  it("only schedules plumbing hangup after visitor ends and Jarvis signs off", () => {
+  it("detects booking continuation speech", () => {
+    expect(isPlumbingBookingContinuation("123 Main Street")).toBe(true);
+    expect(isPlumbingBookingContinuation("Thursday morning works")).toBe(true);
+    expect(isPlumbingBookingContinuation("bearllc555@gmail.com")).toBe(true);
+    expect(isPlumbingBookingContinuation("bye")).toBe(false);
+  });
+
+  it("never auto-hangups plumbing sessions", () => {
     expect(
       shouldPlumbingClientHangup({
         visitorEndingCall: false,
@@ -28,14 +39,8 @@ describe("voice-demo-plumbing-session", () => {
     expect(
       shouldPlumbingClientHangup({
         visitorEndingCall: true,
-        assistantText: "Drain cleaning runs about $150 to $350.",
-      })
-    ).toBe(false);
-    expect(
-      shouldPlumbingClientHangup({
-        visitorEndingCall: true,
         assistantText: "Thanks for calling Metro Plumbing. Take care!",
       })
-    ).toBe(true);
+    ).toBe(false);
   });
 });

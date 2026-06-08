@@ -62,6 +62,7 @@ import {
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
 import {
+  isPlumbingBookingContinuation,
   isPlumbingVisitorEndingCall,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
@@ -132,7 +133,7 @@ const PHASE_FALLBACK_MS = 12000;
 const FAREWELL_PLAYBACK_MAX_WAIT_MS = 120_000;
 const PHASE_MIN_SPOKEN_MS = 1800;
 const MAX_RECONNECT_ATTEMPTS = 2;
-const PLUMBING_MAX_RECONNECT_ATTEMPTS = 5;
+const PLUMBING_MAX_RECONNECT_ATTEMPTS = 8;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -188,6 +189,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const assistantTurnInterruptedRef = useRef(false);
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
+  const reconnectExhaustedBonusRef = useRef(false);
   const connectedAtRef = useRef(0);
   const reconnectAttemptRef = useRef(0);
   const reconnectingRef = useRef(false);
@@ -278,19 +280,34 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     (reason: string, meta?: Record<string, unknown>) => {
       if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
       if (reconnectAttemptRef.current >= maxReconnectAttempts()) {
-        reconnectingRef.current = false;
-        setConnecting(false);
-        setConnected(false);
-        stopOrbLoop();
-        hangupReasonRef.current = "reconnect_exhausted";
-        logVoiceDemoOps({
-          kind: "client_hangup_scheduled",
-          message: "Live reconnect attempts exhausted",
-          severity: "warn",
-          meta: { phase: getSessionPhase(), hangupReason: "reconnect_exhausted", reason },
-        });
-        optionsRef.current.onUnexpectedClose?.();
-        return;
+        if (
+          verticalRef.current === "plumbers" &&
+          sessionResumptionHandleRef.current &&
+          !reconnectExhaustedBonusRef.current
+        ) {
+          reconnectExhaustedBonusRef.current = true;
+          reconnectAttemptRef.current = 0;
+          logVoiceDemoOps({
+            kind: "session_anomaly",
+            message: "Plumbing reconnect bonus batch — retrying before pause",
+            severity: "warn",
+            meta: { phase: getSessionPhase(), reason },
+          });
+        } else {
+          reconnectingRef.current = false;
+          setConnecting(false);
+          setConnected(false);
+          stopOrbLoop();
+          hangupReasonRef.current = "reconnect_exhausted";
+          logVoiceDemoOps({
+            kind: "client_hangup_scheduled",
+            message: "Live reconnect attempts exhausted",
+            severity: "warn",
+            meta: { phase: getSessionPhase(), hangupReason: "reconnect_exhausted", reason },
+          });
+          optionsRef.current.onUnexpectedClose?.();
+          return;
+        }
       }
       if (reconnectScheduledRef.current) return;
       reconnectScheduledRef.current = true;
@@ -777,6 +794,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearMicMuteDisconnectTimer();
     applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
+    if (intentional) {
+      sessionResumptionHandleRef.current = null;
+      reconnectAttemptRef.current = 0;
+      reconnectExhaustedBonusRef.current = false;
+    }
     micRef.current?.stop();
     micRef.current = null;
     micStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -1094,7 +1116,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
         if (modeRef.current === "demo") {
           if (verticalRef.current === "plumbers") {
-            if (isPlumbingVisitorEndingCall(userLine)) {
+            if (isPlumbingBookingContinuation(userLine)) {
+              visitorExplicitlyDoneRef.current = false;
+            } else if (isPlumbingVisitorEndingCall(userLine)) {
               visitorExplicitlyDoneRef.current = true;
             }
           } else if (isUserExplicitlyDone(userLine)) {
@@ -1124,12 +1148,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
           schedulePhoneSilenceNudge();
         }
-        if (jarvisFarewellSentRef.current && modeRef.current === "demo") {
-          const shouldEchoHangup =
-            verticalRef.current === "plumbers"
-              ? isPlumbingVisitorEndingCall(userLine)
-              : isUserFarewellEcho(inText);
-          if (shouldEchoHangup) {
+        if (
+          jarvisFarewellSentRef.current &&
+          modeRef.current === "demo" &&
+          verticalRef.current !== "plumbers"
+        ) {
+          if (isUserFarewellEcho(inText)) {
             endCallNow();
             return;
           }
@@ -1269,7 +1293,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const connect = useCallback(
     async (mode: VoiceDemoLiveMode, connectOpts?: ConnectOptions) => {
-      const resume = connectOpts?.resume === true;
+      const autoResumePlumbing =
+        verticalRef.current === "plumbers" && Boolean(sessionResumptionHandleRef.current);
+      const resume = connectOpts?.resume === true || autoResumePlumbing;
 
       if (!resume) {
         pendingPhaseRef.current = null;
@@ -1296,6 +1322,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
         reconnectAttemptRef.current = 0;
+        reconnectExhaustedBonusRef.current = false;
         clearReconnectTimer();
         suppressAssistantAudioRef.current = false;
         visitorAskedSubstantiveQuestionRef.current = false;
@@ -1306,6 +1333,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       } else if (reconnectingRef.current) {
         return;
       } else {
+        if (autoResumePlumbing && connectOpts?.resume !== true) {
+          reconnectAttemptRef.current = 0;
+          reconnectExhaustedBonusRef.current = false;
+        }
         reconnectingRef.current = true;
         intentionalDisconnectRef.current = true;
         try {
