@@ -90,11 +90,22 @@ export function PlumbingDemoWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, website }),
       });
-      const data = (await res.json()) as {
+      const raw = await res.text();
+      let data: {
         ok?: boolean;
         error?: string;
         dailyQuota?: { used: number; limit: number; remaining: number };
-      };
+      } = {};
+      try {
+        data = JSON.parse(raw) as typeof data;
+      } catch {
+        setFormError(
+          res.ok
+            ? "Unexpected server response. Try again."
+            : `Could not start (${res.status}). Try again.`
+        );
+        return;
+      }
       if (!res.ok) {
         if (data.dailyQuota) setDailyQuota(data.dailyQuota);
         setFormError(data.error ?? "Could not start. Try again.");
