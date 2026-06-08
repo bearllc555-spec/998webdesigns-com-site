@@ -114,6 +114,8 @@ type LiveMessage = {
 
 type ConnectOptions = {
   resume?: boolean;
+  /** User tapped Start voice — clears reconnect pause and gives one fresh try. */
+  userInitiated?: boolean;
 };
 
 export type VoiceDemoPhaseTransition = { kind: "verified"; nextMode: "demo" };
@@ -134,22 +136,18 @@ const PHASE_FALLBACK_MS = 12000;
 const FAREWELL_PLAYBACK_MAX_WAIT_MS = 120_000;
 const PHASE_MIN_SPOKEN_MS = 1800;
 const MAX_RECONNECT_ATTEMPTS = 2;
-const PLUMBING_MAX_RECONNECT_ATTEMPTS = 12;
-/** Rotate plumbing live sessions before Gemini goAway (~45–60s). */
-const PLUMBING_PROACTIVE_REFRESH_MS = 40_000;
-const PLUMBING_PROACTIVE_RETRY_MS = 2500;
-const URGENT_RECONNECT_DELAY_MS = 80;
+const PLUMBING_MAX_RECONNECT_ATTEMPTS = 4;
+const URGENT_RECONNECT_DELAY_MS = 250;
+const RECONNECT_DEBOUNCE_MS = 900;
+const MAX_CONNECT_IN_FLIGHT_WAITS = 5;
+const RESUME_NUDGE_COOLDOWN_MS = 45_000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isUrgentReconnectReason(reason: string): boolean {
-  return (
-    reason === "proactive_refresh" ||
-    reason.startsWith("goAway") ||
-    reason === "websocket_close"
-  );
+  return reason.startsWith("goAway") || reason === "websocket_close";
 }
 
 function liveReconnectDelayMs(
@@ -213,8 +211,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
   const hadPlumbingLiveSessionRef = useRef(false);
-  const plumbingProactiveRefreshRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectPausedRef = useRef(false);
   const reconnectExhaustedBonusRef = useRef(false);
+  const connectInFlightWaitsRef = useRef(0);
+  const lastReconnectRequestAtRef = useRef(0);
+  const lastResumeNudgeAtRef = useRef(0);
   const handleMessageChainRef = useRef(Promise.resolve());
   const toolInFlightRef = useRef(0);
   const pendingToolResponsesRef = useRef<VoiceDemoToolResponseEntry[] | null>(null);
@@ -292,13 +293,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     reconnectScheduledRef.current = false;
   }, []);
 
-  const clearPlumbingProactiveRefresh = useCallback(() => {
-    if (plumbingProactiveRefreshRef.current) {
-      clearTimeout(plumbingProactiveRefreshRef.current);
-      plumbingProactiveRefreshRef.current = null;
-    }
-  }, []);
-
   const getSessionPhase = useCallback((): VoiceDemoSessionPhase => {
     return deriveVoiceDemoSessionPhase({
       postNameLineSpoken: postNameLineSpokenRef.current,
@@ -315,39 +309,34 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     []
   );
 
+  const pauseAutoReconnect = useCallback(
+    (reason: string) => {
+      reconnectPausedRef.current = true;
+      reconnectingRef.current = false;
+      clearReconnectTimer();
+      setConnecting(false);
+      setConnected(false);
+      stopOrbLoop();
+      hangupReasonRef.current = "reconnect_exhausted";
+      logVoiceDemoOps({
+        kind: "client_hangup_scheduled",
+        message: "Live reconnect paused — waiting for user tap",
+        severity: "warn",
+        meta: { phase: getSessionPhase(), hangupReason: "reconnect_exhausted", reason },
+      });
+      optionsRef.current.onUnexpectedClose?.();
+    },
+    [clearReconnectTimer, getSessionPhase, stopOrbLoop]
+  );
+
   const scheduleLiveReconnect = useCallback(
     (reason: string, meta?: Record<string, unknown>, opts?: { urgent?: boolean }) => {
       const urgent = opts?.urgent === true || isUrgentReconnectReason(reason);
       if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
+      if (reconnectPausedRef.current) return;
       if (reconnectAttemptRef.current >= maxReconnectAttempts()) {
-        if (
-          verticalRef.current === "plumbers" &&
-          sessionResumptionHandleRef.current &&
-          !reconnectExhaustedBonusRef.current
-        ) {
-          reconnectExhaustedBonusRef.current = true;
-          reconnectAttemptRef.current = 0;
-          logVoiceDemoOps({
-            kind: "session_anomaly",
-            message: "Plumbing reconnect bonus batch — retrying before pause",
-            severity: "warn",
-            meta: { phase: getSessionPhase(), reason },
-          });
-        } else {
-          reconnectingRef.current = false;
-          setConnecting(false);
-          setConnected(false);
-          stopOrbLoop();
-          hangupReasonRef.current = "reconnect_exhausted";
-          logVoiceDemoOps({
-            kind: "client_hangup_scheduled",
-            message: "Live reconnect attempts exhausted",
-            severity: "warn",
-            meta: { phase: getSessionPhase(), hangupReason: "reconnect_exhausted", reason },
-          });
-          optionsRef.current.onUnexpectedClose?.();
-          return;
-        }
+        pauseAutoReconnect(reason);
+        return;
       }
       if (reconnectScheduledRef.current) return;
       reconnectScheduledRef.current = true;
@@ -373,14 +362,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         reconnectTimerRef.current = null;
         if (reconnectAttemptRef.current >= maxReconnectAttempts()) return;
         if (reconnectingRef.current) {
+          connectInFlightWaitsRef.current += 1;
+          if (connectInFlightWaitsRef.current >= MAX_CONNECT_IN_FLIGHT_WAITS) {
+            connectInFlightWaitsRef.current = 0;
+            reconnectAttemptRef.current += 1;
+          }
           scheduleLiveReconnect("connect_in_flight", meta);
           return;
         }
+        connectInFlightWaitsRef.current = 0;
         reconnectAttemptRef.current += 1;
         void connectRef.current(modeRef.current, { resume: true });
       }, delayMs);
     },
-    [getSessionPhase, maxReconnectAttempts, stopOrbLoop]
+    [getSessionPhase, maxReconnectAttempts, pauseAutoReconnect]
   );
 
   const flushPendingReconnect = useCallback(() => {
@@ -395,6 +390,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const requestLiveReconnect = useCallback(
     (reason: string, meta?: Record<string, unknown>) => {
       if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
+      if (reconnectPausedRef.current) return;
+      const now = Date.now();
+      if (now - lastReconnectRequestAtRef.current < RECONNECT_DEBOUNCE_MS) return;
+      lastReconnectRequestAtRef.current = now;
       const urgent = isUrgentReconnectReason(reason);
       if (toolInFlightRef.current > 0 && !urgent) {
         pendingReconnectRef.current = { reason, meta };
@@ -412,33 +411,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     },
     [scheduleLiveReconnect]
   );
-
-  const scheduleProactivePlumbingRefresh = useCallback(() => {
-    clearPlumbingProactiveRefresh();
-    if (verticalRef.current !== "plumbers") return;
-    plumbingProactiveRefreshRef.current = setTimeout(() => {
-      plumbingProactiveRefreshRef.current = null;
-      if (!sessionRef.current || farewellDisconnectingRef.current || reconnectingRef.current) {
-        return;
-      }
-      if (toolInFlightRef.current > 0) {
-        plumbingProactiveRefreshRef.current = setTimeout(() => {
-          plumbingProactiveRefreshRef.current = null;
-          scheduleProactivePlumbingRefresh();
-        }, PLUMBING_PROACTIVE_RETRY_MS);
-        return;
-      }
-      logVoiceDemoOps({
-        kind: "session_anomaly",
-        message: "Proactive plumbing session refresh before goAway",
-        severity: "warn",
-        meta: { durationMs: Date.now() - connectedAtRef.current },
-      });
-      requestLiveReconnect("proactive_refresh", {
-        durationMs: Date.now() - connectedAtRef.current,
-      });
-    }, PLUMBING_PROACTIVE_REFRESH_MS);
-  }, [clearPlumbingProactiveRefresh, requestLiveReconnect]);
 
   const clearPostNameGreetingTimer = useCallback(() => {
     if (postNameGreetingTimerRef.current) {
@@ -921,7 +893,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const disconnect = useCallback((intentional = true) => {
     clearReconnectTimer();
-    clearPlumbingProactiveRefresh();
     clearPostNameGreetingTimer();
     clearMicMuteDisconnectTimer();
     applyMicMuted(false);
@@ -952,7 +923,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearMicMuteDisconnectTimer,
     clearPhoneCollectionState,
     clearPostNameGreetingTimer,
-    clearPlumbingProactiveRefresh,
     clearReconnectTimer,
     stopOrbLoop,
   ]);
@@ -1455,10 +1425,18 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const connect = useCallback(
     async (mode: VoiceDemoLiveMode, connectOpts?: ConnectOptions) => {
+      if (connectOpts?.userInitiated === true) {
+        reconnectPausedRef.current = false;
+        reconnectAttemptRef.current = 0;
+        reconnectExhaustedBonusRef.current = false;
+        connectInFlightWaitsRef.current = 0;
+        lastReconnectRequestAtRef.current = 0;
+      }
       const autoResumePlumbing =
-        verticalRef.current === "plumbers" &&
-        (Boolean(sessionResumptionHandleRef.current) || hadPlumbingLiveSessionRef.current);
-      const resume = connectOpts?.resume === true || autoResumePlumbing;
+        verticalRef.current === "plumbers" && hadPlumbingLiveSessionRef.current;
+      const resume =
+        connectOpts?.resume === true ||
+        (autoResumePlumbing && !reconnectPausedRef.current);
 
       if (!resume) {
         pendingPhaseRef.current = null;
@@ -1609,11 +1587,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               connectedAtRef.current = Date.now();
               if (verticalRef.current === "plumbers") {
                 hadPlumbingLiveSessionRef.current = true;
-                scheduleProactivePlumbingRefresh();
               }
               if (!resume) {
-                reconnectAttemptRef.current = 0;
-              } else {
                 reconnectAttemptRef.current = 0;
                 reconnectExhaustedBonusRef.current = false;
               }
@@ -1667,7 +1642,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                     }
                   }
                   if (sessionRef.current) {
-                    sendSessionResumeNudge(sessionRef.current, plumbingJob);
+                    const nudgeCooldownOk =
+                      Date.now() - lastResumeNudgeAtRef.current >= RESUME_NUDGE_COOLDOWN_MS;
+                    if (nudgeCooldownOk) {
+                      lastResumeNudgeAtRef.current = Date.now();
+                      sendSessionResumeNudge(sessionRef.current, plumbingJob);
+                    }
                   }
                 };
                 setTimeout(() => {
@@ -1777,7 +1757,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       clearReconnectTimer,
       requestLiveReconnect,
       scheduleLiveReconnect,
-      scheduleProactivePlumbingRefresh,
       sendOpeningGreeting,
       sendSessionResumeNudge,
       flushPendingToolResponses,
@@ -1799,8 +1778,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const disconnectAndReset = useCallback(() => {
     hadPlumbingLiveSessionRef.current = false;
     sessionResumptionHandleRef.current = null;
+    reconnectPausedRef.current = false;
     reconnectAttemptRef.current = 0;
     reconnectExhaustedBonusRef.current = false;
+    connectInFlightWaitsRef.current = 0;
+    lastReconnectRequestAtRef.current = 0;
+    lastResumeNudgeAtRef.current = 0;
     disconnect(true);
   }, [disconnect]);
 

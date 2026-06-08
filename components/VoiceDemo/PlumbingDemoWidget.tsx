@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Mic, MicOff, X } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
@@ -30,21 +30,11 @@ export function PlumbingDemoWidget() {
     allowlisted?: boolean;
   } | null>(null);
 
-  const reconnectBonusRef = useRef(false);
-
   const live = useVoiceDemoLive({
     vertical: "plumbers",
     onUnexpectedClose: () => {
-      if (!reconnectBonusRef.current) {
-        reconnectBonusRef.current = true;
-        setStatus("Reconnecting — your booking is saved…");
-        window.setTimeout(() => {
-          void live.connect("demo");
-        }, 900);
-        return;
-      }
       setStatus(
-        "Connection paused — your booking progress is saved. Tap Start voice to continue."
+        "Line paused — your booking is saved. Tap Start voice when you are ready to continue."
       );
     },
     onConversationEnd: () => {
@@ -53,12 +43,6 @@ export function PlumbingDemoWidget() {
     onStatus: setStatus,
     onCaption: setCaption,
   });
-
-  useEffect(() => {
-    if (live.connected) {
-      reconnectBonusRef.current = false;
-    }
-  }, [live.connected]);
 
   useEffect(() => {
     void fetch("/api/voice-demo/status")
@@ -82,7 +66,6 @@ export function PlumbingDemoWidget() {
   }, []);
 
   const startOver = useCallback(async () => {
-    reconnectBonusRef.current = false;
     live.disconnectAndReset();
     setBusy(true);
     setFormError("");
@@ -142,7 +125,7 @@ export function PlumbingDemoWidget() {
 
   const startVoice = () => {
     if (phase !== "demo") return;
-    void live.connect("demo");
+    void live.connect("demo", { userInitiated: true });
   };
 
   if (configured === null) {
