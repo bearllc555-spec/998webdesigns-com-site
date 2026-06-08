@@ -214,8 +214,15 @@ export function isWeatherOfferDecline(transcript: string): boolean {
 
 /** Visitor said yes to the staged ZIP read-back. */
 export function isWeatherZipConfirmAccept(transcript: string): boolean {
-  return /\b(yes|yeah|yep|sure|ok|okay|correct|that's right|that is right|right|absolutely|affirmative)\b/i.test(
-    transcript.trim()
+  const t = transcript.trim().toLowerCase();
+  if (!t) return false;
+  return (
+    /\b(yes|yeah|yep|yup|sure|ok|okay|correct|that's right|that is right|right|absolutely|affirmative)\b/.test(
+      t
+    ) ||
+    /\b(it is|that's it|that is it|you got it|perfect|sounds good|uh huh|uh-huh|mmhm|mhm)\b/.test(
+      t
+    )
   );
 }
 

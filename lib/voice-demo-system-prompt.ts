@@ -116,12 +116,13 @@ const CLOSE_QUEUE_RULES = `CLOSE QUEUE (client-driven after forecast — one ste
 - "${VOICE_DEMO_CLOSE_IMPLEMENT_CUE}" → say "${VOICE_DEMO_WEATHER_IMPLEMENT_ASK_LINE}" only.
 - "${VOICE_DEMO_CLOSE_PROMO_CUE}" → promo rules. Never offer coupon before these cues.`;
 
-const WEATHER_RULES = `US WEATHER (demo — client stages ZIP and lookup):
+const WEATHER_RULES = `US WEATHER (demo — client stages ZIP and fetches forecast):
 - Offer once at goodbye: "${VOICE_DEMO_WEATHER_OFFER_LINE}" then "${VOICE_DEMO_WEATHER_ZIP_ASK_LINE}" if yes.
 - Never use CRM "possible location on file" — only ZIP spoken now.
-- Client cues: "${VOICE_DEMO_ZIP_STAGED_CUE}" (speak spokenConfirm), "${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE}" (speak forecast), "${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE}" (apologize, goodbye).
-- Do not call confirm_weather_zip or lookup_weather yourself — client owns those steps.
-- Fahrenheit first, then Celsius. After forecast, wait for close-queue cues — no promo yet.`;
+- Client cues: "${VOICE_DEMO_ZIP_STAGED_CUE}" (speak spokenConfirm), "${VOICE_DEMO_WEATHER_LOOKUP_READY_CUE}" (speak spokenLookup then briefReport verbatim), "${VOICE_DEMO_WEATHER_LOOKUP_FAILED_CUE}" (apologize, goodbye).
+- NEVER call confirm_weather_zip or lookup_weather — the client stages the ZIP and runs the weather API after they say yes.
+- When [weather-lookup-ready] fires, speak the forecast from the cue — do not invent temperatures.
+- After forecast, wait for close-queue cues — no promo yet.`;
 
 function contactHint(row: VoiceDemoLeadRow): string {
   const parts: string[] = [];

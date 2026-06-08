@@ -143,7 +143,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "lookup_weather",
           description:
-            "SILENT EXECUTION. Step 3 of weather: fetch conditions ONLY after visitor confirmed ZIP. Client sends spokenLookup cue — speak that, not the tool result.",
+            "NEVER CALL — client fetches weather after ZIP confirmation. Wait for [weather-lookup-ready], then speak spokenLookup and briefReport from that cue only.",
           parameters: {
             type: Type.OBJECT,
             properties: {

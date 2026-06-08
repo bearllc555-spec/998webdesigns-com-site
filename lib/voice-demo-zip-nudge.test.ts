@@ -152,6 +152,8 @@ describe("voice-demo-zip-nudge", () => {
 
   it("detects ZIP read-back confirm accept and decline", () => {
     expect(isWeatherZipConfirmAccept("yes that's correct")).toBe(true);
+    expect(isWeatherZipConfirmAccept("uh huh that's right")).toBe(true);
+    expect(isWeatherZipConfirmAccept("you got it")).toBe(true);
     expect(isWeatherZipConfirmDecline("no that's wrong")).toBe(true);
   });
 

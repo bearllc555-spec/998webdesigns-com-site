@@ -130,7 +130,8 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_ZIP_ASK_LINE);
     expect(prompt).toMatch(/client stages ZIP/i);
-    expect(prompt).toMatch(/Fahrenheit first, then Celsius/i);
+    expect(prompt).toMatch(/NEVER call confirm_weather_zip or lookup_weather/i);
+    expect(prompt).toMatch(/do not invent temperatures/i);
     expect(prompt).toMatch(/possible location on file/i);
     expect(prompt).toContain(VOICE_DEMO_WEATHER_OFFER_LINE);
     expect(prompt).toContain(VOICE_DEMO_GOODBYE_LINE);

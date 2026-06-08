@@ -13,6 +13,7 @@ import {
   formatPossibleLocationLabel,
   isAssistantWeatherForecast,
   isAssistantWeatherLookupPending,
+  extractZipFromAssistantReadBack,
   normalizeSpokenUsZipCode,
   normalizeUsZipCode,
   usZipCodesEquivalent,
@@ -36,6 +37,15 @@ describe("voice-demo-weather", () => {
     );
     expect(VOICE_DEMO_WEATHER_ZIP_ASK_LINE).toContain("ZIP code");
     expect(VOICE_DEMO_WEATHER_ZIP_ASK_LINE).toContain("weather forecast");
+  });
+
+  it("extracts ZIP from assistant read-back", () => {
+    expect(
+      extractZipFromAssistantReadBack(
+        "I have ZIP code 0 7 4 2 4 for Little Falls, New Jersey. Is that correct?"
+      )
+    ).toBe("07424");
+    expect(extractZipFromAssistantReadBack("ZIP 10001 for New York")).toBe("10001");
   });
 
   it("normalizes US ZIP codes", () => {

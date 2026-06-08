@@ -2,7 +2,13 @@ import { VOICE_DEMO_GOODBYE_LINE } from "@/lib/voice-demo-constants";
 import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import { speakInteger } from "@/lib/voice-demo-speak-money";
 
-const FETCH_TIMEOUT_MS = 9000;
+const FETCH_TIMEOUT_MS = 12_000;
+
+/** Client forces lookup if ZIP was read back but fetch never started. */
+export const ZIP_CONFIRM_LOOKUP_WATCHDOG_MS = 12_000;
+
+/** Client retry attempts for lookup_weather API. */
+export const WEATHER_LOOKUP_CLIENT_ATTEMPTS = 4;
 
 /** Pause after ZIP confirmation audio before weather API fetch (ms). */
 export const WEATHER_POST_CONFIRM_PAUSE_MS = 1200;
@@ -126,6 +132,20 @@ export type UsWeatherLookupResult =
       briefReport: string;
     }
   | { ok: false; error: string };
+
+/** Pull a 5-digit ZIP from Jarvis ZIP read-back ("0 7 4 2 4" or "07424"). */
+export function extractZipFromAssistantReadBack(text: string): string | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const spaced = trimmed.match(/(?:\d\s+){4}\d/);
+  if (spaced) {
+    const normalized = normalizeUsZipCode(spaced[0].replace(/\s/g, ""));
+    if (normalized) return normalized;
+  }
+  const compact = trimmed.match(/\b(\d{5})\b/);
+  if (compact) return normalizeUsZipCode(compact[1]!);
+  return normalizeSpokenUsZipCode(trimmed);
+}
 
 /** Normalize a US ZIP to 5 digits (ZIP+4 accepted). */
 export function normalizeUsZipCode(raw: string | number): string | null {
@@ -293,7 +313,7 @@ async function fetchJsonOnce<T>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-async function fetchJson<T>(url: string, retries = 1): Promise<T> {
+async function fetchJson<T>(url: string, retries = 2): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
