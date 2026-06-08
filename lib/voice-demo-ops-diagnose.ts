@@ -51,8 +51,16 @@ export function diagnoseVoiceDemoOpsSession(
   }
   if (events.some((e) => /Deferred live reconnect until tool completes/i.test(e.message))) {
     findings.push(
-      "Reconnect waited for an in-flight tool (save/book) — drop may have landed during a tool call."
+      "Reconnect waited for an in-flight tool (save/book) — mic was gated to avoid 1008 policy violation."
     );
+  }
+  if (events.some((e) => /Deferred live reconnect until session resumable/i.test(e.message))) {
+    findings.push(
+      "Reconnect deferred until Gemini marked session resumable — avoids context loss mid-tool."
+    );
+  }
+  if (events.some((e) => /Session not resumable/i.test(e.message))) {
+    findings.push("Gemini reported resumable=false during tool or generation.");
   }
   if (events.some((e) => /Flushed deferred tool responses/i.test(e.message))) {
     findings.push("Deferred tool responses were flushed after reconnect — check CRM job row.");

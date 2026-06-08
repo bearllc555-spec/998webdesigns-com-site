@@ -1,5 +1,5 @@
-/** Gemini Live model for the homepage voice assistant. */
-export const VOICE_DEMO_LIVE_MODEL = "gemini-2.5-flash-native-audio-preview-12-2025";
+/** Gemini Live model for Jarvis voice demos (3.1 fixes 2.5 FC + audio race disconnects). */
+export const VOICE_DEMO_LIVE_MODEL = "gemini-3.1-flash-live-preview";
 
 /** Calm, even delivery — closest prebuilt match to a Jarvis-style butler. */
 export const VOICE_DEMO_VOICE_NAME = "Schedar";

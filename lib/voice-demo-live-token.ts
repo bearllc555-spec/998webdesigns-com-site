@@ -20,6 +20,7 @@ import {
   voiceDemoToolDeclarations,
   type VoiceDemoToolMode,
 } from "@/lib/voice-demo-tools";
+import { voiceDemoLiveConnectExtras } from "@/lib/voice-demo-live-session-config";
 
 export function geminiApiKey(): string | null {
   return process.env.GEMINI_API_KEY?.trim() || null;
@@ -83,7 +84,7 @@ export async function createVoiceDemoLiveToken(
             },
             inputAudioTranscription: {},
             outputAudioTranscription: {},
-            sessionResumption: {},
+            ...voiceDemoLiveConnectExtras(),
           },
         },
         httpOptions: { apiVersion: "v1alpha" },

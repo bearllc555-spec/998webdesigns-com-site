@@ -6,7 +6,7 @@ function loadKey() {
   return key;
 }
 
-const MODEL = "gemini-2.5-flash-native-audio-preview-12-2025";
+const MODEL = "gemini-3.1-flash-live-preview";
 
 async function tryCreate(label, config) {
   const apiKey = loadKey();

@@ -85,6 +85,11 @@ import {
 } from "@/lib/voice-demo-wrapup-nudge";
 import { seedOnboardingFromFullName } from "@/lib/voice-demo-flow-policy";
 import { logVoiceDemoOps } from "@/lib/voice-demo-ops-client";
+import {
+  canSendVoiceDemoRealtimeInput,
+  isUrgentLiveReconnectReason,
+  shouldDeferLiveReconnect,
+} from "@/lib/voice-demo-live-reconnect-policy";
 import type { Session } from "@google/genai";
 
 export type VoiceDemoLiveMode = "verify" | "demo";
@@ -144,10 +149,6 @@ const RESUME_NUDGE_COOLDOWN_MS = 45_000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function isUrgentReconnectReason(reason: string): boolean {
-  return reason.startsWith("goAway") || reason === "websocket_close";
 }
 
 function liveReconnectDelayMs(
@@ -210,6 +211,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const assistantTurnInterruptedRef = useRef(false);
   const visitorExplicitlyDoneRef = useRef(false);
   const sessionResumptionHandleRef = useRef<string | null>(null);
+  const sessionResumableRef = useRef(true);
   const hadPlumbingLiveSessionRef = useRef(false);
   const reconnectPausedRef = useRef(false);
   const reconnectExhaustedBonusRef = useRef(false);
@@ -331,7 +333,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const scheduleLiveReconnect = useCallback(
     (reason: string, meta?: Record<string, unknown>, opts?: { urgent?: boolean }) => {
-      const urgent = opts?.urgent === true || isUrgentReconnectReason(reason);
+      const urgent = opts?.urgent === true || isUrgentLiveReconnectReason(reason);
       if (farewellDisconnectingRef.current || finishingPhaseRef.current) return;
       if (reconnectPausedRef.current) return;
       if (reconnectAttemptRef.current >= maxReconnectAttempts()) {
@@ -380,7 +382,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const flushPendingReconnect = useCallback(() => {
     const pending = pendingReconnectRef.current;
-    if (!pending || toolInFlightRef.current > 0 || farewellDisconnectingRef.current) return;
+    if (!pending || farewellDisconnectingRef.current) return;
+    const defer = shouldDeferLiveReconnect({
+      reason: pending.reason,
+      toolInFlight: toolInFlightRef.current,
+      sessionResumable: sessionResumableRef.current,
+    });
+    if (defer.defer) return;
     pendingReconnectRef.current = null;
     setConnecting(true);
     optionsRef.current.onStatus?.("Connection refreshing — one moment…");
@@ -394,19 +402,31 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       const now = Date.now();
       if (now - lastReconnectRequestAtRef.current < RECONNECT_DEBOUNCE_MS) return;
       lastReconnectRequestAtRef.current = now;
-      const urgent = isUrgentReconnectReason(reason);
-      if (toolInFlightRef.current > 0 && !urgent) {
+      const defer = shouldDeferLiveReconnect({
+        reason,
+        toolInFlight: toolInFlightRef.current,
+        sessionResumable: sessionResumableRef.current,
+      });
+      if (defer.defer) {
         pendingReconnectRef.current = { reason, meta };
         logVoiceDemoOps({
           kind: "session_anomaly",
-          message: `Deferred live reconnect until tool completes: ${reason}`,
+          message:
+            defer.cause === "tool"
+              ? `Deferred live reconnect until tool completes: ${reason}`
+              : `Deferred live reconnect until session resumable: ${reason}`,
           severity: "warn",
-          meta: { ...meta, toolInFlight: toolInFlightRef.current },
+          meta: {
+            ...meta,
+            toolInFlight: toolInFlightRef.current,
+            resumable: sessionResumableRef.current,
+          },
         });
         return;
       }
       setConnecting(true);
       optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+      const urgent = isUrgentLiveReconnectReason(reason);
       scheduleLiveReconnect(reason, meta, { urgent });
     },
     [scheduleLiveReconnect]
@@ -903,6 +923,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     intentionalDisconnectRef.current = intentional;
     if (intentional) {
       sessionResumptionHandleRef.current = null;
+      sessionResumableRef.current = true;
       reconnectAttemptRef.current = 0;
       reconnectExhaustedBonusRef.current = false;
     }
@@ -1082,33 +1103,50 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const handleMessage = useCallback(
     async (message: LiveMessage) => {
-      if (message.sessionResumptionUpdate?.newHandle) {
-        sessionResumptionHandleRef.current = message.sessionResumptionUpdate.newHandle;
-        logVoiceDemoOps({
-          kind: "session_resumption",
-          message: "Stored session resumption handle",
-          meta: {
-            resumable: message.sessionResumptionUpdate.resumable === true,
-          },
-        });
+      if (message.sessionResumptionUpdate) {
+        const resumable = message.sessionResumptionUpdate.resumable === true;
+        sessionResumableRef.current = resumable;
+        if (message.sessionResumptionUpdate.newHandle) {
+          sessionResumptionHandleRef.current = message.sessionResumptionUpdate.newHandle;
+          logVoiceDemoOps({
+            kind: "session_resumption",
+            message: "Stored session resumption handle",
+            meta: { resumable },
+          });
+        } else if (!resumable) {
+          logVoiceDemoOps({
+            kind: "session_resumption",
+            message: "Session not resumable (tool/gen in flight)",
+            meta: { resumable: false },
+          });
+        }
+        if (resumable) {
+          flushPendingReconnect();
+        }
       }
 
       if (message.goAway) {
         const durationMs = Date.now() - connectedAtRef.current;
+        const timeLeft = message.goAway.timeLeft ?? null;
         logVoiceDemoOps({
           kind: "session_anomaly",
-          message: "Gemini goAway — reconnecting before disconnect",
+          message: "Gemini goAway — will reconnect after assistant finishes",
           severity: "warn",
           meta: {
             durationMs,
-            timeLeft: message.goAway.timeLeft ?? null,
+            timeLeft,
             toolInFlight: toolInFlightRef.current,
+            resumable: sessionResumableRef.current,
           },
         });
-        requestLiveReconnect("goAway", {
-          durationMs,
-          timeLeft: message.goAway.timeLeft ?? null,
-        });
+        const scheduleGoAwayReconnect = async () => {
+          if (playerRef.current?.isPlaying()) {
+            await playerRef.current.whenPlaybackIdle(20_000);
+          }
+          if (farewellDisconnectingRef.current || intentionalDisconnectRef.current) return;
+          requestLiveReconnect("goAway", { durationMs, timeLeft });
+        };
+        void scheduleGoAwayReconnect();
         return;
       }
 
@@ -1466,6 +1504,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         clearPostNameGreetingTimer();
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
+        sessionResumableRef.current = true;
         reconnectAttemptRef.current = 0;
         reconnectExhaustedBonusRef.current = false;
         handleMessageChainRef.current = Promise.resolve();
@@ -1598,6 +1637,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 hadPlumbingLiveSessionRef.current = true;
               }
               if (!resume) {
+                sessionResumableRef.current = true;
                 reconnectAttemptRef.current = 0;
                 reconnectExhaustedBonusRef.current = false;
               }
@@ -1677,6 +1717,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               micRef.current?.stop();
               if (micStreamRef.current) {
                 micRef.current = startVoiceDemoMic(micStreamRef.current, (base64) => {
+                  if (!canSendVoiceDemoRealtimeInput(toolInFlightRef.current)) return;
                   sessionRef.current?.sendRealtimeInput({
                     audio: {
                       data: base64,
@@ -1798,6 +1839,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const disconnectAndReset = useCallback(() => {
     hadPlumbingLiveSessionRef.current = false;
     sessionResumptionHandleRef.current = null;
+    sessionResumableRef.current = true;
     reconnectPausedRef.current = false;
     reconnectAttemptRef.current = 0;
     reconnectExhaustedBonusRef.current = false;

@@ -26,10 +26,13 @@ npm run voice-demo:ops-report -- --plumbers --limit 10
 
 | Log message | Meaning |
 |-------------|---------|
-| `Gemini goAway` | Google is ending the live socket (preview model session limit). |
+| `Gemini goAway` | Google is ending the live socket (~10 min limit). Reconnect waits for assistant audio to finish. |
 | `Scheduling live reconnect` | Client auto-retry (up to 4 on plumbing). |
 | `Live reconnect paused` | Circuit breaker — tap **Start voice** once. |
 | `Deferred tool response` | Drop happened during `save_plumbing_contact` / `book_plumbing_appointment`. |
+| `Deferred live reconnect until tool completes` | Mic gated + reconnect held until book/save tool returns (1008 fix). |
+| `Deferred live reconnect until session resumable` | goAway held until Gemini `resumable=true` (context-loss fix). |
+| `Session not resumable` | Tool or generation in flight on server — normal during booking. |
 | `token_fetch_failed` | Env/API issue, not caller behavior. |
 
 ## Files
