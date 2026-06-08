@@ -24,6 +24,26 @@ export type PlumbingEmailPayload = {
   inquirySummary?: string;
 };
 
+/** ISO YYYY-MM-DD from Jarvis tools → "Wednesday, June 10, 2026" for customer emails. */
+export function formatPlumbingAppointmentDateForEmail(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "TBD";
+  const iso = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!iso) return trimmed;
+  const year = Number(iso[1]);
+  const month = Number(iso[2]);
+  const day = Number(iso[3]);
+  const dt = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  if (Number.isNaN(dt.getTime())) return trimmed;
+  return dt.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "America/New_York",
+  });
+}
+
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     "&": "&amp;",
@@ -90,7 +110,9 @@ export function buildPlumbingEmail(
 ): { subject: string; html: string } {
   const name = escapeHtml(payload.firstName);
   const service = escapeHtml(payload.serviceType ?? "Plumbing service");
-  const date = escapeHtml(payload.appointmentDate ?? "TBD");
+  const date = escapeHtml(
+    formatPlumbingAppointmentDateForEmail(payload.appointmentDate ?? "TBD")
+  );
   const window = escapeHtml(payload.timeWindow ?? "TBD");
   const address = escapeHtml(payload.serviceAddress ?? "On file");
   const price = escapeHtml(payload.priceRange ?? "Free estimate");

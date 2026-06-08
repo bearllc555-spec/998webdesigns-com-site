@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildPlumbingEmail } from "@/lib/voice-demo-plumbing-email";
+import {
+  buildPlumbingEmail,
+  formatPlumbingAppointmentDateForEmail,
+} from "@/lib/voice-demo-plumbing-email";
 
 describe("buildPlumbingEmail", () => {
   it("builds appointment confirmation", () => {
@@ -17,6 +20,25 @@ describe("buildPlumbingEmail", () => {
     expect(html).toContain("Alex");
     expect(html).toContain("Drain cleaning");
     expect(html).toContain("$50 discount");
+  });
+
+  it("formats ISO appointment dates for customers", () => {
+    expect(formatPlumbingAppointmentDateForEmail("2026-06-10")).toBe(
+      "Wednesday, June 10, 2026"
+    );
+    expect(formatPlumbingAppointmentDateForEmail("Wednesday morning")).toBe(
+      "Wednesday morning"
+    );
+    const { html } = buildPlumbingEmail("appointment", {
+      to: "test@example.com",
+      firstName: "Anthony",
+      serviceType: "Water Heater Replacement",
+      appointmentDate: "2026-06-10",
+      timeWindow: "Morning",
+      serviceAddress: "25 Hughes Place, Little Falls, NJ",
+    });
+    expect(html).toContain("Wednesday, June 10, 2026");
+    expect(html).not.toContain("2026-06-10");
   });
 
   it("builds emergency dispatch email", () => {
