@@ -25,10 +25,17 @@ export function buildPlumbingSessionResumeNudge(opts: {
 
   const job = opts.job;
   if (job?.status === "booked" || job?.status === "emergency") {
+    const when = [job.appointmentDate, job.timeWindow].filter(Boolean).join(" ");
     msg +=
-      ` Appointment is already booked (${job.serviceType ?? "service"}). ` +
-      `Warmly confirm address, date, and time — do not restart intake from scratch.`;
+      ` Appointment is already booked (${job.serviceType ?? "service"}${when ? `, ${when}` : ""}). ` +
+      `Confirm the confirmation email is on its way, recap address and schedule, and stay on the line — do not restart intake.`;
     return msg;
+  }
+
+  if (job?.customerEmail && job.appointmentDate) {
+    msg +=
+      ` Caller gave email (${job.customerEmail}) and schedule (${job.appointmentDate}${job.timeWindow ? ` ${job.timeWindow}` : ""}). ` +
+      `If book_plumbing_appointment has not run yet, call it now with all on-file details, then confirm warmly.`;
   }
 
   const parts: string[] = [];

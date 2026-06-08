@@ -85,7 +85,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "save_plumbing_contact",
           description:
-            "Save caller contact details as you collect them — name, email, phone, or service address.",
+            "Save caller details as you collect them — call after each field (name, address, email, Wednesday/time, service type). Persists draft booking so a reconnect does not lose progress.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -93,6 +93,9 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
               email: { type: Type.STRING },
               phone: { type: Type.STRING },
               serviceAddress: { type: Type.STRING },
+              serviceType: { type: Type.STRING },
+              appointmentDate: { type: Type.STRING },
+              timeWindow: { type: Type.STRING },
             },
           },
         },
@@ -172,6 +175,10 @@ export async function executeVoiceDemoPlumbingTool(
     const phone = typeof args.phone === "string" ? args.phone.trim() : "";
     const serviceAddress =
       typeof args.serviceAddress === "string" ? args.serviceAddress.trim() : "";
+    const serviceType = typeof args.serviceType === "string" ? args.serviceType.trim() : "";
+    const appointmentDate =
+      typeof args.appointmentDate === "string" ? args.appointmentDate.trim() : "";
+    const timeWindow = typeof args.timeWindow === "string" ? args.timeWindow.trim() : "";
 
     if (visitorName) patch.full_name = visitorName;
     if (email && isValidEmail(email)) patch.email = email;
@@ -181,12 +188,30 @@ export async function executeVoiceDemoPlumbingTool(
       await updateVoiceDemoLead(leadId, patch);
     }
 
+    const jobPatch: Parameters<typeof upsertPlumbingJob>[0] = { leadId, status: "draft" };
+    let hasJobPatch = false;
     if (serviceAddress) {
-      await upsertPlumbingJob({
-        leadId,
-        serviceAddress,
-        status: "draft",
-      });
+      jobPatch.serviceAddress = serviceAddress;
+      hasJobPatch = true;
+    }
+    if (serviceType) {
+      jobPatch.serviceType = serviceType;
+      hasJobPatch = true;
+    }
+    if (appointmentDate) {
+      jobPatch.appointmentDate = appointmentDate;
+      hasJobPatch = true;
+    }
+    if (timeWindow) {
+      jobPatch.timeWindow = timeWindow;
+      hasJobPatch = true;
+    }
+    if (email && isValidEmail(email)) {
+      jobPatch.customerEmail = email;
+      hasJobPatch = true;
+    }
+    if (hasJobPatch) {
+      await upsertPlumbingJob(jobPatch);
     }
 
     let emailMessage = "Contact saved. Continue the conversation naturally.";
@@ -262,13 +287,28 @@ export async function executeVoiceDemoPlumbingTool(
       return { ok: false, error: saved.error };
     }
 
-    const template: PlumbingEmailTemplate = isEmergency ? "emergency" : "appointment";
-    const refreshedJob = await getLatestPlumbingJobForLead(leadId);
-    if (refreshedJob) {
-      scheduleEmailsForBookedJob(leadId, refreshedJob, email, visitorName, {
-        includePromo: promoApplied,
-      });
-    }
+    const bookedJob: PlumbingJobRow = {
+      id: saved.id,
+      lead_id: leadId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      status,
+      flow_name: flowName || null,
+      service_type: serviceType,
+      service_address: serviceAddress,
+      appointment_date: appointmentDate || null,
+      time_window: timeWindow || null,
+      price_range: priceRange || null,
+      is_emergency: isEmergency,
+      promo_applied: promoApplied,
+      customer_email: email,
+      notes: issueDescription ? { issueDescription } : {},
+      confirmation_email_sent_at: null,
+      reminder_email_sent_at: null,
+    };
+    scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, {
+      includePromo: promoApplied,
+    });
 
     return {
       ok: true,

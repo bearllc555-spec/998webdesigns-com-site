@@ -30,5 +30,6 @@ describe("buildPlumbingSessionResumeNudge", () => {
     });
     expect(nudge).toContain("already booked");
     expect(nudge).toContain("Toilet repair");
+    expect(nudge).toContain("confirmation email");
   });
 });
