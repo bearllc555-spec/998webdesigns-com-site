@@ -42,9 +42,6 @@ export default function PlumbersDemoPage() {
 
       <main className="mx-auto max-w-3xl px-4 py-10">
         <div className="mb-8 space-y-3 text-center">
-          <p className="text-xs font-medium uppercase tracking-wide text-accent">
-            998 vertical demo
-          </p>
           <h1 className="font-display text-3xl font-semibold text-ink">
             Talk to Jarvis — your plumbing receptionist
           </h1>
