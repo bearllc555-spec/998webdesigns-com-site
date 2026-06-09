@@ -43,7 +43,13 @@ export function isPlumbingAssistantFarewell(text: string): boolean {
   if (isAssistantFarewell(text)) return true;
   const tail = assistantFarewellTail(text).toLowerCase();
   if (!tail) return false;
-  if (/\b(thanks for calling|thank you for calling)\b/.test(tail)) return true;
+  // Opening greets with "thanks for calling" — require a sign-off cue, not greeting alone.
+  if (/\b(thanks for calling|thank you for calling)\b/.test(tail)) {
+    return (
+      /\b(goodbye|good bye|take care|have a (good|great|nice|wonderful))\b/.test(tail) ||
+      /\b(call us|reach out|talk soon)\b/.test(tail)
+    );
+  }
   if (/\b(thank you|thanks)\b/.test(tail) && /\b(goodbye|good bye|good day)\b/.test(tail)) {
     return true;
   }

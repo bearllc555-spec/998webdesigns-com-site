@@ -1610,8 +1610,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (
           verticalRef.current === "plumbers" &&
           !jarvisFarewellSentRef.current &&
-          (isPlumbingAssistantFarewell(assistantSnapshot) ||
-            /\b(goodbye|good bye)\b/i.test(assistantSnapshot))
+          callWindingDownRef.current &&
+          plumbingGoodbyeNudgeSentRef.current &&
+          isPlumbingAssistantFarewell(assistantSnapshot)
         ) {
           latchFarewellClosing();
         }

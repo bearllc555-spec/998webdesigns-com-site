@@ -38,4 +38,12 @@ describe("voice-demo-plumbing-goodbye", () => {
       false
     );
   });
+
+  it("does not treat the mandatory opening as farewell", () => {
+    expect(
+      isPlumbingAssistantFarewell(
+        "Thanks for calling Metro Plumbing and Drain — I'm Jarvis. How can I help you today?"
+      )
+    ).toBe(false);
+  });
 });
