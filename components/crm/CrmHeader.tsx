@@ -10,6 +10,18 @@ import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
 type CrmHeaderProps = {
   title: string;
   subtitle?: string;
+  /** Eyebrow above the title — default 998 CRM. */
+  brandLabel?: string;
+  /** Hide Telegram/admin menu (public demo CRM). */
+  hideAdmin?: boolean;
+  /** Session DELETE endpoint — default /api/crm/session */
+  sessionApiPath?: string;
+  /** Where to send the browser after sign-out. */
+  afterLogoutPath?: string;
+  /** Messages nav target — default /crm */
+  messagesHref?: string;
+  /** Replaces Home in the sub-nav (e.g. Voice demo). */
+  secondaryNavLink?: { href: string; label: string };
   /** Extra controls before Admin (e.g. back links on subpages). */
   actions?: React.ReactNode;
   /** Renders Refresh in the nav row beside Messages. */
@@ -23,16 +35,22 @@ const pillBase =
 export function CrmHeader({
   title,
   subtitle,
+  brandLabel = "998 CRM",
+  hideAdmin = false,
+  sessionApiPath = "/api/crm/session",
+  afterLogoutPath = "/crm/login",
+  messagesHref = "/crm",
+  secondaryNavLink,
   actions,
   onRefresh,
   refreshDisabled,
 }: CrmHeaderProps) {
   const pathname = usePathname();
-  const onActivity = pathname === "/crm";
+  const onActivity = pathname === messagesHref;
 
   async function logout() {
-    await fetch("/api/crm/session", { method: "DELETE", credentials: "include" });
-    window.location.href = "/crm/login";
+    await fetch(sessionApiPath, { method: "DELETE", credentials: "include" });
+    window.location.href = afterLogoutPath;
   }
 
   return (
@@ -41,7 +59,7 @@ export function CrmHeader({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-              998 CRM
+              {brandLabel}
             </p>
             <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-medium">
               {title}
@@ -51,7 +69,7 @@ export function CrmHeader({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {actions}
-            <CrmAdminMenu />
+            {!hideAdmin && <CrmAdminMenu />}
             <ThemeToggle />
             <button
               type="button"
@@ -63,14 +81,23 @@ export function CrmHeader({
           </div>
         </div>
         <nav className="mt-4 flex flex-wrap gap-2" aria-label="CRM sections">
+          {secondaryNavLink ? (
+            <Link
+              href={secondaryNavLink.href}
+              className={`${pillBase} border border-rule text-ink-soft hover:border-accent/50`}
+            >
+              {secondaryNavLink.label}
+            </Link>
+          ) : (
+            <Link
+              href="/"
+              className={`${pillBase} border border-rule text-ink-soft hover:border-accent/50`}
+            >
+              Home
+            </Link>
+          )}
           <Link
-            href="/"
-            className={`${pillBase} border border-rule text-ink-soft hover:border-accent/50`}
-          >
-            Home
-          </Link>
-          <Link
-            href="/crm"
+            href={messagesHref}
             className={`${pillBase} ${
               onActivity
                 ? "bg-accent text-white"

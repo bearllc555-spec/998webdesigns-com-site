@@ -98,6 +98,9 @@ type CrmActivityInboxProps = {
   blogItems: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
+  /** Public demo — local-only inbox edits; delete shows a notice instead of removing rows. */
+  demoMode?: boolean;
+  loginPath?: string;
 };
 
 type InboxRowProps = {
@@ -616,6 +619,8 @@ export function CrmActivityInbox({
   blogItems,
   onItemsChange,
   onReload,
+  demoMode = false,
+  loginPath = "/crm/login",
 }: CrmActivityInboxProps) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -624,6 +629,7 @@ export function CrmActivityInbox({
   const [deleting, setDeleting] = useState(false);
   const [readBusy, setReadBusy] = useState(false);
   const [flagBusy, setFlagBusy] = useState(false);
+  const [demoDeleteNotice, setDemoDeleteNotice] = useState(false);
 
   const patchItemRead = useCallback(
     (item: CrmFeedItem, read: boolean) => {
@@ -653,6 +659,10 @@ export function CrmActivityInbox({
     setFlagBusy(true);
     const prev = item.inboxFlag;
     patchItemFlag(item, next);
+    if (demoMode) {
+      setFlagBusy(false);
+      return;
+    }
     try {
       const res = await fetch(`/api/crm/items/${item.source}/${item.id}`, {
         method: "PATCH",
@@ -661,7 +671,7 @@ export function CrmActivityInbox({
         body: JSON.stringify({ flag: next }),
       });
       if (res.status === 401) {
-        window.location.href = "/crm/login";
+        window.location.href = loginPath;
         return;
       }
       if (!res.ok) {
@@ -685,6 +695,10 @@ export function CrmActivityInbox({
     setReadBusy(true);
     const prevReadAt = item.readAt;
     patchItemRead(item, read);
+    if (demoMode) {
+      setReadBusy(false);
+      return;
+    }
     try {
       const res = await fetch(`/api/crm/items/${item.source}/${item.id}`, {
         method: "PATCH",
@@ -693,7 +707,7 @@ export function CrmActivityInbox({
         body: JSON.stringify({ read }),
       });
       if (res.status === 401) {
-        window.location.href = "/crm/login";
+        window.location.href = loginPath;
         return;
       }
       if (!res.ok) {
@@ -732,6 +746,15 @@ export function CrmActivityInbox({
   }
 
   async function saveNotes(item: CrmFeedItem) {
+    if (demoMode) {
+      onItemsChange((prev) =>
+        prev.map((i) =>
+          i.source === item.source && i.id === item.id ? { ...i, notes: notesDraft } : i
+        )
+      );
+      setEditingNotes(false);
+      return;
+    }
     const url =
       item.source === "discovery"
         ? `/api/crm/discovery/${item.id}/notes`
@@ -759,6 +782,10 @@ export function CrmActivityInbox({
     onSetReadState: setReadState,
     onStartDelete: (item: CrmFeedItem) => {
       setEditingNotes(false);
+      if (demoMode) {
+        setDemoDeleteNotice(true);
+        return;
+      }
       setPendingDelete({
         source: item.source,
         id: item.id,
@@ -779,7 +806,7 @@ export function CrmActivityInbox({
           { method: "DELETE", credentials: "include" }
         );
         if (res.status === 401) {
-          window.location.href = "/crm/login";
+          window.location.href = loginPath;
           return;
         }
         if (!res.ok) throw new Error("Delete failed");
@@ -806,6 +833,30 @@ export function CrmActivityInbox({
 
   return (
     <div className="w-full space-y-6">
+      {demoDeleteNotice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="demo-delete-notice-title"
+        >
+          <div className="max-w-md rounded-2xl border border-rule bg-bg p-6 shadow-lg">
+            <p id="demo-delete-notice-title" className="font-display text-lg font-medium text-ink">
+              Demonstration only
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+              This is for demonstration purposes only — records cannot be deleted.
+            </p>
+            <button
+              type="button"
+              onClick={() => setDemoDeleteNotice(false)}
+              className="mt-5 rounded-full bg-accent px-5 py-2 text-sm font-medium text-on-accent"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <InboxSection
         title="Contacts"
         items={contactItems}

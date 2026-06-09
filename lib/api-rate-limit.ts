@@ -15,6 +15,7 @@ export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/crm/session": { limit: 10, windowMs: 60_000 },
   "/api/crm/feed": { limit: 60, windowMs: 60_000 },
   "/api/demo/plumbers/crm/feed": { limit: 60, windowMs: 60_000 },
+  "/api/demo/plumbers/crm/session": { limit: 30, windowMs: 60_000 },
   "/api/discovery/start": { limit: 8, windowMs: 60_000 },
   "/api/discovery/verify-sms": { limit: 12, windowMs: 60_000 },
   "/api/discovery/intake": { limit: 8, windowMs: 60_000 },

@@ -1,77 +1,28 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { type CrmFeedItem, isCrmFeedItemUnread } from "@/lib/crm-feed";
-import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
-import { SiteVersionPill } from "@/components/SiteVersionPill";
+import { CrmActivityInbox } from "@/components/crm/CrmActivityInbox";
+import { CrmHeader } from "@/components/crm/CrmHeader";
+import { PlumbingDemoCrmBanner } from "@/components/demo/PlumbingDemoCrmBanner";
+import type { CrmFeedItem } from "@/lib/crm-feed";
+import { isCrmFeedItemUnread } from "@/lib/crm-feed";
 import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
-import { VoiceDemoOpsTimeline } from "@/components/demo/VoiceDemoOpsTimeline";
-import { parseVoiceDemoOpsLog, type VoiceDemoOpsEvent } from "@/lib/voice-demo-ops";
 import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants";
-
-type PlumbingJobPayload = {
-  status?: string;
-  serviceType?: string | null;
-  serviceAddress?: string | null;
-  appointmentDate?: string | null;
-  timeWindow?: string | null;
-  priceRange?: string | null;
-  isEmergency?: boolean;
-  promoApplied?: boolean;
-  promoCode?: string | null;
-  customerEmail?: string | null;
-  confirmationEmailSentAt?: string | null;
-  notes?: Record<string, unknown> | null;
-};
-
-function formatWhen(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString("en-US", {
-      timeZone: "America/New_York",
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return iso;
-  }
-}
-
-function jobFromItem(item: CrmFeedItem): PlumbingJobPayload | null {
-  const raw = item.payload?.plumbingJob;
-  if (!raw || typeof raw !== "object") return null;
-  return raw as PlumbingJobPayload;
-}
-
-function opsFromItem(item: CrmFeedItem): VoiceDemoOpsEvent[] {
-  return parseVoiceDemoOpsLog(item.payload?.opsLog);
-}
-
-type PendingDelete = {
-  id: string;
-  label: string;
-  step: 1 | 2;
-};
 
 export function PlumbingCrmDashboard() {
   const [items, setItems] = useState<CrmFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/demo/plumbers/crm/feed?limit=50", {
+      const res = await fetch("/api/demo/plumbers/crm/feed?limit=80", {
         credentials: "include",
       });
       if (res.status === 401) {
-        window.location.href = "/crm/login?next=/demo/plumbers/crm";
+        window.location.href = "/demo/plumbers/crm";
         return;
       }
       if (!res.ok) throw new Error("Failed to load feed");
@@ -83,7 +34,7 @@ export function PlumbingCrmDashboard() {
       }
       setItems(data.items ?? []);
     } catch {
-      setError("Could not load plumbing demo activity.");
+      setError("Could not load demo activity.");
     } finally {
       setLoading(false);
     }
@@ -93,325 +44,62 @@ export function PlumbingCrmDashboard() {
     void load();
   }, [load]);
 
-  const bookedCount = useMemo(
-    () =>
-      items.filter((i) => {
-        const job = jobFromItem(i);
-        return job?.status === "booked" || job?.status === "emergency";
-      }).length,
+  const contactItems = useMemo(
+    () => items.filter((i) => i.source === "contact"),
     [items]
   );
+  const leadItems = useMemo(() => items.filter((i) => i.source === "lead"), [items]);
+  const clientItems = useMemo(() => items.filter((i) => i.source === "client"), [items]);
+  const discoveryItems = useMemo(
+    () => items.filter((i) => i.source === "discovery"),
+    [items]
+  );
+  const smsItems = useMemo(() => items.filter((i) => i.source === "sms"), [items]);
+  const blogItems = useMemo(() => items.filter((i) => i.source === "blog"), [items]);
   const unreadCount = items.filter(isCrmFeedItemUnread).length;
-
-  async function patchItem(
-    id: string,
-    patch: { read?: boolean; inboxFlag?: string | null }
-  ) {
-    const res = await fetch(`/api/crm/items/voice_demo/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(patch),
-    });
-    if (!res.ok) return;
-    const data = (await res.json()) as { readAt?: string | null; inboxFlag?: string | null };
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              readAt: patch.read === false ? null : (data.readAt ?? item.readAt),
-              inboxFlag:
-                patch.inboxFlag !== undefined
-                  ? (data.inboxFlag as CrmFeedItem["inboxFlag"])
-                  : item.inboxFlag,
-            }
-          : item
-      )
-    );
-  }
-
-  async function logout() {
-    await fetch("/api/crm/session", { method: "DELETE", credentials: "include" });
-    window.location.href = "/crm/login?next=/demo/plumbers/crm";
-  }
-
-  function startDelete(item: CrmFeedItem) {
-    setPendingDelete({
-      id: item.id,
-      label: item.title || item.email || "this caller",
-      step: 1,
-    });
-  }
-
-  async function confirmDelete() {
-    if (!pendingDelete) return;
-    if (pendingDelete.step === 1) {
-      setPendingDelete({ ...pendingDelete, step: 2 });
-      return;
-    }
-
-    setDeleting(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/crm/items/voice_demo/${pendingDelete.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (res.status === 401) {
-        window.location.href = "/crm/login?next=/demo/plumbers/crm";
-        return;
-      }
-      if (!res.ok) throw new Error("Delete failed");
-      if (expandedId === pendingDelete.id) setExpandedId(null);
-      setPendingDelete(null);
-      setItems((prev) => prev.filter((item) => item.id !== pendingDelete.id));
-    } catch {
-      setError("Could not delete caller record.");
-    } finally {
-      setDeleting(false);
-    }
-  }
-
-  function cancelDelete() {
-    setPendingDelete(null);
-  }
+  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog`;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
-      <header className="shrink-0 border-b border-rule bg-bg">
-        <div className={`${CRM_PAGE_CONTAINER} py-4`}>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-                {PLUMBING_DEMO_BUSINESS_NAME} demo
-              </p>
-              <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-medium">
-                Demo CRM
-                <SiteVersionPill />
-              </h1>
-              <p className="mt-1 text-sm text-ink-soft">
-                {unreadCount > 0 ? `${unreadCount} unread · ` : ""}
-                {items.length} callers · {bookedCount} appointments
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                href="/demo/plumbers"
-                className="rounded-full border border-rule px-4 py-1.5 text-sm font-medium text-ink-soft transition hover:border-accent hover:text-ink"
-              >
-                Voice demo
-              </Link>
-              <button
-                type="button"
-                onClick={() => void load()}
-                disabled={loading}
-                className="rounded-full border border-rule px-4 py-1.5 text-sm font-medium text-ink-soft transition hover:border-accent hover:text-ink disabled:opacity-50"
-              >
-                Refresh
-              </button>
-              <ThemeToggle />
-              <button
-                type="button"
-                onClick={() => void logout()}
-                className="rounded-full border border-rule px-4 py-1.5 text-sm font-medium text-ink-soft transition hover:border-accent hover:text-ink"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <CrmHeader
+        title="Messages"
+        subtitle={
+          unreadCount > 0 ? `${unreadCount} unread · ${countsLabel}` : countsLabel
+        }
+        brandLabel={`${PLUMBING_DEMO_BUSINESS_NAME} demo`}
+        hideAdmin
+        sessionApiPath="/api/demo/plumbers/crm/session"
+        afterLogoutPath="/demo/plumbers/crm"
+        messagesHref="/demo/plumbers/crm"
+        secondaryNavLink={{ href: "/demo/plumbers", label: "Voice demo" }}
+        onRefresh={load}
+        refreshDisabled={loading}
+      />
+
+      <PlumbingDemoCrmBanner />
 
       <main className={`${CRM_PAGE_CONTAINER} flex-1 py-8 pb-24`}>
         {loading && <p className="text-sm text-ink-soft">Loading…</p>}
         {error && <p className="text-sm text-warn">{error}</p>}
+
         {!loading && !error && items.length === 0 && (
-          <p className="text-sm text-ink-soft">
-            No plumbing demo callers yet. Run a session at{" "}
-            <Link href="/demo/plumbers" className="text-accent hover:underline">
-              /demo/plumbers
-            </Link>
-            .
-          </p>
+          <p className="text-sm text-ink-soft">No demo activity loaded.</p>
         )}
 
-        <ul className="grid gap-2">
-          {items.map((item) => {
-            const expanded = expandedId === item.id;
-            const unread = isCrmFeedItemUnread(item);
-            const job = jobFromItem(item);
-            const isDeleting = pendingDelete?.id === item.id;
-            return (
-              <li
-                key={item.id}
-                className={`rounded-2xl border border-rule bg-bg transition ${
-                  unread ? "border-accent/40 bg-accent-soft/20" : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setExpandedId(expanded ? null : item.id);
-                    if (unread) void patchItem(item.id, { read: true });
-                  }}
-                  className="flex w-full items-start gap-3 px-4 py-3 text-left"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-ink">{item.title}</span>
-                      {job?.status && (
-                        <span className="rounded-full bg-rule-soft px-2 py-0.5 text-xs text-ink-soft">
-                          {job.status.replace(/_/g, " ")}
-                        </span>
-                      )}
-                      {job?.isEmergency && (
-                        <span className="rounded-full bg-warn/15 px-2 py-0.5 text-xs text-warn">
-                          emergency
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-0.5 text-sm text-ink-soft">
-                      {item.email || "No email"} · {formatWhen(item.at)}
-                    </p>
-                    {item.message && (
-                      <p className="mt-1 text-sm text-ink-soft">{item.message}</p>
-                    )}
-                  </div>
-                  <CrmInboxFlagButton
-                    flag={item.inboxFlag}
-                    onCycle={() =>
-                      void patchItem(item.id, {
-                        inboxFlag: nextCrmInboxFlag(item.inboxFlag),
-                      })
-                    }
-                  />
-                </button>
-
-                {expanded && (
-                  <div className="border-t border-rule px-4 py-4 text-sm">
-                    <dl className="grid gap-2">
-                      <div>
-                        <dt className="text-ink-soft">Phone</dt>
-                        <dd>{item.phone || "—"}</dd>
-                      </div>
-                      {job ? (
-                        <>
-                          <div>
-                            <dt className="text-ink-soft">Service</dt>
-                            <dd>{job.serviceType || "—"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-ink-soft">Address</dt>
-                            <dd>{job.serviceAddress || "—"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-ink-soft">Appointment</dt>
-                            <dd>
-                              {[job.appointmentDate, job.timeWindow].filter(Boolean).join(" · ") ||
-                                "—"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-ink-soft">Estimate</dt>
-                            <dd>{job.priceRange || "—"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-ink-soft">Customer email on job</dt>
-                            <dd>{job.customerEmail || item.email || "—"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-ink-soft">Coupon code</dt>
-                            <dd>
-                              {job.promoCode
-                                ? job.promoCode
-                                : job.promoApplied
-                                  ? "Applied (no code yet)"
-                                  : "—"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-ink-soft">Confirmation email</dt>
-                            <dd>
-                              {job.confirmationEmailSentAt
-                                ? `Sent ${formatWhen(job.confirmationEmailSentAt)}`
-                                : "Not recorded yet"}
-                            </dd>
-                          </div>
-                          {typeof job.notes?.questionSummary === "string" && (
-                            <div>
-                              <dt className="text-ink-soft">Callback question</dt>
-                              <dd>{job.notes.questionSummary}</dd>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-ink-soft">No appointment saved yet.</p>
-                      )}
-                    </dl>
-                    {item.notes && (
-                      <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-rule bg-rule-soft/40 p-3 text-xs text-ink-soft">
-                        {item.notes}
-                      </pre>
-                    )}
-
-                    <VoiceDemoOpsTimeline
-                      events={opsFromItem(item)}
-                      defaultExpanded={Boolean(item.payload?.opsWarningCount)}
-                    />
-
-                    {!isDeleting && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startDelete(item)}
-                          className="rounded-full border border-warn/40 px-3 py-1 text-xs font-medium text-warn hover:bg-warn-soft/40"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-
-                    {isDeleting && pendingDelete && (
-                      <div className="mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4">
-                        <p className="text-sm font-medium text-ink">
-                          {pendingDelete.step === 1
-                            ? `Delete ${pendingDelete.label}?`
-                            : "Final confirmation — this cannot be undone"}
-                        </p>
-                        <p className="mt-1 text-xs text-ink-soft">
-                          Removes the caller and any saved appointment from demo CRM.
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            disabled={deleting}
-                            onClick={() => void confirmDelete()}
-                            className="rounded-full bg-warn px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-                          >
-                            {deleting
-                              ? "Deleting…"
-                              : pendingDelete.step === 1
-                                ? "Continue"
-                                : "Delete permanently"}
-                          </button>
-                          <button
-                            type="button"
-                            disabled={deleting}
-                            onClick={cancelDelete}
-                            className="rounded-full border border-rule px-4 py-2 text-sm"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        {!loading && !error && items.length > 0 && (
+          <CrmActivityInbox
+            demoMode
+            loginPath="/demo/plumbers/crm"
+            contactItems={contactItems}
+            leadItems={leadItems}
+            clientItems={clientItems}
+            discoveryItems={discoveryItems}
+            smsItems={smsItems}
+            blogItems={blogItems}
+            onItemsChange={(updater) => setItems((prev) => updater(prev))}
+            onReload={load}
+          />
+        )}
       </main>
     </div>
   );

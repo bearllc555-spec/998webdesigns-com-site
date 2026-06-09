@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
-import { isCrmRequestAuthorized } from "@/lib/crm-session";
-import { fetchPlumbingCrmFeed } from "@/lib/plumbing-crm-feed";
+import { getPlumbingDemoCrmSeedItems } from "@/lib/plumbing-demo-crm-seed";
+import { isPlumbingDemoCrmRequestAuthorized } from "@/lib/plumbing-demo-crm-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,15 +13,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
   }
 
-  if (!isCrmRequestAuthorized(req)) {
+  if (!isPlumbingDemoCrmRequestAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const limit = Math.min(
     100,
-    Math.max(10, Number(req.nextUrl.searchParams.get("limit") ?? "50") || 50)
+    Math.max(10, Number(req.nextUrl.searchParams.get("limit") ?? "80") || 80)
   );
 
-  const { items, error } = await fetchPlumbingCrmFeed(limit);
-  return NextResponse.json({ items, error: error ?? null });
+  const items = getPlumbingDemoCrmSeedItems().slice(0, limit);
+  return NextResponse.json({ items, error: null });
 }

@@ -1,9 +1,9 @@
 import { PlumbingCrmDashboard } from "@/components/demo/PlumbingCrmDashboard";
 import { PlumbingCrmLoginShell } from "@/components/demo/PlumbingCrmLoginShell";
-import { isCrmAuthenticated } from "@/lib/crm-session";
+import { isPlumbingDemoCrmAuthenticated } from "@/lib/plumbing-demo-crm-session";
 
 export default async function PlumbingCrmPage() {
-  if (!(await isCrmAuthenticated())) {
+  if (!(await isPlumbingDemoCrmAuthenticated())) {
     return <PlumbingCrmLoginShell />;
   }
   return <PlumbingCrmDashboard />;
