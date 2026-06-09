@@ -369,23 +369,26 @@ html.dark .crm-inbox-row-read-badge {
 
 @keyframes end-call-blink {
   0%,
-  45% {
+  49% {
     opacity: 1;
-    background: color-mix(in srgb, var(--warn) 22%, transparent);
+    color: var(--warn);
+    background: color-mix(in srgb, var(--warn) 30%, transparent);
     border-color: var(--warn);
-    box-shadow: 0 0 12px 2px color-mix(in srgb, var(--warn) 45%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 35%, transparent);
   }
   50%,
   100% {
-    opacity: 0.45;
+    opacity: 0.35;
+    color: color-mix(in srgb, var(--warn) 55%, var(--ink-soft));
     background: transparent;
-    border-color: color-mix(in srgb, var(--warn) 30%, var(--rule));
+    border-color: color-mix(in srgb, var(--warn) 25%, var(--rule));
     box-shadow: none;
   }
 }
 
 .animate-end-call-blink {
-  animation: end-call-blink 0.9s step-end infinite;
+  animation: end-call-blink 0.75s step-end infinite;
+  transition: none !important;
 }
 
 /* Jarvis voice orb — idle breathe when connected */
