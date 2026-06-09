@@ -64,6 +64,10 @@ import {
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
 import { PLUMBING_IDLE_HANGUP_MS } from "@/lib/voice-demo-plumbing-constants";
 import {
+  buildPlumbingGoodbyeBeatNudge,
+  PLUMBING_GOODBYE_BEAT_MS,
+} from "@/lib/voice-demo-plumbing-goodbye";
+import {
   isPlumbingBookingContinuation,
   isPlumbingVisitorEndingCall,
   shouldPlumbingClientHangup,
@@ -198,6 +202,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const micMuteDisconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plumbingIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plumbingCallWindingDownRef = useRef(false);
+  const plumbingGoodbyeBeatUntilRef = useRef(0);
+  const plumbingGoodbyeNudgeSentRef = useRef(false);
+  const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
+  const plumbingGoodbyeAudioFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const plumbingGoodbyeNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastAssistantTextRef = useRef("");
   const wrapUpQuestionIndexRef = useRef(0);
   const wrapUpCueLeakRecoverySentRef = useRef(false);
@@ -914,6 +923,60 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearPlumbingGoodbyeBeat = useCallback(() => {
+    plumbingGoodbyeBeatUntilRef.current = 0;
+    plumbingGoodbyeNudgeSentRef.current = false;
+    plumbingGoodbyeAudioQueueRef.current = [];
+    if (plumbingGoodbyeAudioFlushTimerRef.current) {
+      clearTimeout(plumbingGoodbyeAudioFlushTimerRef.current);
+      plumbingGoodbyeAudioFlushTimerRef.current = null;
+    }
+    if (plumbingGoodbyeNudgeTimerRef.current) {
+      clearTimeout(plumbingGoodbyeNudgeTimerRef.current);
+      plumbingGoodbyeNudgeTimerRef.current = null;
+    }
+  }, []);
+
+  const flushPlumbingGoodbyeAudioQueue = useCallback(() => {
+    if (plumbingGoodbyeAudioFlushTimerRef.current) {
+      clearTimeout(plumbingGoodbyeAudioFlushTimerRef.current);
+      plumbingGoodbyeAudioFlushTimerRef.current = null;
+    }
+    const queued = plumbingGoodbyeAudioQueueRef.current;
+    plumbingGoodbyeAudioQueueRef.current = [];
+    plumbingGoodbyeBeatUntilRef.current = 0;
+    if (!playerRef.current) return;
+    for (const chunk of queued) {
+      playerRef.current.enqueueBase64Pcm(chunk);
+    }
+  }, []);
+
+  const schedulePlumbingGoodbyeAudioFlush = useCallback(() => {
+    if (plumbingGoodbyeAudioFlushTimerRef.current) return;
+    const delay = Math.max(0, plumbingGoodbyeBeatUntilRef.current - Date.now());
+    plumbingGoodbyeAudioFlushTimerRef.current = setTimeout(() => {
+      plumbingGoodbyeAudioFlushTimerRef.current = null;
+      flushPlumbingGoodbyeAudioQueue();
+    }, delay);
+  }, [flushPlumbingGoodbyeAudioQueue]);
+
+  const schedulePlumbingGoodbyeBeat = useCallback(() => {
+    clearPlumbingGoodbyeBeat();
+    plumbingGoodbyeBeatUntilRef.current = Date.now() + PLUMBING_GOODBYE_BEAT_MS;
+    plumbingGoodbyeNudgeSentRef.current = true;
+    logVoiceDemoOps({
+      kind: "goodbye_nudge",
+      message: "Plumbing goodbye beat — delaying Jarvis sign-off",
+      meta: { beatMs: PLUMBING_GOODBYE_BEAT_MS },
+    });
+    plumbingGoodbyeNudgeTimerRef.current = setTimeout(() => {
+      plumbingGoodbyeNudgeTimerRef.current = null;
+      if (!sessionRef.current || verticalRef.current !== "plumbers") return;
+      void sendClientNudge(buildPlumbingGoodbyeBeatNudge());
+    }, PLUMBING_GOODBYE_BEAT_MS);
+    schedulePlumbingGoodbyeAudioFlush();
+  }, [clearPlumbingGoodbyeBeat, schedulePlumbingGoodbyeAudioFlush, sendClientNudge]);
+
   const touchPlumbingConversation = useCallback(() => {
     if (verticalRef.current !== "plumbers") return;
     clearPlumbingIdleTimer();
@@ -935,6 +998,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearPostNameGreetingTimer();
     clearMicMuteDisconnectTimer();
     clearPlumbingIdleTimer();
+    clearPlumbingGoodbyeBeat();
     plumbingCallWindingDownRef.current = false;
     applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
@@ -1341,6 +1405,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             clearInputSilenceTimers();
             touchPlumbingConversation();
             playerRef.current ??= new VoiceDemoAudioPlayer();
+            if (
+              verticalRef.current === "plumbers" &&
+              plumbingGoodbyeBeatUntilRef.current > Date.now()
+            ) {
+              plumbingGoodbyeAudioQueueRef.current.push(data);
+              schedulePlumbingGoodbyeAudioFlush();
+              continue;
+            }
             playerRef.current.enqueueBase64Pcm(data);
           }
         }
@@ -1362,9 +1434,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           if (verticalRef.current === "plumbers") {
             if (isPlumbingBookingContinuation(userLine)) {
               visitorExplicitlyDoneRef.current = false;
+              clearPlumbingGoodbyeBeat();
             } else if (isPlumbingVisitorEndingCall(userLine)) {
               visitorExplicitlyDoneRef.current = true;
               plumbingCallWindingDownRef.current = true;
+              schedulePlumbingGoodbyeBeat();
             }
           } else if (isUserExplicitlyDone(userLine)) {
             visitorExplicitlyDoneRef.current = true;
@@ -1542,6 +1616,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       sendPostNameGreetingNudge,
       schedulePlumbingIdleHangup,
       touchPlumbingConversation,
+      schedulePlumbingGoodbyeBeat,
+      clearPlumbingGoodbyeBeat,
+      schedulePlumbingGoodbyeAudioFlush,
     ]
   );
 
@@ -1586,6 +1663,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionResumptionHandleRef.current = null;
         sessionResumableRef.current = true;
         plumbingCallWindingDownRef.current = false;
+        clearPlumbingGoodbyeBeat();
         clearPlumbingIdleTimer();
         reconnectAttemptRef.current = 0;
         reconnectExhaustedBonusRef.current = false;
