@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  VOICE_DEMO_ADDONS_RULES,
   VOICE_DEMO_CLOSING,
   VOICE_DEMO_PERSONA,
   VOICE_DEMO_WRAPUP_QUESTIONS,
@@ -132,5 +133,13 @@ describe("voice-demo-system-prompt onboarding", () => {
     expect(prompt).toContain(VOICE_DEMO_GOODBYE_LINE);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
     expect(prompt).toMatch(/system ends the call/i);
+  });
+
+  it("lets Jarvis plug the Jarvis voice add-on as himself", () => {
+    const prompt = voiceDemoDemoSystemPrompt(baseRow);
+    expect(prompt).toContain(VOICE_DEMO_ADDONS_RULES);
+    expect(prompt).toMatch(/YOU ARE JARVIS/i);
+    expect(prompt).toMatch(/shameless plug/i);
+    expect(prompt).toMatch(/AI Agent Chatbot/i);
   });
 });
