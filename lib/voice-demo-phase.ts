@@ -22,6 +22,7 @@ export type VoiceDemoHangupReason =
   | "mic_mute_timeout"
   | "user_disconnect"
   | "plumbing_idle_silence"
+  | "plumbing_post_farewell_idle"
   | "reconnect_exhausted";
 
 export type VoiceDemoPhaseInput = {

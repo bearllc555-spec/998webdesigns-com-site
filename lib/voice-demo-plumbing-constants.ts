@@ -16,6 +16,9 @@ export const PLUMBING_DEMO_SESSION_START_CUE = "[plumbing-session-start]";
 export const PLUMBING_DEMO_OPENING_LINE =
   "Thanks for calling Metro Plumbing and Drain — I'm Jarvis. How can I help you today?";
 
-/** After booking or goodbye, end the call when both sides are quiet this long. */
+/** After Jarvis final goodbye, end the call when both sides are quiet this long. */
+export const PLUMBING_POST_FAREWELL_IDLE_MS = 3_000;
+
+/** After booking wind-down (pre-farewell), idle hangup uses shared demo constant. */
 /** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS — kept for plumbing imports. */
 export const PLUMBING_IDLE_HANGUP_MS = VOICE_DEMO_CALL_IDLE_HANGUP_MS;

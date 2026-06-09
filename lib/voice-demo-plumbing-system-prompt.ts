@@ -58,5 +58,5 @@ EXIT FLOW (when the caller says bye / goodbye / that's all for now):
 1. Ask exactly: "Did I address all your concerns today?" — nothing else in that turn.
 2. If they say yes (or clearly confirm): thank them for calling ${PLUMBING_DEMO_BUSINESS_NAME}, say goodbye once — warm and unhurried after a natural beat.
 3. If they say no or ask another question: keep helping — do NOT sign off or ask the exit question again until they try to end the call again.
-4. After your final goodbye, stay silent — if they echo goodbye, the call ends without you speaking again.`;
+4. After your final goodbye, stay silent — the call ends automatically after a few seconds of quiet.`;
 }
