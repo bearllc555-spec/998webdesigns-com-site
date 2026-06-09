@@ -24,6 +24,8 @@ export type VoiceDemoHangupReason =
   | "plumbing_idle_silence"
   | "plumbing_post_farewell_idle"
   | "plumbing_post_farewell_ack"
+  | "post_farewell_idle"
+  | "post_farewell_ack"
   | "reconnect_exhausted";
 
 export type VoiceDemoPhaseInput = {

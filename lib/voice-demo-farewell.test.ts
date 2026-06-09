@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canModelEndConversation,
+  isVisitorFarewellAck,
   shouldClientScheduleFarewellHangup,
 } from "@/lib/voice-demo-farewell";
 import type { VoiceDemoSessionPhase } from "@/lib/voice-demo-phase";
@@ -65,5 +66,14 @@ describe("shouldClientScheduleFarewellHangup", () => {
         assistantText: "Thank you for contacting 998.",
       })
     ).toBe(false);
+  });
+});
+
+describe("isVisitorFarewellAck", () => {
+  it("detects goodbye and thanks after Jarvis sign-off", () => {
+    expect(isVisitorFarewellAck("bye")).toBe(true);
+    expect(isVisitorFarewellAck("thank you")).toBe(true);
+    expect(isVisitorFarewellAck("have a good day")).toBe(true);
+    expect(isVisitorFarewellAck("what are your hours")).toBe(false);
   });
 });

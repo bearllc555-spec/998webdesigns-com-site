@@ -16,14 +16,11 @@ export const PLUMBING_DEMO_SESSION_START_CUE = "[plumbing-session-start]";
 export const PLUMBING_DEMO_OPENING_LINE =
   "Thanks for calling Metro Plumbing and Drain — I'm Jarvis. How can I help you today?";
 
-/** After Jarvis final goodbye, end the call when both sides are quiet this long. */
-export const PLUMBING_POST_FAREWELL_IDLE_MS = 3_000;
-
-/** Caller echoed goodbye/thanks after Jarvis signed off — shorter disconnect. */
-export const PLUMBING_POST_FAREWELL_ACK_MS = 1_000;
-
-/** After Jarvis goodbye with no caller response, pulse the End call button. */
-export const PLUMBING_END_CALL_GLOW_DELAY_MS = 1_000;
+export {
+  VOICE_DEMO_END_CALL_BLINK_DELAY_MS as PLUMBING_END_CALL_GLOW_DELAY_MS,
+  VOICE_DEMO_POST_FAREWELL_ACK_MS as PLUMBING_POST_FAREWELL_ACK_MS,
+  VOICE_DEMO_POST_FAREWELL_IDLE_MS as PLUMBING_POST_FAREWELL_IDLE_MS,
+} from "@/lib/voice-demo-constants";
 
 /** After booking wind-down (pre-farewell), idle hangup uses shared demo constant. */
 /** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS — kept for plumbing imports. */

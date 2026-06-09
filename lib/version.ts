@@ -4,4 +4,4 @@
 // Why: deploy-propagation tell. After shipping, glance at the live site, confirm
 // the number bumped. Catches stale edge caches and failed builds at a glance.
 // Rendered in Nav (header) + Footer.
-export const SITE_VERSION = "v34.78";
+export const SITE_VERSION = "v34.79";

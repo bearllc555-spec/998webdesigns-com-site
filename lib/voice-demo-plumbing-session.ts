@@ -3,6 +3,8 @@
  * The caller ends the call via the widget; client code must not schedule farewell disconnects.
  */
 
+import { isVisitorFarewellAck } from "@/lib/voice-demo-farewell";
+
 /** Caller is clearly ending the phone call (not casual acks or "no other issues"). */
 export function isPlumbingVisitorEndingCall(text: string): boolean {
   const t = text.trim().toLowerCase();
@@ -53,14 +55,8 @@ export function isPlumbingVisitorConfirmedConcerns(text: string): boolean {
 
 /** Caller echoed goodbye/thanks after Jarvis signed off — fast disconnect. */
 export function isPlumbingVisitorFarewellAck(text: string): boolean {
-  const t = text.trim().toLowerCase();
-  if (!t) return false;
-  return (
-    /\b(bye|goodbye|good bye|see you|take care|cheers)\b/.test(t) ||
-    /\b(thank you|thanks|thanks so much|appreciate it)\b/.test(t) ||
-    /\bhave a (good|great|nice|wonderful) (day|one|evening|night)\b/.test(t) ||
-    /\b(you too|same to you)\b/.test(t)
-  );
+  // Re-export shared ack matcher — keep plumbing import path for tests/callers.
+  return isVisitorFarewellAck(text);
 }
 
 /** Caller still has concerns or wants to continue — do not sign off. */

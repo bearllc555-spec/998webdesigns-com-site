@@ -405,7 +405,11 @@ export function VoiceDemoWidget() {
                       <button
                         type="button"
                         onClick={() => live.endCall()}
-                        className="flex items-center gap-2 rounded-full border border-rule px-4 py-2 text-sm font-medium text-ink-soft transition hover:border-warn hover:bg-warn/10 hover:text-warn"
+                        className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition hover:border-warn hover:bg-warn/10 hover:text-warn ${
+                          live.endCallGlow
+                            ? "animate-end-call-blink border-warn/70 text-warn"
+                            : "border-rule text-ink-soft"
+                        }`}
                       >
                         <PhoneOff className="h-4 w-4" aria-hidden />
                         End call

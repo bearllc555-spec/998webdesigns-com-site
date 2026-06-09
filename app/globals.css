@@ -367,20 +367,25 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
-@keyframes end-call-glow {
+@keyframes end-call-blink {
   0%,
-  100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 0%, transparent);
-    border-color: color-mix(in srgb, var(--warn) 35%, var(--rule));
-  }
-  50% {
-    box-shadow: 0 0 14px 3px color-mix(in srgb, var(--warn) 50%, transparent);
+  45% {
+    opacity: 1;
+    background: color-mix(in srgb, var(--warn) 22%, transparent);
     border-color: var(--warn);
+    box-shadow: 0 0 12px 2px color-mix(in srgb, var(--warn) 45%, transparent);
+  }
+  50%,
+  100% {
+    opacity: 0.45;
+    background: transparent;
+    border-color: color-mix(in srgb, var(--warn) 30%, var(--rule));
+    box-shadow: none;
   }
 }
 
-.animate-end-call-glow {
-  animation: end-call-glow 1.6s ease-in-out infinite;
+.animate-end-call-blink {
+  animation: end-call-blink 0.9s step-end infinite;
 }
 
 /* Jarvis voice orb — idle breathe when connected */

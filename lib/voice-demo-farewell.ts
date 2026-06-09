@@ -20,11 +20,19 @@ export { canModelEndConversation } from "@/lib/voice-demo-phase";
 
 /** Visitor echoed goodbye after Jarvis already closed — end the call, do not reply again. */
 export function isUserFarewellEcho(text: string): boolean {
+  return isVisitorFarewellAck(text);
+}
+
+/** Caller echoed goodbye/thanks after Jarvis signed off — fast disconnect (all demos). */
+export function isVisitorFarewellAck(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
   return (
-    /\b(bye|goodbye|good bye|see you|cheers)\b/.test(t) ||
-    /\b(that'?s all|i'?m good|all set|have a (good|great|nice))\b/.test(t)
+    /\b(bye|goodbye|good bye|see you|take care|cheers)\b/.test(t) ||
+    /\b(thank you|thanks|thanks so much|appreciate it)\b/.test(t) ||
+    /\b(that'?s all|i'?m good|all set)\b/.test(t) ||
+    /\bhave a (good|great|nice|wonderful) (day|one|evening|night)\b/.test(t) ||
+    /\b(you too|same to you)\b/.test(t)
   );
 }
 

@@ -13,6 +13,15 @@ export const VOICE_DEMO_MIC_MUTE_DISCONNECT_MS = 10_000;
 /** Idle hangup after callback logged or plumbing booking/goodbye wind-down (ms). */
 export const VOICE_DEMO_CALL_IDLE_HANGUP_MS = 4_000;
 
+/** After Jarvis final goodbye, end the call when both sides are quiet this long. */
+export const VOICE_DEMO_POST_FAREWELL_IDLE_MS = 3_000;
+
+/** Caller echoed goodbye/thanks after Jarvis signed off — shorter disconnect. */
+export const VOICE_DEMO_POST_FAREWELL_ACK_MS = 1_000;
+
+/** After Jarvis goodbye with no caller response, blink the End call button. */
+export const VOICE_DEMO_END_CALL_BLINK_DELAY_MS = 1_000;
+
 /** Channel-specific promo — design fee only; not on public FAQ. */
 export const VOICE_DEMO_PROMO_CODE = "VOICE20";
 
