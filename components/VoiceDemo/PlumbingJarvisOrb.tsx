@@ -70,7 +70,7 @@ export function PlumbingJarvisOrb({
           transform: `scale(${ringScale})`,
           border: `${rimWidth}px solid rgba(186, 230, 253, ${rimOpacity})`,
           boxShadow: speaking
-            ? `0 0 ${rimGlow}px rgba(56, 189, 248, ${0.65 + ringDrive * 0.35}), 0 0 ${rimInnerGlow}px rgba(255, 255, 255, ${0.25 + l.treble * 0.45}), 0 0 ${rimGlow * 1.4}px rgba(14, 165, 233, ${0.35 + ringDrive * 0.3}), inset 0 0 ${14 + ringDrive * 20}px rgba(125, 211, 252, ${0.2 + ringDrive * 0.35})`
+            ? `0 0 ${rimGlow}px rgba(56, 189, 248, ${0.65 + ringDrive * 0.35}), 0 0 ${rimInnerGlow}px rgba(255, 255, 255, ${0.25 + l.treble * 0.45}), 0 0 ${rimGlow * 1.4}px rgba(14, 165, 233, ${0.35 + ringDrive * 0.3})`
             : `0 0 ${rimGlow * 0.5}px rgba(56, 189, 248, ${0.2 + rimOpacity * 0.15})`,
         }}
       />
@@ -93,28 +93,6 @@ export function PlumbingJarvisOrb({
         </div>
       )}
 
-      {/* Equator flash on the ring when speaking */}
-      {speaking && ringDrive > 0.06 && (
-        <div
-          className="pointer-events-none absolute overflow-hidden rounded-full bg-transparent"
-          style={{
-            inset: "4px",
-            transform: `scale(${ringScale})`,
-            opacity: 0.45 + l.volume * 0.55,
-          }}
-        >
-          <div
-            className="absolute left-[6%] right-[6%] top-1/2 h-[3px] -translate-y-1/2 rounded-full"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, rgba(125,211,252,0.5) 28%, rgba(255,255,255,1) 62%, rgba(56,189,248,0.4) 100%)",
-              boxShadow: `0 0 ${10 + l.treble * 22}px rgba(255, 255, 255, ${0.45 + l.treble * 0.55})`,
-              transform: `scaleX(${0.88 + l.volume * 0.24})`,
-              filter: "blur(0.35px)",
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }
