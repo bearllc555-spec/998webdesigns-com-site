@@ -22,6 +22,9 @@ export const PLUMBING_POST_FAREWELL_IDLE_MS = 3_000;
 /** Caller echoed goodbye/thanks after Jarvis signed off — shorter disconnect. */
 export const PLUMBING_POST_FAREWELL_ACK_MS = 1_000;
 
+/** After Jarvis goodbye with no caller response, pulse the End call button. */
+export const PLUMBING_END_CALL_GLOW_DELAY_MS = 1_000;
+
 /** After booking wind-down (pre-farewell), idle hangup uses shared demo constant. */
 /** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS — kept for plumbing imports. */
 export const PLUMBING_IDLE_HANGUP_MS = VOICE_DEMO_CALL_IDLE_HANGUP_MS;
