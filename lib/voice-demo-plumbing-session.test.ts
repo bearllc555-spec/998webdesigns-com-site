@@ -52,7 +52,7 @@ describe("voice-demo-plumbing-session", () => {
     expect(isPlumbingVisitorFarewellAck("what are your hours")).toBe(false);
   });
 
-  it("never auto-hangups plumbing sessions", () => {
+  it("schedules post-farewell hangup only after Jarvis sign-off", () => {
     expect(
       shouldPlumbingClientHangup({
         visitorEndingCall: false,
@@ -62,8 +62,22 @@ describe("voice-demo-plumbing-session", () => {
     expect(
       shouldPlumbingClientHangup({
         visitorEndingCall: true,
-        assistantText: "Thanks for calling Metro Plumbing. Take care!",
+        assistantText: "Your appointment is Thursday at 2.",
       })
     ).toBe(false);
+    expect(
+      shouldPlumbingClientHangup({
+        visitorEndingCall: false,
+        assistantText: "Thanks for calling Metro Plumbing. Take care!",
+        goodbyeNudgeSent: true,
+      })
+    ).toBe(true);
+    expect(
+      shouldPlumbingClientHangup({
+        visitorEndingCall: false,
+        assistantText: "Anything else?",
+        farewellSent: true,
+      })
+    ).toBe(true);
   });
 });

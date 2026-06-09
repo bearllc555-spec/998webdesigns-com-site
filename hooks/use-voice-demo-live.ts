@@ -219,6 +219,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const pendingClientHangupRef = useRef(false);
   const hangupReasonRef = useRef<VoiceDemoHangupReason | null>(null);
   const callIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const postFarewellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const callWindingDownRef = useRef(false);
   const awaitingPromoConsentRef = useRef(false);
   const plumbingExitConcernsAskedRef = useRef(false);
@@ -943,6 +944,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearPostFarewellTimer = useCallback(() => {
+    if (postFarewellTimerRef.current) {
+      clearTimeout(postFarewellTimerRef.current);
+      postFarewellTimerRef.current = null;
+    }
+  }, []);
+
   const clearEndCallGlow = useCallback(() => {
     if (endCallGlowTimerRef.current) {
       clearTimeout(endCallGlowTimerRef.current);
@@ -1041,6 +1049,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearReconnectTimer();
     clearPostNameGreetingTimer();
     clearCallIdleTimer();
+    clearPostFarewellTimer();
     clearEndCallGlow();
     clearPlumbingGoodbyeBeat();
     clearPlumbingContactPause();
@@ -1078,6 +1087,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearPlumbingGoodbyeBeat,
     clearPlumbingContactPause,
     clearEndCallGlow,
+    clearPostFarewellTimer,
     stopOrbLoop,
   ]);
 
@@ -1153,7 +1163,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (jarvisFarewellSentRef.current) return;
     jarvisFarewellSentRef.current = true;
     clearInputSilenceTimers();
-  }, [clearInputSilenceTimers]);
+    clearCallIdleTimer();
+    clearPlumbingContactPause();
+  }, [clearCallIdleTimer, clearInputSilenceTimers, clearPlumbingContactPause]);
 
   const finishConversation = useCallback(async () => {
     if (farewellDisconnectingRef.current) return;
@@ -1211,18 +1223,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [finishConversation, getSessionPhase]
   );
 
-  const endCall = useCallback(() => {
-    if (!sessionRef.current || farewellDisconnectingRef.current) return;
-    clearCallIdleTimer();
-    hangupReasonRef.current = "user_disconnect";
-    logVoiceDemoOps({
-      kind: "client_hangup_scheduled",
-      message: "Caller tapped End call",
-      meta: { phase: getSessionPhase(), hangupReason: "user_disconnect" },
-    });
-    void finishConversation();
-  }, [clearCallIdleTimer, finishConversation, getSessionPhase]);
-
   const endCallNow = useCallback(
     (reason: VoiceDemoHangupReason = "visitor_farewell_echo") => {
       if (farewellDisconnectingRef.current) return;
@@ -1235,6 +1235,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       });
       latchFarewellClosing();
       clearCallIdleTimer();
+      clearPostFarewellTimer();
       clearEndCallGlow();
       postFarewellDeadlineRef.current = 0;
       micRef.current?.stop();
@@ -1244,8 +1245,28 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
     },
-    [clearCallIdleTimer, clearEndCallGlow, disconnect, getSessionPhase, latchFarewellClosing]
+    [
+      clearCallIdleTimer,
+      clearEndCallGlow,
+      clearPostFarewellTimer,
+      disconnect,
+      getSessionPhase,
+      latchFarewellClosing,
+    ]
   );
+
+  const endCall = useCallback(() => {
+    if (!sessionRef.current || farewellDisconnectingRef.current) return;
+    reconnectPausedRef.current = true;
+    hadPlumbingLiveSessionRef.current = false;
+    hangupReasonRef.current = "user_disconnect";
+    logVoiceDemoOps({
+      kind: "client_hangup_scheduled",
+      message: "Caller tapped End call",
+      meta: { phase: getSessionPhase(), hangupReason: "user_disconnect" },
+    });
+    endCallNow("user_disconnect");
+  }, [endCallNow, getSessionPhase]);
 
   const runPostFarewellHangupTick = useCallback(() => {
     if (modeRef.current !== "demo" || !jarvisFarewellSentRef.current) return;
@@ -1262,8 +1283,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         : "post_farewell_idle";
     if (playerRef.current?.isPlaying() || toolInFlightRef.current > 0) {
       if (Date.now() < postFarewellDeadlineRef.current) {
-        callIdleTimerRef.current = setTimeout(() => {
-          callIdleTimerRef.current = null;
+        postFarewellTimerRef.current = setTimeout(() => {
+          postFarewellTimerRef.current = null;
           runPostFarewellHangupTick();
         }, 250);
         return;
@@ -1287,7 +1308,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (modeRef.current !== "demo") return;
       if (!jarvisFarewellSentRef.current) return;
       if (farewellDisconnectingRef.current || reconnectingRef.current) return;
-      clearCallIdleTimer();
+      clearPostFarewellTimer();
       postFarewellIdleMsRef.current = delayMs;
       if (delayMs >= VOICE_DEMO_POST_FAREWELL_IDLE_MS) {
         if (postFarewellDeadlineRef.current === 0) {
@@ -1295,12 +1316,12 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         armEndCallBlink();
       }
-      callIdleTimerRef.current = setTimeout(() => {
-        callIdleTimerRef.current = null;
+      postFarewellTimerRef.current = setTimeout(() => {
+        postFarewellTimerRef.current = null;
         runPostFarewellHangupTick();
       }, delayMs);
     },
-    [armEndCallBlink, clearCallIdleTimer, runPostFarewellHangupTick]
+    [armEndCallBlink, clearPostFarewellTimer, runPostFarewellHangupTick]
   );
 
   schedulePostFarewellHangupRef.current = schedulePostFarewellHangup;
@@ -1641,9 +1662,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         if (
           verticalRef.current === "plumbers" &&
+          modeRef.current === "demo" &&
           !jarvisFarewellSentRef.current &&
-          callWindingDownRef.current &&
-          plumbingGoodbyeNudgeSentRef.current &&
           isPlumbingAssistantFarewell(assistantSnapshot)
         ) {
           latchFarewellClosing();
@@ -1715,6 +1735,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             shouldPlumbingClientHangup({
               visitorEndingCall: visitorExplicitlyDoneRef.current,
               assistantText: assistantSnapshot,
+              farewellSent: jarvisFarewellSentRef.current,
+              goodbyeNudgeSent: plumbingGoodbyeNudgeSentRef.current,
             });
           const marketingHangup =
             verticalRef.current !== "plumbers" &&
@@ -1861,6 +1883,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         clearPlumbingGoodbyeBeat();
         clearPlumbingContactPause();
         clearCallIdleTimer();
+        clearPostFarewellTimer();
         clearEndCallGlow();
         postFarewellDeadlineRef.current = 0;
         endCallBlinkArmedRef.current = false;

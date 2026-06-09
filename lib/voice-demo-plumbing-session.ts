@@ -1,9 +1,10 @@
 /**
- * Plumbing demo stays on the line like a real receptionist — no marketing FAQ wrap-up / auto-hangup.
- * The caller ends the call via the widget; client code must not schedule farewell disconnects.
+ * Plumbing demo stays on the line through booking — no mid-call FAQ wrap-up hangup.
+ * After Jarvis's final sign-off, client schedules post-farewell idle hangup + End call blink.
  */
 
 import { isVisitorFarewellAck } from "@/lib/voice-demo-farewell";
+import { isPlumbingAssistantFarewell } from "@/lib/voice-demo-plumbing-goodbye";
 
 /** Caller is clearly ending the phone call (not casual acks or "no other issues"). */
 export function isPlumbingVisitorEndingCall(text: string): boolean {
@@ -70,10 +71,16 @@ export function isPlumbingVisitorDeclinedConcerns(text: string): boolean {
   );
 }
 
-/** Plumbing demo: never auto-hangup — receptionist stays until caller taps disconnect. */
-export function shouldPlumbingClientHangup(_opts: {
+/** Schedule post-farewell hangup after Jarvis final sign-off (not mid-call). */
+export function shouldPlumbingClientHangup(opts: {
   visitorEndingCall: boolean;
   assistantText: string;
+  farewellSent?: boolean;
+  goodbyeNudgeSent?: boolean;
 }): boolean {
+  if (opts.farewellSent) return true;
+  if (opts.goodbyeNudgeSent && isPlumbingAssistantFarewell(opts.assistantText)) {
+    return true;
+  }
   return false;
 }
