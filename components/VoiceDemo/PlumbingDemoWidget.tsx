@@ -5,7 +5,7 @@ import { Mic, MicOff, PhoneOff } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceDemoLiveOpsTrace } from "@/components/demo/VoiceDemoLiveOpsTrace";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
-import { VoiceJarvisOrb } from "@/components/VoiceDemo/VoiceJarvisOrb";
+import { PlumbingJarvisOrb } from "@/components/VoiceDemo/PlumbingJarvisOrb";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
 import {
   PLUMBING_DEMO_BUSINESS_NAME,
@@ -208,7 +208,7 @@ export function PlumbingDemoWidget() {
               </p>
             )}
             <div className="flex flex-col items-center gap-3 py-2">
-              <VoiceJarvisOrb
+              <PlumbingJarvisOrb
                 levels={live.jarvisLevels}
                 speaking={live.jarvisSpeaking}
                 connected={live.connected}

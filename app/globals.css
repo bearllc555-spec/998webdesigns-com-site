@@ -380,6 +380,26 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
+/* Plumbing Jarvis orb — reference voice-assistant-animation-003 (simplified) */
+@keyframes plumbing-orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes plumbing-orb-swirl {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Hero headline — letter-by-letter reveal (opacity only, no blur) */
 @keyframes hero-letter-in {
   from {
