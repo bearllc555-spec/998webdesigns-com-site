@@ -1,5 +1,8 @@
 import { isValidEmail } from "@/lib/validate-email";
-import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
+import {
+  buildEmailVoiceReadBack,
+  pronounceEmailForVoice,
+} from "@/lib/voice-demo-spell-email";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 
 export type PlumbingContactField = "name" | "serviceAddress" | "email" | "phone";
@@ -82,15 +85,34 @@ export const PLUMBING_CONTACT_INTAKE_PACING = `CONTACT INTAKE PACING (critical d
 - If they go quiet for a moment after a read-back, stay silent; they may be verifying spelling in their head.
 - Name → address → email → phone → date/time — never skip ahead while a read-back is still unanswered.`;
 
+function buildEmailReconfirmScript(
+  email: string,
+  options?: { signedInOffer?: boolean }
+): string | null {
+  const readBack = buildEmailVoiceReadBack(email);
+  if (!readBack) return null;
+  const { pronounce, localSpelled, domainSpoken } = readBack;
+  const intro = options?.signedInOffer
+    ? `Say "Should I use the email that you signed in with?" Then `
+    : "";
+  return (
+    `${intro}(1) pronounce the full address naturally: "${pronounce}" — ` +
+    `(2) spell ONLY the part before @ letter-by-letter: "${localSpelled}" — ` +
+    `(3) say the domain aloud: "${domainSpoken}" — ` +
+    `(4) ask "Is that the correct email?" ${CONTACT_PAUSE_RULE}`
+  );
+}
+
 /** Prompt block when the caller already verified an email at the demo gate. */
 export function buildPlumbingGateEmailOfferBlock(gateEmail: string): string | null {
   const email = gateEmail.trim().toLowerCase();
   if (!email || !isValidEmail(email)) return null;
-  const spoken = spellEmailForVoice(email);
+  const readBackScript = buildEmailReconfirmScript(email, { signedInOffer: true });
+  if (!readBackScript) return null;
   return `DEMO LOGIN EMAIL (use first — saves time):
-- The caller typed ${email} to start this demo. When booking needs an email, ask FIRST: "Is ${email} the best email to reach you?" (You may read the domain naturally, e.g. "at gmail dot com".)
-- If YES: call save_plumbing_contact with email "${email}" only — do NOT ask them to say or spell the address again. Then spell reconfirm aloud: "${spoken}" and wait for yes (${CONTACT_PAUSE_RULE})
-- If NO: ask "What's the best email?" collect it, save_plumbing_contact with email only, then spell reconfirm the new address and wait for yes before phone or scheduling.
+- The caller signed in with ${email}. When booking needs an email, ${readBackScript}
+- If YES: call save_plumbing_contact with email "${email}" only — do NOT ask them to spell the address. Move to callback phone or scheduling.
+- If NO: ask "What's the best email to reach you?" collect it, save_plumbing_contact with email only, then use the same pronounce → spell local → domain → confirm pattern before phone or scheduling.
 - Never skip straight to "What's your email?" or phone when demo login email is on file.`;
 }
 
@@ -107,7 +129,7 @@ export function plumbingContactFieldSpoken(
     case "serviceAddress":
       return trimmed;
     case "email":
-      return spellEmailForVoice(trimmed);
+      return pronounceEmailForVoice(trimmed);
     case "phone": {
       const digits = trimmed.replace(/\D/g, "");
       if (digits.length < 10) return trimmed;
@@ -142,14 +164,12 @@ function buildReconfirmLine(
     case "email": {
       const email = input.email?.trim();
       if (!email) return null;
-      const spoken = spellEmailForVoice(email);
+      const script = buildEmailReconfirmScript(email);
+      if (!script) return null;
       const prefix = input.emailFromDemoLogin
-        ? "Email (demo login accepted — THIS TURN ONLY): they confirmed the address they used to start this demo — "
+        ? "Email (demo login — THIS TURN ONLY): they confirmed their sign-in email — "
         : "Email (THIS TURN ONLY): ";
-      return (
-        `${prefix}say the local part letter-by-letter, then the domain — speak exactly: "${spoken}" — ` +
-        `then ask "Is that the correct email?" ${CONTACT_PAUSE_RULE} Do not skip spelling the part before @.`
-      );
+      return `${prefix}${script} Do not skip the pronounce step or letter-by-letter spelling.`;
     }
     case "phone": {
       const phone = input.phone?.trim();

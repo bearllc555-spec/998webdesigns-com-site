@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { normalizeVerificationCode } from "@/lib/voice-demo-code";
 import { codesMatch, hashVerificationCode } from "@/lib/voice-demo-otp";
-import { spellEmailForVoice } from "@/lib/voice-demo-spell-email";
+import {
+  buildEmailVoiceReadBack,
+  pronounceEmailDomainForVoice,
+  pronounceEmailForVoice,
+  spellEmailForVoice,
+  spellEmailLocalPartForVoice,
+} from "@/lib/voice-demo-spell-email";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import {
   buildFarewellHoldNudge,
@@ -23,6 +29,20 @@ describe("voice demo verification code", () => {
   it("spells email local part for voice read-back", () => {
     expect(spellEmailForVoice("ademeo@gmail.com")).toBe("a d e m e o @gmail.com");
     expect(spellEmailForVoice("bear@gmail.com")).toBe("b e a r @gmail.com");
+  });
+
+  it("pronounces email in three steps for plumbing read-back", () => {
+    expect(pronounceEmailForVoice("ademeo@gmail.com")).toBe("ademeo at gmail dot com");
+    expect(spellEmailLocalPartForVoice("ademeo@gmail.com")).toBe("a d e m e o");
+    expect(pronounceEmailDomainForVoice("ademeo@gmail.com")).toBe("at gmail dot com");
+    expect(pronounceEmailDomainForVoice("joe@abcplumbing.com")).toBe(
+      "at abcplumbing dot com"
+    );
+    expect(buildEmailVoiceReadBack("ademeo@gmail.com")).toEqual({
+      pronounce: "ademeo at gmail dot com",
+      localSpelled: "a d e m e o",
+      domainSpoken: "at gmail dot com",
+    });
   });
 
   it("spells phone digits for voice read-back", () => {

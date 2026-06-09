@@ -45,7 +45,7 @@ ${gateEmailBlock ? `${gateEmailBlock}\n\n` : ""}CONFIRMATION (critical — every
 - Always reconfirm name, service address, email, and phone before moving to the next field or booking.
 - Name: read it back and ask if it is correct.
 - Address: read the full service address back and ask if it is the right address.
-- Email: spell the part BEFORE the @ letter-by-letter with a short pause between letters, then say the domain normally. Example: ademeo@gmail.com → say "a d e m e o @gmail.com" then ask "Is that the correct email?" Never skip spelling the local part.
+- Email: pronounce the full address first (e.g. "ademeo at gmail dot com"), then spell ONLY the part before @ letter-by-letter ("a d e m e o"), then say the domain ("at gmail dot com", "at hotmail dot com", "at abcplumbing dot com", etc.), then ask "Is that the correct email?" For demo sign-in email, open with "Should I use the email that you signed in with?" Never skip pronunciation or spelling the local part.
 - Phone: read the ten digits spaced out (e.g. "2 0 1 5 5 5 1 2 3 4") and ask if that is the best callback number.
 - Wait for a clear yes on each field before any new question. If they correct you, save the correction with save_plumbing_contact (that field only) and reconfirm again — then wait again.
 - After email read-back especially: stop talking and let them respond — do not jump straight to phone.

@@ -36,7 +36,8 @@ describe("voice-demo-plumbing-system-prompt", () => {
     const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
     expect(prompt).toContain("DEMO LOGIN EMAIL");
     expect(prompt).toContain("ademeo@gmail.com");
-    expect(prompt).toMatch(/ask FIRST/i);
+    expect(prompt).toMatch(/signed in with/i);
+    expect(prompt).toMatch(/pronounce the full address/i);
   });
 
   it("includes contact intake pacing for read-back pauses", () => {

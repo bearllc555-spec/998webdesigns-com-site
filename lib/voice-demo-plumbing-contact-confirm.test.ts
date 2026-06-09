@@ -9,9 +9,9 @@ import {
 } from "@/lib/voice-demo-plumbing-contact-confirm";
 
 describe("voice-demo-plumbing-contact-confirm", () => {
-  it("spells email local part for reconfirm read-back", () => {
+  it("pronounces email naturally for spoken read-back", () => {
     expect(plumbingContactFieldSpoken("email", "ademeo@gmail.com")).toBe(
-      "a d e m e o @gmail.com"
+      "ademeo at gmail dot com"
     );
   });
 
@@ -21,14 +21,16 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     );
   });
 
-  it("builds reconfirm message for email with spelling instruction", () => {
+  it("builds reconfirm message with pronounce, spell, domain, confirm", () => {
     const { message, focusField } = buildPlumbingContactReconfirmMessage({
       email: "ademeo@gmail.com",
     });
     expect(focusField).toBe("email");
-    expect(message).toContain("a d e m e o @gmail.com");
+    expect(message).toContain("ademeo at gmail dot com");
+    expect(message).toContain("a d e m e o");
+    expect(message).toContain("at gmail dot com");
     expect(message).toMatch(/letter-by-letter/i);
-    expect(message).toMatch(/STOP speaking/i);
+    expect(message).toMatch(/Is that the correct email/i);
     expect(message).toMatch(/THIS TURN ONLY/i);
   });
 
@@ -60,13 +62,15 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     expect(focusField).toBe("email");
   });
 
-  it("builds gate email offer block for demo login email", () => {
+  it("builds gate email offer with sign-in question and three-step read-back", () => {
     const block = buildPlumbingGateEmailOfferBlock("ademeo@gmail.com");
     expect(block).toContain("ademeo@gmail.com");
-    expect(block).toMatch(/ask FIRST/i);
-    expect(block).toContain("a d e m e o @gmail.com");
-    expect(block).toMatch(/do NOT ask them to say or spell/i);
-    expect(block).toMatch(/wait for yes/i);
+    expect(block).toMatch(/Should I use the email that you signed in with/i);
+    expect(block).toContain("ademeo at gmail dot com");
+    expect(block).toContain("a d e m e o");
+    expect(block).toContain("at gmail dot com");
+    expect(block).toMatch(/do NOT ask them to spell/i);
+    expect(block).toMatch(/Is that the correct email/i);
   });
 
   it("returns null for invalid gate email", () => {
@@ -78,7 +82,8 @@ describe("voice-demo-plumbing-contact-confirm", () => {
       email: "ademeo@gmail.com",
       emailFromDemoLogin: true,
     });
-    expect(message).toMatch(/demo login accepted/i);
+    expect(message).toMatch(/demo login/i);
+    expect(message).toContain("ademeo at gmail dot com");
   });
 
   it("skips reconfirm when name unchanged on file", () => {
