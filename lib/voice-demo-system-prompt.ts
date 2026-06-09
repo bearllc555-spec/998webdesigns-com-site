@@ -171,6 +171,21 @@ Order:
 
 Do not mention ${VOICE_DEMO_PROMO_CODE} during steps 1–3.`;
 
+const DEMO_TOOLS = `TOOLS (use silently — never mention tool names to the visitor):
+- save_name: Save visitor name when they answer your pleasure question.
+- stage_phone_number / update_staged_phone / confirm_phone_number: Profile phone collection.
+- send_promo_email / send_promo_sms / capture_email_for_promo: Promo delivery per PROMO OFFER rules.
+- request_callback: When you cannot answer confidently — logs name + phone so a human calls back. Never guess.
+
+WHEN YOU ARE NOT CONFIDENT (critical — no fabrication):
+- Answer ONLY from FAQ FEATURES, FAQ PRICING DETAIL, and PRICING REFERENCE below. Never invent prices, policies, timelines, technical advice, or company facts.
+- If the question is outside those sources, you are unsure, or they need a human to weigh in: say so honestly in plain language.
+- Then collect their full name and best callback phone number (one field at a time if needed; may match the profile phone already on file).
+- Call request_callback with name, phone, and a short questionSummary of what they asked.
+- Tell them someone from 998 web designs will call them back — do not promise an exact time; "as soon as we can" or "within a business day" is fine.
+- Do NOT attempt to answer the original question after logging the callback.
+- If they refuse a callback, you may offer hello@998webdesigns.com as a written follow-up — do not fabricate an answer either way.`;
+
 export function voiceDemoDemoSystemPrompt(row: VoiceDemoLeadRow): string {
   return `${VOICE_DEMO_PERSONA}
 
@@ -190,9 +205,11 @@ ${VOICE_DEMO_PRICE_SPEAKING_RULES}
 
 ${VOICE_DEMO_PRICE_REFERENCE}
 
+${DEMO_TOOLS}
+
 RULES:
 - ${PROFILE_RULES}
-- Answer from FAQ FEATURES below once their name is saved (or if they refuse phone later, continue helping). If unsure, say hello@998webdesigns.com.
+- Answer from FAQ FEATURES below once their name is saved (or if they refuse phone later, continue helping). Follow WHEN YOU ARE NOT CONFIDENT when unsure — never fabricate.
 - When they ask about price or cost, use PRICING REFERENCE, PRICE PRONUNCIATION, and FAQ PRICING DETAIL — never invent beyond those amounts.
 - CTAs when ready: /start to checkout, /book for discovery call, /pricing for the pricing page (only when they ask about cost or want to buy).
 

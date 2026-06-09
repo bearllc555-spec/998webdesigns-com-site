@@ -9,8 +9,8 @@ import {
   type VoiceDemoMicHandle,
 } from "@/lib/voice-demo-audio-client";
 import {
+  VOICE_DEMO_CALL_IDLE_HANGUP_MS,
   VOICE_DEMO_LIVE_MODEL,
-  VOICE_DEMO_MIC_MUTE_DISCONNECT_MS,
 } from "@/lib/voice-demo-constants";
 import {
   mergeTranscriptChunk,
@@ -62,7 +62,6 @@ import {
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
-import { PLUMBING_IDLE_HANGUP_MS } from "@/lib/voice-demo-plumbing-constants";
 import {
   buildPlumbingGoodbyeBeatNudge,
   PLUMBING_GOODBYE_BEAT_MS,
@@ -199,9 +198,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const farewellDisconnectingRef = useRef(false);
   const pendingClientHangupRef = useRef(false);
   const hangupReasonRef = useRef<VoiceDemoHangupReason | null>(null);
-  const micMuteDisconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const plumbingIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const plumbingCallWindingDownRef = useRef(false);
+  const callIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const callWindingDownRef = useRef(false);
   const plumbingGoodbyeBeatUntilRef = useRef(0);
   const plumbingGoodbyeNudgeSentRef = useRef(false);
   const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
@@ -909,17 +907,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     [clearPhoneCollectionState, clearPhoneSilenceTimer, setAwaitingPhoneDigits]
   );
 
-  const clearMicMuteDisconnectTimer = useCallback(() => {
-    if (micMuteDisconnectTimerRef.current) {
-      clearTimeout(micMuteDisconnectTimerRef.current);
-      micMuteDisconnectTimerRef.current = null;
-    }
-  }, []);
-
-  const clearPlumbingIdleTimer = useCallback(() => {
-    if (plumbingIdleTimerRef.current) {
-      clearTimeout(plumbingIdleTimerRef.current);
-      plumbingIdleTimerRef.current = null;
+  const clearCallIdleTimer = useCallback(() => {
+    if (callIdleTimerRef.current) {
+      clearTimeout(callIdleTimerRef.current);
+      callIdleTimerRef.current = null;
     }
   }, []);
 
@@ -977,10 +968,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     schedulePlumbingGoodbyeAudioFlush();
   }, [clearPlumbingGoodbyeBeat, schedulePlumbingGoodbyeAudioFlush, sendClientNudge]);
 
-  const touchPlumbingConversation = useCallback(() => {
-    if (verticalRef.current !== "plumbers") return;
-    clearPlumbingIdleTimer();
-  }, [clearPlumbingIdleTimer]);
+  const touchCallIdleReset = useCallback(() => {
+    if (!callWindingDownRef.current) return;
+    clearCallIdleTimer();
+  }, [clearCallIdleTimer]);
 
   const applyMicMuted = useCallback(
     (muted: boolean) => {
@@ -996,10 +987,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const disconnect = useCallback((intentional = true) => {
     clearReconnectTimer();
     clearPostNameGreetingTimer();
-    clearMicMuteDisconnectTimer();
-    clearPlumbingIdleTimer();
+    clearCallIdleTimer();
     clearPlumbingGoodbyeBeat();
-    plumbingCallWindingDownRef.current = false;
+    callWindingDownRef.current = false;
     applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
     if (intentional) {
@@ -1026,10 +1016,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     setConnecting(false);
   }, [
     applyMicMuted,
-    clearMicMuteDisconnectTimer,
+    clearCallIdleTimer,
     clearPhoneCollectionState,
     clearPostNameGreetingTimer,
     clearReconnectTimer,
+    clearPlumbingGoodbyeBeat,
     stopOrbLoop,
   ]);
 
@@ -1042,46 +1033,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const setMicMutedState = useCallback(
     (muted: boolean) => {
       if (!sessionRef.current) return;
-      clearMicMuteDisconnectTimer();
       applyMicMuted(muted);
-      const plumbing = verticalRef.current === "plumbers";
       if (muted) {
-        optionsRef.current.onStatus?.(
-          plumbing
-            ? "Microphone paused — tap the mic to resume."
-            : "Microphone muted — unmute within 10 seconds or the call will end."
-        );
-        if (!plumbing) {
-          const scheduleMuteDisconnect = () => {
-            clearMicMuteDisconnectTimer();
-            micMuteDisconnectTimerRef.current = setTimeout(() => {
-              micMuteDisconnectTimerRef.current = null;
-              if (playerRef.current?.isPlaying()) {
-                scheduleMuteDisconnect();
-                return;
-              }
-              optionsRef.current.onStatus?.(
-                "Muted too long — session ended. Tap Start voice to chat again."
-              );
-              hangupReasonRef.current = "mic_mute_timeout";
-              logVoiceDemoOps({
-                kind: "client_hangup_scheduled",
-                message: "Mic muted too long — hangup",
-                meta: { phase: getSessionPhase(), hangupReason: "mic_mute_timeout" },
-              });
-              disconnect(true);
-            }, VOICE_DEMO_MIC_MUTE_DISCONNECT_MS);
-          };
-          scheduleMuteDisconnect();
-        }
+        optionsRef.current.onStatus?.("Microphone paused — tap the mic to resume.");
       } else {
-        optionsRef.current.onStatus?.(
-          plumbing ? "Microphone on — Jarvis can hear you." : "Microphone on — Jarvis can hear you again."
-        );
-        touchPlumbingConversation();
+        optionsRef.current.onStatus?.("Microphone on — Jarvis can hear you.");
+        touchCallIdleReset();
       }
     },
-    [applyMicMuted, clearMicMuteDisconnectTimer, disconnect, getSessionPhase, touchPlumbingConversation]
+    [applyMicMuted, touchCallIdleReset]
   );
 
   const toggleMicMute = useCallback(() => {
@@ -1154,27 +1114,27 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, [disconnect, latchFarewellClosing]);
 
-  const schedulePlumbingIdleHangup = useCallback(() => {
-    if (verticalRef.current !== "plumbers" || !plumbingCallWindingDownRef.current) return;
+  const scheduleCallIdleHangup = useCallback(() => {
+    if (!callWindingDownRef.current) return;
     if (farewellDisconnectingRef.current || reconnectingRef.current) return;
-    clearPlumbingIdleTimer();
-    plumbingIdleTimerRef.current = setTimeout(() => {
-      plumbingIdleTimerRef.current = null;
-      if (verticalRef.current !== "plumbers" || !plumbingCallWindingDownRef.current) return;
+    clearCallIdleTimer();
+    callIdleTimerRef.current = setTimeout(() => {
+      callIdleTimerRef.current = null;
+      if (!callWindingDownRef.current) return;
       if (farewellDisconnectingRef.current || reconnectingRef.current) return;
       if (playerRef.current?.isPlaying() || toolInFlightRef.current > 0) {
-        schedulePlumbingIdleHangup();
+        scheduleCallIdleHangup();
         return;
       }
       hangupReasonRef.current = "plumbing_idle_silence";
       logVoiceDemoOps({
         kind: "client_hangup_scheduled",
-        message: "Plumbing idle silence — ending call",
+        message: "Call idle silence — ending call",
         meta: { phase: getSessionPhase(), hangupReason: "plumbing_idle_silence" },
       });
       void finishConversation();
-    }, PLUMBING_IDLE_HANGUP_MS);
-  }, [clearPlumbingIdleTimer, finishConversation, getSessionPhase]);
+    }, VOICE_DEMO_CALL_IDLE_HANGUP_MS);
+  }, [clearCallIdleTimer, finishConversation, getSessionPhase]);
 
   const scheduleFarewellHangup = useCallback(
     (reason: VoiceDemoHangupReason) => {
@@ -1196,7 +1156,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const endCall = useCallback(() => {
     if (!sessionRef.current || farewellDisconnectingRef.current) return;
-    clearPlumbingIdleTimer();
+    clearCallIdleTimer();
     hangupReasonRef.current = "user_disconnect";
     logVoiceDemoOps({
       kind: "client_hangup_scheduled",
@@ -1204,7 +1164,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       meta: { phase: getSessionPhase(), hangupReason: "user_disconnect" },
     });
     void finishConversation();
-  }, [clearPlumbingIdleTimer, finishConversation, getSessionPhase]);
+  }, [clearCallIdleTimer, finishConversation, getSessionPhase]);
 
   const endCallNow = useCallback(() => {
     if (farewellDisconnectingRef.current) return;
@@ -1335,11 +1295,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
             if (verticalRef.current === "plumbers") {
               if (name === "book_plumbing_appointment" && result.booked === true) {
-                plumbingCallWindingDownRef.current = true;
+                callWindingDownRef.current = true;
               }
-              if (name === "request_plumbing_callback" && result.ok === true) {
-                plumbingCallWindingDownRef.current = true;
+              if (name === "request_plumbing_callback" && result.callbackLogged === true) {
+                callWindingDownRef.current = true;
               }
+            } else if (name === "request_callback" && result.callbackLogged === true) {
+              callWindingDownRef.current = true;
             }
 
             responses.push(buildVoiceDemoToolResponse(call.id, name, result));
@@ -1404,7 +1366,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
             clearInputSilenceTimers();
-            touchPlumbingConversation();
+            touchCallIdleReset();
             playerRef.current ??= new VoiceDemoAudioPlayer();
             if (
               verticalRef.current === "plumbers" &&
@@ -1421,7 +1383,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
-        touchPlumbingConversation();
+        touchCallIdleReset();
         if (inText.trim() && playerRef.current?.isPlaying()) {
           if (!(nameSavedRef.current && !postNameLineSpokenRef.current)) {
             handleAssistantInterrupted();
@@ -1438,7 +1400,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               clearPlumbingGoodbyeBeat();
             } else if (isPlumbingVisitorEndingCall(userLine)) {
               visitorExplicitlyDoneRef.current = true;
-              plumbingCallWindingDownRef.current = true;
+              callWindingDownRef.current = true;
               schedulePlumbingGoodbyeBeat();
             }
           } else if (isUserExplicitlyDone(userLine)) {
@@ -1496,6 +1458,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
         const shouldWrapUpAfterThisTurn =
           modeRef.current === "demo" &&
+          !callWindingDownRef.current &&
           shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
             awaitingCollection: awaitingPhoneDigitsRef.current,
             farewellSent: jarvisFarewellSentRef.current,
@@ -1542,11 +1505,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               ? "goodbye_nudge_complete"
               : "client_final_goodbye";
             scheduleFarewellHangup(reason);
-          } else if (
-            verticalRef.current === "plumbers" &&
-            plumbingCallWindingDownRef.current
-          ) {
-            schedulePlumbingIdleHangup();
+          } else if (callWindingDownRef.current) {
+            scheduleCallIdleHangup();
           }
         })();
         if (modeRef.current === "demo") {
@@ -1565,6 +1525,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
           if (
             verticalRef.current !== "plumbers" &&
+            !callWindingDownRef.current &&
             shouldScheduleWrapUpAfterAnswer(assistantSnapshot, {
               awaitingCollection: awaitingPhoneDigitsRef.current,
               farewellSent: jarvisFarewellSentRef.current,
@@ -1615,8 +1576,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       flushPendingReconnect,
       schedulePostNameGreetingNudge,
       sendPostNameGreetingNudge,
-      schedulePlumbingIdleHangup,
-      touchPlumbingConversation,
+      scheduleCallIdleHangup,
+      touchCallIdleReset,
       schedulePlumbingGoodbyeBeat,
       clearPlumbingGoodbyeBeat,
       schedulePlumbingGoodbyeAudioFlush,
@@ -1663,9 +1624,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         visitorExplicitlyDoneRef.current = false;
         sessionResumptionHandleRef.current = null;
         sessionResumableRef.current = true;
-        plumbingCallWindingDownRef.current = false;
+        callWindingDownRef.current = false;
         clearPlumbingGoodbyeBeat();
-        clearPlumbingIdleTimer();
+        clearCallIdleTimer();
         reconnectAttemptRef.current = 0;
         reconnectExhaustedBonusRef.current = false;
         handleMessageChainRef.current = Promise.resolve();
@@ -2001,7 +1962,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     hadPlumbingLiveSessionRef.current = false;
     sessionResumptionHandleRef.current = null;
     sessionResumableRef.current = true;
-    plumbingCallWindingDownRef.current = false;
+    callWindingDownRef.current = false;
     reconnectPausedRef.current = false;
     reconnectAttemptRef.current = 0;
     reconnectExhaustedBonusRef.current = false;

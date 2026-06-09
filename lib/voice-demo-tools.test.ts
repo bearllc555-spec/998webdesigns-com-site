@@ -9,5 +9,6 @@ describe("voiceDemoToolDeclarations", () => {
     expect(names).not.toContain("end_conversation");
     expect(names).toContain("save_name");
     expect(names).toContain("send_promo_email");
+    expect(names).toContain("request_callback");
   });
 });

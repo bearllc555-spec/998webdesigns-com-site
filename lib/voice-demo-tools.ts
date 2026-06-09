@@ -19,6 +19,10 @@ import {
 import { sendVoiceDemoPromoEmail } from "@/lib/voice-demo-email";
 import { sendPromoBundleForLeadId, sendPromoToVerifiedEmailLead } from "@/lib/voice-demo-promo";
 import { deliverVoiceDemoPromoSms, promoSmsToolPayload } from "@/lib/voice-demo-promo-sms";
+import {
+  formatVoiceDemoCallbackSummary,
+  voiceDemoCallbackPhone,
+} from "@/lib/voice-demo-callback";
 import { buildSaveNameToolMessage } from "@/lib/voice-demo-greeting";
 import { spellPhoneForVoice } from "@/lib/voice-demo-spell-phone";
 import { Type, type ToolListUnion } from "@google/genai";
@@ -114,6 +118,23 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
           name: "decline_secondary_contact",
           description: "User declined to provide a phone number for their profile.",
           parameters: { type: Type.OBJECT, properties: {} },
+        },
+        {
+          name: "request_callback",
+          description:
+            "Log a human callback when you cannot answer the visitor's question confidently from the FAQ or pricing reference. Requires name, phone, and what they asked.",
+          parameters: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING, description: "Visitor's full name" },
+              phone: { type: Type.STRING, description: "Best callback number" },
+              questionSummary: {
+                type: Type.STRING,
+                description: "Short summary of the question you could not answer confidently",
+              },
+            },
+            required: ["name", "phone", "questionSummary"],
+          },
         },
       ],
     },
@@ -357,6 +378,36 @@ export async function executeVoiceDemoTool(
       ok: true,
       phoneConfirmed: true,
       message: "Phone saved to profile. Continue — no coupon unless they accept a later promo offer.",
+    };
+  }
+
+  if (name === "request_callback") {
+    const visitorName = typeof args.name === "string" ? args.name.trim() : "";
+    const phoneRaw = typeof args.phone === "string" ? args.phone : "";
+    const phone = voiceDemoCallbackPhone(phoneRaw) ?? row.phone;
+    const questionSummary =
+      typeof args.questionSummary === "string" ? args.questionSummary.trim() : "";
+
+    if (!visitorName || !phone || !questionSummary) {
+      return {
+        ok: false,
+        error: "Need visitor name, a valid callback phone, and questionSummary.",
+      };
+    }
+
+    await updateVoiceDemoLead(leadId, {
+      full_name: visitorName,
+      phone,
+      session_summary: formatVoiceDemoCallbackSummary(questionSummary),
+    });
+
+    return {
+      ok: true,
+      callbackLogged: true,
+      message:
+        `Callback logged for ${visitorName} at ${phone}. ` +
+        `Tell the visitor someone from 998 web designs will call them back as soon as we can — ` +
+        `do NOT guess an answer to their question.`,
     };
   }
 

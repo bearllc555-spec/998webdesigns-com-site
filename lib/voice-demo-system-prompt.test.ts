@@ -84,6 +84,13 @@ describe("voice-demo-system-prompt onboarding", () => {
     email_verified_at: "2026-06-07T00:00:00.000Z",
   } as VoiceDemoLeadRow;
 
+  it("includes callback fallback when not confident", () => {
+    const prompt = voiceDemoDemoSystemPrompt(baseRow);
+    expect(prompt).toMatch(/WHEN YOU ARE NOT CONFIDENT/i);
+    expect(prompt).toMatch(/request_callback/i);
+    expect(prompt).toMatch(/never fabricate/i);
+  });
+
   it("asks how may I help after name and forbids profile complete aloud", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_POST_NAME_LINE);

@@ -6,6 +6,7 @@ import {
   parseVoiceDemoOpsLog,
   summarizeVoiceDemoOpsWarnings,
 } from "@/lib/voice-demo-ops";
+import { isVoiceDemoCallbackSummary } from "@/lib/voice-demo-callback";
 import { formatPossibleLocationLabel } from "@/lib/voice-demo-location";
 
 export type { CrmInboxFlag };
@@ -258,11 +259,11 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     );
     const opsLog = parseVoiceDemoOpsLog(row.ops_log);
     const opsWarnings = summarizeVoiceDemoOpsWarnings(opsLog);
+    const sessionSummary = (row.session_summary as string | null) ?? null;
     const opsNotes = opsWarnings
-      ? [row.session_summary as string | null, `Jarvis ops:\n${opsWarnings}`]
-          .filter(Boolean)
-          .join("\n\n")
-      : ((row.session_summary as string) ?? null);
+      ? [sessionSummary, `Jarvis ops:\n${opsWarnings}`].filter(Boolean).join("\n\n")
+      : sessionSummary;
+    const callbackRequested = isVoiceDemoCallbackSummary(sessionSummary);
     items.push({
       id: row.id,
       source: "voice_demo",
@@ -270,17 +271,19 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       title: (row.full_name as string) || "Voice demo",
       email: (row.email as string) ?? "",
       businessName: "",
-      status: verified ? "verified" : "pending_verify",
+      status: callbackRequested ? "callback_requested" : verified ? "verified" : "pending_verify",
       notes: opsNotes,
       stripeSessionId: null,
       stripeSubscriptionId: null,
-      message: opsWarnings
-        ? `Jarvis ops (${countVoiceDemoOpsWarnings(opsLog)}): see notes`
-        : locationLabel
-          ? `Possible location: ${locationLabel}`
-          : row.promo_sent_at
-            ? `Promo ${row.promo_code ?? "sent"}`
-            : `Channel: ${row.primary_channel}`,
+      message: callbackRequested
+        ? sessionSummary
+        : opsWarnings
+          ? `Jarvis ops (${countVoiceDemoOpsWarnings(opsLog)}): see notes`
+          : locationLabel
+            ? `Possible location: ${locationLabel}`
+            : row.promo_sent_at
+              ? `Promo ${row.promo_code ?? "sent"}`
+              : `Channel: ${row.primary_channel}`,
       phone: (row.phone as string) ?? null,
       payload: {
         primaryChannel: row.primary_channel,

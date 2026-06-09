@@ -7,8 +7,11 @@ export const VOICE_DEMO_VOICE_NAME = "Schedar";
 /** Jarvis assistant audio playback rate (1 = normal; <1 = slower). */
 export const VOICE_DEMO_PLAYBACK_RATE = 0.95;
 
-/** End the voice session if the visitor leaves the mic muted this long (ms). */
+/** Legacy — mic is pause-only (no auto-hangup on mute) for all Jarvis demos. */
 export const VOICE_DEMO_MIC_MUTE_DISCONNECT_MS = 10_000;
+
+/** Idle hangup after callback logged or plumbing booking/goodbye wind-down (ms). */
+export const VOICE_DEMO_CALL_IDLE_HANGUP_MS = 4_000;
 
 /** Channel-specific promo — design fee only; not on public FAQ. */
 export const VOICE_DEMO_PROMO_CODE = "VOICE20";
