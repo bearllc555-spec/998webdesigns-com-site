@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PlumbingDemoCapabilities } from "@/components/demo/PlumbingDemoCapabilities";
 import { PlumbingDemoWidget } from "@/components/VoiceDemo/PlumbingDemoWidget";
 import {
   PLUMBING_DEMO_BUSINESS_NAME,
@@ -55,6 +56,8 @@ export default function PlumbersDemoPage() {
         </div>
 
         <PlumbingDemoWidget />
+
+        <PlumbingDemoCapabilities />
 
         <p className="mt-8 text-center text-xs text-ink-soft">
           Demo by{" "}
