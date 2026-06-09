@@ -5,6 +5,7 @@ import { Mic, MicOff, PhoneOff } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceDemoLiveOpsTrace } from "@/components/demo/VoiceDemoLiveOpsTrace";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
+import { PlumbingDemoPostCta } from "@/components/demo/PlumbingDemoPostCta";
 import { PlumbingJarvisOrb } from "@/components/VoiceDemo/PlumbingJarvisOrb";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
 import {
@@ -24,6 +25,7 @@ export function PlumbingDemoWidget() {
   const [status, setStatus] = useState("");
   const [caption, setCaption] = useState<VoiceDemoCaption | null>(null);
   const [configured, setConfigured] = useState<boolean | null>(null);
+  const [postDemoCta, setPostDemoCta] = useState(false);
   const [dailyQuota, setDailyQuota] = useState<{
     used: number;
     limit: number;
@@ -40,6 +42,7 @@ export function PlumbingDemoWidget() {
     },
     onConversationEnd: () => {
       setCaption(null);
+      setPostDemoCta(true);
     },
     onStatus: setStatus,
     onCaption: setCaption,
@@ -134,7 +137,8 @@ export function PlumbingDemoWidget() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg rounded-2xl border border-rule bg-bg shadow-lg">
+    <div className="mx-auto w-full max-w-lg">
+    <div className="rounded-2xl border border-rule bg-bg shadow-lg">
       <div className="flex items-center justify-between border-b border-rule px-4 py-3">
         <div>
           <p className="font-display text-sm font-semibold text-ink">{PLUMBING_DEMO_BUSINESS_NAME}</p>
@@ -306,6 +310,9 @@ export function PlumbingDemoWidget() {
       {caption?.role === "user" && configured && phase === "demo" && (
         <VoiceCaptionBar caption={caption} />
       )}
+    </div>
+
+    <PlumbingDemoPostCta emphasized={postDemoCta} />
     </div>
   );
 }

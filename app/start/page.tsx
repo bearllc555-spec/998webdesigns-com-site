@@ -16,12 +16,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function StartPage() {
+export default async function StartPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ promo?: string }>;
+}) {
+  const params = await searchParams;
+  const initialPromo = typeof params.promo === "string" ? params.promo : "";
+
   return (
     <div className="min-h-screen bg-bg">
       <Nav />
       <main id="main">
-        <LeadForm />
+        <LeadForm initialPromo={initialPromo} />
       </main>
       <Footer />
     </div>

@@ -82,10 +82,18 @@ const ACTIONS = ["Call", "Book", "Buy", "Request a quote", "Learn", "Other"];
 const PAGES = ["Home", "About", "Services", "Portfolio", "Pricing", "Blog", "Contact"];
 const ASSETS = ["Logo", "Photos", "Brand colors", "Existing copy"];
 
-export function LeadForm() {
+type LeadFormProps = {
+  /** Prefill promo from /start?promo=CODE */
+  initialPromo?: string;
+};
+
+export function LeadForm({ initialPromo = "" }: LeadFormProps) {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(initial);
+  const [form, setForm] = useState<FormState>(() => ({
+    ...initial,
+    promoCode: initialPromo.trim().toUpperCase(),
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
