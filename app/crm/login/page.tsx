@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CrmLoginForm } from "@/components/crm/CrmLoginForm";
+import { SiteVersionPill } from "@/components/SiteVersionPill";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { isCrmAuthenticated } from "@/lib/crm-session";
-import { CRM_VERSION } from "@/lib/crm-version";
 
 function safeNextPath(raw: string | undefined): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/crm/login")) {
@@ -34,15 +34,13 @@ export default async function CrmLoginPage({ searchParams }: Props) {
         <ThemeToggle />
       </div>
       <div className="mb-8 text-center">
-        <p className="mb-3 flex justify-center">
-          <span className="rounded-full bg-rule-soft px-2 py-0.5 text-[10px] font-medium tracking-wider text-slate">
-            {CRM_VERSION}
-          </span>
-        </p>
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
           998 web designs
         </p>
-        <h1 className="mt-2 font-display text-3xl font-medium">CRM sign in</h1>
+        <h1 className="mt-2 flex flex-wrap items-center justify-center gap-2 font-display text-3xl font-medium">
+          CRM sign in
+          <SiteVersionPill />
+        </h1>
         <p className="mt-2 text-sm text-ink-soft">Private — not indexed.</p>
       </div>
       <CrmLoginForm />

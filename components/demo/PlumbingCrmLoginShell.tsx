@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CrmLoginForm } from "@/components/crm/CrmLoginForm";
+import { SiteVersionPill } from "@/components/SiteVersionPill";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { PLUMBING_CRM_VERSION } from "@/lib/plumbing-crm-version";
 import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants";
 
 export function PlumbingCrmLoginShell() {
@@ -19,15 +19,13 @@ export function PlumbingCrmLoginShell() {
         <ThemeToggle />
       </div>
       <div className="mb-8 text-center">
-        <p className="mb-3 flex justify-center">
-          <span className="rounded-full bg-rule-soft px-2 py-0.5 text-[10px] font-medium tracking-wider text-slate">
-            {PLUMBING_CRM_VERSION}
-          </span>
-        </p>
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
           {PLUMBING_DEMO_BUSINESS_NAME} demo
         </p>
-        <h1 className="mt-2 font-display text-3xl font-medium">Demo CRM sign in</h1>
+        <h1 className="mt-2 flex flex-wrap items-center justify-center gap-2 font-display text-3xl font-medium">
+          Demo CRM sign in
+          <SiteVersionPill />
+        </h1>
         <p className="mt-2 text-sm text-ink-soft">Private — not indexed.</p>
       </div>
       <CrmLoginForm redirectTo="/demo/plumbers/crm" />

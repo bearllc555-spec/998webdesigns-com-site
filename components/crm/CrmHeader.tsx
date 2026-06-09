@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CrmAdminMenu } from "@/components/crm/CrmAdminMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SiteVersionPill } from "@/components/SiteVersionPill";
 import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
-import { CRM_VERSION } from "@/lib/crm-version";
 
 type CrmHeaderProps = {
   title: string;
@@ -38,20 +38,15 @@ export function CrmHeader({
   return (
     <header className="shrink-0 border-b border-rule bg-bg">
       <div className={`${CRM_PAGE_CONTAINER} py-4`}>
-        <p className="mb-3 flex items-center gap-2">
-          <span
-            className="rounded-full bg-rule-soft px-2 py-0.5 text-[10px] font-medium tracking-wider text-slate"
-            aria-label={`CRM version ${CRM_VERSION}`}
-          >
-            {CRM_VERSION}
-          </span>
-        </p>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
               998 CRM
             </p>
-            <h1 className="font-display text-2xl font-medium">{title}</h1>
+            <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-medium">
+              {title}
+              <SiteVersionPill />
+            </h1>
             {subtitle && <p className="mt-1 text-sm text-ink-soft">{subtitle}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-2">

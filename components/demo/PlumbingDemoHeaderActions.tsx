@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { SITE_VERSION } from "@/lib/version";
 
 export function PlumbingDemoHeaderActions() {
   return (
@@ -14,9 +13,6 @@ export function PlumbingDemoHeaderActions() {
         Demo CRM
       </Link>
       <ThemeToggle />
-      <span className="rounded-full border border-rule px-2 py-0.5 text-xs text-ink-soft">
-        {SITE_VERSION}
-      </span>
     </div>
   );
 }

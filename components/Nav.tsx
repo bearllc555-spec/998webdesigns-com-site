@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { onHomeLogoClick } from "@/lib/home-link";
 import { SITE_VERSION } from "@/lib/version";
 import { ContactModal } from "./ContactModal";
+import { SiteVersionPill } from "./SiteVersionPill";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_LINKS = [
@@ -55,9 +56,7 @@ export function Nav() {
               <span className="text-accent font-bold">998</span>
               <span className="text-ink">webdesigns</span>
             </span>
-            <span className="rounded-full bg-rule-soft px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-ink-soft">
-              {SITE_VERSION}
-            </span>
+            <SiteVersionPill />
           </Link>
 
           <div className="hidden items-center gap-5 text-sm text-ink-soft md:flex">

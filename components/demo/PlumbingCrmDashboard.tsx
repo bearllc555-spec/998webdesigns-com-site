@@ -6,9 +6,9 @@ import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { type CrmFeedItem, isCrmFeedItemUnread } from "@/lib/crm-feed";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
+import { SiteVersionPill } from "@/components/SiteVersionPill";
 import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
 import { VoiceDemoOpsTimeline } from "@/components/demo/VoiceDemoOpsTimeline";
-import { PLUMBING_CRM_VERSION } from "@/lib/plumbing-crm-version";
 import { parseVoiceDemoOpsLog, type VoiceDemoOpsEvent } from "@/lib/voice-demo-ops";
 import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants";
 
@@ -181,17 +181,15 @@ export function PlumbingCrmDashboard() {
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <header className="shrink-0 border-b border-rule bg-bg">
         <div className={`${CRM_PAGE_CONTAINER} py-4`}>
-          <p className="mb-3 flex items-center gap-2">
-            <span className="rounded-full bg-rule-soft px-2 py-0.5 text-[10px] font-medium tracking-wider text-slate">
-              {PLUMBING_CRM_VERSION}
-            </span>
-          </p>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
                 {PLUMBING_DEMO_BUSINESS_NAME} demo
               </p>
-              <h1 className="font-display text-2xl font-medium">Demo CRM</h1>
+              <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-medium">
+                Demo CRM
+                <SiteVersionPill />
+              </h1>
               <p className="mt-1 text-sm text-ink-soft">
                 {unreadCount > 0 ? `${unreadCount} unread · ` : ""}
                 {items.length} callers · {bookedCount} appointments
