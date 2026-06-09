@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CrmActivityInbox } from "@/components/crm/CrmActivityInbox";
 import { CrmHeader } from "@/components/crm/CrmHeader";
@@ -72,6 +73,14 @@ export function PlumbingCrmDashboard() {
         afterLogoutPath="/demo/plumbers/crm"
         messagesHref="/demo/plumbers/crm"
         secondaryNavLink={{ href: "/demo/plumbers", label: "Voice demo" }}
+        actions={
+          <Link
+            href="/demo/plumbers"
+            className="rounded-full border border-rule px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-accent hover:text-ink"
+          >
+            Demo Jarvis
+          </Link>
+        }
         onRefresh={load}
         refreshDisabled={loading}
       />

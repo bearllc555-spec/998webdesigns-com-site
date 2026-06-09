@@ -9,15 +9,13 @@ export function PlumbingCrmLoginShell() {
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <div className="relative border-b border-rule px-5 py-4">
-        <div className="absolute left-5 top-4 z-10">
+        <div className="absolute right-5 top-4 z-10 flex items-center gap-2">
           <Link
             href="/demo/plumbers"
-            className="rounded-full border border-rule px-4 py-2 text-sm text-ink-soft hover:border-accent/50"
+            className="rounded-full border border-rule px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-accent hover:text-ink"
           >
-            Voice demo
+            Demo Jarvis
           </Link>
-        </div>
-        <div className="absolute right-5 top-4 z-10">
           <ThemeToggle />
         </div>
         <div className="mx-auto max-w-lg pt-10 text-center">
