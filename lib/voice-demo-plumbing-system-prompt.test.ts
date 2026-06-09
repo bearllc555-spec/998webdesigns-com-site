@@ -38,4 +38,11 @@ describe("voice-demo-plumbing-system-prompt", () => {
     expect(prompt).toContain("ademeo@gmail.com");
     expect(prompt).toMatch(/ask FIRST/i);
   });
+
+  it("includes contact intake pacing for read-back pauses", () => {
+    const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
+    expect(prompt).toMatch(/CONTACT INTAKE PACING/i);
+    expect(prompt).toMatch(/never chain/i);
+    expect(prompt).toMatch(/do not jump straight to phone/i);
+  });
 });

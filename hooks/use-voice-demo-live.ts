@@ -67,6 +67,11 @@ import {
 } from "@/lib/voice-demo-plumbing-greeting";
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
 import {
+  buildPlumbingContactPauseNudge,
+  type PlumbingContactField,
+} from "@/lib/voice-demo-plumbing-contact-confirm";
+import { PLUMBING_CONTACT_POST_READBACK_PAUSE_MS } from "@/lib/voice-demo-plumbing-constants";
+import {
   buildPlumbingExitConcernsNudge,
   buildPlumbingFinalGoodbyeNudge,
   isPlumbingAssistantFarewell,
@@ -223,6 +228,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
   const plumbingGoodbyeAudioFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plumbingGoodbyeNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const plumbingContactPauseFieldRef = useRef<PlumbingContactField | null>(null);
   const schedulePostFarewellHangupRef = useRef<(delayMs?: number) => void>(() => {});
   const endCallGlowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endCallBlinkArmedRef = useRef(false);
@@ -957,6 +963,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }, VOICE_DEMO_END_CALL_BLINK_DELAY_MS);
   }, []);
 
+  const clearPlumbingContactPause = useCallback(() => {
+    plumbingContactPauseFieldRef.current = null;
+  }, []);
+
   const clearPlumbingGoodbyeBeat = useCallback(() => {
     plumbingGoodbyeBeatUntilRef.current = 0;
     plumbingGoodbyeNudgeSentRef.current = false;
@@ -1033,6 +1043,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearCallIdleTimer();
     clearEndCallGlow();
     clearPlumbingGoodbyeBeat();
+    clearPlumbingContactPause();
     callWindingDownRef.current = false;
     applyMicMuted(false);
     intentionalDisconnectRef.current = intentional;
@@ -1065,6 +1076,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearPostNameGreetingTimer,
     clearReconnectTimer,
     clearPlumbingGoodbyeBeat,
+    clearPlumbingContactPause,
     clearEndCallGlow,
     stopOrbLoop,
   ]);
@@ -1403,6 +1415,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             }
 
             if (verticalRef.current === "plumbers") {
+              if (name === "save_plumbing_contact" && result.ok === true) {
+                const field = result.reconfirmField;
+                if (
+                  field === "name" ||
+                  field === "serviceAddress" ||
+                  field === "email" ||
+                  field === "phone"
+                ) {
+                  plumbingContactPauseFieldRef.current = field;
+                }
+              }
               if (name === "book_plumbing_appointment" && result.booked === true) {
                 callWindingDownRef.current = true;
               }
@@ -1503,6 +1526,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         clearWrapUpTimer();
         emitCaption("user", inText);
+        if (inText.trim() && plumbingContactPauseFieldRef.current) {
+          plumbingContactPauseFieldRef.current = null;
+        }
         const userLine = captionTextRef.current.trim();
 
         if (
@@ -1652,6 +1678,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
         void (async () => {
           await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
+          const contactPauseField = plumbingContactPauseFieldRef.current;
+          if (
+            contactPauseField &&
+            verticalRef.current === "plumbers" &&
+            modeRef.current === "demo" &&
+            !farewellDisconnectingRef.current &&
+            !reconnectingRef.current
+          ) {
+            await sleep(PLUMBING_CONTACT_POST_READBACK_PAUSE_MS);
+            if (plumbingContactPauseFieldRef.current === contactPauseField) {
+              plumbingContactPauseFieldRef.current = null;
+              await sendClientNudge(buildPlumbingContactPauseNudge(contactPauseField));
+            }
+          }
           await flushClientNudges();
           if (farewellDisconnectingRef.current || reconnectingRef.current) return;
           if (modeRef.current !== "demo" || !postNameLineSpokenRef.current) return;
@@ -1821,6 +1861,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         plumbingExitConcernsAskedRef.current = false;
         plumbingAwaitingConcernsAnswerRef.current = false;
         clearPlumbingGoodbyeBeat();
+        clearPlumbingContactPause();
         clearCallIdleTimer();
         clearEndCallGlow();
         postFarewellDeadlineRef.current = 0;

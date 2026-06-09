@@ -22,6 +22,9 @@ export {
   VOICE_DEMO_POST_FAREWELL_IDLE_MS as PLUMBING_POST_FAREWELL_IDLE_MS,
 } from "@/lib/voice-demo-constants";
 
+/** After a contact read-back, client nudge fires once playback ends (ms). */
+export const PLUMBING_CONTACT_POST_READBACK_PAUSE_MS = 2_000;
+
 /** After booking wind-down (pre-farewell), idle hangup uses shared demo constant. */
 /** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS — kept for plumbing imports. */
 export const PLUMBING_IDLE_HANGUP_MS = VOICE_DEMO_CALL_IDLE_HANGUP_MS;

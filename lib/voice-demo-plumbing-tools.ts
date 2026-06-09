@@ -267,19 +267,24 @@ export async function executeVoiceDemoPlumbingTool(
     const emailFromDemoLogin =
       Boolean(email && isValidEmail(email) && gateEmail && email === gateEmail);
 
-    const reconfirmMessage = buildPlumbingContactReconfirmMessage({
-      name: visitorName || undefined,
-      serviceAddress: serviceAddress || undefined,
-      email: email && isValidEmail(email) ? email : undefined,
-      phone: phone || undefined,
-      emailFromDemoLogin,
-    });
+    const { message: reconfirmMessage, focusField: reconfirmField } =
+      buildPlumbingContactReconfirmMessage({
+        name: visitorName || undefined,
+        serviceAddress: serviceAddress || undefined,
+        email: email && isValidEmail(email) ? email : undefined,
+        phone: phone || undefined,
+        emailFromDemoLogin,
+      });
 
     const spoken: Record<string, string> = {};
-    if (visitorName) spoken.name = visitorName;
-    if (serviceAddress) spoken.serviceAddress = serviceAddress;
-    if (email && isValidEmail(email)) spoken.email = plumbingContactFieldSpoken("email", email)!;
-    if (phone) {
+    if (reconfirmField === "name" && visitorName) spoken.name = visitorName;
+    if (reconfirmField === "serviceAddress" && serviceAddress) {
+      spoken.serviceAddress = serviceAddress;
+    }
+    if (reconfirmField === "email" && email && isValidEmail(email)) {
+      spoken.email = plumbingContactFieldSpoken("email", email)!;
+    }
+    if (reconfirmField === "phone" && phone) {
       const phoneSpoken = plumbingContactFieldSpoken("phone", phone);
       if (phoneSpoken) spoken.phone = phoneSpoken;
     }
@@ -291,6 +296,7 @@ export async function executeVoiceDemoPlumbingTool(
     return {
       ok: true,
       message,
+      ...(reconfirmField ? { reconfirmField } : {}),
       ...(Object.keys(spoken).length > 0 ? { spoken } : {}),
     };
   }
