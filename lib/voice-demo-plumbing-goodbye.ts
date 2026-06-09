@@ -1,3 +1,7 @@
+import {
+  assistantFarewellTail,
+  isAssistantFarewell,
+} from "@/lib/voice-demo-farewell";
 import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants";
 
 /** Natural pause before Jarvis signs off after the caller confirms concerns. */
@@ -32,4 +36,16 @@ export function buildPlumbingFinalGoodbyeNudge(): string {
 /** @deprecated Use buildPlumbingFinalGoodbyeNudge — kept for test compatibility. */
 export function buildPlumbingGoodbyeBeatNudge(): string {
   return buildPlumbingFinalGoodbyeNudge();
+}
+
+/** Jarvis delivered the plumbing final sign-off (thanks for calling + goodbye). */
+export function isPlumbingAssistantFarewell(text: string): boolean {
+  if (isAssistantFarewell(text)) return true;
+  const tail = assistantFarewellTail(text).toLowerCase();
+  if (!tail) return false;
+  if (/\b(thanks for calling|thank you for calling)\b/.test(tail)) return true;
+  if (/\b(thank you|thanks)\b/.test(tail) && /\b(goodbye|good bye|good day)\b/.test(tail)) {
+    return true;
+  }
+  return false;
 }

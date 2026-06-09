@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildPlumbingExitConcernsNudge,
   buildPlumbingFinalGoodbyeNudge,
+  isPlumbingAssistantFarewell,
   PLUMBING_EXIT_CONCERNS_CUE,
   PLUMBING_EXIT_CONCERNS_QUESTION,
   PLUMBING_FINAL_GOODBYE_CUE,
@@ -25,5 +26,16 @@ describe("voice-demo-plumbing-goodbye", () => {
     expect(nudge).toContain(PLUMBING_FINAL_GOODBYE_CUE);
     expect(nudge).toMatch(/Metro Plumbing/i);
     expect(nudge).toMatch(/not rushed|final line/i);
+  });
+
+  it("detects plumbing assistant farewell phrasing", () => {
+    expect(
+      isPlumbingAssistantFarewell(
+        "Thanks for calling Metro Plumbing and Drain — goodbye!"
+      )
+    ).toBe(true);
+    expect(isPlumbingAssistantFarewell("Your appointment is Thursday at 2.")).toBe(
+      false
+    );
   });
 });

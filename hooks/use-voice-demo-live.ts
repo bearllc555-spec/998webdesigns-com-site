@@ -25,7 +25,6 @@ import {
 } from "@/lib/voice-demo-jarvis-audio-level";
 import {
   buildFarewellHoldNudge,
-  isAssistantFarewell,
   isUserExplicitlyDone,
   isUserFarewellEcho,
   shouldClientScheduleFarewellHangup,
@@ -62,11 +61,12 @@ import {
   plumbingDemoOpeningStatus,
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
-import { PLUMBING_POST_FAREWELL_IDLE_MS } from "@/lib/voice-demo-plumbing-constants";
+import { PLUMBING_POST_FAREWELL_ACK_MS, PLUMBING_POST_FAREWELL_IDLE_MS } from "@/lib/voice-demo-plumbing-constants";
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
 import {
   buildPlumbingExitConcernsNudge,
   buildPlumbingFinalGoodbyeNudge,
+  isPlumbingAssistantFarewell,
   PLUMBING_GOODBYE_BEAT_MS,
 } from "@/lib/voice-demo-plumbing-goodbye";
 import {
@@ -74,6 +74,7 @@ import {
   isPlumbingVisitorConfirmedConcerns,
   isPlumbingVisitorDeclinedConcerns,
   isPlumbingVisitorEndingCall,
+  isPlumbingVisitorFarewellAck,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
 import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
@@ -219,7 +220,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
   const plumbingGoodbyeAudioFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plumbingGoodbyeNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const schedulePlumbingPostFarewellHangupRef = useRef<() => void>(() => {});
+  const schedulePlumbingPostFarewellHangupRef = useRef<(delayMs?: number) => void>(() => {});
   const lastAssistantTextRef = useRef("");
   const wrapUpQuestionIndexRef = useRef(0);
   const wrapUpCueLeakRecoverySentRef = useRef(false);
@@ -1155,35 +1156,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }, VOICE_DEMO_CALL_IDLE_HANGUP_MS);
   }, [clearCallIdleTimer, finishConversation, getSessionPhase]);
 
-  const schedulePlumbingPostFarewellHangup = useCallback(() => {
-    if (verticalRef.current !== "plumbers") return;
-    if (!jarvisFarewellSentRef.current) return;
-    if (farewellDisconnectingRef.current || reconnectingRef.current) return;
-    clearCallIdleTimer();
-    callIdleTimerRef.current = setTimeout(() => {
-      callIdleTimerRef.current = null;
-      if (verticalRef.current !== "plumbers" || !jarvisFarewellSentRef.current) return;
-      if (farewellDisconnectingRef.current || reconnectingRef.current) return;
-      if (playerRef.current?.isPlaying() || toolInFlightRef.current > 0) {
-        schedulePlumbingPostFarewellHangup();
-        return;
-      }
-      hangupReasonRef.current = "plumbing_post_farewell_idle";
-      logVoiceDemoOps({
-        kind: "client_hangup_scheduled",
-        message: "Plumbing post-farewell silence — ending call",
-        meta: {
-          phase: getSessionPhase(),
-          hangupReason: "plumbing_post_farewell_idle",
-          idleMs: PLUMBING_POST_FAREWELL_IDLE_MS,
-        },
-      });
-      void finishConversation();
-    }, PLUMBING_POST_FAREWELL_IDLE_MS);
-  }, [clearCallIdleTimer, finishConversation, getSessionPhase]);
-
-  schedulePlumbingPostFarewellHangupRef.current = schedulePlumbingPostFarewellHangup;
-
   const scheduleFarewellHangup = useCallback(
     (reason: VoiceDemoHangupReason) => {
       if (farewellDisconnectingRef.current || reconnectingRef.current) return;
@@ -1214,23 +1186,62 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     void finishConversation();
   }, [clearCallIdleTimer, finishConversation, getSessionPhase]);
 
-  const endCallNow = useCallback(() => {
-    if (farewellDisconnectingRef.current) return;
-    farewellDisconnectingRef.current = true;
-    hangupReasonRef.current = "visitor_farewell_echo";
-    logVoiceDemoOps({
-      kind: "client_hangup_scheduled",
-      message: "Visitor farewell echo — immediate hangup",
-      meta: { phase: getSessionPhase(), hangupReason: "visitor_farewell_echo" },
-    });
-    latchFarewellClosing();
-    micRef.current?.stop();
-    optionsRef.current.onConversationEnd?.();
-    optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
-    disconnect(true);
-    farewellDisconnectingRef.current = false;
-    lastAssistantTextRef.current = "";
-  }, [disconnect, getSessionPhase, latchFarewellClosing]);
+  const endCallNow = useCallback(
+    (reason: VoiceDemoHangupReason = "visitor_farewell_echo") => {
+      if (farewellDisconnectingRef.current) return;
+      farewellDisconnectingRef.current = true;
+      hangupReasonRef.current = reason;
+      logVoiceDemoOps({
+        kind: "client_hangup_scheduled",
+        message: "Visitor farewell echo — immediate hangup",
+        meta: { phase: getSessionPhase(), hangupReason: reason },
+      });
+      latchFarewellClosing();
+      clearCallIdleTimer();
+      micRef.current?.stop();
+      optionsRef.current.onConversationEnd?.();
+      optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
+      disconnect(true);
+      farewellDisconnectingRef.current = false;
+      lastAssistantTextRef.current = "";
+    },
+    [clearCallIdleTimer, disconnect, getSessionPhase, latchFarewellClosing]
+  );
+
+  const schedulePlumbingPostFarewellHangup = useCallback(
+    (delayMs = PLUMBING_POST_FAREWELL_IDLE_MS) => {
+      if (verticalRef.current !== "plumbers") return;
+      if (!jarvisFarewellSentRef.current) return;
+      if (farewellDisconnectingRef.current || reconnectingRef.current) return;
+      clearCallIdleTimer();
+      callIdleTimerRef.current = setTimeout(() => {
+        callIdleTimerRef.current = null;
+        if (verticalRef.current !== "plumbers" || !jarvisFarewellSentRef.current) return;
+        if (farewellDisconnectingRef.current || reconnectingRef.current) return;
+        if (playerRef.current?.isPlaying() || toolInFlightRef.current > 0) {
+          schedulePlumbingPostFarewellHangup(delayMs);
+          return;
+        }
+        const reason: VoiceDemoHangupReason =
+          delayMs <= PLUMBING_POST_FAREWELL_ACK_MS
+            ? "plumbing_post_farewell_ack"
+            : "plumbing_post_farewell_idle";
+        logVoiceDemoOps({
+          kind: "client_hangup_scheduled",
+          message: "Plumbing post-farewell — ending call",
+          meta: {
+            phase: getSessionPhase(),
+            hangupReason: reason,
+            idleMs: delayMs,
+          },
+        });
+        endCallNow(reason);
+      }, delayMs);
+    },
+    [clearCallIdleTimer, endCallNow, getSessionPhase]
+  );
+
+  schedulePlumbingPostFarewellHangupRef.current = schedulePlumbingPostFarewellHangup;
 
   const handleMessage = useCallback(
     async (message: LiveMessage) => {
@@ -1435,7 +1446,6 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
-        touchCallIdleReset();
         if (inText.trim() && playerRef.current?.isPlaying()) {
           if (!(nameSavedRef.current && !postNameLineSpokenRef.current)) {
             handleAssistantInterrupted();
@@ -1444,6 +1454,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         clearWrapUpTimer();
         emitCaption("user", inText);
         const userLine = captionTextRef.current.trim();
+
+        if (
+          jarvisFarewellSentRef.current &&
+          modeRef.current === "demo" &&
+          verticalRef.current === "plumbers"
+        ) {
+          schedulePlumbingPostFarewellHangup(
+            isPlumbingVisitorFarewellAck(userLine)
+              ? PLUMBING_POST_FAREWELL_ACK_MS
+              : PLUMBING_POST_FAREWELL_IDLE_MS
+          );
+        } else {
+          touchCallIdleReset();
+        }
 
         if (modeRef.current === "demo") {
           if (
@@ -1483,7 +1507,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               }
             } else if (isPlumbingVisitorEndingCall(userLine)) {
               if (jarvisFarewellSentRef.current) {
-                schedulePlumbingPostFarewellHangup();
+                schedulePlumbingPostFarewellHangup(
+                  isPlumbingVisitorFarewellAck(userLine)
+                    ? PLUMBING_POST_FAREWELL_ACK_MS
+                    : PLUMBING_POST_FAREWELL_IDLE_MS
+                );
                 return;
               }
               if (!plumbingExitConcernsAskedRef.current) {
@@ -1522,13 +1550,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
           schedulePhoneSilenceNudge();
         }
-        if (jarvisFarewellSentRef.current && modeRef.current === "demo") {
-          if (verticalRef.current === "plumbers") {
-            schedulePlumbingPostFarewellHangup();
-          } else if (isUserFarewellEcho(inText)) {
-            endCallNow();
-            return;
-          }
+        if (
+          jarvisFarewellSentRef.current &&
+          modeRef.current === "demo" &&
+          verticalRef.current !== "plumbers" &&
+          isUserFarewellEcho(inText)
+        ) {
+          endCallNow();
+          return;
         }
       }
 
@@ -1552,7 +1581,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           callWindingDownRef.current &&
           plumbingGoodbyeNudgeSentRef.current &&
           !jarvisFarewellSentRef.current &&
-          isAssistantFarewell(assistantSnapshot)
+          (isPlumbingAssistantFarewell(assistantSnapshot) ||
+            /\b(goodbye|good bye)\b/i.test(assistantSnapshot))
         ) {
           latchFarewellClosing();
         }
@@ -1623,7 +1653,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             verticalRef.current === "plumbers" &&
             jarvisFarewellSentRef.current
           ) {
-            schedulePlumbingPostFarewellHangup();
+            schedulePlumbingPostFarewellHangup(PLUMBING_POST_FAREWELL_IDLE_MS);
           } else if (callWindingDownRef.current) {
             scheduleCallIdleHangup();
           }

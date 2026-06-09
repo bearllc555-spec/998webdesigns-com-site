@@ -4,6 +4,7 @@ import {
   isPlumbingVisitorConfirmedConcerns,
   isPlumbingVisitorDeclinedConcerns,
   isPlumbingVisitorEndingCall,
+  isPlumbingVisitorFarewellAck,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
 
@@ -42,6 +43,13 @@ describe("voice-demo-plumbing-session", () => {
     expect(isPlumbingVisitorDeclinedConcerns("no not really")).toBe(true);
     expect(isPlumbingVisitorDeclinedConcerns("I still have a question")).toBe(true);
     expect(isPlumbingVisitorConfirmedConcerns("no not really")).toBe(false);
+  });
+
+  it("detects caller farewell ack after Jarvis sign-off", () => {
+    expect(isPlumbingVisitorFarewellAck("bye")).toBe(true);
+    expect(isPlumbingVisitorFarewellAck("thank you")).toBe(true);
+    expect(isPlumbingVisitorFarewellAck("have a good day")).toBe(true);
+    expect(isPlumbingVisitorFarewellAck("what are your hours")).toBe(false);
   });
 
   it("never auto-hangups plumbing sessions", () => {
