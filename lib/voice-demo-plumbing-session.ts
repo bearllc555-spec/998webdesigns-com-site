@@ -38,6 +38,30 @@ export function isPlumbingBookingContinuation(text: string): boolean {
   );
 }
 
+/** Caller confirmed concerns were addressed — proceed to final sign-off. */
+export function isPlumbingVisitorConfirmedConcerns(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t || isPlumbingVisitorDeclinedConcerns(text)) return false;
+  if (/^(yes|yeah|yep|yup|sure|absolutely|definitely|correct)\b/.test(t)) return true;
+  if (/\b(yes|yeah|yep)\b/.test(t) && !/\b(no|not)\b/.test(t)) return true;
+  return (
+    /\b(you did|you have|that covers|all my concerns|all good|all set|we'?re good)\b/.test(
+      t
+    ) || /\b(i'?m good)\b/.test(t)
+  );
+}
+
+/** Caller still has concerns or wants to continue — do not sign off. */
+export function isPlumbingVisitorDeclinedConcerns(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return (
+    /\b(no|not really|not yet|not exactly|nope)\b/.test(t) ||
+    /\b(still have|one more|another question|wait|actually)\b/.test(t) ||
+    /\b(didn'?t|haven'?t)\s+(answer|address|cover)\b/.test(t)
+  );
+}
+
 /** Plumbing demo: never auto-hangup — receptionist stays until caller taps disconnect. */
 export function shouldPlumbingClientHangup(_opts: {
   visitorEndingCall: boolean;

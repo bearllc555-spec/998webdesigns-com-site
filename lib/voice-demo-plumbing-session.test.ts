@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   isPlumbingBookingContinuation,
+  isPlumbingVisitorConfirmedConcerns,
+  isPlumbingVisitorDeclinedConcerns,
   isPlumbingVisitorEndingCall,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
@@ -31,6 +33,15 @@ describe("voice-demo-plumbing-session", () => {
     expect(isPlumbingBookingContinuation("Can we schedule an appointment?")).toBe(true);
     expect(isPlumbingBookingContinuation("Thursday afternoon works for me")).toBe(true);
     expect(isPlumbingBookingContinuation("bye")).toBe(false);
+  });
+
+  it("detects concerns confirmed vs declined", () => {
+    expect(isPlumbingVisitorConfirmedConcerns("yes")).toBe(true);
+    expect(isPlumbingVisitorConfirmedConcerns("yeah you did")).toBe(true);
+    expect(isPlumbingVisitorConfirmedConcerns("we're good")).toBe(true);
+    expect(isPlumbingVisitorDeclinedConcerns("no not really")).toBe(true);
+    expect(isPlumbingVisitorDeclinedConcerns("I still have a question")).toBe(true);
+    expect(isPlumbingVisitorConfirmedConcerns("no not really")).toBe(false);
   });
 
   it("never auto-hangups plumbing sessions", () => {

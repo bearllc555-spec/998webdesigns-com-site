@@ -25,6 +25,7 @@ import {
 } from "@/lib/voice-demo-jarvis-audio-level";
 import {
   buildFarewellHoldNudge,
+  isAssistantFarewell,
   isUserExplicitlyDone,
   isUserFarewellEcho,
   shouldClientScheduleFarewellHangup,
@@ -63,11 +64,14 @@ import {
 } from "@/lib/voice-demo-plumbing-greeting";
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
 import {
-  buildPlumbingGoodbyeBeatNudge,
+  buildPlumbingExitConcernsNudge,
+  buildPlumbingFinalGoodbyeNudge,
   PLUMBING_GOODBYE_BEAT_MS,
 } from "@/lib/voice-demo-plumbing-goodbye";
 import {
   isPlumbingBookingContinuation,
+  isPlumbingVisitorConfirmedConcerns,
+  isPlumbingVisitorDeclinedConcerns,
   isPlumbingVisitorEndingCall,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
@@ -207,6 +211,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const callIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const callWindingDownRef = useRef(false);
   const awaitingPromoConsentRef = useRef(false);
+  const plumbingExitConcernsAskedRef = useRef(false);
+  const plumbingAwaitingConcernsAnswerRef = useRef(false);
   const plumbingGoodbyeBeatUntilRef = useRef(0);
   const plumbingGoodbyeNudgeSentRef = useRef(false);
   const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
@@ -970,7 +976,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     plumbingGoodbyeNudgeTimerRef.current = setTimeout(() => {
       plumbingGoodbyeNudgeTimerRef.current = null;
       if (!sessionRef.current || verticalRef.current !== "plumbers") return;
-      void sendClientNudge(buildPlumbingGoodbyeBeatNudge());
+      void sendClientNudge(buildPlumbingFinalGoodbyeNudge());
     }, PLUMBING_GOODBYE_BEAT_MS);
     schedulePlumbingGoodbyeAudioFlush();
   }, [clearPlumbingGoodbyeBeat, schedulePlumbingGoodbyeAudioFlush, sendClientNudge]);
@@ -1415,11 +1421,44 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           if (verticalRef.current === "plumbers") {
             if (isPlumbingBookingContinuation(userLine)) {
               visitorExplicitlyDoneRef.current = false;
+              callWindingDownRef.current = false;
+              plumbingAwaitingConcernsAnswerRef.current = false;
+              plumbingExitConcernsAskedRef.current = false;
               clearPlumbingGoodbyeBeat();
+            } else if (plumbingAwaitingConcernsAnswerRef.current) {
+              if (isPlumbingVisitorConfirmedConcerns(userLine)) {
+                plumbingAwaitingConcernsAnswerRef.current = false;
+                visitorExplicitlyDoneRef.current = true;
+                callWindingDownRef.current = true;
+                schedulePlumbingGoodbyeBeat();
+              } else if (
+                isPlumbingVisitorDeclinedConcerns(userLine) ||
+                isUserSubstantiveQuestion(userLine)
+              ) {
+                plumbingAwaitingConcernsAnswerRef.current = false;
+                plumbingExitConcernsAskedRef.current = false;
+                visitorExplicitlyDoneRef.current = false;
+                callWindingDownRef.current = false;
+                clearPlumbingGoodbyeBeat();
+              } else if (isPlumbingVisitorEndingCall(userLine)) {
+                plumbingAwaitingConcernsAnswerRef.current = false;
+                visitorExplicitlyDoneRef.current = true;
+                callWindingDownRef.current = true;
+                schedulePlumbingGoodbyeBeat();
+              }
             } else if (isPlumbingVisitorEndingCall(userLine)) {
-              visitorExplicitlyDoneRef.current = true;
-              callWindingDownRef.current = true;
-              schedulePlumbingGoodbyeBeat();
+              if (jarvisFarewellSentRef.current) {
+                endCallNow();
+                return;
+              }
+              if (!plumbingExitConcernsAskedRef.current) {
+                plumbingExitConcernsAskedRef.current = true;
+                plumbingAwaitingConcernsAnswerRef.current = true;
+                visitorExplicitlyDoneRef.current = false;
+                callWindingDownRef.current = false;
+                clearPlumbingGoodbyeBeat();
+                void sendClientNudge(buildPlumbingExitConcernsNudge());
+              }
             }
           } else if (isUserExplicitlyDone(userLine)) {
             visitorExplicitlyDoneRef.current = true;
@@ -1448,11 +1487,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           }
           schedulePhoneSilenceNudge();
         }
-        if (
-          jarvisFarewellSentRef.current &&
-          modeRef.current === "demo" &&
-          verticalRef.current !== "plumbers"
-        ) {
+        if (jarvisFarewellSentRef.current && modeRef.current === "demo") {
           if (isUserFarewellEcho(inText)) {
             endCallNow();
             return;
@@ -1474,6 +1509,15 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         if (!jarvisFarewellSentRef.current) {
           suppressAssistantAudioRef.current = false;
+        }
+        if (
+          verticalRef.current === "plumbers" &&
+          callWindingDownRef.current &&
+          plumbingGoodbyeNudgeSentRef.current &&
+          !jarvisFarewellSentRef.current &&
+          isAssistantFarewell(assistantSnapshot)
+        ) {
+          latchFarewellClosing();
         }
         const hadPostNameAtTurnStart = postNameLineSpokenRef.current;
         const wasInterrupted = assistantTurnInterruptedRef.current;
@@ -1659,6 +1703,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionResumableRef.current = true;
         callWindingDownRef.current = false;
         awaitingPromoConsentRef.current = false;
+        plumbingExitConcernsAskedRef.current = false;
+        plumbingAwaitingConcernsAnswerRef.current = false;
         clearPlumbingGoodbyeBeat();
         clearCallIdleTimer();
         reconnectAttemptRef.current = 0;
