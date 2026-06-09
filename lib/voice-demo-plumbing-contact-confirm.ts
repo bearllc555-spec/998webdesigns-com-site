@@ -1,5 +1,9 @@
 import { isValidEmail } from "@/lib/validate-email";
 import {
+  PLUMBING_CONTACT_POST_READBACK_PAUSE_MS,
+  PLUMBING_PHONE_POST_READBACK_PAUSE_MS,
+} from "@/lib/voice-demo-plumbing-constants";
+import {
   buildEmailVoiceReadBack,
   pronounceEmailForVoice,
 } from "@/lib/voice-demo-spell-email";
@@ -26,7 +30,11 @@ const CONTACT_FIELD_LABEL: Record<PlumbingContactField, string> = {
 
 const CONTACT_PAUSE_RULE =
   "Then STOP speaking — stay silent and give the caller a moment to answer. " +
-  "Do NOT ask for the next field (phone, date, time, etc.) in this turn or your next turn until they clearly say yes or correct you.";
+  "Do NOT ask for the next field in this turn or your next turn until they clearly say yes or correct you.";
+
+const PHONE_PAUSE_RULE =
+  "Then END your turn — stay completely silent and give the caller several seconds to verify the digits. " +
+  "Do NOT ask about appointment date, day, time window, morning/afternoon, or scheduling until they clearly confirm this number.";
 
 export type PlumbingContactReconfirmInput = {
   name?: string;
@@ -68,21 +76,78 @@ export function plumbingContactReconfirmFocusField(
   return null;
 }
 
+const CONTACT_PAUSE_NEXT_FIELD: Record<PlumbingContactField, string> = {
+  name: "service address, email, phone, or scheduling",
+  serviceAddress: "email, phone, or scheduling",
+  email: "phone or scheduling",
+  phone: "appointment date, day, time window, or scheduling",
+};
+
 /** Hidden nudge after Jarvis read-back — hold the line until the caller confirms. */
 export function buildPlumbingContactPauseNudge(field: PlumbingContactField): string {
   const label = CONTACT_FIELD_LABEL[field];
+  const nextBlocked = CONTACT_PAUSE_NEXT_FIELD[field];
+  const extra =
+    field === "phone"
+      ? " Callers often need a beat to verify spaced digits in their head. "
+      : " ";
   return (
-    `${PLUMBING_CONTACT_PAUSE_CUE} You just read back their ${label} and asked if it is correct. ` +
+    `${PLUMBING_CONTACT_PAUSE_CUE} You just read back their ${label} and asked if it is correct.${extra}` +
     `Stay completely silent now — give the caller time to answer yes or offer a correction. ` +
-    `Do NOT ask for phone, appointment date, or any other detail until they confirm this ${label}.`
+    `Do NOT ask for ${nextBlocked} until they confirm this ${label}.`
   );
+}
+
+/** Recovery when Jarvis chained scheduling before the caller confirmed phone. */
+export function buildPlumbingPhoneSchedulingRecoveryNudge(): string {
+  return (
+    `${PLUMBING_CONTACT_PAUSE_CUE} You asked about scheduling before the caller confirmed their phone number. ` +
+    `Stop immediately — do not ask about dates or times. Stay silent and let them answer whether the phone number is correct. ` +
+    `Only after they say yes should you ask what day works for the appointment.`
+  );
+}
+
+/** True when the caller answered a contact read-back (yes, no, or correction). */
+export function userAnsweredPlumbingContactPause(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t || t.length < 2) return false;
+  if (
+    /\b(yes|yeah|yep|yup|correct|that'?s right|that'?s correct|absolutely|sure)\b/.test(t)
+  ) {
+    return true;
+  }
+  if (/\b(no|nope|wrong|not right|incorrect|actually)\b/.test(t)) return true;
+  if (/\d{3,}/.test(t)) return true;
+  return false;
+}
+
+/** Jarvis moved to scheduling before the caller confirmed phone. */
+export function assistantChainedSchedulingAfterPhone(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return (
+    /\b(what day|which day|when would|appointment|schedule|scheduling|time window|time works|works for you)\b/.test(
+      t
+    ) ||
+    /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow)\b/.test(t) ||
+    /\b(morning|afternoon|evening)\b/.test(t)
+  );
+}
+
+/** Client wait after read-back playback before the silence nudge (ms). */
+export function plumbingContactPostReadbackPauseMs(field: PlumbingContactField): number {
+  if (field === "phone") {
+    return PLUMBING_PHONE_POST_READBACK_PAUSE_MS;
+  }
+  return PLUMBING_CONTACT_POST_READBACK_PAUSE_MS;
 }
 
 /** Prompt block for system prompt — slow intake pacing. */
 export const PLUMBING_CONTACT_INTAKE_PACING = `CONTACT INTAKE PACING (critical during booking):
 - One field per turn: collect → save_plumbing_contact → read back → wait for yes → only then ask the next field.
 - After spelling email or phone, STOP and let the caller respond — never chain "Is that correct? And what's your phone number?" in one breath.
-- If they go quiet for a moment after a read-back, stay silent; they may be verifying spelling in their head.
+- After phone read-back: END your turn after "Is that the best number to reach you?" — never add "What day works?" or any scheduling question in the same turn. Callers need a beat to verify digits.
+- If they go quiet for a moment after a read-back, stay silent; they may be verifying spelling or digits in their head.
 - Name → address → email → phone → date/time — never skip ahead while a read-back is still unanswered.`;
 
 function buildEmailReconfirmScript(
@@ -178,7 +243,7 @@ function buildReconfirmLine(
       if (!spoken) return null;
       return (
         `Phone (THIS TURN ONLY): read digits spaced — "${spoken}" — ` +
-        `then ask "Is that the best number to reach you?" ${CONTACT_PAUSE_RULE}`
+        `then ask ONLY "Is that the best number to reach you?" ${PHONE_PAUSE_RULE}`
       );
     }
     default:

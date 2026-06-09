@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  assistantChainedSchedulingAfterPhone,
   buildPlumbingContactPauseNudge,
   buildPlumbingContactReconfirmMessage,
   buildPlumbingGateEmailOfferBlock,
+  buildPlumbingPhoneSchedulingRecoveryNudge,
   plumbingContactFieldChanged,
   plumbingContactFieldSpoken,
+  plumbingContactPostReadbackPauseMs,
   plumbingContactReconfirmFocusField,
+  userAnsweredPlumbingContactPause,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
 
 describe("voice-demo-plumbing-contact-confirm", () => {
@@ -108,5 +112,46 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     expect(nudge).toMatch(/\[plumbing-contact-pause\]/);
     expect(nudge).toMatch(/Stay completely silent/i);
     expect(nudge).toMatch(/Do NOT ask for phone/i);
+  });
+
+  it("builds stronger phone pause nudge and longer wait", () => {
+    const nudge = buildPlumbingContactPauseNudge("phone");
+    expect(nudge).toMatch(/verify spaced digits/i);
+    expect(nudge).toMatch(/appointment date/i);
+    expect(plumbingContactPostReadbackPauseMs("phone")).toBeGreaterThan(
+      plumbingContactPostReadbackPauseMs("email")
+    );
+  });
+
+  it("builds phone reconfirm without scheduling chain", () => {
+    const { message, focusField } = buildPlumbingContactReconfirmMessage({
+      phone: "2015551234",
+    });
+    expect(focusField).toBe("phone");
+    expect(message).toMatch(/Is that the best number/i);
+    expect(message).toMatch(/scheduling until they clearly confirm/i);
+  });
+
+  it("detects scheduling chained after phone read-back", () => {
+    expect(
+      assistantChainedSchedulingAfterPhone(
+        "2 0 1 5 5 5 1 2 3 4 — is that right? What day works for you?"
+      )
+    ).toBe(true);
+    expect(
+      assistantChainedSchedulingAfterPhone("Is that the best number to reach you?")
+    ).toBe(false);
+  });
+
+  it("recognizes caller answers to contact pause", () => {
+    expect(userAnsweredPlumbingContactPause("yes")).toBe(true);
+    expect(userAnsweredPlumbingContactPause("that's correct")).toBe(true);
+    expect(userAnsweredPlumbingContactPause("um")).toBe(false);
+  });
+
+  it("builds phone scheduling recovery nudge", () => {
+    const nudge = buildPlumbingPhoneSchedulingRecoveryNudge();
+    expect(nudge).toMatch(/before the caller confirmed their phone/i);
+    expect(nudge).toMatch(/Stay silent/i);
   });
 });

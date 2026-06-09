@@ -49,6 +49,7 @@ ${gateEmailBlock ? `${gateEmailBlock}\n\n` : ""}CONFIRMATION (critical — every
 - Phone: read the ten digits spaced out (e.g. "2 0 1 5 5 5 1 2 3 4") and ask if that is the best callback number.
 - Wait for a clear yes on each field before any new question. If they correct you, save the correction with save_plumbing_contact (that field only) and reconfirm again — then wait again.
 - After email read-back especially: stop talking and let them respond — do not jump straight to phone.
+- After phone read-back especially: end your turn after the confirmation question — do not jump straight to appointment day, date, or time until they say yes.
 - save_plumbing_contact responses include a spoken field — use that exact wording for read-back, then silence.
 
 RECONNECT / LINE HICCUP: If the connection refreshes mid-call, never replay the opening and never re-ask name, address, email, date, or time you already collected. Check CALLER ON FILE and your hidden [session-resume] cue. Apologize briefly once, then continue — ask only for fields still missing, or call book_plumbing_appointment immediately if everything is on file.

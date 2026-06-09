@@ -67,10 +67,13 @@ import {
 } from "@/lib/voice-demo-plumbing-greeting";
 import { buildPlumbingSessionResumeNudge } from "@/lib/voice-demo-plumbing-resume";
 import {
+  assistantChainedSchedulingAfterPhone,
   buildPlumbingContactPauseNudge,
+  buildPlumbingPhoneSchedulingRecoveryNudge,
+  plumbingContactPostReadbackPauseMs,
+  userAnsweredPlumbingContactPause,
   type PlumbingContactField,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
-import { PLUMBING_CONTACT_POST_READBACK_PAUSE_MS } from "@/lib/voice-demo-plumbing-constants";
 import {
   buildPlumbingExitConcernsNudge,
   buildPlumbingFinalGoodbyeNudge,
@@ -1545,7 +1548,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         clearWrapUpTimer();
         emitCaption("user", inText);
-        if (inText.trim() && plumbingContactPauseFieldRef.current) {
+        if (
+          inText.trim() &&
+          plumbingContactPauseFieldRef.current &&
+          userAnsweredPlumbingContactPause(captionTextRef.current.trim())
+        ) {
           plumbingContactPauseFieldRef.current = null;
         }
         const userLine = captionTextRef.current.trim();
@@ -1698,15 +1705,20 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
           const contactPauseField = plumbingContactPauseFieldRef.current;
           if (
+            contactPauseField === "phone" &&
+            assistantChainedSchedulingAfterPhone(assistantSnapshot)
+          ) {
+            await sendClientNudge(buildPlumbingPhoneSchedulingRecoveryNudge());
+          }
+          if (
             contactPauseField &&
             verticalRef.current === "plumbers" &&
             modeRef.current === "demo" &&
             !farewellDisconnectingRef.current &&
             !reconnectingRef.current
           ) {
-            await sleep(PLUMBING_CONTACT_POST_READBACK_PAUSE_MS);
+            await sleep(plumbingContactPostReadbackPauseMs(contactPauseField));
             if (plumbingContactPauseFieldRef.current === contactPauseField) {
-              plumbingContactPauseFieldRef.current = null;
               await sendClientNudge(buildPlumbingContactPauseNudge(contactPauseField));
             }
           }

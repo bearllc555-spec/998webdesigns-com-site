@@ -25,6 +25,9 @@ export {
 /** After a contact read-back, client nudge fires once playback ends (ms). */
 export const PLUMBING_CONTACT_POST_READBACK_PAUSE_MS = 2_000;
 
+/** Extra beat after phone digit read-back — callers verify digits before scheduling. */
+export const PLUMBING_PHONE_POST_READBACK_PAUSE_MS = 3_500;
+
 /** After booking wind-down (pre-farewell), idle hangup uses shared demo constant. */
 /** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS — kept for plumbing imports. */
 export const PLUMBING_IDLE_HANGUP_MS = VOICE_DEMO_CALL_IDLE_HANGUP_MS;
