@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PlumbingDemoCapabilities } from "@/components/demo/PlumbingDemoCapabilities";
+import { PlumbingDemoHeaderActions } from "@/components/demo/PlumbingDemoHeaderActions";
 import { PlumbingDemoWidget } from "@/components/VoiceDemo/PlumbingDemoWidget";
 import {
   PLUMBING_DEMO_BUSINESS_NAME,
   PLUMBING_DEMO_TAGLINE,
 } from "@/lib/voice-demo-plumbing-constants";
-import { SITE_VERSION } from "@/lib/version";
 
 export const metadata: Metadata = {
   title: `${PLUMBING_DEMO_BUSINESS_NAME} — Jarvis voice demo`,
@@ -26,17 +26,7 @@ export default function PlumbersDemoPage() {
             </p>
             <p className="text-sm text-ink-soft">{PLUMBING_DEMO_TAGLINE}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/demo/plumbers/crm"
-              className="rounded-full border border-rule px-3 py-1 text-xs font-medium text-ink-soft transition hover:border-accent hover:text-ink"
-            >
-              Demo CRM
-            </Link>
-            <span className="rounded-full border border-rule px-2 py-0.5 text-xs text-ink-soft">
-              {SITE_VERSION}
-            </span>
-          </div>
+          <PlumbingDemoHeaderActions />
         </div>
       </header>
 

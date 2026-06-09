@@ -9,7 +9,12 @@ function safeNextPath(raw: string | null): string {
   return raw;
 }
 
-export function CrmLoginForm() {
+type CrmLoginFormProps = {
+  /** Used when the URL has no `?next=` param (e.g. demo CRM at a fixed path). */
+  redirectTo?: string;
+};
+
+export function CrmLoginForm({ redirectTo = "/crm" }: CrmLoginFormProps) {
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,7 +34,9 @@ export function CrmLoginForm() {
         setError("Invalid secret.");
         return;
       }
-      const next = safeNextPath(new URLSearchParams(window.location.search).get("next"));
+      const next = safeNextPath(
+        new URLSearchParams(window.location.search).get("next") ?? redirectTo
+      );
       window.location.href = next;
     } catch {
       setError("Could not sign in.");
