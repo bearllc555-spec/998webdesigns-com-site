@@ -1,6 +1,9 @@
 import { Type, type ToolListUnion } from "@google/genai";
 import { after } from "next/server";
-import { isValidEmail } from "@/lib/validate-email";
+import {
+  buildPlumbingContactReconfirmMessage,
+  plumbingContactFieldSpoken,
+} from "@/lib/voice-demo-plumbing-contact-confirm";
 import { getVoiceDemoLead, updateVoiceDemoLead } from "@/lib/voice-demo-db";
 import {
   getLatestPlumbingJobForLead,
@@ -13,6 +16,7 @@ import {
   type PlumbingEmailTemplate,
 } from "@/lib/voice-demo-plumbing-email";
 import { resolvePlumbingPromoCodeForLead } from "@/lib/voice-demo-plumbing-promo-code";
+import { isValidEmail } from "@/lib/validate-email";
 
 /** Return tool response immediately; Resend runs after the HTTP response (keeps live WS responsive). */
 function schedulePlumbingBookingEmail(
@@ -72,7 +76,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "save_plumbing_contact",
           description:
-            "Save caller details as you collect them — call after each field (name, address, email, Wednesday/time, service type). Persists draft booking so a reconnect does not lose progress.",
+            "Save caller details as you collect them — call after each field (name, address, email, phone, date/time, service type). Tool response tells you how to reconfirm aloud before continuing.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -255,13 +259,34 @@ export async function executeVoiceDemoPlumbingTool(
           scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail);
         }
         emailMessage =
-          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) is sending to the updated address — tell the caller to check inbox and spam.";
+          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) is sending to the updated address — after reconfirming the new email aloud, tell the caller to check inbox and spam.";
       }
     }
 
+    const reconfirmMessage = buildPlumbingContactReconfirmMessage({
+      name: visitorName || undefined,
+      serviceAddress: serviceAddress || undefined,
+      email: email && isValidEmail(email) ? email : undefined,
+      phone: phone || undefined,
+    });
+
+    const spoken: Record<string, string> = {};
+    if (visitorName) spoken.name = visitorName;
+    if (serviceAddress) spoken.serviceAddress = serviceAddress;
+    if (email && isValidEmail(email)) spoken.email = plumbingContactFieldSpoken("email", email)!;
+    if (phone) {
+      const phoneSpoken = plumbingContactFieldSpoken("phone", phone);
+      if (phoneSpoken) spoken.phone = phoneSpoken;
+    }
+
+    const message = reconfirmMessage
+      ? `${reconfirmMessage}${emailMessage.includes("Confirmation email") ? ` Also: ${emailMessage.replace("Contact saved. ", "")}` : ""}`
+      : emailMessage;
+
     return {
       ok: true,
-      message: emailMessage,
+      message,
+      ...(Object.keys(spoken).length > 0 ? { spoken } : {}),
     };
   }
 
@@ -294,12 +319,20 @@ export async function executeVoiceDemoPlumbingTool(
       },
     });
 
+    const phoneSpoken = plumbingContactFieldSpoken("phone", phone);
     return {
       ok: true,
       callbackLogged: true,
+      spoken: {
+        name: visitorName,
+        ...(phoneSpoken ? { phone: phoneSpoken } : {}),
+      },
       message:
         `Callback logged for ${visitorName} at ${phone}. ` +
-        `Tell the caller someone from Metro Plumbing & Drain will call them back as soon as we can — ` +
+        (phoneSpoken
+          ? `If not done yet, reconfirm name and phone — read digits: "${phoneSpoken}" — then `
+          : "") +
+        `tell the caller someone from Metro Plumbing & Drain will call them back as soon as we can — ` +
         `do NOT guess an answer to their question.`,
     };
   }
