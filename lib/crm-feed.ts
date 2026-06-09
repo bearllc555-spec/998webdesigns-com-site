@@ -7,6 +7,7 @@ import {
   summarizeVoiceDemoOpsWarnings,
 } from "@/lib/voice-demo-ops";
 import { isVoiceDemoCallbackSummary } from "@/lib/voice-demo-callback";
+import { fetchPlumbingCrmFeed } from "@/lib/plumbing-crm-feed";
 import { formatPossibleLocationLabel } from "@/lib/voice-demo-location";
 
 export type { CrmInboxFlag };
@@ -18,6 +19,7 @@ export type CrmFeedSource =
   | "discovery"
   | "sms"
   | "voice_demo"
+  | "plumbing_demo"
   | "blog";
 
 export type CrmFeedItem = {
@@ -96,7 +98,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("voice_demo_leads")
       .select(
-        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, ops_log, location_zip, location_city, location_state, read_at, inbox_flag"
+        "id, created_at, updated_at, email, phone, full_name, primary_channel, email_verified_at, phone_verified_at, promo_code, promo_sent_at, session_summary, ops_log, location_zip, location_city, location_state, read_at, inbox_flag, vertical"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -268,9 +270,9 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       id: row.id,
       source: "voice_demo",
       at: (row.updated_at as string) ?? (row.created_at as string),
-      title: (row.full_name as string) || "Voice demo",
+      title: (row.full_name as string) || "Home Jarvis demo",
       email: (row.email as string) ?? "",
-      businessName: "",
+      businessName: "998 home Jarvis",
       status: callbackRequested ? "callback_requested" : verified ? "verified" : "pending_verify",
       notes: opsNotes,
       stripeSessionId: null,
@@ -367,6 +369,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
   }
+
+  const plumbingFeed = await fetchPlumbingCrmFeed(limit);
+  if (plumbingFeed.error) {
+    console.warn("[crm-feed] plumbing_demo:", plumbingFeed.error);
+    errors.push(`plumbing_demo: ${plumbingFeed.error}`);
+  }
+  items.push(...plumbingFeed.items);
 
   items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
   return { items: items.slice(0, limit) };

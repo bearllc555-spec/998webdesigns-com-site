@@ -11,7 +11,15 @@ import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
-  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo" | "blog";
+  source:
+    | "lead"
+    | "client"
+    | "contact"
+    | "discovery"
+    | "sms"
+    | "voice_demo"
+    | "plumbing_demo"
+    | "blog";
   id: string;
   label: string;
   step: 1 | 2;
@@ -22,7 +30,8 @@ function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "client") return "Client";
   if (source === "discovery") return "Discovery";
   if (source === "sms") return "Text";
-  if (source === "voice_demo") return "Voice demo";
+  if (source === "voice_demo") return "Home Jarvis";
+  if (source === "plumbing_demo") return "Plumbing Jarvis";
   if (source === "blog") return "Blog";
   return "Contact";
 }
@@ -96,6 +105,8 @@ type CrmActivityInboxProps = {
   discoveryItems: CrmFeedItem[];
   smsItems: CrmFeedItem[];
   blogItems: CrmFeedItem[];
+  voiceDemoItems?: CrmFeedItem[];
+  plumbingDemoItems?: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
   /** Public demo — local-only inbox edits; delete shows a notice instead of removing rows. */
@@ -356,9 +367,19 @@ function InboxRow({
             }
           />
 
-          {item.source === "voice_demo" && (() => {
+          {(item.source === "voice_demo" || item.source === "plumbing_demo") && (() => {
             const loc = item.payload?.possibleLocation as
               | { label?: string; city?: string; state?: string; zip?: string }
+              | null
+              | undefined;
+            const plumbingJob = item.payload?.plumbingJob as
+              | {
+                  serviceType?: string | null;
+                  serviceAddress?: string | null;
+                  appointmentDate?: string | null;
+                  timeWindow?: string | null;
+                  status?: string | null;
+                }
               | null
               | undefined;
             const opsLog = item.payload?.opsLog as
@@ -372,9 +393,26 @@ function InboxRow({
               loc && typeof loc === "object"
                 ? loc.label ?? [loc.city, loc.state, loc.zip].filter(Boolean).join(", ")
                 : "";
-            if (!label && opsWarnings.length === 0) return null;
+            const jobLine = plumbingJob
+              ? [
+                  plumbingJob.serviceType,
+                  plumbingJob.appointmentDate,
+                  plumbingJob.timeWindow,
+                  plumbingJob.serviceAddress,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : "";
+            if (!label && opsWarnings.length === 0 && !jobLine) return null;
             return (
               <div className="mt-4 grid gap-3">
+                {jobLine ? (
+                  <p className="rounded-xl border border-rule bg-rule-soft/50 px-4 py-3 text-sm text-ink-soft">
+                    <span className="font-medium text-ink">Plumbing booking: </span>
+                    {jobLine}
+                    {plumbingJob?.status ? ` (${plumbingJob.status})` : ""}
+                  </p>
+                ) : null}
                 {label ? (
                   <p className="rounded-xl border border-rule bg-rule-soft/50 px-4 py-3 text-sm text-ink-soft">
                     <span className="font-medium text-ink">Client&apos;s possible location: </span>
@@ -617,6 +655,8 @@ export function CrmActivityInbox({
   discoveryItems,
   smsItems,
   blogItems,
+  voiceDemoItems = [],
+  plumbingDemoItems = [],
   onItemsChange,
   onReload,
   demoMode = false,
@@ -884,6 +924,20 @@ export function CrmActivityInbox({
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
         emptyLabel="No unmatched inbound texts."
+      />
+      <InboxSection
+        title="Home Jarvis demos"
+        items={voiceDemoItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No home marketing Jarvis sign-ins yet."
+      />
+      <InboxSection
+        title="Plumbing Jarvis demos"
+        items={plumbingDemoItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No plumbing Jarvis sign-ins yet."
       />
       <InboxSection
         title="Blog"

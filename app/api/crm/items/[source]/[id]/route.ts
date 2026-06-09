@@ -39,6 +39,7 @@ export async function DELETE(
     source !== "discovery" &&
     source !== "sms" &&
     source !== "voice_demo" &&
+    source !== "plumbing_demo" &&
     source !== "blog"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
@@ -51,7 +52,7 @@ export async function DELETE(
         ? await deleteContactSubmission(id)
         : source === "sms"
           ? await deleteInboundSms(id)
-          : source === "voice_demo"
+          : source === "voice_demo" || source === "plumbing_demo"
             ? await deleteVoiceDemoLead(id)
             : source === "blog"
               ? await deleteBlogPost(id)
@@ -86,6 +87,7 @@ export async function PATCH(
     source !== "discovery" &&
     source !== "sms" &&
     source !== "voice_demo" &&
+    source !== "plumbing_demo" &&
     source !== "blog"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });

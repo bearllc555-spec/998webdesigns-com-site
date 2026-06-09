@@ -44,7 +44,7 @@ function mapPlumbingJobPayload(job: PlumbingJobRow | null): Record<string, unkno
   };
 }
 
-/** Demo CRM feed — plumbing voice callers + latest jarvis_plumbing_jobs only. */
+/** Real plumbing Jarvis sign-ins from voice_demo_leads (vertical=plumbers) + jobs. */
 export async function fetchPlumbingCrmFeed(limit = 50): Promise<CrmFeedResult> {
   const supa = supabaseAdmin();
   if (!supa) {
@@ -117,11 +117,11 @@ export async function fetchPlumbingCrmFeed(limit = 50): Promise<CrmFeedResult> {
 
     items.push({
       id: row.id as string,
-      source: "voice_demo",
+      source: "plumbing_demo",
       at: (row.updated_at as string) ?? (row.created_at as string),
-      title: (row.full_name as string) || "Plumbing demo caller",
+      title: (row.full_name as string) || "Plumbing Jarvis demo",
       email: (row.email as string) ?? "",
-      businessName: "Metro Plumbing demo",
+      businessName: "998 plumbing Jarvis",
       status: displayStatus,
       notes: opsWarnings
         ? [row.session_summary as string | null, `Jarvis ops:\n${opsWarnings}`]

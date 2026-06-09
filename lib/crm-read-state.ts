@@ -1,13 +1,23 @@
+import { crmVoiceDemoLeadsTable } from "@/lib/crm-item-source";
 import { supabaseAdmin } from "@/lib/supabase";
 
 export async function setCrmItemReadState(
-  source: "lead" | "client" | "contact" | "discovery" | "sms" | "voice_demo" | "blog",
+  source:
+    | "lead"
+    | "client"
+    | "contact"
+    | "discovery"
+    | "sms"
+    | "voice_demo"
+    | "plumbing_demo"
+    | "blog",
   id: string,
   read: boolean
 ): Promise<boolean> {
   const supa = supabaseAdmin();
   if (!supa) return false;
 
+  const voiceDemoTable = crmVoiceDemoLeadsTable(source);
   const table =
     source === "lead" || source === "client"
       ? "wd_leads"
@@ -15,8 +25,8 @@ export async function setCrmItemReadState(
         ? "contact_submissions"
         : source === "sms"
           ? "inbound_sms"
-          : source === "voice_demo"
-            ? "voice_demo_leads"
+          : voiceDemoTable
+            ? voiceDemoTable
             : source === "blog"
               ? "blog_posts"
               : "discovery_prospects";

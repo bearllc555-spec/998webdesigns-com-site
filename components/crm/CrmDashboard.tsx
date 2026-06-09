@@ -56,8 +56,12 @@ export function CrmDashboard() {
     () => items.filter((i) => i.source === "voice_demo"),
     [items]
   );
+  const plumbingDemoItems = useMemo(
+    () => items.filter((i) => i.source === "plumbing_demo"),
+    [items]
+  );
   const unreadCount = items.filter(isCrmFeedItemUnread).length;
-  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} voice`;
+  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} home Jarvis · ${plumbingDemoItems.length} plumbing Jarvis`;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
@@ -94,6 +98,8 @@ export function CrmDashboard() {
             discoveryItems={discoveryItems}
             smsItems={smsItems}
             blogItems={blogItems}
+            voiceDemoItems={voiceDemoItems}
+            plumbingDemoItems={plumbingDemoItems}
             onItemsChange={(updater) => setItems((prev) => updater(prev))}
             onReload={load}
           />
