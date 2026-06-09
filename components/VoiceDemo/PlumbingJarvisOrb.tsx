@@ -28,7 +28,7 @@ export function PlumbingJarvisOrb({
   const ringScale = speaking ? 1 + ringDrive * 0.22 + l.bass * 0.1 : 1;
   const outerPulse = speaking ? 1.1 + ringDrive * 0.34 : 1;
   const rimWidth = speaking ? 3 + ringDrive * 5 : 2;
-  const rimGlow = speaking ? 20 + ringDrive * 52 : 8;
+  const rimGlow = speaking ? 20 + ringDrive * 32 : 8;
   const rimInnerGlow = 10 + l.treble * 28;
   const rimOpacity = active ? (speaking ? 0.65 + ringDrive * 0.35 : 0.38) : 0.28;
   const outerRingOpacity = speaking ? 0.35 + ringDrive * 0.65 : 0;
