@@ -2,6 +2,7 @@ import { Type, type ToolListUnion } from "@google/genai";
 import { after } from "next/server";
 import {
   buildPlumbingContactReconfirmMessage,
+  plumbingContactFieldChanged,
   plumbingContactFieldSpoken,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
 import { getVoiceDemoLead, updateVoiceDemoLead } from "@/lib/voice-demo-db";
@@ -196,6 +197,14 @@ export async function executeVoiceDemoPlumbingTool(
       typeof args.appointmentDate === "string" ? args.appointmentDate.trim() : "";
     const timeWindow = typeof args.timeWindow === "string" ? args.timeWindow.trim() : "";
 
+    const jobBefore = await getLatestPlumbingJobForLead(leadId);
+    const onFile = {
+      name: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      serviceAddress: jobBefore?.service_address ?? null,
+    };
+
     if (visitorName) patch.full_name = visitorName;
     if (email && isValidEmail(email)) patch.email = email;
     if (phone) patch.phone = phone;
@@ -269,10 +278,23 @@ export async function executeVoiceDemoPlumbingTool(
 
     const { message: reconfirmMessage, focusField: reconfirmField } =
       buildPlumbingContactReconfirmMessage({
-        name: visitorName || undefined,
-        serviceAddress: serviceAddress || undefined,
-        email: email && isValidEmail(email) ? email : undefined,
-        phone: phone || undefined,
+        name:
+          visitorName && plumbingContactFieldChanged("name", visitorName, onFile)
+            ? visitorName
+            : undefined,
+        serviceAddress:
+          serviceAddress &&
+          plumbingContactFieldChanged("serviceAddress", serviceAddress, onFile)
+            ? serviceAddress
+            : undefined,
+        email:
+          email &&
+          isValidEmail(email) &&
+          plumbingContactFieldChanged("email", email, onFile)
+            ? email
+            : undefined,
+        phone:
+          phone && plumbingContactFieldChanged("phone", phone, onFile) ? phone : undefined,
         emailFromDemoLogin,
       });
 
@@ -289,9 +311,15 @@ export async function executeVoiceDemoPlumbingTool(
       if (phoneSpoken) spoken.phone = phoneSpoken;
     }
 
+    const unchangedNote =
+      !reconfirmMessage &&
+      (visitorName || serviceAddress || email || phone || appointmentDate || timeWindow || serviceType)
+        ? " Contact updated — value already on file; do NOT read back again. Continue to the next question."
+        : "";
+
     const message = reconfirmMessage
       ? `${reconfirmMessage}${emailMessage.includes("Confirmation email") ? ` Also: ${emailMessage.replace("Contact saved. ", "")}` : ""}`
-      : emailMessage;
+      : `${emailMessage}${unchangedNote}`;
 
     return {
       ok: true,
@@ -424,8 +452,8 @@ export async function executeVoiceDemoPlumbingTool(
       emailSent: true,
       status,
       message: grantPromo
-        ? `Appointment booked. One confirmation email is sending with unique coupon code ${promoCode ?? "enclosed"} — tell the caller to check inbox and spam, mention the code when they arrive, recap address/date/time, and stay on the line.`
-        : "Appointment booked. Confirmation email is sending — confirm address, date, and time warmly with the caller and stay on the line.",
+        ? `Appointment booked. One confirmation email is sending with unique coupon code ${promoCode ?? "enclosed"} — tell the caller to check inbox and spam, mention the code when they arrive, recap address/date/time warmly, and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected.`
+        : "Appointment booked. Confirmation email is sending — recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
     };
   }
 

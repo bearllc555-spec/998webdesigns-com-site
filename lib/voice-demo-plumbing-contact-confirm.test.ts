@@ -3,6 +3,7 @@ import {
   buildPlumbingContactPauseNudge,
   buildPlumbingContactReconfirmMessage,
   buildPlumbingGateEmailOfferBlock,
+  plumbingContactFieldChanged,
   plumbingContactFieldSpoken,
   plumbingContactReconfirmFocusField,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
@@ -78,6 +79,23 @@ describe("voice-demo-plumbing-contact-confirm", () => {
       emailFromDemoLogin: true,
     });
     expect(message).toMatch(/demo login accepted/i);
+  });
+
+  it("skips reconfirm when name unchanged on file", () => {
+    expect(plumbingContactFieldChanged("name", "Anthony", { name: "Anthony" })).toBe(
+      false
+    );
+    expect(plumbingContactFieldChanged("name", "Anthony", { name: "anthony" })).toBe(
+      false
+    );
+    expect(plumbingContactFieldChanged("name", "Tony", { name: "Anthony" })).toBe(true);
+    expect(
+      buildPlumbingContactReconfirmMessage({
+        name: plumbingContactFieldChanged("name", "Anthony", { name: "Anthony" })
+          ? "Anthony"
+          : undefined,
+      }).focusField
+    ).toBeNull();
   });
 
   it("builds post-read-back pause nudge for email", () => {

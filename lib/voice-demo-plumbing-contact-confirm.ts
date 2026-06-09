@@ -166,6 +166,36 @@ function buildReconfirmLine(
   }
 }
 
+/** True when a newly saved value differs from what is already on file (skip duplicate read-back). */
+export function plumbingContactFieldChanged(
+  field: PlumbingContactField,
+  newValue: string,
+  onFile: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    serviceAddress?: string | null;
+  }
+): boolean {
+  const trimmed = newValue.trim();
+  if (!trimmed) return false;
+  switch (field) {
+    case "name":
+      return trimmed.toLowerCase() !== (onFile.name?.trim().toLowerCase() ?? "");
+    case "serviceAddress":
+      return trimmed.toLowerCase() !== (onFile.serviceAddress?.trim().toLowerCase() ?? "");
+    case "email":
+      return trimmed.toLowerCase() !== (onFile.email?.trim().toLowerCase() ?? "");
+    case "phone": {
+      const next = trimmed.replace(/\D/g, "").slice(-10);
+      const prev = (onFile.phone ?? "").replace(/\D/g, "").slice(-10);
+      return next.length >= 10 && next !== prev;
+    }
+    default:
+      return true;
+  }
+}
+
 /** Tool message instructing Jarvis to reconfirm one saved field before moving on. */
 export function buildPlumbingContactReconfirmMessage(
   input: PlumbingContactReconfirmInput

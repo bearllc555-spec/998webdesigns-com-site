@@ -1427,10 +1427,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 }
               }
               if (name === "book_plumbing_appointment" && result.booked === true) {
-                callWindingDownRef.current = true;
-              }
-              if (name === "request_plumbing_callback" && result.callbackLogged === true) {
-                callWindingDownRef.current = true;
+                clearPlumbingContactPause();
+                clearCallIdleTimer();
               }
             } else if (name === "request_callback" && result.callbackLogged === true) {
               callWindingDownRef.current = true;
@@ -1734,7 +1732,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             schedulePostFarewellHangup(VOICE_DEMO_POST_FAREWELL_IDLE_MS);
           } else if (modeRef.current === "demo" && jarvisFarewellSentRef.current) {
             schedulePostFarewellHangup(VOICE_DEMO_POST_FAREWELL_IDLE_MS);
-          } else if (callWindingDownRef.current) {
+          } else if (callWindingDownRef.current && verticalRef.current !== "plumbers") {
             scheduleCallIdleHangup();
           }
         })();
