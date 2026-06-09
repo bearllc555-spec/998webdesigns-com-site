@@ -88,6 +88,12 @@ import {
   WRAPUP_POST_ANSWER_PAUSE_MS,
 } from "@/lib/voice-demo-wrapup-nudge";
 import { seedOnboardingFromFullName } from "@/lib/voice-demo-flow-policy";
+import {
+  buildPromoOfferSplitNudge,
+  isAssistantPromoOffer,
+  isAssistantPromoOfferBundledWithGoodbye,
+  isUserPromoDecline,
+} from "@/lib/voice-demo-promo-offer";
 import { logVoiceDemoOps } from "@/lib/voice-demo-ops-client";
 import {
   canSendVoiceDemoRealtimeInput,
@@ -200,6 +206,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const hangupReasonRef = useRef<VoiceDemoHangupReason | null>(null);
   const callIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const callWindingDownRef = useRef(false);
+  const awaitingPromoConsentRef = useRef(false);
   const plumbingGoodbyeBeatUntilRef = useRef(0);
   const plumbingGoodbyeNudgeSentRef = useRef(false);
   const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
@@ -1304,6 +1311,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               callWindingDownRef.current = true;
             }
 
+            if (name === "send_promo_email" && result.ok === true) {
+              awaitingPromoConsentRef.current = false;
+            }
+
             responses.push(buildVoiceDemoToolResponse(call.id, name, result));
           }
 
@@ -1394,6 +1405,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const userLine = captionTextRef.current.trim();
 
         if (modeRef.current === "demo") {
+          if (
+            verticalRef.current !== "plumbers" &&
+            awaitingPromoConsentRef.current &&
+            isUserPromoDecline(userLine)
+          ) {
+            awaitingPromoConsentRef.current = false;
+          }
           if (verticalRef.current === "plumbers") {
             if (isPlumbingBookingContinuation(userLine)) {
               visitorExplicitlyDoneRef.current = false;
@@ -1444,6 +1462,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       if (message.serverContent?.turnComplete) {
         const assistantSnapshot = lastAssistantTextRef.current;
+        if (
+          verticalRef.current !== "plumbers" &&
+          modeRef.current === "demo" &&
+          isAssistantPromoOffer(assistantSnapshot)
+        ) {
+          awaitingPromoConsentRef.current = true;
+          if (isAssistantPromoOfferBundledWithGoodbye(assistantSnapshot)) {
+            void sendClientNudge(buildPromoOfferSplitNudge());
+          }
+        }
         if (!jarvisFarewellSentRef.current) {
           suppressAssistantAudioRef.current = false;
         }
@@ -1473,7 +1501,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
           if (shouldWrapUpAfterThisTurn) return;
 
-          if (hadPendingClientHangup && verticalRef.current !== "plumbers") {
+          if (
+            hadPendingClientHangup &&
+            verticalRef.current !== "plumbers" &&
+            !awaitingPromoConsentRef.current
+          ) {
             if (!jarvisFarewellSentRef.current) {
               latchFarewellClosing();
             }
@@ -1496,6 +1528,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               farewellSent: jarvisFarewellSentRef.current,
               goodbyeNudgeSent: goodbyeNudgeSentRef.current,
               phase: getSessionPhase(),
+              awaitingPromoConsent: awaitingPromoConsentRef.current,
             });
           if (plumbingHangup || marketingHangup) {
             if (!jarvisFarewellSentRef.current) {
@@ -1625,6 +1658,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         sessionResumptionHandleRef.current = null;
         sessionResumableRef.current = true;
         callWindingDownRef.current = false;
+        awaitingPromoConsentRef.current = false;
         clearPlumbingGoodbyeBeat();
         clearCallIdleTimer();
         reconnectAttemptRef.current = 0;
@@ -1963,6 +1997,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     sessionResumptionHandleRef.current = null;
     sessionResumableRef.current = true;
     callWindingDownRef.current = false;
+    awaitingPromoConsentRef.current = false;
     reconnectPausedRef.current = false;
     reconnectAttemptRef.current = 0;
     reconnectExhaustedBonusRef.current = false;

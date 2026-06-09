@@ -52,9 +52,11 @@ export function canClientScheduleHangup(opts: {
   goodbyeNudgeSent: boolean;
   visitorExplicitlyDone: boolean;
   assistantText: string;
+  awaitingPromoConsent?: boolean;
 }): boolean {
   const text = opts.assistantText.trim();
   if (!text || opts.phase === "ended" || opts.phase === "onboarding") return false;
+  if (opts.awaitingPromoConsent) return false;
   if (opts.farewellSent) return true;
 
   if (opts.goodbyeNudgeSent) {

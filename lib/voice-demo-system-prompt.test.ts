@@ -113,6 +113,7 @@ describe("voice-demo-system-prompt onboarding", () => {
     const prompt = voiceDemoDemoSystemPrompt(baseRow);
     expect(prompt).toContain(VOICE_DEMO_PROMO_EMAIL_ASK_LINE);
     expect(prompt).toMatch(/wait for yes before send_promo_email/i);
+    expect(prompt).toMatch(/never combine this question with goodbye/i);
     expect(prompt).toMatch(/FINAL GOODBYE/i);
   });
 

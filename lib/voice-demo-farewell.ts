@@ -108,6 +108,7 @@ export function shouldClientScheduleFarewellHangup(
     farewellSent: boolean;
     goodbyeNudgeSent: boolean;
     phase: VoiceDemoSessionPhase;
+    awaitingPromoConsent?: boolean;
   }
 ): boolean {
   if (isAssistantHiddenCueLeak(text)) return false;
@@ -117,5 +118,6 @@ export function shouldClientScheduleFarewellHangup(
     goodbyeNudgeSent: opts.goodbyeNudgeSent,
     visitorExplicitlyDone: opts.visitorExplicitlyDone,
     assistantText: text,
+    awaitingPromoConsent: opts.awaitingPromoConsent,
   });
 }

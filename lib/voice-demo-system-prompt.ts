@@ -69,8 +69,10 @@ Q5: "${VOICE_DEMO_WRAPUP_QUESTIONS[4]}"
 - If they are done → FINAL GOODBYE path below.
 
 FINAL GOODBYE (when they say they are done):
-- If promo not yet sent, you may ask once: "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" — wait for yes before send_promo_email.
-- One warm sign-off like: "${VOICE_DEMO_GOODBYE_LINE}" — once per session. Stay silent after; system ends the call.
+- If promo not yet sent, ask once in its own turn ONLY: "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" — then STOP completely and wait for yes or no. Never combine this question with goodbye in the same turn.
+- On yes → call send_promo_email, then in a separate new turn give one brief sign-off like: "${VOICE_DEMO_GOODBYE_LINE}".
+- On no → in a separate new turn give one brief sign-off only — do not call send_promo_email.
+- Stay silent after your final sign-off; system ends the call.
 - NEVER append goodbye or "thank you for contacting" to FAQ answers mid-call.`;
 
 export const VOICE_DEMO_INTRO = VOICE_DEMO_MANDATORY_OPENING;
@@ -93,7 +95,8 @@ AFTER THEIR NAME (demo only):
 }
 
 const PROMO_OFFER_RULES = `PROMO (${VOICE_DEMO_PROMO_CODE} — 20% off design fee):
-- Offer only at FINAL GOODBYE when promo not yet sent — ask "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" and wait for yes before send_promo_email. Say nothing about tool results.
+- Offer only at FINAL GOODBYE when promo not yet sent — one turn for "${VOICE_DEMO_PROMO_EMAIL_ASK_LINE}" only, then wait for yes or no. Goodbye comes in a later turn after they answer — never in the same turn as the coupon question.
+- Wait for yes before send_promo_email. Say nothing about tool results.
 - If promo already sent, do not re-offer.`;
 
 function contactHint(row: VoiceDemoLeadRow): string {
