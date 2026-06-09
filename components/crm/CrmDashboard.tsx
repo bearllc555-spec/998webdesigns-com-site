@@ -61,7 +61,7 @@ export function CrmDashboard() {
     [items]
   );
   const unreadCount = items.filter(isCrmFeedItemUnread).length;
-  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} home Jarvis · ${plumbingDemoItems.length} plumbing Jarvis`;
+  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} 998web Jarvis · ${plumbingDemoItems.length} plumbing Jarvis`;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">

@@ -30,7 +30,7 @@ function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "client") return "Client";
   if (source === "discovery") return "Discovery";
   if (source === "sms") return "Text";
-  if (source === "voice_demo") return "Home Jarvis";
+  if (source === "voice_demo") return "998web Jarvis";
   if (source === "plumbing_demo") return "Plumbing Jarvis";
   if (source === "blog") return "Blog";
   return "Contact";
@@ -926,7 +926,7 @@ export function CrmActivityInbox({
         emptyLabel="No unmatched inbound texts."
       />
       <InboxSection
-        title="Home Jarvis demos"
+        title="998web Jarvis demos"
         items={voiceDemoItems}
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
