@@ -28,6 +28,12 @@ export function buildPlumbingSessionResumeNudge(opts: {
   }
 
   const job = opts.job;
+  if (job?.status === "callback_requested") {
+    msg +=
+      " A callback was already logged for this caller — confirm someone will call them back; do not fabricate an answer to their question.";
+    return msg;
+  }
+
   if (job?.status === "booked" || job?.status === "emergency") {
     const when = [job.appointmentDate, job.timeWindow].filter(Boolean).join(" ");
     msg +=

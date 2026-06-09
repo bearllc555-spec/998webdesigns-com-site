@@ -24,6 +24,7 @@ type PlumbingJobPayload = {
   promoCode?: string | null;
   customerEmail?: string | null;
   confirmationEmailSentAt?: string | null;
+  notes?: Record<string, unknown> | null;
 };
 
 function formatWhen(iso: string): string {
@@ -339,6 +340,12 @@ export function PlumbingCrmDashboard() {
                                 : "Not recorded yet"}
                             </dd>
                           </div>
+                          {typeof job.notes?.questionSummary === "string" && (
+                            <div>
+                              <dt className="text-ink-soft">Callback question</dt>
+                              <dd>{job.notes.questionSummary}</dd>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <p className="text-ink-soft">No appointment saved yet.</p>

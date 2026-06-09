@@ -1333,12 +1333,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               queuePhaseTransition({ kind: "verified", nextMode: "demo" });
             }
 
-            if (
-              verticalRef.current === "plumbers" &&
-              name === "book_plumbing_appointment" &&
-              result.booked === true
-            ) {
-              plumbingCallWindingDownRef.current = true;
+            if (verticalRef.current === "plumbers") {
+              if (name === "book_plumbing_appointment" && result.booked === true) {
+                plumbingCallWindingDownRef.current = true;
+              }
+              if (name === "request_plumbing_callback" && result.ok === true) {
+                plumbingCallWindingDownRef.current = true;
+              }
             }
 
             responses.push(buildVoiceDemoToolResponse(call.id, name, result));

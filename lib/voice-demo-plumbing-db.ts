@@ -1,6 +1,12 @@
 import { supabaseAdmin } from "@/lib/supabase";
 
-export type PlumbingJobStatus = "draft" | "booked" | "emergency" | "quote_sent" | "cancelled";
+export type PlumbingJobStatus =
+  | "draft"
+  | "booked"
+  | "emergency"
+  | "quote_sent"
+  | "cancelled"
+  | "callback_requested";
 
 export type PlumbingJobRow = {
   id: string;

@@ -109,6 +109,23 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
           },
         },
         {
+          name: "request_plumbing_callback",
+          description:
+            "Log a human callback when you cannot answer the caller's question confidently from the knowledge base. Requires name, phone, and what they asked.",
+          parameters: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING, description: "Caller's full name" },
+              phone: { type: Type.STRING, description: "Best callback number" },
+              questionSummary: {
+                type: Type.STRING,
+                description: "Short summary of the question you could not answer confidently",
+              },
+            },
+            required: ["name", "phone", "questionSummary"],
+          },
+        },
+        {
           name: "send_plumbing_email",
           description:
             "Send quote follow-up, promo, or after-hours email. Templates: quote_followup, promo, after_hours.",
@@ -135,6 +152,14 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
 
 function firstName(fullName: string): string {
   return fullName.trim().split(/\s+/)[0] ?? fullName;
+}
+
+function plumbingCallbackPhone(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  return trimmed;
 }
 
 const VALID_TEMPLATES = new Set<PlumbingEmailTemplate>([
@@ -237,6 +262,45 @@ export async function executeVoiceDemoPlumbingTool(
     return {
       ok: true,
       message: emailMessage,
+    };
+  }
+
+  if (name === "request_plumbing_callback") {
+    const visitorName = typeof args.name === "string" ? args.name.trim() : "";
+    const phoneRaw = typeof args.phone === "string" ? args.phone : "";
+    const phone = plumbingCallbackPhone(phoneRaw);
+    const questionSummary =
+      typeof args.questionSummary === "string" ? args.questionSummary.trim() : "";
+
+    if (!visitorName || !phone || !questionSummary) {
+      return {
+        ok: false,
+        error: "Need caller name, a valid callback phone (10+ digits), and questionSummary.",
+      };
+    }
+
+    await updateVoiceDemoLead(leadId, {
+      full_name: visitorName,
+      phone,
+    });
+
+    await upsertPlumbingJob({
+      leadId,
+      status: "callback_requested",
+      flowName: "callback_fallback",
+      notes: {
+        questionSummary,
+        callbackRequestedAt: new Date().toISOString(),
+      },
+    });
+
+    return {
+      ok: true,
+      callbackLogged: true,
+      message:
+        `Callback logged for ${visitorName} at ${phone}. ` +
+        `Tell the caller someone from Metro Plumbing & Drain will call them back as soon as we can — ` +
+        `do NOT guess an answer to their question.`,
     };
   }
 

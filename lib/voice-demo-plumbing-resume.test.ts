@@ -52,6 +52,15 @@ describe("buildPlumbingSessionResumeNudge", () => {
     expect(nudge).toContain('real quick what\'s your name/address');
   });
 
+  it("reminds Jarvis a callback was logged when status is callback_requested", () => {
+    const nudge = buildPlumbingSessionResumeNudge({
+      nameOnFile: "Anthony",
+      job: { status: "callback_requested" },
+    });
+    expect(nudge).toContain("callback was already logged");
+    expect(nudge).toContain("do not fabricate");
+  });
+
   it("tells Jarvis not to restart when appointment is already booked", () => {
     const nudge = buildPlumbingSessionResumeNudge({
       job: {

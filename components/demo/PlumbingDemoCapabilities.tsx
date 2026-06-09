@@ -19,6 +19,10 @@ export function PlumbingDemoCapabilities() {
           Plumbing &amp; Drain&apos;s full knowledge base, including everything below (and he can
           book appointments and send confirmation emails in this demo).
         </p>
+        <p className="text-sm leading-relaxed text-ink-soft">
+          If he is not confident in an answer, he will not guess — he will take your name and phone
+          number and have someone from the team call you back.
+        </p>
         <p className="text-sm text-ink-soft">
           You do not need to read these word-for-word. They are here so you know what he is capable
           of.
