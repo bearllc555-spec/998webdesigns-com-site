@@ -400,6 +400,15 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
+@keyframes plumbing-orb-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Hero headline — letter-by-letter reveal (opacity only, no blur) */
 @keyframes hero-letter-in {
   from {
