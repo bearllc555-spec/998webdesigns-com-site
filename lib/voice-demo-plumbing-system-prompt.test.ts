@@ -1,0 +1,41 @@
+import { describe, expect, it } from "vitest";
+import { voiceDemoPlumbingSystemPrompt } from "@/lib/voice-demo-plumbing-system-prompt";
+import type { VoiceDemoLeadRow } from "@/lib/voice-demo-db";
+
+function plumbingRow(email: string): VoiceDemoLeadRow {
+  return {
+    id: "test-lead",
+    created_at: "2026-06-07T00:00:00.000Z",
+    updated_at: "2026-06-07T00:00:00.000Z",
+    email,
+    phone: null,
+    full_name: null,
+    primary_channel: "email",
+    email_verified_at: "2026-06-07T00:00:00.000Z",
+    phone_verified_at: null,
+    promo_code: null,
+    promo_sent_at: null,
+    session_summary: null,
+    ops_log: null,
+    vertical: "plumbers",
+    verification_code_hash: null,
+    verification_expires_at: null,
+    verification_attempts: 0,
+    secondary_declined_at: null,
+    ip: null,
+    location_zip: null,
+    location_city: null,
+    location_state: null,
+    read_at: null,
+    inbox_flag: null,
+  };
+}
+
+describe("voice-demo-plumbing-system-prompt", () => {
+  it("offers demo login email before asking caller to spell a new one", () => {
+    const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
+    expect(prompt).toContain("DEMO LOGIN EMAIL");
+    expect(prompt).toContain("ademeo@gmail.com");
+    expect(prompt).toMatch(/ask FIRST/i);
+  });
+});

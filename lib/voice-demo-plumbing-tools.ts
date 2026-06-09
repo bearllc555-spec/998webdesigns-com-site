@@ -263,11 +263,16 @@ export async function executeVoiceDemoPlumbingTool(
       }
     }
 
+    const gateEmail = row.email?.trim().toLowerCase() ?? "";
+    const emailFromDemoLogin =
+      Boolean(email && isValidEmail(email) && gateEmail && email === gateEmail);
+
     const reconfirmMessage = buildPlumbingContactReconfirmMessage({
       name: visitorName || undefined,
       serviceAddress: serviceAddress || undefined,
       email: email && isValidEmail(email) ? email : undefined,
       phone: phone || undefined,
+      emailFromDemoLogin,
     });
 
     const spoken: Record<string, string> = {};

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPlumbingContactReconfirmMessage,
+  buildPlumbingGateEmailOfferBlock,
   plumbingContactFieldSpoken,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
 
@@ -35,5 +36,25 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     expect(msg).toContain("123 Main St");
     expect(msg).toContain("a d e m e o @gmail.com");
     expect(msg).toContain("2 0 1 5 5 5 1 2 3 4");
+  });
+
+  it("builds gate email offer block for demo login email", () => {
+    const block = buildPlumbingGateEmailOfferBlock("ademeo@gmail.com");
+    expect(block).toContain("ademeo@gmail.com");
+    expect(block).toMatch(/ask FIRST/i);
+    expect(block).toContain("a d e m e o @gmail.com");
+    expect(block).toMatch(/do NOT ask them to say or spell/i);
+  });
+
+  it("returns null for invalid gate email", () => {
+    expect(buildPlumbingGateEmailOfferBlock("not yet")).toBeNull();
+  });
+
+  it("flags demo login email in reconfirm message", () => {
+    const msg = buildPlumbingContactReconfirmMessage({
+      email: "ademeo@gmail.com",
+      emailFromDemoLogin: true,
+    });
+    expect(msg).toMatch(/demo login accepted/i);
   });
 });
