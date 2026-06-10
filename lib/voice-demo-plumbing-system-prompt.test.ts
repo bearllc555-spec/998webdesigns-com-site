@@ -46,4 +46,12 @@ describe("voice-demo-plumbing-system-prompt", () => {
     expect(prompt).toMatch(/never chain/i);
     expect(prompt).toMatch(/do not jump straight to phone/i);
   });
+
+  it("mentions $50 coupon at the booking offer before intake", () => {
+    const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
+    expect(prompt).toMatch(/BOOKING OFFER/i);
+    expect(prompt).toMatch(/book an appointment with me right now/i);
+    expect(prompt).toMatch(/\$50 coupon off any service/i);
+    expect(prompt).toMatch(/BEFORE collecting name, address, phone, or email/i);
+  });
 });
