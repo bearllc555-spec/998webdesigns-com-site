@@ -23,7 +23,8 @@ describe("buildPlumbingSessionResumeNudge", () => {
 
   it("tells Jarvis to book immediately when all fields are on file", () => {
     const nudge = buildPlumbingSessionResumeNudge({
-      nameOnFile: "Anthony",
+      nameOnFile: "Anthony DeMeo",
+      phoneOnFile: "2015551234",
       job: {
         status: "draft",
         serviceType: "Estimate",
@@ -40,6 +41,7 @@ describe("buildPlumbingSessionResumeNudge", () => {
   it("lists only missing fields after a hiccup", () => {
     const nudge = buildPlumbingSessionResumeNudge({
       nameOnFile: "Anthony",
+      phoneOnFile: "2015551234",
       job: {
         status: "draft",
         serviceType: "Estimate",
@@ -48,7 +50,7 @@ describe("buildPlumbingSessionResumeNudge", () => {
         timeWindow: "Morning",
       },
     });
-    expect(nudge).toContain("Ask ONLY for: email");
+    expect(nudge).toContain("Ask ONLY for: last name, email");
     expect(nudge).toContain('real quick what\'s your name/address');
   });
 

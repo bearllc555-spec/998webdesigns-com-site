@@ -5,6 +5,7 @@ import {
   buildPlumbingContactReconfirmMessage,
   buildPlumbingGateEmailOfferBlock,
   buildPlumbingPhoneSchedulingRecoveryNudge,
+  plumbingIntakeBlockedWithoutLastName,
   plumbingContactFieldChanged,
   plumbingContactFieldSpoken,
   plumbingContactPostReadbackPauseMs,
@@ -33,7 +34,7 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     expect(message).toContain("ademeo at gmail dot com");
     expect(message).toContain("a d e m e o");
     expect(message).toContain("at gmail dot com");
-    expect(message).toMatch(/letter-by-letter/i);
+    expect(message).toMatch(/EVERY character individually/i);
     expect(message).toMatch(/Is that the correct email/i);
     expect(message).toMatch(/THIS TURN ONLY/i);
   });
@@ -54,17 +55,51 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     expect(message).not.toContain("2 0 1 5 5 5 1 2 3 4");
   });
 
-  it("does not pause for first-name-only saves", () => {
+  it("does not pause for casual first-name-only saves", () => {
     const { message, focusField } = buildPlumbingContactReconfirmMessage({
       name: "Anthony",
     });
     expect(focusField).toBeNull();
     expect(message).toMatch(/Do NOT read it back/i);
-    expect(message).toMatch(/I have your first name as Anthony/i);
     expect(message).not.toMatch(/Is that the correct name/i);
   });
 
-  it("focuses email when only email is saved", () => {
+  it("requires last name prompt during booking intake", () => {
+    const { message, focusField } = buildPlumbingContactReconfirmMessage({
+      name: "Anthony",
+      bookingIntake: true,
+    });
+    expect(focusField).toBeNull();
+    expect(message).toMatch(/How do I spell your last name/i);
+    expect(message).toMatch(/I have Anthony as your first name/i);
+    expect(message).toMatch(/BEFORE address, phone, email/i);
+  });
+
+  it("blocks intake fields when only first name is on file", () => {
+    expect(
+      plumbingIntakeBlockedWithoutLastName({
+        nameOnFile: "Anthony",
+        saving: { serviceAddress: "42 Oak Drive" },
+      })
+    ).toMatch(/How do I spell your last name/i);
+    expect(
+      plumbingIntakeBlockedWithoutLastName({
+        nameOnFile: "Anthony DeMeo",
+        saving: { serviceAddress: "42 Oak Drive" },
+      })
+    ).toBeNull();
+  });
+
+  it("requires full local-part spelling in email reconfirm", () => {
+    const { message } = buildPlumbingContactReconfirmMessage({
+      email: "ademeo@gmail.com",
+    });
+    expect(message).toContain("a d e m e o");
+    expect(message).toMatch(/NEVER truncate/i);
+    expect(message).toMatch(/meo@gmail.com/i);
+  });
+
+  it("focuses phone before email when both are saved", () => {
     expect(
       plumbingContactReconfirmFocusField({
         email: "ademeo@gmail.com",
@@ -76,7 +111,7 @@ describe("voice-demo-plumbing-contact-confirm", () => {
       email: "ademeo@gmail.com",
       phone: "2015551234",
     });
-    expect(focusField).toBe("email");
+    expect(focusField).toBe("phone");
   });
 
   it("builds gate email offer with sign-in question and three-step read-back", () => {
@@ -124,13 +159,13 @@ describe("voice-demo-plumbing-contact-confirm", () => {
     const nudge = buildPlumbingContactPauseNudge("email");
     expect(nudge).toMatch(/\[plumbing-contact-pause\]/);
     expect(nudge).toMatch(/Stay completely silent/i);
-    expect(nudge).toMatch(/Do NOT ask for phone/i);
+    expect(nudge).toMatch(/scheduling until they confirm this email/i);
   });
 
   it("builds stronger phone pause nudge and longer wait", () => {
     const nudge = buildPlumbingContactPauseNudge("phone");
     expect(nudge).toMatch(/verify spaced digits/i);
-    expect(nudge).toMatch(/appointment date/i);
+    expect(nudge).toMatch(/email or scheduling/i);
     expect(plumbingContactPostReadbackPauseMs("phone")).toBeGreaterThan(
       plumbingContactPostReadbackPauseMs("email")
     );

@@ -15,9 +15,16 @@ export type PlumbingContactField = "name" | "serviceAddress" | "email" | "phone"
 export const PLUMBING_CONTACT_RECONFIRM_ORDER: PlumbingContactField[] = [
   "name",
   "serviceAddress",
-  "email",
   "phone",
+  "email",
 ];
+
+export const PLUMBING_BOOKING_INTAKE_ORDER = `BOOKING CONTACT ORDER (personal-assistant flow — never skip ahead):
+1. Full name — if only a first name is on file, capture last name FIRST: "I have [first] as your first name. How do I spell your last name?" They may say or spell it; repeat it back, save the full name, spell the last name letter-by-letter, confirm, then continue.
+2. Service address — read back and confirm.
+3. Phone number — read digits spaced and confirm.
+4. Email address — pronounce full, spell EVERY character before @ one letter at a time, then say the domain, then confirm. Never group unspelled letters (WRONG for ademeo@gmail.com: "a d e meo" — RIGHT: "a d e m e o" then "at gmail dot com").
+5. Service type, appointment date, and time window — only after contact info is complete.`;
 
 export const PLUMBING_CONTACT_PAUSE_CUE = "[plumbing-contact-pause]";
 
@@ -63,9 +70,38 @@ export type PlumbingContactReconfirmInput = {
   phone?: string;
   /** Caller said yes to using the email they typed to start the demo. */
   emailFromDemoLogin?: boolean;
+  /** Booking/scheduling intake — last name required before other contact fields. */
+  bookingIntake?: boolean;
   /** When set, only reconfirm this field. Otherwise pick earliest field present in input. */
   focusField?: PlumbingContactField;
 };
+
+export function buildPlumbingLastNameBlockedMessage(firstName: string): string {
+  return (
+    `BLOCKED: only first name "${firstName}" on file. Before address, phone, or email, ask NOW: ` +
+    `"I have ${firstName} as your first name. How do I spell your last name?" ` +
+    `Listen, repeat their last name, save the full name, confirm spelling, then continue intake.`
+  );
+}
+
+/** Block saving address/phone/email while only a first name is on file during booking. */
+export function plumbingIntakeBlockedWithoutLastName(opts: {
+  nameOnFile: string;
+  saving: {
+    serviceAddress?: string;
+    phone?: string;
+    email?: string;
+    serviceType?: string;
+    appointmentDate?: string;
+    timeWindow?: string;
+  };
+}): string | null {
+  const name = opts.nameOnFile.trim();
+  if (!name || hasFullPersonName(name)) return null;
+  const savingOther = Object.values(opts.saving).some((v) => Boolean(v?.trim()));
+  if (!savingOther) return null;
+  return buildPlumbingLastNameBlockedMessage(splitPersonName(name).firstName);
+}
 
 /** Which contact field to reconfirm when a tool save includes multiple values. */
 export function plumbingContactReconfirmFocusField(
@@ -97,10 +133,10 @@ export function plumbingContactReconfirmFocusField(
 }
 
 const CONTACT_PAUSE_NEXT_FIELD: Record<PlumbingContactField, string> = {
-  name: "service address, email, phone, or scheduling",
-  serviceAddress: "email, phone, or scheduling",
-  email: "phone or scheduling",
-  phone: "appointment date, day, time window, or scheduling",
+  name: "service address, phone, email, or scheduling",
+  serviceAddress: "phone, email, or scheduling",
+  phone: "email or scheduling",
+  email: "appointment date, day, time window, or scheduling",
 };
 
 /** Hidden nudge after Jarvis read-back — hold the line until the caller confirms. */
@@ -165,12 +201,13 @@ export function plumbingContactPostReadbackPauseMs(field: PlumbingContactField):
 /** Prompt block for system prompt — slow intake pacing. */
 export const PLUMBING_CONTACT_INTAKE_PACING = `CONTACT INTAKE PACING (critical during booking):
 - One field per turn: collect → save_plumbing_contact → read back when required → wait for yes → only then ask the next field.
-- First name alone: save it, do NOT ask "Is that your name?" — if booking, ask for last name ("I have your first name as … What is your last name?").
+- First name alone (casual chat): save it, do NOT ask "Is that your name?"
+- First name alone (booking): BEFORE address, phone, or email, ask "I have [first] as your first name. How do I spell your last name?" — mandatory, never skip.
 - Full name (first + last): pronounce the first name, spell the last name letter-by-letter, then ask if the name is correct — same pacing as email but inverted.
-- After spelling email or phone, STOP and let the caller respond — never chain "Is that correct? And what's your phone number?" in one breath.
-- After phone read-back: END your turn after "Is that the best number to reach you?" — never add "What day works?" or any scheduling question in the same turn. Callers need a beat to verify digits.
-- If they go quiet for a moment after a read-back, stay silent; they may be verifying spelling or digits in their head.
-- Name → address → email → phone → date/time — never skip ahead while a read-back is still unanswered.`;
+- Email local part: every character before @ individually — never stop early or group the rest (ademeo@gmail.com = "a d e m e o", never "a d e meo@gmail.com").
+- After spelling email or phone, STOP and let the caller respond — never chain confirmation with the next question.
+- After phone read-back: END your turn after "Is that the best number to reach you?" — never add scheduling in the same turn.
+- Full name → address → phone → email → date/time — never skip ahead while a read-back is still unanswered.`;
 
 function buildEmailReconfirmScript(
   email: string,
@@ -184,8 +221,9 @@ function buildEmailReconfirmScript(
     : "";
   return (
     `${intro}(1) pronounce the full address naturally: "${pronounce}" — ` +
-    `(2) spell ONLY the part before @ letter-by-letter: "${localSpelled}" — ` +
-    `(3) say the domain aloud: "${domainSpoken}" — ` +
+    `(2) spell ONLY the part before @ — EVERY character individually with spaces, no grouping: "${localSpelled}" — ` +
+    `NEVER truncate the local part (WRONG: "a d e meo" or "meo@gmail.com" as one chunk; spell ALL ${localSpelled.split(" ").length} letters) — ` +
+    `(3) say the domain aloud separately: "${domainSpoken}" — ` +
     `(4) ask "Is that the correct email?" ${CONTACT_PAUSE_RULE}`
   );
 }
@@ -198,9 +236,9 @@ export function buildPlumbingGateEmailOfferBlock(gateEmail: string): string | nu
   if (!readBackScript) return null;
   return `DEMO LOGIN EMAIL (use first — saves time):
 - The caller signed in with ${email}. When booking needs an email, ${readBackScript}
-- If YES: call save_plumbing_contact with email "${email}" only — do NOT ask them to spell the address. Move to callback phone or scheduling.
-- If NO: ask "What's the best email to reach you?" collect it, save_plumbing_contact with email only, then use the same pronounce → spell local → domain → confirm pattern before phone or scheduling.
-- Never skip straight to "What's your email?" or phone when demo login email is on file.`;
+- If YES: call save_plumbing_contact with email "${email}" only — do NOT ask them to spell the address. Use the full pronounce → spell every local letter → domain → confirm pattern.
+- If NO: ask "What's the best email to reach you?" collect it, save_plumbing_contact with email only, then use the same pronounce → spell local → domain → confirm pattern.
+- Collect email only after full name, address, and phone are confirmed — never before phone in the booking flow.`;
 }
 
 /** Spoken read-back for a field Jarvis must reconfirm before moving on. */
@@ -229,13 +267,18 @@ export function plumbingContactFieldSpoken(
   }
 }
 
-function buildFirstNameOnlyGuidance(firstName: string): string {
+function buildFirstNameOnlyGuidance(firstName: string, bookingIntake: boolean): string {
+  if (bookingIntake) {
+    return (
+      `Name (THIS TURN ONLY — REQUIRED): Only "${firstName}" is on file. BEFORE address, phone, email, or scheduling you MUST ask: ` +
+      `"I have ${firstName} as your first name. How do I spell your last name?" ` +
+      `Listen — they may say or spell it. Repeat their last name back, call save_plumbing_contact with the full name, ` +
+      `then spell the last name letter-by-letter and ask if the name is correct. Do NOT ask for address, phone, or email yet.`
+    );
+  }
   return (
-    `Name (THIS TURN ONLY): "${firstName}" saved. Do NOT read it back and do NOT ask "Is that your name?" or "Is that correct?" — ` +
-    `if Jarvis misheard, the caller will interrupt and correct you. ` +
-    `If you are gathering booking details and still need a last name, say: "I have your first name as ${firstName}. What is your last name?" ` +
-    `then call save_plumbing_contact with the full name when you have it. ` +
-    `Otherwise acknowledge briefly and continue naturally — do not validate a first name alone.`
+    `Name (THIS TURN ONLY): "${firstName}" saved. Do NOT read it back and do NOT ask "Is that your name?" — ` +
+    `if Jarvis misheard, the caller will interrupt and correct you. Acknowledge briefly and continue naturally.`
   );
 }
 
@@ -259,7 +302,10 @@ function buildReconfirmLine(
       const name = input.name?.trim();
       if (!name) return null;
       if (!hasFullPersonName(name)) {
-        return buildFirstNameOnlyGuidance(splitPersonName(name).firstName);
+        return buildFirstNameOnlyGuidance(
+          splitPersonName(name).firstName,
+          input.bookingIntake === true
+        );
       }
       const script = buildFullNameReconfirmScript(name);
       if (!script) return null;
@@ -280,7 +326,7 @@ function buildReconfirmLine(
       const prefix = input.emailFromDemoLogin
         ? "Email (demo login — THIS TURN ONLY): they confirmed their sign-in email — "
         : "Email (THIS TURN ONLY): ";
-      return `${prefix}${script} Do not skip the pronounce step or letter-by-letter spelling.`;
+      return `${prefix}${script} Use spoken.emailLocalSpelled for the exact local-part letters — spell every one, never group the remainder.`;
     }
     case "phone": {
       const phone = input.phone?.trim();
@@ -336,9 +382,12 @@ export function buildPlumbingContactReconfirmMessage(
   const line = buildReconfirmLine(focusField, input);
   if (!line) return { message: null, focusField: null };
   if (focusField === "name" && input.name && !hasFullPersonName(input.name)) {
+    const prefix = input.bookingIntake
+      ? "Contact saved. REQUIRED — do this before any other intake field:\n"
+      : "Contact saved. Handle ONLY this now:\n";
     return {
       focusField: null,
-      message: `Contact saved. Handle ONLY this now:\n${line}`,
+      message: `${prefix}${line}`,
     };
   }
   return {

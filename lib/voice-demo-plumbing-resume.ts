@@ -16,9 +16,11 @@ export type PlumbingResumeJob = {
 /** Hidden nudge after WebSocket resume — keeps booking flow alive mid-scheduling. */
 export function buildPlumbingSessionResumeNudge(opts: {
   nameOnFile?: string;
+  phoneOnFile?: string;
   job?: PlumbingResumeJob | null;
 }): string {
   const name = opts.nameOnFile?.trim();
+  const phone = opts.phoneOnFile?.trim();
   let msg =
     `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed — you are still on a live Metro Plumbing call. ` +
     `Stay on the line; do not say goodbye or replay the full opening.`;
@@ -49,8 +51,8 @@ export function buildPlumbingSessionResumeNudge(opts: {
   if (job?.appointmentDate) parts.push(`date: ${job.appointmentDate}`);
   if (job?.timeWindow) parts.push(`time: ${job.timeWindow}`);
 
-  const missing = plumbingBookingMissingLabels({ fullName: name, job });
-  const ready = isPlumbingBookingReady({ fullName: name, job });
+  const missing = plumbingBookingMissingLabels({ fullName: name, phone, job });
+  const ready = isPlumbingBookingReady({ fullName: name, phone, job });
 
   if (ready) {
     msg +=

@@ -1,9 +1,18 @@
 import { Type, type ToolListUnion } from "@google/genai";
 import { after } from "next/server";
 import {
+  buildEmailVoiceReadBack,
+  pronounceEmailDomainForVoice,
+  pronounceEmailForVoice,
+  spellEmailLocalPartForVoice,
+} from "@/lib/voice-demo-spell-email";
+import {
   buildPlumbingContactReconfirmMessage,
+  hasFullPersonName,
   plumbingContactFieldChanged,
   plumbingContactFieldSpoken,
+  plumbingIntakeBlockedWithoutLastName,
+  splitPersonName,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
 import { getVoiceDemoLead, updateVoiceDemoLead } from "@/lib/voice-demo-db";
 import {
@@ -205,6 +214,34 @@ export async function executeVoiceDemoPlumbingTool(
       serviceAddress: jobBefore?.service_address ?? null,
     };
 
+    const nameOnFile = (visitorName || row.full_name || "").trim();
+    const bookingIntake = Boolean(
+      serviceType ||
+        serviceAddress ||
+        appointmentDate ||
+        timeWindow ||
+        phone ||
+        email ||
+        jobBefore?.service_type ||
+        jobBefore?.service_address ||
+        jobBefore?.customer_email
+    );
+
+    const lastNameBlock = plumbingIntakeBlockedWithoutLastName({
+      nameOnFile,
+      saving: {
+        serviceAddress,
+        phone,
+        email,
+        serviceType,
+        appointmentDate,
+        timeWindow,
+      },
+    });
+    if (lastNameBlock) {
+      return { ok: false, error: lastNameBlock };
+    }
+
     if (visitorName) patch.full_name = visitorName;
     if (email && isValidEmail(email)) patch.email = email;
     if (phone) patch.phone = phone;
@@ -278,6 +315,10 @@ export async function executeVoiceDemoPlumbingTool(
 
     const { message: reconfirmMessage, focusField: reconfirmField } =
       buildPlumbingContactReconfirmMessage({
+        bookingIntake:
+          bookingIntake ||
+          Boolean(visitorName && !hasFullPersonName(visitorName)) ||
+          Boolean(nameOnFile && !hasFullPersonName(nameOnFile)),
         name:
           visitorName && plumbingContactFieldChanged("name", visitorName, onFile)
             ? visitorName
@@ -304,7 +345,15 @@ export async function executeVoiceDemoPlumbingTool(
       spoken.serviceAddress = serviceAddress;
     }
     if (reconfirmField === "email" && email && isValidEmail(email)) {
-      spoken.email = plumbingContactFieldSpoken("email", email)!;
+      const readBack = buildEmailVoiceReadBack(email);
+      spoken.email = pronounceEmailForVoice(email);
+      if (readBack) {
+        spoken.emailLocalSpelled = readBack.localSpelled;
+        spoken.emailDomain = readBack.domainSpoken;
+      } else {
+        spoken.emailLocalSpelled = spellEmailLocalPartForVoice(email);
+        spoken.emailDomain = pronounceEmailDomainForVoice(email);
+      }
     }
     if (reconfirmField === "phone" && phone) {
       const phoneSpoken = plumbingContactFieldSpoken("phone", phone);
@@ -395,6 +444,18 @@ export async function executeVoiceDemoPlumbingTool(
 
     if (!visitorName || !email || !isValidEmail(email) || !serviceAddress || !serviceType) {
       return { ok: false, error: "Need name, valid email, address, and service type." };
+    }
+
+    if (!hasFullPersonName(visitorName)) {
+      const first = splitPersonName(visitorName).firstName;
+      return {
+        ok: false,
+        error: `Need full name before booking. Ask: "I have ${first} as your first name. How do I spell your last name?"`,
+      };
+    }
+
+    if (!row.phone?.trim()) {
+      return { ok: false, error: "Need callback phone on file before booking." };
     }
 
     await updateVoiceDemoLead(leadId, {
