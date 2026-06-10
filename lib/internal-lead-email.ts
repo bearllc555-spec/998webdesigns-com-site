@@ -7,6 +7,7 @@ import {
 import { designPaymentScheduleLines, paymentOptionLabel } from "@/lib/design-payment-schedule";
 import { formatHearAboutSources } from "@/lib/hear-about-sources";
 import { hostingChoiceLabel } from "@/lib/hosting";
+import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
 import type { ValidatedLead } from "@/lib/validate-lead";
 import { stripeKeyMode } from "@/lib/stripe-env";
 
@@ -262,7 +263,7 @@ export async function sendInternalHostingRenewalFailedEmail(
     subject: `[998] Hosting renewal failed — ${customerEmail}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
-        <h2 style="margin: 0 0 12px;">$198/mo hosting payment failed</h2>
+        <h2 style="margin: 0 0 12px;">${HOSTING_MONTHLY_PRICE_MO_LABEL} hosting payment failed</h2>
         <p><strong>Customer email:</strong> ${escapeHtml(customerEmail)}</p>
         <p><strong>Amount due:</strong> ${escapeHtml(amount)}</p>
         <p><strong>Subscription:</strong> <a href="${dashboardBase}/subscriptions/${escapeHtml(subscriptionId)}">${escapeHtml(subscriptionId)}</a></p>

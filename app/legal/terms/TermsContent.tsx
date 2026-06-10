@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ContactModal } from "@/components/ContactModal";
+import { HOSTING_MONTHLY_PRICE_MONTH_LABEL } from "@/lib/hosting-policy";
 
 export function TermsContent() {
   const [contactOpen, setContactOpen] = useState(false);
@@ -50,7 +51,7 @@ export function TermsContent() {
               </li>
               <li>
                 <strong>Hosting:</strong> You choose 10-year hosting ($2,996 one-time, domain
-                registration for .com, .net, or .org included) or month-to-month ($198/month) on the
+                registration for .com, .net, or .org included) or month-to-month ({HOSTING_MONTHLY_PRICE_MONTH_LABEL}) on the
                 lead form. Your first 30 days of hosting are free after your design payment clears.
                 Paid hosting begins on day 31. Terms for switching between options are stated in
                 pricing on the site.
@@ -124,7 +125,7 @@ export function TermsContent() {
               Payments are processed by Stripe. Checkout defaults to credit or debit card. You may
               pay by U.S. bank account (ACH) at list price instead. Card payments include a 3%
               processing fee on the design fee only at the initial design Checkout; hosting is not
-              charged there. Month-to-month hosting ($198/month) begins after your 30-day free
+              charged there. Month-to-month hosting ({HOSTING_MONTHLY_PRICE_MONTH_LABEL}) begins after your 30-day free
               period via Stripe subscription. 10-year hosting ($2,996) is collected via a separate
               Checkout link we send on day 31. We do not store full card or
               bank account numbers on our servers.

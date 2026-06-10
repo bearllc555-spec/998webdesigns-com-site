@@ -1,3 +1,8 @@
+import {
+  HOSTING_MONTHLY_PRICE_CENTS,
+  HOSTING_MONTHLY_PRICE_MO_LABEL,
+} from "@/lib/hosting-policy";
+
 export interface Product {
   id: string
   name: string
@@ -31,9 +36,8 @@ export const HOSTING_LIFETIME_PRODUCT = HOSTING_TEN_YEAR_PRODUCT
 export const HOSTING_MONTHLY_PRODUCT: Product = {
   id: 'hosting-monthly',
   name: 'Month-to-month hosting',
-  description:
-    'Managed hosting for your site. First 30 days free; $198/mo starting day 31. Cancel anytime.',
-  priceInCents: 19800, // $198.00 / month
+  description: `Managed hosting for your site. First 30 days free; ${HOSTING_MONTHLY_PRICE_MO_LABEL} starting day 31. Cancel anytime.`,
+  priceInCents: HOSTING_MONTHLY_PRICE_CENTS,
 }
 
 /** Billed in a separate Checkout 30 days after design payment (10-year path). */

@@ -25,7 +25,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **`/api/admin/env-status`** — GET production wiring snapshot (no secret values). Bearer: `BALANCE_CAPTURE_SECRET`.
 - **`/api/admin/migrate-hosting-billing`** — POST idempotent migration for `hosting_billing_starts_at` columns. Bearer: `BALANCE_CAPTURE_SECRET`.
 - **`/hosting/manage`** — month-to-month clients request a magic link to Stripe Customer Portal (`POST /api/hosting/portal/request`, `GET /api/hosting/portal/session`).
-- **Hosting policy** (`lib/hosting-policy.ts`, `lib/checkout-session.ts`) — first **30 days hosting free** for everyone; **monthly** = $198/mo after Stripe trial; **lifetime** = $2,996 deferred to day 31 (`lib/ten-year-hosting-billing.ts`).
+- **Hosting policy** (`lib/hosting-policy.ts`, `lib/checkout-session.ts`) — first **30 days hosting free** for everyone; **monthly** = $98/mo after Stripe trial; **lifetime** = $2,996 deferred to day 31 (`lib/ten-year-hosting-billing.ts`).
 - **Checkout origins** — `lib/checkout-origin.ts` allowlist (no open redirect via `Origin`).
 - **Stripe go-live** — `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO — `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.

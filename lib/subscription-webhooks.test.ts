@@ -51,7 +51,7 @@ describe("subscription webhooks", () => {
   it("syncs and emails on subscription invoice failure", async () => {
     await handleInvoicePaymentFailed({
       id: "in_1",
-      amount_due: 19800,
+      amount_due: 9800,
       currency: "usd",
       parent: {
         type: "subscription_details",

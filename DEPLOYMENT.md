@@ -64,7 +64,7 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
   - `checkout.session.completed`
   - `checkout.session.async_payment_succeeded` (ACH settled)
   - `checkout.session.async_payment_failed` (ACH failed → hello@ alert)
-- **Month-to-month hosting (recommended when billing $198/mo):**
+- **Month-to-month hosting (recommended when billing $98/mo):**
   - `invoice.payment_failed` → hello@ + lead status `hosting_payment_failed`
   - `customer.subscription.deleted` → hello@ + lead status `hosting_canceled`
 
@@ -82,7 +82,7 @@ All new checkouts use the **50 / 40 / 10 design fee schedule** ($5,998 total —
 | Checkout completed (card or ACH settled) | **Paid in full** (amount + Stripe session link) |
 | Lifetime hosting Checkout completed (day 31) | **Lifetime hosting paid** (amount + Stripe session link) |
 | ACH failed after Checkout | **ACH payment failed** |
-| $198/mo renewal failed | **Hosting renewal failed** |
+| $98/mo renewal failed | **Hosting renewal failed** |
 | Subscription canceled | **Hosting subscription ended** |
 
 Uses `RESEND_API_KEY`.
@@ -95,7 +95,7 @@ Stripe Checkout charges (separate sessions by payment channel):
 - **Lifetime hosting:** $2,996 on day 31 (not at signup)
 - **Card only:** +3% processing on the design fee at initial Checkout
 - **Bank (ACH):** list price; settlement async — webhook `checkout.session.async_payment_succeeded` marks paid
-- **Month-to-month hosting:** $198/mo after a 30-day free trial (subscription Checkout at signup; design fee only today). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
+- **Month-to-month hosting:** $98/mo after a 30-day free trial (subscription Checkout at signup; design fee only today). Run `supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql` on helmet if `stripe_subscription_id` column is missing.
 - **Lifetime hosting:** $2,996 on day 31 via automated cron (`/api/cron/ten-year-hosting`, daily 14:00 UTC). Run `supabase/migrations/20260605180000_wd_leads_hosting_billing.sql` for `hosting_billing_starts_at` columns. Cron auth: `Authorization: Bearer` with `CRON_SECRET` or `BALANCE_CAPTURE_SECRET`.
 - **Sales tax:** not collected (no Stripe Tax)
 

@@ -1,5 +1,7 @@
 /* Pricing copy is the product. Do not change wording without explicit approval. */
 
+import { HOSTING_MONTHLY_PRICE_DOLLARS, HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+
 export function Pricing() {
   return (
     <section id="pricing" className="border-b border-rule bg-rule-soft/60">
@@ -57,10 +59,11 @@ export function Pricing() {
               Month-to-month lease
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
-              $198 <span className="text-xl text-ink-soft">/month</span>
+              ${HOSTING_MONTHLY_PRICE_DOLLARS}{" "}
+              <span className="text-xl text-ink-soft">/month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              First 30 days free, then $198/mo. Cancel anytime before day 31 and you will not be
+              First 30 days free, then {HOSTING_MONTHLY_PRICE_MO_LABEL}. Cancel anytime before day 31 and you will not be
               charged for hosting. Upgrade to 10-year hosting whenever you want for $2,996.
             </p>
           </article>

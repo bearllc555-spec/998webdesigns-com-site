@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { ThanksActions } from "@/components/ThanksActions";
 import { formatCheckoutUsd } from "@/lib/checkout-pricing";
 import { designMilestone2Cents, designMilestone3Cents } from "@/lib/design-payment-schedule";
+import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
 import { stripe } from "@/lib/stripe";
 
 export const metadata = {
@@ -179,7 +180,7 @@ export default async function Thanks({
             ) : (
               <p className="mt-2 text-sm text-ink-soft">
                 No follow-up invoices for the design fee. Your first 30 days of hosting are free.
-                Month-to-month hosting ($198/mo) or 10-year hosting ($2,996) is billed starting 30
+                Month-to-month hosting ({HOSTING_MONTHLY_PRICE_MO_LABEL}) or 10-year hosting ($2,996) is billed starting 30
                 days after your design payment cleared — not in this Checkout.
               </p>
             )}

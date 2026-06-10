@@ -10,7 +10,11 @@ import {
   toggleAddon as toggleStoredAddon,
 } from "@/lib/addons";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
-import { HOSTING_FREE_MONTH_SUMMARY, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
+import {
+  HOSTING_FREE_MONTH_SUMMARY,
+  HOSTING_MONTHLY_PRICE_MO_LABEL,
+  HOSTING_TRIAL_DAYS,
+} from "@/lib/hosting-policy";
 import { hostingChoiceShortLabel } from "@/lib/hosting";
 import {
   bundleTotalCents,
@@ -579,7 +583,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
                 <div className="grid gap-2 md:grid-cols-2">
                   {([
                     ["ten_year", "10-year — $2,996 after free month"],
-                    ["monthly", "Month-to-month — $198/mo after free month"],
+                    ["monthly", `Month-to-month — ${HOSTING_MONTHLY_PRICE_MO_LABEL} after free month`],
                   ] as const).map(([val, label]) => (
                     <label
                       key={val}
@@ -607,7 +611,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
                 <p className="text-sm font-medium text-ink">{HOSTING_FREE_MONTH_SUMMARY}</p>
                 <p className="mt-2 text-xs leading-relaxed text-ink-soft">
                   {form.hostingChoice === "monthly" &&
-                    `You pay the 50% design deposit today only. $198/mo hosting starts on day ${HOSTING_TRIAL_DAYS + 1}. Cancel before then and you will not be charged for hosting.`}
+                    `You pay the 50% design deposit today only. ${HOSTING_MONTHLY_PRICE_MO_LABEL} hosting starts on day ${HOSTING_TRIAL_DAYS + 1}. Cancel before then and you will not be charged for hosting.`}
                   {form.hostingChoice === "ten_year" &&
                     `You pay the 50% design deposit today only. We email a secure link for the $2,996 10-year hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Domain registration (.com, .net, .org) is included. 10-year hosting begins when that payment clears.`}
                   {!form.hostingChoice &&

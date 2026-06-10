@@ -3,7 +3,7 @@
  *
  *   node scripts/seed-portal-test-client.mjs ademeo@gmail.com
  *
- * Creates live Stripe customer + trialing $198/mo subscription (no charge during trial),
+ * Creates live Stripe customer + trialing $98/mo subscription (no charge during trial),
  * inserts/updates wd_leads on helmet Supabase.
  */
 import fs from "fs";
@@ -84,7 +84,7 @@ const product = await stripe.products.create({
 
 const price = await stripe.prices.create({
   currency: "usd",
-  unit_amount: 19800,
+  unit_amount: 9800,
   recurring: { interval: "month" },
   product: product.id,
 });

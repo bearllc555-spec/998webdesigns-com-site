@@ -43,7 +43,7 @@ describe("voice-demo-wrapup-nudge", () => {
     for (const q of VOICE_DEMO_WRAPUP_QUESTIONS) {
       expect(isAssistantWrapUpQuestion(q)).toBe(true);
     }
-    expect(isAssistantWrapUpQuestion("Our hosting is $198 per month after trial.")).toBe(
+    expect(isAssistantWrapUpQuestion("Our hosting is $98 per month after trial.")).toBe(
       false
     );
   });

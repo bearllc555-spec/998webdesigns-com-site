@@ -3,16 +3,17 @@ import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Pricing } from "@/components/Pricing";
+import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+
+const pricingDescription = `Flat $5,998 design fee. First 30 days of hosting free — then ${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 10-year. No tiers, no hidden fees.`;
 
 export const metadata: Metadata = {
   title: "Pricing — 998 web designs",
-  description:
-    "Flat $5,998 design fee. First 30 days of hosting free — then $198/mo or $2,996 10-year. No tiers, no hidden fees.",
+  description: pricingDescription,
   robots: { index: true, follow: true },
   openGraph: {
     title: "Pricing — 998 web designs",
-    description:
-      "Flat $5,998 design fee. First 30 days of hosting free — then $198/mo or $2,996 10-year.",
+    description: pricingDescription,
     url: "https://998webdesigns.com/pricing",
   },
 };

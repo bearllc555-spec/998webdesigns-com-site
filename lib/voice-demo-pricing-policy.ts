@@ -1,4 +1,4 @@
-import { HOSTING_FREE_MONTH_SUMMARY } from "@/lib/hosting-policy";
+import { HOSTING_FREE_MONTH_SUMMARY, HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
 
 /** Visitor explicitly asked about money — Jarvis may quote prices. */
 export function isUserPricingQuestion(text: string): boolean {
@@ -36,7 +36,7 @@ export const PRICING_WHEN_ASKED_RULES = `PRICING (critical — do not volunteer)
 
 export const VOICE_DEMO_PRICE_REFERENCE = `PRICING REFERENCE (internal — speak only when visitor asks about price or cost):
 - Design fee: $5,998 (custom website — up to 6 pages, 7 business days from cleared deposit).
-- Hosting after 30-day free trial: $198/mo month-to-month, or $2,996 one-time 10-year hosting (domain .com/.net/.org included on 10-year).
+- Hosting after 30-day free trial: ${HOSTING_MONTHLY_PRICE_MO_LABEL} month-to-month, or $2,996 one-time 10-year hosting (domain .com/.net/.org included on 10-year).
 - AI Agent Chatbot: $299 setup, $79/mo.
 - Jarvis AI Voice Chatbot: $499 setup, $149/mo.
 - ${HOSTING_FREE_MONTH_SUMMARY}

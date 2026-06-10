@@ -43,7 +43,7 @@ After any change: redeploy Production or push to `main`.
 
 1. https://dashboard.stripe.com/test/webhooks (Sandbox on)
 2. **Add endpoint** → `https://998webdesigns.com/api/stripe/webhook`
-3. Events: **`checkout.session.completed`**, **`checkout.session.async_payment_succeeded`**, **`checkout.session.async_payment_failed`**, plus **`invoice.payment_failed`** and **`customer.subscription.deleted`** for $198/mo hosting
+3. Events: **`checkout.session.completed`**, **`checkout.session.async_payment_succeeded`**, **`checkout.session.async_payment_failed`**, plus **`invoice.payment_failed`** and **`customer.subscription.deleted`** for $98/mo hosting
 4. Enable **ACH Direct Debit** under Settings → Payment methods (US bank account)
 5. Copy **Signing secret** (`whsec_...`) → Vercel `STRIPE_WEBHOOK_SECRET` (Production)
 6. Redeploy
@@ -121,15 +121,16 @@ Or ask Cursor in Agent mode after the two `.local` files are filled.
 
 - Design: **$5,998** pay-in-full (`lib/products.ts` → Checkout `price_data`)
 - Promo codes: `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design → **$4,798** line). Server-side in `lib/design-promo.ts`; hosting unchanged.
-- Optional lifetime hosting: **$2,996** on day 31 when selected on lead form
+- Month-to-month hosting: **$98/mo** after 30-day trial (`lib/hosting-policy.ts` → `HOSTING_MONTHLY_PRODUCT` in Checkout subscription `price_data`)
+- Optional 10-year hosting: **$2,996** on day 31 when selected on lead form
 
-See `lib/checkout-line-items.ts`.
+See `lib/checkout-line-items.ts`. New Checkout sessions use dynamic `price_data` — no Dashboard price ID to update for new signups.
 
 ---
 
 ## Customer billing portal (month-to-month hosting)
 
-Self-serve card updates, invoices, and cancel-at-period-end for $198/mo clients.
+Self-serve card updates, invoices, and cancel-at-period-end for $98/mo clients.
 
 | Surface | URL |
 |---------|-----|

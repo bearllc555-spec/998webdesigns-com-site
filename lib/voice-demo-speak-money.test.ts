@@ -7,7 +7,7 @@ describe("voice-demo-speak-money", () => {
     expect(speakUsdDollars(5998)).toBe(
       "five thousand, nine hundred and ninety eight dollars"
     );
-    expect(speakUsdDollars(198)).toBe("one hundred and ninety eight dollars");
+    expect(speakUsdDollars(98)).toBe("ninety eight dollars");
     expect(speakUsdDollars(2996)).toBe(
       "two thousand, nine hundred and ninety six dollars"
     );

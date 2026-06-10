@@ -47,7 +47,7 @@ describe("buildCheckoutLineItems", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "monthly" }), "ach");
     expect(items).toHaveLength(2);
     expect(items[0].price_data?.unit_amount).toBe(599800);
-    expect(items[1].price_data?.unit_amount).toBe(19800);
+    expect(items[1].price_data?.unit_amount).toBe(9800);
     expect(items[1].price_data?.recurring?.interval).toBe("month");
   });
 

@@ -1,3 +1,5 @@
+import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+
 export type FAQItem = { q: string; a: string };
 
 const FAQ_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -17,7 +19,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "How is the $5,998 design fee paid?",
-    a: "On a 50 / 40 / 10 schedule — the same structure for every project. You pay 50% ($2,999) at checkout to enter the queue. The remaining 40% ($2,399.20) is due after design approval or when development starts. The final 10% ($599.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only — not hosting or the card fee). Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from your cleared deposit, month-to-month hosting is $198/mo (cancel before day 31 and you won't be charged), or 10-year hosting is a one-time $2,996 (we email a secure payment link on day 31; domain registration for .com, .net, or .org is included). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.",
+    a: `On a 50 / 40 / 10 schedule — the same structure for every project. You pay 50% ($2,999) at checkout to enter the queue. The remaining 40% ($2,399.20) is due after design approval or when development starts. The final 10% ($599.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only — not hosting or the card fee). Hosting is not charged at signup: your first 30 days of hosting are free. After 30 days from your cleared deposit, month-to-month hosting is ${HOSTING_MONTHLY_PRICE_MO_LABEL} (cancel before day 31 and you won't be charged), or 10-year hosting is a one-time $2,996 (we email a secure payment link on day 31; domain registration for .com, .net, or .org is included). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.`,
   },
   {
     q: "Can I pay by card or bank?",

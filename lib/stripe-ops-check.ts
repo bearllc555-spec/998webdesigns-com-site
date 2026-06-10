@@ -9,7 +9,7 @@ export const REQUIRED_WEBHOOK_EVENTS = [
   "checkout.session.async_payment_failed",
 ] as const;
 
-/** Month-to-month hosting lifecycle — subscribe in Stripe when billing $198/mo clients. */
+/** Month-to-month hosting lifecycle — subscribe in Stripe when billing monthly hosting clients. */
 export const RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS = [
   "invoice.payment_failed",
   "customer.subscription.deleted",
