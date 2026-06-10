@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
+import { clearPlumbingDemoCrmSessionStore } from "@/lib/plumbing-demo-crm-session-store";
 
 export function PlumbingCrmLoginForm() {
   const [email, setEmail] = useState("");
@@ -24,6 +25,7 @@ export function PlumbingCrmLoginForm() {
         setError("Invalid email or password.");
         return;
       }
+      clearPlumbingDemoCrmSessionStore();
       window.location.href = "/demo/plumbers/crm";
     } catch {
       setError("Could not sign in.");

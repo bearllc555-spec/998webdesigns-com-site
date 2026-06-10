@@ -38,7 +38,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       message: "Looking for quarterly drain maintenance across six units in Hackensack.",
       phone: "(201) 555-8831",
       payload: null,
-      readAt: "2026-06-07T20:10:00.000Z",
+      readAt: null,
       inboxFlag: null,
     },
     {
@@ -76,7 +76,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       message: "Emergency leak under kitchen sink — callback requested after voice demo.",
       phone: "(551) 555-4401",
       payload: { source: "jarvis_voice_demo" },
-      readAt: "2026-06-08T12:00:00.000Z",
+      readAt: null,
       inboxFlag: null,
     },
     {
@@ -93,7 +93,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       message: "Active client · backflow certification on file",
       phone: "(973) 555-7710",
       payload: { hostingChoice: "ten_year" },
-      readAt: "2026-06-05T10:30:00.000Z",
+      readAt: null,
       inboxFlag: "check",
     },
     {
@@ -127,7 +127,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       message: "Thanks — tech was great yesterday. Leaving a Google review tonight.",
       phone: "(914) 555-1188",
       payload: { direction: "inbound" },
-      readAt: "2026-06-07T09:00:00.000Z",
+      readAt: null,
       inboxFlag: null,
     },
     {
@@ -167,7 +167,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
         url: "https://998webdesigns.com/blog",
         slug: "water-heater-signs",
       },
-      readAt: "2026-06-04T14:00:00.000Z",
+      readAt: null,
       inboxFlag: null,
     },
   ];

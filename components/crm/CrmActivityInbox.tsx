@@ -8,6 +8,7 @@ import { CrmSmsThread } from "@/components/crm/CrmSmsThread";
 import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
+import { savePlumbingDemoCrmItemPatch } from "@/lib/plumbing-demo-crm-session-store";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
@@ -674,24 +675,30 @@ export function CrmActivityInbox({
   const patchItemRead = useCallback(
     (item: CrmFeedItem, read: boolean) => {
       const readAt = read ? new Date().toISOString() : null;
+      if (demoMode) {
+        savePlumbingDemoCrmItemPatch(item, { readAt });
+      }
       onItemsChange((prev) =>
         prev.map((i) =>
           i.source === item.source && i.id === item.id ? { ...i, readAt } : i
         )
       );
     },
-    [onItemsChange]
+    [demoMode, onItemsChange]
   );
 
   const patchItemFlag = useCallback(
     (item: CrmFeedItem, inboxFlag: CrmFeedItem["inboxFlag"]) => {
+      if (demoMode) {
+        savePlumbingDemoCrmItemPatch(item, { inboxFlag });
+      }
       onItemsChange((prev) =>
         prev.map((i) =>
           i.source === item.source && i.id === item.id ? { ...i, inboxFlag } : i
         )
       );
     },
-    [onItemsChange]
+    [demoMode, onItemsChange]
   );
 
   async function cycleFlag(item: CrmFeedItem) {
@@ -787,6 +794,7 @@ export function CrmActivityInbox({
 
   async function saveNotes(item: CrmFeedItem) {
     if (demoMode) {
+      savePlumbingDemoCrmItemPatch(item, { notes: notesDraft });
       onItemsChange((prev) =>
         prev.map((i) =>
           i.source === item.source && i.id === item.id ? { ...i, notes: notesDraft } : i

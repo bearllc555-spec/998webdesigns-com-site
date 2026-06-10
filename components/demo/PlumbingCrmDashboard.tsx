@@ -8,6 +8,10 @@ import { PlumbingDemoCrmBanner } from "@/components/demo/PlumbingDemoCrmBanner";
 import type { CrmFeedItem } from "@/lib/crm-feed";
 import { isCrmFeedItemUnread } from "@/lib/crm-feed";
 import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
+import {
+  applyPlumbingDemoCrmSessionPatches,
+  clearPlumbingDemoCrmSessionStore,
+} from "@/lib/plumbing-demo-crm-session-store";
 import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants";
 
 export function PlumbingCrmDashboard() {
@@ -33,7 +37,7 @@ export function PlumbingCrmDashboard() {
         setItems([]);
         return;
       }
-      setItems(data.items ?? []);
+      setItems(applyPlumbingDemoCrmSessionPatches(data.items ?? []));
     } catch {
       setError("Could not load demo activity.");
     } finally {
@@ -83,6 +87,7 @@ export function PlumbingCrmDashboard() {
         }
         onRefresh={load}
         refreshDisabled={loading}
+        onBeforeLogout={clearPlumbingDemoCrmSessionStore}
       />
 
       <PlumbingDemoCrmBanner />

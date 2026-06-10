@@ -27,6 +27,8 @@ type CrmHeaderProps = {
   /** Renders Refresh in the nav row beside Messages. */
   onRefresh?: () => void;
   refreshDisabled?: boolean;
+  /** Runs before session DELETE (e.g. clear demo CRM sessionStorage). */
+  onBeforeLogout?: () => void | Promise<void>;
 };
 
 const pillBase =
@@ -44,11 +46,13 @@ export function CrmHeader({
   actions,
   onRefresh,
   refreshDisabled,
+  onBeforeLogout,
 }: CrmHeaderProps) {
   const pathname = usePathname();
   const onActivity = pathname === messagesHref;
 
   async function logout() {
+    await onBeforeLogout?.();
     await fetch(sessionApiPath, { method: "DELETE", credentials: "include" });
     window.location.href = afterLogoutPath;
   }
