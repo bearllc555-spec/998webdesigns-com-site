@@ -60,7 +60,10 @@ export function Pricing() {
             </p>
             <p className="mt-2 font-display text-4xl font-medium tracking-tight">
               $2,996{" "}
-              <span className="text-xl text-ink-soft">/one-time (including domain registration)</span>
+              <span className="text-xl text-ink-soft">
+                /one-time{" "}
+                <span className="text-[16px] font-bold">(including domain registration)</span>
+              </span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
               Pay once after your first 30 days of free hosting. We host your site for ten years,
