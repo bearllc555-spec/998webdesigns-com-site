@@ -62,7 +62,7 @@ export function Pricing() {
               $2,996{" "}
               <span className="text-xl text-ink-soft">
                 /one-time{" "}
-                <span className="text-[16px] font-bold">(including domain registration)</span>
+                <span className="text-[16px]">(incl domain registration)</span>
               </span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
