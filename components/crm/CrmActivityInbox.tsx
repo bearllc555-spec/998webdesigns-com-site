@@ -112,6 +112,8 @@ type CrmActivityInboxProps = {
   onReload: () => Promise<void>;
   /** Public demo — local-only inbox edits; delete shows a notice instead of removing rows. */
   demoMode?: boolean;
+  /** Hide 998web / Plumbing Jarvis demo inbox cards (Metro Plumbing demo CRM). */
+  hideJarvisDemoSections?: boolean;
   loginPath?: string;
 };
 
@@ -661,6 +663,7 @@ export function CrmActivityInbox({
   onItemsChange,
   onReload,
   demoMode = false,
+  hideJarvisDemoSections = false,
   loginPath = "/crm/login",
 }: CrmActivityInboxProps) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -933,20 +936,24 @@ export function CrmActivityInbox({
         rowProps={sharedRowProps}
         emptyLabel="No unmatched inbound texts."
       />
-      <InboxSection
-        title="998web Jarvis demos"
-        items={voiceDemoItems}
-        selectedKey={selectedKey}
-        rowProps={sharedRowProps}
-        emptyLabel="No home marketing Jarvis sign-ins yet."
-      />
-      <InboxSection
-        title="Plumbing Jarvis demos"
-        items={plumbingDemoItems}
-        selectedKey={selectedKey}
-        rowProps={sharedRowProps}
-        emptyLabel="No plumbing Jarvis sign-ins yet."
-      />
+      {!hideJarvisDemoSections && (
+        <>
+          <InboxSection
+            title="998web Jarvis demos"
+            items={voiceDemoItems}
+            selectedKey={selectedKey}
+            rowProps={sharedRowProps}
+            emptyLabel="No home marketing Jarvis sign-ins yet."
+          />
+          <InboxSection
+            title="Plumbing Jarvis demos"
+            items={plumbingDemoItems}
+            selectedKey={selectedKey}
+            rowProps={sharedRowProps}
+            emptyLabel="No plumbing Jarvis sign-ins yet."
+          />
+        </>
+      )}
       <InboxSection
         title="Blog"
         items={blogItems}

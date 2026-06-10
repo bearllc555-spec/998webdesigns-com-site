@@ -103,6 +103,7 @@ export function PlumbingCrmDashboard() {
         {!loading && !error && items.length > 0 && (
           <CrmActivityInbox
             demoMode
+            hideJarvisDemoSections
             loginPath="/demo/plumbers/crm"
             contactItems={contactItems}
             leadItems={leadItems}
