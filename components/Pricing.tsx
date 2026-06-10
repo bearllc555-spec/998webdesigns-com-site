@@ -1,6 +1,13 @@
 /* Pricing copy is the product. Do not change wording without explicit approval. */
 
-import { HOSTING_MONTHLY_PRICE_DOLLARS, HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+import {
+  HOSTING_MONTHLY_PRICE_DOLLARS,
+  HOSTING_MONTHLY_PRICE_MO_LABEL,
+} from "@/lib/hosting-policy";
+
+const DESIGN_INCLUDED_HOSTING_MONTHS = 6;
+const DESIGN_INCLUDED_HOSTING_VALUE =
+  DESIGN_INCLUDED_HOSTING_MONTHS * HOSTING_MONTHLY_PRICE_DOLLARS;
 
 export function Pricing() {
   return (
@@ -25,6 +32,10 @@ export function Pricing() {
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
               $5,998 <span className="text-2xl text-ink-soft">— 50% deposit to start</span>
+            </p>
+            <p className="mt-2 text-lg font-medium text-accent">
+              {DESIGN_INCLUDED_HOSTING_MONTHS} months hosting included — a $
+              {DESIGN_INCLUDED_HOSTING_VALUE.toLocaleString("en-US")} value
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
               A handcrafted custom site, designed around your business. Delivered in 7
