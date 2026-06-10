@@ -81,6 +81,11 @@ import {
   PLUMBING_GOODBYE_BEAT_MS,
 } from "@/lib/voice-demo-plumbing-goodbye";
 import {
+  buildPlumbingPostOpeningListenNudge,
+  isPlumbingOpeningLine,
+  PLUMBING_POST_OPENING_IDLE_MS,
+} from "@/lib/voice-demo-plumbing-opening";
+import {
   isPlumbingBookingContinuation,
   isPlumbingVisitorConfirmedConcerns,
   isPlumbingVisitorDeclinedConcerns,
@@ -232,6 +237,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const plumbingGoodbyeAudioQueueRef = useRef<string[]>([]);
   const plumbingGoodbyeAudioFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plumbingGoodbyeNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const plumbingOpeningCompleteRef = useRef(false);
+  const plumbingUserSpokeSinceOpeningRef = useRef(false);
+  const plumbingPostOpeningNudgeSentRef = useRef(false);
+  const plumbingPostOpeningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plumbingContactPauseFieldRef = useRef<PlumbingContactField | null>(null);
   const schedulePostFarewellHangupRef = useRef<(delayMs?: number) => void>(() => {});
   const endCallGlowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -992,6 +1001,39 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
   }, []);
 
+  const clearPlumbingPostOpeningTimer = useCallback(() => {
+    if (plumbingPostOpeningTimerRef.current) {
+      clearTimeout(plumbingPostOpeningTimerRef.current);
+      plumbingPostOpeningTimerRef.current = null;
+    }
+  }, []);
+
+  const schedulePlumbingPostOpeningNudge = useCallback(() => {
+    if (verticalRef.current !== "plumbers" || modeRef.current !== "demo") return;
+    if (!plumbingOpeningCompleteRef.current || !plumbingUserSpokeSinceOpeningRef.current) {
+      return;
+    }
+    if (plumbingPostOpeningNudgeSentRef.current || jarvisFarewellSentRef.current) return;
+    clearPlumbingPostOpeningTimer();
+    plumbingPostOpeningTimerRef.current = setTimeout(() => {
+      plumbingPostOpeningTimerRef.current = null;
+      if (verticalRef.current !== "plumbers" || modeRef.current !== "demo") return;
+      if (!plumbingOpeningCompleteRef.current || !plumbingUserSpokeSinceOpeningRef.current) {
+        return;
+      }
+      if (plumbingPostOpeningNudgeSentRef.current || jarvisFarewellSentRef.current) return;
+      if (playerRef.current?.isPlaying() || toolInFlightRef.current > 0) {
+        schedulePlumbingPostOpeningNudge();
+        return;
+      }
+      plumbingPostOpeningNudgeSentRef.current = true;
+      void sendClientNudge(buildPlumbingPostOpeningListenNudge()).catch((err) => {
+        console.warn("[voice-demo-live] plumbing post-opening nudge", err);
+        plumbingPostOpeningNudgeSentRef.current = false;
+      });
+    }, PLUMBING_POST_OPENING_IDLE_MS);
+  }, [clearPlumbingPostOpeningTimer, sendClientNudge]);
+
   const flushPlumbingGoodbyeAudioQueue = useCallback(() => {
     if (plumbingGoodbyeAudioFlushTimerRef.current) {
       clearTimeout(plumbingGoodbyeAudioFlushTimerRef.current);
@@ -1387,6 +1429,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           lastAssistantTextRef.current,
           earlyOut
         );
+        if (verticalRef.current === "plumbers" && earlyOut.trim()) {
+          clearPlumbingPostOpeningTimer();
+        }
         noteAssistantPostNameProgress(lastAssistantTextRef.current);
         if (
           modeRef.current === "demo" &&
@@ -1534,6 +1579,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               schedulePlumbingGoodbyeAudioFlush();
               continue;
             }
+            clearPlumbingPostOpeningTimer();
             playerRef.current.enqueueBase64Pcm(data);
           }
         }
@@ -1542,12 +1588,23 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       const inText = message.serverContent?.inputTranscription?.text;
       if (inText) {
         if (inText.trim() && playerRef.current?.isPlaying()) {
-          if (!(nameSavedRef.current && !postNameLineSpokenRef.current)) {
+          const deferInterruptForPostName =
+            nameSavedRef.current && !postNameLineSpokenRef.current;
+          const deferInterruptForPlumbingOpening =
+            verticalRef.current === "plumbers" && !plumbingOpeningCompleteRef.current;
+          if (!deferInterruptForPostName && !deferInterruptForPlumbingOpening) {
             handleAssistantInterrupted();
           }
         }
         clearWrapUpTimer();
         emitCaption("user", inText);
+        if (verticalRef.current === "plumbers" && inText.trim()) {
+          suppressAssistantAudioRef.current = false;
+          if (plumbingOpeningCompleteRef.current) {
+            plumbingUserSpokeSinceOpeningRef.current = true;
+            schedulePlumbingPostOpeningNudge();
+          }
+        }
         if (
           inText.trim() &&
           plumbingContactPauseFieldRef.current &&
@@ -1682,6 +1739,16 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
           isAssistantFarewell(assistantSnapshot)
         ) {
           latchFarewellClosing();
+        }
+        if (verticalRef.current === "plumbers" && assistantSnapshot.trim()) {
+          if (
+            isPlumbingOpeningLine(assistantSnapshot) ||
+            (greetingSentRef.current &&
+              /\bjarvis\b/i.test(assistantSnapshot) &&
+              assistantSnapshot.trim().length > 40)
+          ) {
+            plumbingOpeningCompleteRef.current = true;
+          }
         }
         const hadPostNameAtTurnStart = postNameLineSpokenRef.current;
         const wasInterrupted = assistantTurnInterruptedRef.current;
@@ -1845,6 +1912,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       schedulePlumbingGoodbyeBeat,
       clearPlumbingGoodbyeBeat,
       schedulePlumbingGoodbyeAudioFlush,
+      clearPlumbingPostOpeningTimer,
+      schedulePlumbingPostOpeningNudge,
     ]
   );
 
@@ -1893,6 +1962,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         plumbingExitConcernsAskedRef.current = false;
         plumbingAwaitingConcernsAnswerRef.current = false;
         clearPlumbingGoodbyeBeat();
+        clearPlumbingPostOpeningTimer();
+        plumbingOpeningCompleteRef.current = false;
+        plumbingUserSpokeSinceOpeningRef.current = false;
+        plumbingPostOpeningNudgeSentRef.current = false;
         clearPlumbingContactPause();
         clearCallIdleTimer();
         clearPostFarewellTimer();
@@ -1929,6 +2002,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         }
         sessionRef.current = null;
         if (verticalRef.current === "plumbers") {
+          plumbingOpeningCompleteRef.current = true;
+          clearPlumbingPostOpeningTimer();
           // Stale audio from the dropped socket causes re-asks and blocks resume nudges.
           playerRef.current?.hardStop();
           stopOrbLoop();

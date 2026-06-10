@@ -61,6 +61,7 @@ export function isAssistantOnboardingOrHelpSpeech(text: string): boolean {
   if (!t) return false;
   return (
     /how may i help you today/i.test(t) ||
+    /how can i help you today/i.test(t) ||
     /who do i have the pleasure of speaking with/i.test(t) ||
     /i'?m jarvis/i.test(t) ||
     /\bgood day,\s+\w+/i.test(t)
