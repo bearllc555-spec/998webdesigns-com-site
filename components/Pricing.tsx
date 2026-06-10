@@ -34,7 +34,7 @@ export function Pricing() {
               $5,998{" "}
               <span className="text-2xl text-ink-soft">
                 — 50% deposit to start{" "}
-                <span className="text-[20px]">
+                <span className="text-[20px] font-bold">
                   ({DESIGN_INCLUDED_HOSTING_MONTHS} months hosting included — a $
                   {DESIGN_INCLUDED_HOSTING_VALUE.toLocaleString("en-US")} value)
                 </span>
