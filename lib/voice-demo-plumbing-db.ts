@@ -1,4 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import {
+  assemblePlumbingServiceAddress,
+  type CrmContactFields,
+} from "@/lib/crm-contact-fields";
 
 export type PlumbingJobStatus =
   | "draft"
@@ -17,6 +21,11 @@ export type PlumbingJobRow = {
   flow_name: string | null;
   service_type: string | null;
   service_address: string | null;
+  service_street: string | null;
+  service_line2: string | null;
+  service_city: string | null;
+  service_state: string | null;
+  service_zip: string | null;
   appointment_date: string | null;
   time_window: string | null;
   price_range: string | null;
@@ -35,6 +44,11 @@ export type UpsertPlumbingJobInput = {
   flowName?: string | null;
   serviceType?: string | null;
   serviceAddress?: string | null;
+  serviceStreet?: string | null;
+  serviceLine2?: string | null;
+  serviceCity?: string | null;
+  serviceState?: string | null;
+  serviceZip?: string | null;
   appointmentDate?: string | null;
   timeWindow?: string | null;
   priceRange?: string | null;
@@ -45,6 +59,46 @@ export type UpsertPlumbingJobInput = {
   notes?: Record<string, unknown>;
   confirmationEmailSentAt?: string | null;
 };
+
+function resolvePlumbingAddressPatch(
+  input: UpsertPlumbingJobInput,
+  existing: PlumbingJobRow | null
+): {
+  service_street: string | null;
+  service_line2: string | null;
+  service_city: string | null;
+  service_state: string | null;
+  service_zip: string | null;
+  service_address: string | null;
+} {
+  const street =
+    input.serviceStreet !== undefined
+      ? input.serviceStreet
+      : input.serviceAddress !== undefined
+        ? input.serviceAddress
+        : existing?.service_street ?? existing?.service_address ?? null;
+  const line2 =
+    input.serviceLine2 !== undefined ? input.serviceLine2 : existing?.service_line2 ?? null;
+  const city =
+    input.serviceCity !== undefined ? input.serviceCity : existing?.service_city ?? null;
+  const state =
+    input.serviceState !== undefined ? input.serviceState : existing?.service_state ?? null;
+  const zip = input.serviceZip !== undefined ? input.serviceZip : existing?.service_zip ?? null;
+  const parts: CrmContactFields = { street, line2, city, state, zip };
+  const assembled = assemblePlumbingServiceAddress(parts);
+  return {
+    service_street: street,
+    service_line2: line2,
+    service_city: city,
+    service_state: state,
+    service_zip: zip,
+    service_address:
+      assembled ??
+      (input.serviceAddress !== undefined
+        ? input.serviceAddress
+        : existing?.service_address ?? null),
+  };
+}
 
 export async function getLatestPlumbingJobForLead(
   leadId: string
@@ -72,13 +126,13 @@ export async function upsertPlumbingJob(
 
   const existing = await getLatestPlumbingJobForLead(input.leadId);
   const now = new Date().toISOString();
+  const addressPatch = resolvePlumbingAddressPatch(input, existing);
 
   if (existing) {
-    const patch: Record<string, unknown> = { updated_at: now };
+    const patch: Record<string, unknown> = { updated_at: now, ...addressPatch };
     if (input.status !== undefined) patch.status = input.status;
     if (input.flowName !== undefined) patch.flow_name = input.flowName;
     if (input.serviceType !== undefined) patch.service_type = input.serviceType;
-    if (input.serviceAddress !== undefined) patch.service_address = input.serviceAddress;
     if (input.appointmentDate !== undefined) patch.appointment_date = input.appointmentDate;
     if (input.timeWindow !== undefined) patch.time_window = input.timeWindow;
     if (input.priceRange !== undefined) patch.price_range = input.priceRange;
@@ -109,7 +163,7 @@ export async function upsertPlumbingJob(
       status: input.status ?? "draft",
       flow_name: input.flowName ?? null,
       service_type: input.serviceType ?? null,
-      service_address: input.serviceAddress ?? null,
+      ...addressPatch,
       appointment_date: input.appointmentDate ?? null,
       time_window: input.timeWindow ?? null,
       price_range: input.priceRange ?? null,

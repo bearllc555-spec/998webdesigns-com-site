@@ -1,5 +1,6 @@
 import { isCrmInboxFlag, type CrmInboxFlag } from "@/lib/crm-inbox-flag";
 import type { CrmFeedItem, CrmFeedResult } from "@/lib/crm-feed";
+import { crmContactFromPlumbingJob } from "@/lib/crm-contact-fields";
 import type { PlumbingJobRow } from "@/lib/voice-demo-plumbing-db";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
@@ -31,6 +32,11 @@ function mapPlumbingJobPayload(job: PlumbingJobRow | null): Record<string, unkno
     status: job.status,
     serviceType: job.service_type,
     serviceAddress: job.service_address,
+    serviceStreet: job.service_street,
+    serviceLine2: job.service_line2,
+    serviceCity: job.service_city,
+    serviceState: job.service_state,
+    serviceZip: job.service_zip,
     appointmentDate: job.appointment_date,
     timeWindow: job.time_window,
     priceRange: job.price_range,
@@ -136,6 +142,7 @@ export async function fetchPlumbingCrmFeed(limit = 50): Promise<CrmFeedResult> {
           ? `Jarvis ops (${countVoiceDemoOpsWarnings(opsLog)})`
           : `Channel: ${row.primary_channel}`),
       phone: (row.phone as string) ?? null,
+      contact: crmContactFromPlumbingJob(row.phone as string | null, job),
       payload: {
         vertical: "plumbers",
         primaryChannel: row.primary_channel,

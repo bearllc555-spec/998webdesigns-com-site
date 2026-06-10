@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { SubmissionFieldStack } from "@/components/form-field-stack";
+import { CrmContactFieldStack } from "@/components/crm/CrmContactFieldStack";
 import { CrmDiscoveryClosePanel } from "@/components/crm/CrmDiscoveryClosePanel";
 import { CrmMilestoneInvoicePanel } from "@/components/crm/CrmMilestoneInvoicePanel";
 import { CrmSmsThread } from "@/components/crm/CrmSmsThread";
@@ -370,6 +371,8 @@ function InboxRow({
             }
           />
 
+          <CrmContactFieldStack contact={item.contact} />
+
           {(item.source === "voice_demo" || item.source === "plumbing_demo") && (() => {
             const loc = item.payload?.possibleLocation as
               | { label?: string; city?: string; state?: string; zip?: string }
@@ -401,12 +404,11 @@ function InboxRow({
                   plumbingJob.serviceType,
                   plumbingJob.appointmentDate,
                   plumbingJob.timeWindow,
-                  plumbingJob.serviceAddress,
                 ]
                   .filter(Boolean)
                   .join(" · ")
               : "";
-            if (!label && opsWarnings.length === 0 && !jobLine) return null;
+            if (opsWarnings.length === 0 && !jobLine) return null;
             return (
               <div className="mt-4 grid gap-3">
                 {jobLine ? (
@@ -416,7 +418,7 @@ function InboxRow({
                     {plumbingJob?.status ? ` (${plumbingJob.status})` : ""}
                   </p>
                 ) : null}
-                {label ? (
+                {label && item.source === "voice_demo" ? (
                   <p className="rounded-xl border border-rule bg-rule-soft/50 px-4 py-3 text-sm text-ink-soft">
                     <span className="font-medium text-ink">Client&apos;s possible location: </span>
                     {label}

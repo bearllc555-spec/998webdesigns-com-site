@@ -9,6 +9,11 @@ import {
 import { isVoiceDemoCallbackSummary } from "@/lib/voice-demo-callback";
 import { fetchPlumbingCrmFeed } from "@/lib/plumbing-crm-feed";
 import { formatPossibleLocationLabel } from "@/lib/voice-demo-location";
+import type { CrmContactFields } from "@/lib/crm-contact-fields";
+import {
+  crmContactFromPayload,
+  crmContactFromVoiceDemoLead,
+} from "@/lib/crm-contact-fields";
 
 export type { CrmInboxFlag };
 
@@ -36,6 +41,8 @@ export type CrmFeedItem = {
   message: string | null;
   payload: Record<string, unknown> | null;
   phone: string | null;
+  /** Progressive contact — street through cell; partial until booking matures. */
+  contact?: CrmContactFields;
   /** null = unread */
   readAt: string | null;
   /** null = outline star; cycles star → check → alert → null */
@@ -209,6 +216,10 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       message: latestSms?.body ?? null,
       payload: { ...payload, hasSmsThread: Boolean(latestSms) },
       phone,
+      contact: {
+        cellPhone: phone,
+        ...crmContactFromPayload(payload),
+      },
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
@@ -238,6 +249,12 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       stripeSubscriptionId: null,
       message: latestSms?.body ?? row.goal,
       phone: row.phone ?? null,
+      contact: {
+        cellPhone: row.phone ?? null,
+        ...(typeof row.intake === "object" && row.intake
+          ? crmContactFromPayload(row.intake as Record<string, unknown>)
+          : {}),
+      },
       payload: {
         goal: row.goal,
         intake: row.intake,
@@ -287,6 +304,12 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
               ? `Promo ${row.promo_code ?? "sent"}`
               : `Channel: ${row.primary_channel}`,
       phone: (row.phone as string) ?? null,
+      contact: crmContactFromVoiceDemoLead({
+        phone: row.phone as string | null,
+        location_city: row.location_city as string | null,
+        location_state: row.location_state as string | null,
+        location_zip: row.location_zip as string | null,
+      }),
       payload: {
         primaryChannel: row.primary_channel,
         promoCode: row.promo_code,
@@ -345,6 +368,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       message: row.message,
       payload: null,
       phone: null,
+      contact: {},
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });
@@ -364,6 +388,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       stripeSubscriptionId: null,
       message: row.body,
       phone: row.from_phone,
+      contact: { cellPhone: row.from_phone ?? null },
       payload: null,
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
