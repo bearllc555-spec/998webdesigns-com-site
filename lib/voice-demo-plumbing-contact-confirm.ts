@@ -36,6 +36,26 @@ const PHONE_PAUSE_RULE =
   "Then END your turn — stay completely silent and give the caller several seconds to verify the digits. " +
   "Do NOT ask about appointment date, day, time window, morning/afternoon, or scheduling until they clearly confirm this number.";
 
+export function splitPersonName(full: string): {
+  firstName: string;
+  lastName: string | null;
+} {
+  const trimmed = full.trim();
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { firstName: "", lastName: null };
+  if (parts.length === 1) return { firstName: parts[0]!, lastName: null };
+  return { firstName: parts[0]!, lastName: parts.slice(1).join(" ") };
+}
+
+export function hasFullPersonName(full: string): boolean {
+  return splitPersonName(full).lastName !== null;
+}
+
+/** Letter-by-letter — e.g. Demeo → "d e m e o". */
+export function spellNamePartForVoice(part: string): string {
+  return part.trim().toLowerCase().split("").join(" ");
+}
+
 export type PlumbingContactReconfirmInput = {
   name?: string;
   serviceAddress?: string;
@@ -144,7 +164,9 @@ export function plumbingContactPostReadbackPauseMs(field: PlumbingContactField):
 
 /** Prompt block for system prompt — slow intake pacing. */
 export const PLUMBING_CONTACT_INTAKE_PACING = `CONTACT INTAKE PACING (critical during booking):
-- One field per turn: collect → save_plumbing_contact → read back → wait for yes → only then ask the next field.
+- One field per turn: collect → save_plumbing_contact → read back when required → wait for yes → only then ask the next field.
+- First name alone: save it, do NOT ask "Is that your name?" — if booking, ask for last name ("I have your first name as … What is your last name?").
+- Full name (first + last): pronounce the first name, spell the last name letter-by-letter, then ask if the name is correct — same pacing as email but inverted.
 - After spelling email or phone, STOP and let the caller respond — never chain "Is that correct? And what's your phone number?" in one breath.
 - After phone read-back: END your turn after "Is that the best number to reach you?" — never add "What day works?" or any scheduling question in the same turn. Callers need a beat to verify digits.
 - If they go quiet for a moment after a read-back, stay silent; they may be verifying spelling or digits in their head.
@@ -207,6 +229,27 @@ export function plumbingContactFieldSpoken(
   }
 }
 
+function buildFirstNameOnlyGuidance(firstName: string): string {
+  return (
+    `Name (THIS TURN ONLY): "${firstName}" saved. Do NOT read it back and do NOT ask "Is that your name?" or "Is that correct?" — ` +
+    `if Jarvis misheard, the caller will interrupt and correct you. ` +
+    `If you are gathering booking details and still need a last name, say: "I have your first name as ${firstName}. What is your last name?" ` +
+    `then call save_plumbing_contact with the full name when you have it. ` +
+    `Otherwise acknowledge briefly and continue naturally — do not validate a first name alone.`
+  );
+}
+
+function buildFullNameReconfirmScript(fullName: string): string | null {
+  const { firstName, lastName } = splitPersonName(fullName);
+  if (!firstName || !lastName) return null;
+  const lastSpelled = spellNamePartForVoice(lastName);
+  return (
+    `(1) pronounce their first name naturally: "${firstName}" — ` +
+    `(2) spell ONLY the last name letter-by-letter after saying it once: "${lastName}" then "${lastSpelled}" — ` +
+    `(3) ask "Is that the correct name?" ${CONTACT_PAUSE_RULE}`
+  );
+}
+
 function buildReconfirmLine(
   field: PlumbingContactField,
   input: PlumbingContactReconfirmInput
@@ -215,9 +258,12 @@ function buildReconfirmLine(
     case "name": {
       const name = input.name?.trim();
       if (!name) return null;
-      return (
-        `Name (THIS TURN ONLY): read back "${name}" and ask "Is that the correct name?" ${CONTACT_PAUSE_RULE}`
-      );
+      if (!hasFullPersonName(name)) {
+        return buildFirstNameOnlyGuidance(splitPersonName(name).firstName);
+      }
+      const script = buildFullNameReconfirmScript(name);
+      if (!script) return null;
+      return `Name (THIS TURN ONLY): ${script}`;
     }
     case "serviceAddress": {
       const address = input.serviceAddress?.trim();
@@ -289,6 +335,12 @@ export function buildPlumbingContactReconfirmMessage(
   if (!focusField) return { message: null, focusField: null };
   const line = buildReconfirmLine(focusField, input);
   if (!line) return { message: null, focusField: null };
+  if (focusField === "name" && input.name && !hasFullPersonName(input.name)) {
+    return {
+      focusField: null,
+      message: `Contact saved. Handle ONLY this now:\n${line}`,
+    };
+  }
   return {
     focusField,
     message: `Contact saved. REQUIRED reconfirm before continuing — handle ONLY this field now:\n${line}`,

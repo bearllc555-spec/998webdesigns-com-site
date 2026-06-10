@@ -46,9 +46,22 @@ describe("voice-demo-plumbing-contact-confirm", () => {
       phone: "2015551234",
     });
     expect(focusField).toBe("name");
-    expect(message).toContain("Anthony DeMeo");
+    expect(message).toContain("Anthony");
+    expect(message).toContain("DeMeo");
+    expect(message).toContain("d e m e o");
+    expect(message).toMatch(/Is that the correct name/i);
     expect(message).not.toContain("a d e m e o @gmail.com");
     expect(message).not.toContain("2 0 1 5 5 5 1 2 3 4");
+  });
+
+  it("does not pause for first-name-only saves", () => {
+    const { message, focusField } = buildPlumbingContactReconfirmMessage({
+      name: "Anthony",
+    });
+    expect(focusField).toBeNull();
+    expect(message).toMatch(/Do NOT read it back/i);
+    expect(message).toMatch(/I have your first name as Anthony/i);
+    expect(message).not.toMatch(/Is that the correct name/i);
   });
 
   it("focuses email when only email is saved", () => {
