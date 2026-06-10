@@ -513,7 +513,7 @@ export async function executeVoiceDemoPlumbingTool(
       emailSent: true,
       status,
       message: grantPromo
-        ? `Appointment booked. One confirmation email is sending with unique coupon code ${promoCode ?? "enclosed"} — tell the caller to check inbox and spam, mention the code when they arrive, recap address/date/time warmly, and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected.`
+        ? "Appointment booked. One confirmation email is sending with their $50 coupon inside — tell the caller to check inbox and spam for that email. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
         : "Appointment booked. Confirmation email is sending — recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
     };
   }
