@@ -33,12 +33,15 @@ npm run voice-demo:ops-report -- --plumbers --limit 10
 | `Deferred live reconnect until tool completes` | Mic gated + reconnect held until book/save tool returns (1008 fix). |
 | `Deferred live reconnect until session resumable` | goAway held until Gemini `resumable=true` (context-loss fix). |
 | `Session not resumable` | Tool or generation in flight on server — normal during booking. |
+| `Plumbing mid-call silence — listen nudge sent` | Caller spoke mid-call; Jarvis idle ~3.5s — client nudged model to respond. |
+| `Cleared stuck suppressAssistantAudio after interrupt timeout` | Barge-in muted assistant audio; 4s safety valve cleared mute. |
 | `token_fetch_failed` | Env/API issue, not caller behavior. |
 
 ## Files
 
 | File | Role |
 |------|------|
+| `docs/jarvis-plumbing-appointment-flow.md` | Canonical golden-path appointment flow (intake, coupon, exit) |
 | `lib/voice-demo-ops-client.ts` | Browser → `POST /api/voice-demo/ops-event` |
 | `lib/voice-demo-ops-diagnose.ts` | Rule-based summary for CRM / CLI |
 | `scripts/voice-demo-ops-report.mjs` | Pull timelines from Supabase |

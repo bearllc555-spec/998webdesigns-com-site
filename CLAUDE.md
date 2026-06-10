@@ -33,6 +33,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - Rate limiting — `proxy.ts` (in-memory) + Supabase `api_rate_limits` when table exists (`lib/api-rate-limit.ts`).
 - Analytics — `@vercel/analytics` in root layout.
 - **CRM** — `/crm` (auth: `CRM_ADMIN_SECRET` required in production), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` for bot token + chat ids (`crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` — bump on every CRM change.
+- **Plumbing Jarvis demo** — `/demo/plumbers` (Gemini Live voice agent for Metro Plumbing & Drain). Sign-in → FAQ → booking with $50 coupon → PA-style intake → confirmation email. Canonical flow: **`docs/jarvis-plumbing-appointment-flow.md`**. Knowledge/emails: `docs/jarvis_plumbing_complete.md`. Ops: `VOICE-DEMO-OPS.md`. Real sign-ins on `/crm` under **Plumbing Jarvis demos** (`plumbing_demo`).
 - **Alerts** — Resend internal emails + Telegram via CRM notify kinds (`lifetime_hosting_paid`, `lifetime_hosting_ach_pending`, design payment, etc.). No Slack.
 
 ---

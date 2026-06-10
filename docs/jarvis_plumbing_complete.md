@@ -3,6 +3,8 @@
 
 **Document Purpose:** Full deployment package for the Jarvis AI Voice Agent demo on 998WebDesigns. This includes the complete Q&A knowledge base, all outbound email templates, and conversation flow scripts. Everything is written for direct developer implementation.
 
+**Operational appointment flow (intake order, coupon pitch, tools, exit):** see [`jarvis-plumbing-appointment-flow.md`](./jarvis-plumbing-appointment-flow.md) — canonical golden-path reference validated v35.1+.
+
 **Business:** Metro Plumbing & Drain
 **Coverage Area:** Greater Tri-State Area (NJ, NY, CT)
 **Demo Email:** demo@metroplumbingdrain.com
