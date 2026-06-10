@@ -6,14 +6,23 @@
 import { isVisitorFarewellAck } from "@/lib/voice-demo-farewell";
 import { isPlumbingAssistantFarewell } from "@/lib/voice-demo-plumbing-goodbye";
 
-/** Caller is clearly ending the phone call (not casual acks or "no other issues"). */
+/** Caller is clearly ending the phone call (not mid-call "thanks for…" continuations). */
 export function isPlumbingVisitorEndingCall(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
-  return (
+  if (
     /\b(bye|goodbye|good bye|hang up|hangup|end the call|i gotta go|got to go)\b/.test(t) ||
     /\bthat'?s all for now\b/.test(t)
-  );
+  ) {
+    return true;
+  }
+  if (/\b(thanks|thank you)\s+(for|and|but|what|if|when)\b/.test(t)) return false;
+  if (/^(thank you|thanks)( so much)?[.!?,]?\s*$/.test(t)) return true;
+  if (/^(okay|ok|alright),?\s*(thank you|thanks)( so much)?[.!?,]?\s*$/.test(t)) {
+    return true;
+  }
+  if (/\b(thank you so much|thanks so much)\b/.test(t) && t.length < 50) return true;
+  return false;
 }
 
 /** Caller is still booking — resets a prior false "ending" signal mid-scheduling. */

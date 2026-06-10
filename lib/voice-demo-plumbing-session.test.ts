@@ -9,20 +9,25 @@ import {
 } from "@/lib/voice-demo-plumbing-session";
 
 describe("voice-demo-plumbing-session", () => {
-  it("does not treat casual acknowledgments as ending the call", () => {
-    expect(isPlumbingVisitorEndingCall("thanks")).toBe(false);
+  it("does not treat mid-call acknowledgments as ending the call", () => {
     expect(isPlumbingVisitorEndingCall("I'm good")).toBe(false);
     expect(isPlumbingVisitorEndingCall("sounds good")).toBe(false);
     expect(isPlumbingVisitorEndingCall("okay got it")).toBe(false);
     expect(isPlumbingVisitorEndingCall("no, nothing else")).toBe(false);
     expect(isPlumbingVisitorEndingCall("we're done with the toilet")).toBe(false);
+    expect(isPlumbingVisitorEndingCall("thank you for the quote")).toBe(false);
+    expect(isPlumbingVisitorEndingCall("thanks and what about emergencies")).toBe(false);
   });
 
-  it("detects explicit call endings", () => {
+  it("detects explicit call endings including thank you", () => {
     expect(isPlumbingVisitorEndingCall("bye")).toBe(true);
     expect(isPlumbingVisitorEndingCall("that's all for now, bye")).toBe(true);
     expect(isPlumbingVisitorEndingCall("I gotta go")).toBe(true);
     expect(isPlumbingVisitorEndingCall("that's all for now")).toBe(true);
+    expect(isPlumbingVisitorEndingCall("thank you")).toBe(true);
+    expect(isPlumbingVisitorEndingCall("thanks")).toBe(true);
+    expect(isPlumbingVisitorEndingCall("thanks so much")).toBe(true);
+    expect(isPlumbingVisitorEndingCall("okay, thank you")).toBe(true);
   });
 
   it("detects booking continuation speech", () => {
