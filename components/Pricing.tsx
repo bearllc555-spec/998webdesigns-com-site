@@ -33,8 +33,11 @@ export function Pricing() {
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
               $5,998{" "}
               <span className="text-2xl text-ink-soft">
-                — 50% deposit to start ({DESIGN_INCLUDED_HOSTING_MONTHS} months hosting included — a
-                ${DESIGN_INCLUDED_HOSTING_VALUE.toLocaleString("en-US")} value)
+                — 50% deposit to start{" "}
+                <span className="text-[20px]">
+                  ({DESIGN_INCLUDED_HOSTING_MONTHS} months hosting included — a $
+                  {DESIGN_INCLUDED_HOSTING_VALUE.toLocaleString("en-US")} value)
+                </span>
               </span>
             </p>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft">
