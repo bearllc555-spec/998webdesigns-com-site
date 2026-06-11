@@ -1,0 +1,4 @@
+name = "998webdesigns-autoresponder"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+account_id = "e0f6f68f26f8a26a75eaa793385019ef"

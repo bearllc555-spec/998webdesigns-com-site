@@ -1,0 +1,14 @@
+{
+  "name": "998webdesigns-autoresponder",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AgentMail instant auto-responder for 998webdesigns@agentmail.to",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.100.0"
+  }
+}
