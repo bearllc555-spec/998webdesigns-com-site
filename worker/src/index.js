@@ -3,14 +3,14 @@
  * Cloudflare Worker
  *
  * Triggered instantly by AgentMail webhooks on message.received.
- * Applies a smart filter to skip automated/system emails, then
- * sends a branded acknowledgement reply from hello@998webdesigns.com.
+ * AgentMail delivers via Svix — verify svix-* headers, not x-webhook-secret.
  */
+
+import { Webhook } from "svix";
 
 const INBOX_ID = "998webdesigns@agentmail.to";
 const REPLY_FROM_DISPLAY = "hello@998webdesigns.com";
 
-// Senders/subjects to skip — system emails, notifications, etc.
 const SKIP_SENDERS = [
   "noreply",
   "no-reply",
@@ -37,25 +37,31 @@ const SKIP_SUBJECTS = [
   "returned mail",
 ];
 
+function senderText(message) {
+  const from = message?.from;
+  if (typeof from === "string") return from.toLowerCase();
+  if (from && typeof from === "object") {
+    const email = from.email || from.address || "";
+    const name = from.name || "";
+    return `${name} ${email}`.trim().toLowerCase();
+  }
+  return "";
+}
+
 function isHumanInquiry(message) {
-  const sender = (message.from || "").toLowerCase();
+  const sender = senderText(message);
   const subject = (message.subject || "").toLowerCase();
 
-  // Skip our own outbound messages
   if (sender.includes("998webdesigns@agentmail.to")) return false;
   if (sender.includes("998webdesigns.com") && sender.includes("noreply")) return false;
-
-  // Skip known automated senders
   if (SKIP_SENDERS.some((s) => sender.includes(s))) return false;
-
-  // Skip automated subjects
   if (SKIP_SUBJECTS.some((s) => subject.includes(s))) return false;
 
   return true;
 }
 
 function buildReplyText(originalMessage) {
-  const senderName = extractFirstName(originalMessage.from);
+  const senderName = extractFirstName(senderText(originalMessage));
   const greeting = senderName ? `Hi ${senderName},` : "Hi there,";
 
   return `${greeting}
@@ -74,7 +80,7 @@ https://998webdesigns.com`;
 }
 
 function buildReplyHtml(originalMessage) {
-  const senderName = extractFirstName(originalMessage.from);
+  const senderName = extractFirstName(senderText(originalMessage));
   const greeting = senderName ? `Hi ${senderName},` : "Hi there,";
 
   return `
@@ -102,17 +108,33 @@ function buildReplyHtml(originalMessage) {
 }
 
 function extractFirstName(fromField) {
-  // e.g. "John Smith <john@example.com>" → "John"
   const match = fromField.match(/^([^<@]+)/);
   if (!match) return null;
   const name = match[1].trim().split(" ")[0];
-  // Sanity check — must look like a real name, not an email or code
   if (!name || name.length < 2 || name.includes("@") || /\d/.test(name)) return null;
   return name;
 }
 
+function replyTarget(message) {
+  if (Array.isArray(message.reply_to) && message.reply_to.length) {
+    const first = message.reply_to[0];
+    return typeof first === "string" ? first : first?.email || first?.address;
+  }
+  const from = message.from;
+  if (typeof from === "string") {
+    const emailMatch = from.match(/<([^>]+)>/);
+    return emailMatch ? emailMatch[1] : from.includes("@") ? from : null;
+  }
+  if (from && typeof from === "object") return from.email || from.address || null;
+  return null;
+}
+
 async function sendAutoReply(message, apiKey) {
-  const replyTo = message.reply_to?.[0] || message.from;
+  const replyTo = replyTarget(message);
+  if (!replyTo) {
+    throw new Error("Could not determine reply recipient from message.from / reply_to");
+  }
+
   const subject = message.subject?.startsWith("Re:")
     ? message.subject
     : `Re: ${message.subject || "(no subject)"}`;
@@ -142,21 +164,46 @@ async function sendAutoReply(message, apiKey) {
   return await response.json();
 }
 
+function verifyWebhook(request, rawBody, env) {
+  const signingSecret = env.AGENTMAIL_WEBHOOK_SIGNING_SECRET?.trim();
+  if (signingSecret) {
+    const wh = new Webhook(signingSecret);
+    wh.verify(rawBody, {
+      "svix-id": request.headers.get("svix-id") ?? "",
+      "svix-timestamp": request.headers.get("svix-timestamp") ?? "",
+      "svix-signature": request.headers.get("svix-signature") ?? "",
+    });
+    return;
+  }
+
+  // Legacy fallback — AgentMail does not send this header by default.
+  const legacySecret = env.WEBHOOK_SECRET?.trim();
+  if (!legacySecret) return;
+
+  const incomingSecret = request.headers.get("x-webhook-secret") || "";
+  if (incomingSecret !== legacySecret) {
+    throw new Error("invalid legacy webhook secret");
+  }
+}
+
 export default {
   async fetch(request, env) {
     if (request.method !== "POST") {
       return new Response("Method not allowed", { status: 405 });
     }
 
-    const incomingSecret = request.headers.get("x-webhook-secret") || "";
-    if (env.WEBHOOK_SECRET && incomingSecret !== env.WEBHOOK_SECRET) {
-      console.warn("Rejected webhook: invalid secret");
+    const rawBody = await request.text();
+
+    try {
+      verifyWebhook(request, rawBody, env);
+    } catch (err) {
+      console.warn("Rejected webhook:", err instanceof Error ? err.message : err);
       return new Response("Unauthorized", { status: 401 });
     }
 
     let payload;
     try {
-      payload = await request.json();
+      payload = JSON.parse(rawBody);
     } catch {
       return new Response("Invalid JSON", { status: 400 });
     }
@@ -171,13 +218,13 @@ export default {
     }
 
     if (!isHumanInquiry(message)) {
-      console.log(`Skipped auto-reply for: ${message.from} | ${message.subject}`);
+      console.log(`Skipped auto-reply for: ${senderText(message)} | ${message.subject}`);
       return new Response("Skipped: automated sender", { status: 200 });
     }
 
     try {
       const result = await sendAutoReply(message, env.AGENTMAIL_API_KEY);
-      console.log(`Auto-reply sent to ${message.from} | message_id: ${result.message_id}`);
+      console.log(`Auto-reply sent to ${replyTarget(message)} | message_id: ${result.message_id}`);
       return new Response(JSON.stringify({ ok: true, message_id: result.message_id }), {
         status: 200,
         headers: { "Content-Type": "application/json" },

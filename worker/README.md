@@ -11,9 +11,9 @@ Cloudflare Worker: instant `message.received` webhook from AgentMail → branded
 | Reply-to | `hello@998webdesigns.com` |
 | Webhook ID | see AgentMail console |
 
-Secrets (Wrangler): `AGENTMAIL_API_KEY`, `WEBHOOK_SECRET`  
-Local key (998webdesigns org): `slatepress/.local/998-agentmail-api-key-998webdesigns.txt`  
-Webhook secret: `slatepress/.local/998-agentmail-webhook-secret.txt`
+Secrets (Wrangler): `AGENTMAIL_API_KEY`, `AGENTMAIL_WEBHOOK_SIGNING_SECRET` (Svix `whsec_…` from AgentMail)  
+Local key: `slatepress/.local/998-agentmail-api-key-998webdesigns.txt`  
+Signing secret: `slatepress/.local/998-agentmail-webhook-signing-secret.txt` (auto-written by register script)
 
 ## Ops
 

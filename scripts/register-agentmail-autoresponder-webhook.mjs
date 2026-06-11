@@ -2,10 +2,10 @@
  * Register AgentMail webhook for 998webdesigns-autoresponder Worker.
  *
  * Reads:
- *   slatepress/.local/998-agentmail-api-key.txt
- *   slatepress/.local/998-agentmail-webhook-secret.txt
+ *   slatepress/.local/998-agentmail-api-key-998webdesigns.txt
  *
- * Optional env override: WORKER_URL (defaults to live workers.dev URL)
+ * Writes signing secret to:
+ *   slatepress/.local/998-agentmail-webhook-signing-secret.txt
  */
 import fs from "fs";
 import path from "path";
@@ -32,16 +32,10 @@ const apiKey =
   process.env.AGENTMAIL_API_KEY?.trim() ||
   readLocal("998-agentmail-api-key-998webdesigns.txt") ||
   readLocal("998-agentmail-api-key.txt");
-const webhookSecret =
-  process.env.WEBHOOK_SECRET?.trim() || readLocal("998-agentmail-webhook-secret.txt");
 const workerUrl = process.env.WORKER_URL?.trim() || DEFAULT_WORKER_URL;
 
 if (!apiKey) {
-  console.error("Missing AgentMail API key — save to .local/998-agentmail-api-key.txt");
-  process.exit(1);
-}
-if (!webhookSecret) {
-  console.error("Missing webhook secret — save to .local/998-agentmail-webhook-secret.txt");
+  console.error("Missing AgentMail API key — save to .local/998-agentmail-api-key-998webdesigns.txt");
   process.exit(1);
 }
 
@@ -50,7 +44,6 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-// List existing webhooks and reuse if URL matches
 const listRes = await fetch("https://api.agentmail.to/v0/webhooks", { headers });
 if (!listRes.ok) {
   console.error("List webhooks failed:", listRes.status, await listRes.text());
@@ -71,7 +64,6 @@ if (!webhookId) {
     body: JSON.stringify({
       url: workerUrl,
       event_types: ["message.received"],
-      headers: { "x-webhook-secret": webhookSecret },
     }),
   });
   const createBody = await createRes.json().catch(() => ({}));
@@ -96,5 +88,17 @@ if (!patchRes.ok) {
   process.exit(1);
 }
 
+const detailRes = await fetch(`https://api.agentmail.to/v0/webhooks/${webhookId}`, { headers });
+const detail = await detailRes.json();
+if (!detailRes.ok || !detail.secret) {
+  console.error("Could not fetch webhook signing secret:", detail);
+  process.exit(1);
+}
+
+const signingPath = path.join(workspaceLocal, "998-agentmail-webhook-signing-secret.txt");
+fs.writeFileSync(signingPath, `${detail.secret}\n`, "utf8");
+
 console.log("OK — webhook subscribed to", INBOX_ID);
 console.log("Worker URL:", workerUrl);
+console.log("Webhook ID:", webhookId);
+console.log("Signing secret saved:", signingPath);

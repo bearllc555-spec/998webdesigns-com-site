@@ -49,17 +49,33 @@ if (!hasInbox) {
 
 console.log("Verified key for", INBOX_ID);
 
+execSync("npm install", { cwd: workerDir, stdio: "inherit" });
+
+execSync("node scripts/register-agentmail-autoresponder-webhook.mjs", {
+  cwd: repoRoot,
+  stdio: "inherit",
+  env: { ...process.env, AGENTMAIL_API_KEY: apiKey },
+});
+
+const signingPath = path.join(workspaceLocal, "998-agentmail-webhook-signing-secret.txt");
+const signingSecret = fs.readFileSync(signingPath, "utf8").trim();
+if (!signingSecret.startsWith("whsec_")) {
+  console.error("Missing whsec signing secret at", signingPath);
+  process.exit(1);
+}
+
 execSync("npx wrangler secret put AGENTMAIL_API_KEY", {
   cwd: workerDir,
   input: apiKey,
   stdio: ["pipe", "inherit", "inherit"],
 });
 
-execSync("npx wrangler deploy", { cwd: workerDir, stdio: "inherit" });
-execSync("node scripts/register-agentmail-autoresponder-webhook.mjs", {
-  cwd: repoRoot,
-  stdio: "inherit",
-  env: { ...process.env, AGENTMAIL_API_KEY: apiKey },
+execSync("npx wrangler secret put AGENTMAIL_WEBHOOK_SIGNING_SECRET", {
+  cwd: workerDir,
+  input: signingSecret,
+  stdio: ["pipe", "inherit", "inherit"],
 });
+
+execSync("npx wrangler deploy", { cwd: workerDir, stdio: "inherit" });
 
 console.log("OK — Worker wired to", INBOX_ID);
