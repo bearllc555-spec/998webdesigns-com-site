@@ -25,3 +25,5 @@ create table if not exists public.discovery_prospects (
 create index if not exists discovery_prospects_email_idx on public.discovery_prospects (lower(email));
 create index if not exists discovery_prospects_status_idx on public.discovery_prospects (status);
 create index if not exists discovery_prospects_created_at_idx on public.discovery_prospects (created_at desc);
+
+alter table public.discovery_prospects enable row level security;

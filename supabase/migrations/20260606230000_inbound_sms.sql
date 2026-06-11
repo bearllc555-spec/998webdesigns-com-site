@@ -13,3 +13,5 @@ create table if not exists public.inbound_sms (
 create index if not exists inbound_sms_created_at_idx on public.inbound_sms (created_at desc);
 create index if not exists inbound_sms_from_phone_idx on public.inbound_sms (from_phone);
 create index if not exists inbound_sms_discovery_idx on public.inbound_sms (discovery_prospect_id, created_at desc);
+
+alter table public.inbound_sms enable row level security;

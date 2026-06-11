@@ -1,6 +1,7 @@
 -- Mirror of supabase/migrations/ (GitHub + Supabase integration). Prefer new migration files for changes.
 -- Run once on helmet (xwldbxburzqryxlzocck): SQL editor or scripts/apply-helmet-schema.mjs
--- Service-role API routes bypass RLS; anon/authenticated have no policies (denied).
+-- Service-role API routes bypass RLS. anon/authenticated are denied via block_anon_authenticated
+-- policies (see migration 20260612120000_public_rls_security_hardening.sql).
 
 -- Lead intake from /api/leads
 create table if not exists public.wd_leads (
@@ -81,6 +82,47 @@ create index if not exists processed_stripe_events_processed_at_idx
   on public.processed_stripe_events (processed_at desc);
 
 alter table public.processed_stripe_events enable row level security;
+
+-- Discovery pipeline + inbound SMS (CRM)
+create table if not exists public.discovery_prospects (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  status text not null default 'started',
+  full_name text not null,
+  email text not null,
+  phone text not null,
+  goal text,
+  sms_consent_at timestamptz,
+  phone_verified_at timestamptz,
+  email_verified_at timestamptz,
+  intake jsonb,
+  intake_submitted_at timestamptz,
+  call_booked_at timestamptz,
+  close_draft jsonb,
+  close_sent_at timestamptz,
+  wd_lead_id uuid,
+  ip text,
+  read_at timestamptz,
+  inbox_flag text,
+  crm_notes text
+);
+
+alter table public.discovery_prospects enable row level security;
+
+create table if not exists public.inbound_sms (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  from_phone text not null,
+  body text not null,
+  twilio_message_sid text not null unique,
+  discovery_prospect_id uuid references public.discovery_prospects (id) on delete set null,
+  wd_lead_id uuid,
+  read_at timestamptz,
+  inbox_flag text
+);
+
+alter table public.inbound_sms enable row level security;
 
 -- Optional: purge stale rate-limit rows (run via cron or manually)
 -- delete from public.api_rate_limits where window_ends_at < now() - interval '1 day';
