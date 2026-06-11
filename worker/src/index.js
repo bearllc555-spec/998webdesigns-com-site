@@ -7,8 +7,7 @@
  * sends a branded acknowledgement reply from hello@998webdesigns.com.
  */
 
-// Org inbox on helmet (998webdesigns@agentmail.to username is globally taken on agentmail.to).
-const INBOX_ID = "bearllc@agentmail.to";
+const INBOX_ID = "998webdesigns@agentmail.to";
 const REPLY_FROM_DISPLAY = "hello@998webdesigns.com";
 
 // Senders/subjects to skip — system emails, notifications, etc.
@@ -43,7 +42,7 @@ function isHumanInquiry(message) {
   const subject = (message.subject || "").toLowerCase();
 
   // Skip our own outbound messages
-  if (sender.includes("@agentmail.to") && sender.includes("bearllc")) return false;
+  if (sender.includes("998webdesigns@agentmail.to")) return false;
   if (sender.includes("998webdesigns.com") && sender.includes("noreply")) return false;
 
   // Skip known automated senders

@@ -13,7 +13,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const workspaceLocal = path.resolve(__dirname, "..", "..", "..", ".local");
-const INBOX_ID = "bearllc@agentmail.to";
+const INBOX_ID = "998webdesigns@agentmail.to";
 const DEFAULT_WORKER_URL =
   "https://998webdesigns-autoresponder.bearllc555.workers.dev";
 
@@ -28,7 +28,10 @@ function readLocal(name) {
   return line || null;
 }
 
-const apiKey = process.env.AGENTMAIL_API_KEY?.trim() || readLocal("998-agentmail-api-key.txt");
+const apiKey =
+  process.env.AGENTMAIL_API_KEY?.trim() ||
+  readLocal("998-agentmail-api-key-998webdesigns.txt") ||
+  readLocal("998-agentmail-api-key.txt");
 const webhookSecret =
   process.env.WEBHOOK_SECRET?.trim() || readLocal("998-agentmail-webhook-secret.txt");
 const workerUrl = process.env.WORKER_URL?.trim() || DEFAULT_WORKER_URL;
