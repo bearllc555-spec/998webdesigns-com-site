@@ -23,14 +23,33 @@ Read `DEV.md` in this repo for full detail. Enforce these defaults in every sess
 - Do not edit this repo from two Cursor windows simultaneously (OneDrive sync risk).
 - Chat context does not carry across windows; use `CLAUDE.md`, `DEV.md`, and `lib/version.ts` as source of truth.
 
-## CRM in Cursor (not external Chrome)
+## Simple Browser (in THIS Cursor window only)
 
-- **CRM local URL:** http://localhost:3000/crm
-- Open inside Cursor: **Terminal → Run Task… → `998: dev + CRM tab`** (starts dev if needed, then Simple Browser to `/crm`).
-- Or **Command Palette → `Simple Browser: Show` →** paste `http://localhost:3000/crm`.
-- Browser tab title is **`CRM`** (see `app/crm/layout.tsx` metadata).
+Anthony wants local previews in Cursor’s **Simple Browser** panel — not VS Code, not external Chrome, not a second Cursor window.
+
+**The agent cannot open Simple Browser from chat.** There is no supported terminal/URI path that targets the current window. Do **not** try workarounds.
+
+### Forbidden (never run from agent shell)
+
+- `cursor`, `cursor.cmd`, `code`, `code.cmd` — opens another app or window
+- `Start-Process` with `cursor://` or `vscode://` URIs — spawns a new Cursor/VS Code window
+- Opening `.vscode/tasks.json` or any file to “help” — wrong outcome
+
+### When Anthony asks to open local / Simple Browser / “998 local”
+
+Reply with **one** in-Cursor step (pick the row that matches). Do not run shell commands.
+
+| Surface | Anthony does in Cursor |
+|--------|-------------------------|
+| **Home** (dev already up) | **Terminal → Run Task… → `998: open home in Cursor browser`** |
+| **Home** (need dev too) | **Run Task… → `998: dev + home tab`** |
+| **CRM** (dev already up) | **Run Task… → `998: open CRM in Cursor browser`** |
+| **CRM** (need dev too) | **Run Task… → `998: dev + CRM tab`** |
+| **Manual** | **Command Palette → `Simple Browser: Show`** → paste URL |
+
+URLs: home `http://localhost:3000/` · CRM `http://localhost:3000/crm` (tab title **CRM**).
 
 ## Handoff language
 
 - **Marketing site:** http://localhost:3000
-- **CRM:** http://localhost:3000/crm — prefer Cursor Simple Browser for CRM work in this repo.
+- **CRM:** http://localhost:3000/crm — Cursor Simple Browser only; agent gives Run Task step, never spawns apps from shell.

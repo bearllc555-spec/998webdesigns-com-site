@@ -14,10 +14,6 @@ vi.mock("@/lib/crm-notify", () => ({
   notifyCrmActivity: vi.fn(),
 }));
 
-vi.mock("@/lib/crm-webhook-alert", () => ({
-  notifyCrmWebhookAlert: vi.fn(),
-}));
-
 import { POST } from "./route";
 
 function contactRequest(body: unknown) {

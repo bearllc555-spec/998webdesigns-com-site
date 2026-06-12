@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { insertContactSubmission } from "@/lib/contact-db";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { notifyCrmActivity } from "@/lib/crm-notify";
-import { notifyCrmWebhookAlert } from "@/lib/crm-webhook-alert";
 import { isValidEmail } from "@/lib/validate-email";
 import { readJsonBody } from "@/lib/read-json-body";
 
@@ -74,18 +73,6 @@ export async function POST(req: NextRequest) {
       `[contact] contact_submissions persist skipped (${dbResult.reason}):`,
       dbResult.detail
     );
-  } else {
-    void notifyCrmWebhookAlert({
-      section: "contact",
-      name,
-      company: businessName,
-      email,
-      phone: "",
-      message,
-      service: "",
-      appointment_time: "",
-      created_at: submittedAt,
-    });
   }
 
   if (!process.env.RESEND_API_KEY) {
