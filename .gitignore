@@ -13,6 +13,7 @@ __v0_jsx-dev-runtime.ts
 # Environment variables
 .env*.local
 .env.vercel.prod
+.env.vercel.prod.live
 .env.prod
 .env.prod.*
 .env.tmp
