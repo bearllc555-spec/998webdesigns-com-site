@@ -19,7 +19,7 @@ type ContactFormState = {
   email: string;
   businessName: string;
   message: string;
-  website: string;
+  contact_hp: string;
 };
 
 type ContactModalProps = {
@@ -34,7 +34,7 @@ const emptyForm = (): ContactFormState => ({
   email: "",
   businessName: "",
   message: "",
-  website: "",
+  contact_hp: "",
 });
 
 function buildForm(prefill?: ContactPrefill): ContactFormState {
@@ -114,13 +114,13 @@ function ContactFormPanel({
       <form onSubmit={submit} className="space-y-4">
         <input
           type="text"
-          name="website"
-          value={form.website}
-          onChange={(e) => set("website", e.target.value)}
+          name="contact_hp_trap"
+          value={form.contact_hp}
+          onChange={(e) => set("contact_hp", e.target.value)}
           tabIndex={-1}
           autoComplete="off"
           aria-hidden="true"
-          className="absolute -z-10 h-0 w-0 opacity-0"
+          className="absolute -z-10 h-0 w-0 opacity-0 pointer-events-none"
         />
 
         <FixedFormField

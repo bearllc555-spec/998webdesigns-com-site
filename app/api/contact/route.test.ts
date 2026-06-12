@@ -31,16 +31,18 @@ describe("POST /api/contact", () => {
   });
 
   it("silently accepts honeypot submissions", async () => {
-    const res = await POST(
-      contactRequest({
-        name: "Bot",
-        email: "bot@example.com",
-        message: "spam",
-        website: "https://spam.test",
-      })
-    );
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true });
+    for (const hp of [{ contact_hp: "filled" }, { website: "https://spam.test" }]) {
+      const res = await POST(
+        contactRequest({
+          name: "Bot",
+          email: "bot@example.com",
+          message: "spam",
+          ...hp,
+        })
+      );
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true });
+    }
   });
 
   it("returns 400 when required fields are missing", async () => {

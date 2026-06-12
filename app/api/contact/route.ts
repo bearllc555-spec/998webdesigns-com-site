@@ -12,7 +12,9 @@ type ContactPayload = {
   email?: string;
   businessName?: string;
   message?: string;
-  website?: string; // honeypot
+  contact_hp?: string; // honeypot — must stay empty; do not use "website" (browser autofill)
+  /** @deprecated legacy honeypot key */
+  website?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -29,8 +31,12 @@ export async function POST(req: NextRequest) {
   }
   const body = parsed.body as ContactPayload;
 
-  // Honeypot — silently accept and discard
-  if (body.website && typeof body.website === "string" && body.website.length > 0) {
+  // Honeypot — silently accept and discard (never name this field "website"; browsers autofill it)
+  const hp =
+    (typeof body.contact_hp === "string" ? body.contact_hp : "") ||
+    (typeof body.website === "string" ? body.website : "");
+  if (hp.length > 0) {
+    console.info("[contact] honeypot discard");
     return NextResponse.json({ ok: true });
   }
 
