@@ -14,6 +14,10 @@ vi.mock("@/lib/crm-notify", () => ({
   notifyCrmActivity: vi.fn(),
 }));
 
+vi.mock("@/lib/crm-webhook-alert", () => ({
+  notifyCrmWebhookAlert: vi.fn(),
+}));
+
 vi.mock("@/lib/internal-lead-email", () => ({
   sendInternalLeadSubmittedEmail: vi.fn(async () => {}),
 }));

@@ -10,6 +10,7 @@ import { insertWdLead } from "@/lib/leads-db";
 import { readJsonBody } from "@/lib/read-json-body";
 import { sendInternalLeadSubmittedEmail } from "@/lib/internal-lead-email";
 import { notifyCrmActivity } from "@/lib/crm-notify";
+import { notifyCrmWebhookAlert } from "@/lib/crm-webhook-alert";
 import { syncWdLeadCheckoutCreated } from "@/lib/wd-leads-sync";
 
 export const runtime = "nodejs";
@@ -73,6 +74,17 @@ export async function POST(req: NextRequest) {
       status: "new",
       hostingChoice: lead.hostingChoice,
       paymentChannel: lead.paymentChannel,
+    });
+    void notifyCrmWebhookAlert({
+      section: "lead",
+      name: lead.fullName,
+      company: lead.businessName,
+      email: lead.email,
+      phone: lead.phone,
+      message: lead.notes,
+      service: "",
+      appointment_time: "",
+      created_at: submittedAt,
     });
   }
 

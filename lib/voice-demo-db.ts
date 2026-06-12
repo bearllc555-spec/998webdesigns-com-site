@@ -1,3 +1,4 @@
+import { notifyCrmWebhookAlert } from "@/lib/crm-webhook-alert";
 import { supabaseAdmin } from "@/lib/supabase";
 import { hashVerificationCode, verificationExpiresAt } from "@/lib/voice-demo-otp";
 import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
@@ -66,6 +67,20 @@ export async function insertVoiceDemoLead(
 
   if (error) {
     return { ok: false, reason: "insert_failed", detail: error.message };
+  }
+
+  if (input.vertical === "plumbers") {
+    void notifyCrmWebhookAlert({
+      section: "jarvis_demo",
+      name: "",
+      company: "",
+      email: input.email ?? "",
+      phone: input.phone ?? "",
+      message: `Plumbing Jarvis demo started via ${input.primary_channel}`,
+      service: "",
+      appointment_time: "",
+      created_at: now,
+    });
   }
 
   return { ok: true, id: data.id as string };
