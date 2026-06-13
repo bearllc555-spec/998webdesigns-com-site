@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   ADDON_FOCUS_EVENT,
+  ADDON_SELECT_EVENT,
   addonDomId,
   addonValueFromHash,
 } from "@/lib/addon-nav";
@@ -30,6 +31,14 @@ export function useAddonNavHighlight() {
       });
     });
   }, []);
+
+  const selectHighlight = useCallback(
+    (value: string) => {
+      setHighlighted(value);
+      scrollToAddon(value);
+    },
+    [scrollToAddon]
+  );
 
   const toggleHighlight = useCallback(
     (value: string) => {
@@ -62,14 +71,26 @@ export function useAddonNavHighlight() {
       if (value) toggleHighlight(value);
     };
 
-    applyFromHash();
-    window.addEventListener("hashchange", applyFromHash);
-    window.addEventListener(ADDON_FOCUS_EVENT, onFocusEvent);
-    return () => {
-      window.removeEventListener("hashchange", applyFromHash);
-      window.removeEventListener(ADDON_FOCUS_EVENT, onFocusEvent);
+    const onSelectEvent = (e: Event) => {
+      const value = (e as CustomEvent<{ value: string }>).detail?.value;
+      if (value) selectHighlight(value);
     };
-  }, [toggleHighlight, scrollToAddon, pathname]);
+
+    applyFromHash();
+    const retry = requestAnimationFrame(applyFromHash);
+
+    window.addEventListener("hashchange", applyFromHash);
+    window.addEventListener("popstate", applyFromHash);
+    window.addEventListener(ADDON_FOCUS_EVENT, onFocusEvent);
+    window.addEventListener(ADDON_SELECT_EVENT, onSelectEvent);
+    return () => {
+      cancelAnimationFrame(retry);
+      window.removeEventListener("hashchange", applyFromHash);
+      window.removeEventListener("popstate", applyFromHash);
+      window.removeEventListener(ADDON_FOCUS_EVENT, onFocusEvent);
+      window.removeEventListener(ADDON_SELECT_EVENT, onSelectEvent);
+    };
+  }, [toggleHighlight, selectHighlight, scrollToAddon, pathname]);
 
   return { highlighted, toggleHighlight };
 }

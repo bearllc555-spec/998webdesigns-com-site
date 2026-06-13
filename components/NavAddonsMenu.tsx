@@ -7,6 +7,7 @@ import {
   addonDomId,
   addonNavHref,
   dispatchAddonFocus,
+  dispatchAddonSelect,
   dispatchNavClose,
 } from "@/lib/addon-nav";
 import { NAV_ADDON_MENU_ITEMS } from "@/lib/addons";
@@ -22,6 +23,8 @@ function handleAddonNavClick(
   const hash = `#${addonDomId(value)}`;
   if (onHome && window.location.hash === hash) {
     dispatchAddonFocus(value);
+  } else {
+    dispatchAddonSelect(value);
   }
 }
 
