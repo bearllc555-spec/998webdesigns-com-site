@@ -23,7 +23,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-bg">
       <Nav />
       <main id="main">
-        <Pricing />
+        <Pricing standalone />
         <div className="border-b border-rule bg-rule-soft/60">
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-8">
             <p className="text-base text-ink-soft">

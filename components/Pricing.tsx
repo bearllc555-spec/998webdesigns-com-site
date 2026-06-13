@@ -9,10 +9,16 @@ const DESIGN_INCLUDED_HOSTING_MONTHS = 6;
 const DESIGN_INCLUDED_HOSTING_VALUE =
   DESIGN_INCLUDED_HOSTING_MONTHS * HOSTING_MONTHLY_PRICE_DOLLARS;
 
-export function Pricing() {
+export function Pricing({ standalone = false }: { standalone?: boolean }) {
+  // Standalone /pricing: nav is in document flow — avoid double-counting top padding
+  // vs home #pricing hash where section top aligns with viewport 0.
+  const sectionPadding = standalone
+    ? "px-5 pt-6 pb-16 md:px-8 md:pb-24"
+    : "px-5 py-16 md:px-8 md:py-24";
+
   return (
     <section id="pricing" className="border-b border-rule bg-rule-soft/60">
-      <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
+      <div className={`mx-auto max-w-6xl ${sectionPadding}`}>
         <div className="max-w-2xl">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
             Pricing

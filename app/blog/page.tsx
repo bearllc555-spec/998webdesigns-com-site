@@ -28,7 +28,7 @@ export default function BlogIndexPage() {
       <Nav />
       <main id="main">
         <section className="border-b border-rule">
-          <div className="mx-auto max-w-6xl px-5 pt-16 pb-12 md:px-8 md:pt-24 md:pb-16">
+          <div className="mx-auto max-w-6xl px-5 pt-6 pb-12 md:px-8 md:pb-16">
             <div className="max-w-2xl">
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
                 Field notes
