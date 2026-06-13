@@ -1,6 +1,8 @@
 "use client";
 
 import { useSelectedAddons } from "@/hooks/use-selected-addons";
+import { useAddonNavHighlight } from "@/hooks/use-addon-nav-highlight";
+import { addonDomId } from "@/lib/addon-nav";
 import {
   GROWTH_PACK_ID,
   hasGrowthPack,
@@ -137,17 +139,22 @@ const GROWTH_MEMBER_ADDONS = ADDONS.filter((a) => isGrowthPackMember(a.value));
 
 function GrowthPackBanner({
   growthSelected,
+  highlighted,
   onToggle,
 }: {
   growthSelected: boolean;
+  highlighted: boolean;
   onToggle: (value: string) => void;
 }) {
   return (
     <div
+      id={addonDomId(GROWTH_PACK_ID)}
       className={
-        growthSelected
-          ? "relative mt-8 rounded-xl border border-green-500 bg-green-50 px-4 py-3 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-          : "mt-8 rounded-xl bg-accent px-4 py-3 text-white"
+        highlighted
+          ? "relative mt-8 scroll-mt-24 rounded-xl border-2 border-accent bg-accent/[0.06] px-4 py-3 shadow-md ring-2 ring-accent/25 transition-colors duration-200"
+          : growthSelected
+            ? "relative mt-8 scroll-mt-24 rounded-xl border border-green-500 bg-green-50 px-4 py-3 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+            : "mt-8 scroll-mt-24 rounded-xl bg-accent px-4 py-3 text-white"
       }
     >
       {growthSelected && (
@@ -274,6 +281,7 @@ function AddonCardCta({
 
 export function AddonsSection() {
   const selectedAddons = useSelectedAddons();
+  const { highlighted } = useAddonNavHighlight();
 
   function handleToggle(value: string) {
     toggleAddon(value);
@@ -289,13 +297,17 @@ export function AddonsSection() {
 
   function renderAddonCard(addon: AddonItem) {
     const selected = isSelected(addon.value);
+    const navHighlighted = highlighted === addon.value;
     return (
       <div
         key={addon.value}
+        id={addonDomId(addon.value)}
         className={
-          selected
-            ? "relative flex h-full flex-col rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-            : "relative flex h-full flex-col rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200 hover:border-accent"
+          navHighlighted
+            ? "relative flex h-full scroll-mt-24 flex-col rounded-xl border-2 border-accent bg-accent/[0.06] p-6 shadow-md ring-2 ring-accent/25 transition-colors duration-200"
+            : selected
+              ? "relative flex h-full scroll-mt-24 flex-col rounded-xl border border-green-500 bg-green-50 p-6 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+              : "relative flex h-full scroll-mt-24 flex-col rounded-xl border border-rule bg-bg p-6 shadow-sm transition-colors duration-200 hover:border-accent"
         }
       >
         {selected && (
@@ -362,7 +374,11 @@ export function AddonsSection() {
           {OTHER_ADDONS.map(renderAddonCard)}
         </div>
 
-        <GrowthPackBanner growthSelected={growthSelected} onToggle={handleToggle} />
+        <GrowthPackBanner
+          growthSelected={growthSelected}
+          highlighted={highlighted === GROWTH_PACK_ID}
+          onToggle={handleToggle}
+        />
 
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {GROWTH_MEMBER_ADDONS.map(renderAddonCard)}
