@@ -333,16 +333,18 @@ export function AddonsSection() {
   return (
     <div id="addons" className="border-t border-rule">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
-        <h2 className="sr-only">Growth add-ons</h2>
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-          High‑value add‑ons
+          Add-ons
         </p>
         <div className="max-w-2xl">
-          <p className="mt-4 text-base leading-relaxed text-ink">
+          <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
+            more calls. more bookings. more repeat clients.
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-ink-soft">
             Every build includes options for blog writing & local posts, hyper‑local SEO, Google
             Profile Optimization (including review requests), email/SMS follow‑ups, social media management,
             booking calendar, an AI receptionist, a typed AI agent chatbot, and Jarvis — our voice
-            chatbot — so you get more calls, more bookings, and more repeat clients.
+            chatbot.
           </p>
         </div>
 
