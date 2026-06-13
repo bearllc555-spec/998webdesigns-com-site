@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
       return contactFailure("Failed to send email", 500);
     }
 
-    void notifyCrmActivity({
+    await notifyCrmActivity({
       kind: "contact",
       fullName: name,
       email,
