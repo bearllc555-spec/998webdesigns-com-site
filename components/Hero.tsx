@@ -1,4 +1,3 @@
-import { Carousel } from "./Carousel";
 import { AddonsSection } from "./AddonsSection";
 import { HeroHeadline } from "./HeroHeadline";
 
@@ -44,20 +43,6 @@ export function Hero() {
       </div>
 
       <AddonsSection />
-
-      <div id="work" className="scroll-mt-16 border-t border-rule">
-        <div className="mx-auto max-w-6xl px-5 pt-6 pb-3 md:px-8 md:pt-8 md:pb-4">
-          <div className="max-w-2xl">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-              Recent work
-            </p>
-            <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-              built by hand for local business.
-            </h2>
-          </div>
-        </div>
-        <Carousel />
-      </div>
     </section>
   );
 }

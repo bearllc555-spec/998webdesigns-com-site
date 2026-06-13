@@ -1,5 +1,6 @@
 import { Nav } from "@/components/Nav";
 import { Hero } from "@/components/Hero";
+import { PortfolioSection } from "@/components/PortfolioSection";
 import { ValueProps } from "@/components/ValueProps";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Pricing } from "@/components/Pricing";
@@ -15,6 +16,7 @@ export default function Home() {
       <Nav />
       <main id="main">
         <Hero />
+        <PortfolioSection />
         <ValueProps />
         <HowItWorks />
         <Pricing />

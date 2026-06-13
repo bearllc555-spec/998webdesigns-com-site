@@ -21,7 +21,7 @@ function getTranslateX(el: HTMLElement): number {
   return new DOMMatrix(t).m41;
 }
 
-export function Carousel() {
+export function Carousel({ compactTop = false }: { compactTop?: boolean }) {
   const trackRef = useRef<HTMLUListElement>(null);
   const scrollRef = useRef<HTMLUListElement>(null);
   const manualXRef = useRef<number | null>(null);
@@ -155,7 +155,9 @@ export function Carousel() {
   ));
 
   return (
-    <div className="relative pt-16 pb-14 md:pt-24 md:pb-20">
+    <div
+      className={`relative pb-14 md:pb-20 ${compactTop ? "" : "pt-16 md:pt-24"}`}
+    >
       <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
           Hover any thumbnail to scroll through the page
