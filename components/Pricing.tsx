@@ -14,8 +14,11 @@ export function Pricing() {
     <section id="pricing" className="border-b border-rule bg-rule-soft/60">
       <div className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
         <div className="max-w-2xl">
-          <h2 className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
             Pricing
+          </p>
+          <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
+            simple, transparent pricing
           </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $5,998 design fee. Your first 30 days of hosting are free —
