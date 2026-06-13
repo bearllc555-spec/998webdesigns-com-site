@@ -26,7 +26,7 @@ export async function sendContactConfirmationEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: "998 web designs <hello@998webdesigns.com>",
     to: input.email,
     subject: "Thank you for reaching out — 998 web designs",
     html: `
