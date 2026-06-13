@@ -59,7 +59,7 @@ export function FAQ() {
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
           FAQ
         </p>
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="max-w-2xl">
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
             plain answers to fair questions.
           </h2>
