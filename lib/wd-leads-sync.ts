@@ -138,7 +138,7 @@ export async function syncWdLeadMilestone3Paid(session: Stripe.Checkout.Session)
   });
 }
 
-/** Design fee paid in full — starts 30-day free hosting window. */
+/** Design fee paid in full — starts free hosting window (HOSTING_TRIAL_DAYS). */
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
   if (isLifetimeHostingCheckout(session)) {
     await syncWdLeadLifetimeHostingPaid(session);
@@ -167,7 +167,7 @@ export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Pr
   if (email) await updateLatestWdLeadByEmail(email, patch);
 }
 
-/** Lifetime hosting $2,996 collected on day 31. */
+/** 10-year hosting $2,996 collected on HOSTING_BILLING_START_DAY. */
 export async function syncWdLeadLifetimeHostingPaid(
   session: Stripe.Checkout.Session
 ): Promise<void> {

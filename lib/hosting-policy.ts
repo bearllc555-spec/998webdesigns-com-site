@@ -1,5 +1,8 @@
-/** First month of hosting is free; paid hosting starts after this many days from payment cleared. */
-export const HOSTING_TRIAL_DAYS = 30;
+/** Free hosting period; paid hosting starts after this many days from payment cleared. */
+export const HOSTING_TRIAL_DAYS = 90;
+
+/** Calendar day hosting billing begins (day after the free period). */
+export const HOSTING_BILLING_START_DAY = HOSTING_TRIAL_DAYS + 1;
 
 /** Month-to-month hosting after trial (Stripe subscription Checkout `unit_amount`). */
 export const HOSTING_MONTHLY_PRICE_DOLLARS = 98;
@@ -14,4 +17,4 @@ export function hostingBillingStartsAt(paymentClearedAt: Date): Date {
 }
 
 export const HOSTING_FREE_MONTH_SUMMARY =
-  "Your first 30 days of hosting are free. Hosting billing starts 30 days after your design payment clears.";
+  `Your first ${HOSTING_TRIAL_DAYS} days of hosting are free. Hosting billing starts ${HOSTING_TRIAL_DAYS} days after your design payment clears.`;

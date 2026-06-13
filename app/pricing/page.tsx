@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Pricing } from "@/components/Pricing";
-import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+import { HOSTING_MONTHLY_PRICE_MO_LABEL, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 
-const pricingDescription = `Flat $5,998 design fee. First 30 days of hosting free — then ${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 10-year. No tiers, no hidden fees.`;
+const pricingDescription = `Flat $5,998 design fee. First ${HOSTING_TRIAL_DAYS} days of hosting free — then ${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 10-year. No tiers, no hidden fees.`;
 
 export const metadata: Metadata = {
   title: "Pricing — 998 web designs",

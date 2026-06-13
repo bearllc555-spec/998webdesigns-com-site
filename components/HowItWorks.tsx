@@ -1,4 +1,4 @@
-import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+import { HOSTING_MONTHLY_PRICE_MO_LABEL, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 
 const steps = [
   {
@@ -10,7 +10,7 @@ const steps = [
   {
     n: "02",
     title: "Pay through Stripe",
-    body: `On the last form step, pick monthly or 10-year hosting, then pay the 50% design deposit — your first 30 days of hosting are free. The remaining 40% and 10% are invoiced at the milestones on our pricing page. Card is default; bank transfer avoids the 3% fee on the amount due today. Hosting billing starts 30 days after your deposit clears (${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 for 10-year; domain .com/.net/.org included with 10-year). The design clock starts when the deposit clears (bank transfers may take a few business days).`,
+    body: `On the last form step, pick monthly or 10-year hosting, then pay the 50% design deposit — your first ${HOSTING_TRIAL_DAYS} days of hosting are free. The remaining 40% and 10% are invoiced at the milestones on our pricing page. Card is default; bank transfer avoids the 3% fee on the amount due today. Hosting billing starts ${HOSTING_TRIAL_DAYS} days after your deposit clears (${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 for 10-year; domain .com/.net/.org included with 10-year). The design clock starts when the deposit clears (bank transfers may take a few business days).`,
   },
   {
     n: "03",

@@ -1,6 +1,8 @@
 import {
+  HOSTING_BILLING_START_DAY,
   HOSTING_MONTHLY_PRICE_CENTS,
   HOSTING_MONTHLY_PRICE_MO_LABEL,
+  HOSTING_TRIAL_DAYS,
 } from "@/lib/hosting-policy";
 
 export interface Product {
@@ -36,11 +38,11 @@ export const HOSTING_LIFETIME_PRODUCT = HOSTING_TEN_YEAR_PRODUCT
 export const HOSTING_MONTHLY_PRODUCT: Product = {
   id: 'hosting-monthly',
   name: 'Month-to-month hosting',
-  description: `Managed hosting for your site. First 30 days free; ${HOSTING_MONTHLY_PRICE_MO_LABEL} starting day 31. Cancel anytime.`,
+  description: `Managed hosting for your site. First ${HOSTING_TRIAL_DAYS} days free; ${HOSTING_MONTHLY_PRICE_MO_LABEL} starting day ${HOSTING_BILLING_START_DAY}. Cancel anytime.`,
   priceInCents: HOSTING_MONTHLY_PRICE_CENTS,
 }
 
-/** Billed in a separate Checkout 30 days after design payment (10-year path). */
+/** Billed in a separate Checkout ${HOSTING_TRIAL_DAYS} days after design payment (10-year path). */
 export const HOSTING_TEN_YEAR_DEFERRED_PRODUCT: Product = {
   id: 'hosting-ten-year-deferred',
   name: '10-Year Hosting',

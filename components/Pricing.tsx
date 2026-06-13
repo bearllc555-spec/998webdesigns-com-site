@@ -1,8 +1,10 @@
 /* Pricing copy is the product. Do not change wording without explicit approval. */
 
 import {
+  HOSTING_BILLING_START_DAY,
   HOSTING_MONTHLY_PRICE_DOLLARS,
   HOSTING_MONTHLY_PRICE_MO_LABEL,
+  HOSTING_TRIAL_DAYS,
 } from "@/lib/hosting-policy";
 
 const DESIGN_INCLUDED_HOSTING_MONTHS = 3;
@@ -27,8 +29,8 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
             simple, transparent pricing.
           </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
-            Every site starts at a flat $5,998 design fee. Your first 30 days of hosting are free —
-            monthly or 10-year billing starts on day 31. The pricing below is the whole list — no
+            Every site starts at a flat $5,998 design fee. Your first {HOSTING_TRIAL_DAYS} days of hosting are free —
+            monthly or 10-year billing starts on day {HOSTING_BILLING_START_DAY}. The pricing below is the whole list — no
             tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;
           </p>
         </div>
@@ -75,7 +77,7 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
               </span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              Pay once after your first 30 days of free hosting. We host your site for ten years,
+              Pay once after your first {HOSTING_TRIAL_DAYS} days of free hosting. We host your site for ten years,
               including domain registration (.com, .net, .org). 10-year hosting begins when that
               payment clears.
             </p>
@@ -90,7 +92,7 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
               <span className="text-xl text-ink-soft">/month</span>
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-soft">
-              First 30 days free, then {HOSTING_MONTHLY_PRICE_MO_LABEL}. Cancel anytime before day 31 and you will not be
+              First {HOSTING_TRIAL_DAYS} days free, then {HOSTING_MONTHLY_PRICE_MO_LABEL}. Cancel anytime before day {HOSTING_BILLING_START_DAY} and you will not be
               charged for hosting. Upgrade to 10-year hosting whenever you want for $2,996.
             </p>
           </article>

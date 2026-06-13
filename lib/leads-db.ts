@@ -21,7 +21,7 @@ export type WdLeadPatch = {
   stripe_subscription_id?: string | null;
   /** Day-31 lifetime hosting Checkout session id (when sent). */
   stripe_ten_year_session_id?: string | null;
-  /** When paid hosting billing begins (30 days after design payment cleared). */
+  /** When paid hosting billing begins (after HOSTING_TRIAL_DAYS from design payment cleared). */
   hosting_billing_starts_at?: string | null;
   ten_year_hosting_paid_at?: string | null;
   notes?: string | null;

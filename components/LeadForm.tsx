@@ -615,7 +615,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
                   {form.hostingChoice === "ten_year" &&
                     `You pay the 50% design deposit today only. We email a secure link for the $2,996 10-year hosting payment on day ${HOSTING_TRIAL_DAYS + 1}. Domain registration (.com, .net, .org) is included. 10-year hosting begins when that payment clears.`}
                   {!form.hostingChoice &&
-                    "Pick monthly or 10-year hosting above. Either way, your first 30 days of hosting are on us."}
+                    `Pick monthly or 10-year hosting above. Either way, your first ${HOSTING_TRIAL_DAYS} days of hosting are on us.`}
                 </p>
               </div>
 

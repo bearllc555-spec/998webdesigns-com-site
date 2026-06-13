@@ -6,6 +6,7 @@ import {
 import { designPromoSummary } from "@/lib/design-promo";
 import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import { hostingChoiceLabel } from "@/lib/hosting";
+import { HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import type { ValidatedLead } from "./validate-lead";
 
 function escapeHtml(text: string): string {
@@ -70,9 +71,9 @@ export async function sendLeadCheckoutEmail(
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
         ${promoNote}
-        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)} (design fee only — first 30 days of hosting are free)</p>
+        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)} (design fee only — first ${HOSTING_TRIAL_DAYS} days of hosting are free)</p>
         ${scheduleHtml}
-        <p style="font-size: 14px; color: #52525b;">Hosting billing starts 30 days after payment clears: ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}.</p>
+        <p style="font-size: 14px; color: #52525b;">Hosting billing starts ${HOSTING_TRIAL_DAYS} days after payment clears: ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}.</p>
         ${achNote}
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Continue to payment</a>

@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { ThanksActions } from "@/components/ThanksActions";
 import { formatCheckoutUsd } from "@/lib/checkout-pricing";
 import { designMilestone2Cents, designMilestone3Cents } from "@/lib/design-payment-schedule";
-import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+import { HOSTING_MONTHLY_PRICE_MO_LABEL, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import { stripe } from "@/lib/stripe";
 
 export const metadata = {
@@ -161,7 +161,7 @@ export default async function Thanks({
             </p>
             {isMilestone3 ? (
               <p className="mt-2 text-sm text-ink-soft">
-                No further design-fee invoices. Your first 30 days of hosting are free; hosting
+                No further design-fee invoices. Your first {HOSTING_TRIAL_DAYS} days of hosting are free; hosting
                 billing continues on your existing plan.
               </p>
             ) : isMilestone2 ? (
@@ -174,13 +174,13 @@ export default async function Thanks({
                 {formatCheckoutUsd(milestone2Cents)} is due after design approval or development
                 start. {formatCheckoutUsd(milestone3Cents)} is due at launch and handover (
                 {formatCheckoutUsd(balanceCents)} total balance). We&apos;ll invoice each milestone
-                when it&apos;s due. Your first 30 days of hosting are free; hosting billing starts
-                30 days after your design payment cleared.
+                when it&apos;s due. Your first {HOSTING_TRIAL_DAYS} days of hosting are free; hosting billing starts
+                {HOSTING_TRIAL_DAYS} days after your design payment cleared.
               </p>
             ) : (
               <p className="mt-2 text-sm text-ink-soft">
-                No follow-up invoices for the design fee. Your first 30 days of hosting are free.
-                Month-to-month hosting ({HOSTING_MONTHLY_PRICE_MO_LABEL}) or 10-year hosting ($2,996) is billed starting 30
+                No follow-up invoices for the design fee. Your first {HOSTING_TRIAL_DAYS} days of hosting are free.
+                Month-to-month hosting ({HOSTING_MONTHLY_PRICE_MO_LABEL}) or 10-year hosting ($2,996) is billed starting {HOSTING_TRIAL_DAYS}
                 days after your design payment cleared — not in this Checkout.
               </p>
             )}

@@ -20,7 +20,7 @@ This post unpacks the flat-fee model at **$5,998** — what that number is suppo
 
 **Technical basics that affect trust and search.** Mobile layout, reasonable load speed, clean page structure, meta titles and descriptions. Not a full SEO campaign — the foundation so Google can read the site and humans do not bounce on a phone.
 
-**First 30 days of hosting free.** After that you choose monthly hosting or a 10-year prepay option (domain .com/.net/.org included). Hosting is separate from design because it is ongoing infrastructure, not a one-time build.
+**First 90 days of hosting free.** After that you choose monthly hosting or a 10-year prepay option (domain .com/.net/.org included). Hosting is separate from design because it is ongoing infrastructure, not a one-time build.
 
 ## What it is not
 

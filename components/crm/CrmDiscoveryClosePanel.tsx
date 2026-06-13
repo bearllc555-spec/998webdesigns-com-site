@@ -8,7 +8,7 @@ import {
   isAddonVisuallySelected,
   toggleAddonSelection,
 } from "@/lib/addons";
-import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
+import { HOSTING_BILLING_START_DAY, HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
 import { checkoutDueTodayCents, formatCheckoutUsd } from "@/lib/checkout-pricing";
 import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
@@ -172,7 +172,7 @@ export function CrmDiscoveryClosePanel({
             onChange={(e) => setHostingChoice(e.target.value as "ten_year" | "monthly")}
             className="mt-1 w-full rounded border border-rule bg-bg px-2 py-1.5 text-ink"
           >
-            <option value="ten_year">10-year ($2,996 day 31)</option>
+            <option value="ten_year">10-year ($2,996 day {HOSTING_BILLING_START_DAY})</option>
             <option value="monthly">Monthly ({HOSTING_MONTHLY_PRICE_MO_LABEL})</option>
           </select>
         </label>
