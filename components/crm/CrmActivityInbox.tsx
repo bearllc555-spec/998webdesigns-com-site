@@ -9,7 +9,10 @@ import { CrmSmsThread } from "@/components/crm/CrmSmsThread";
 import { CrmInboxFlagButton } from "@/components/crm/CrmInboxFlagButton";
 import { nextCrmInboxFlag } from "@/lib/crm-inbox-flag";
 import { isCrmFeedItemUnread, type CrmFeedItem } from "@/lib/crm-feed";
-import { savePlumbingDemoCrmItemPatch } from "@/lib/plumbing-demo-crm-session-store";
+import {
+  hidePlumbingDemoCrmItem,
+  savePlumbingDemoCrmItemPatch,
+} from "@/lib/plumbing-demo-crm-session-store";
 import type { DiscoveryCloseDraft } from "@/lib/discovery-types";
 
 type PendingDelete = {
@@ -44,6 +47,18 @@ function isWdLeadFeedItem(item: CrmFeedItem): boolean {
 
 function itemKey(item: CrmFeedItem): string {
   return `${item.source}-${item.id}`;
+}
+
+function deleteConfirmPanelClass(step: 1 | 2): string {
+  return step === 1
+    ? "mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4"
+    : "mt-4 rounded-xl border border-red-600/40 bg-red-50 p-4 dark:bg-red-950/30";
+}
+
+function deleteConfirmButtonClass(step: 1 | 2): string {
+  return step === 1
+    ? "rounded-full bg-warn px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+    : "rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60";
 }
 
 function formatWhen(iso: string): string {
@@ -322,7 +337,7 @@ function InboxRow({
           </div>
 
           {isDeleting && pendingDelete && (
-            <div className="mt-4 rounded-xl border border-warn/40 bg-warn-soft/30 p-4">
+            <div className={deleteConfirmPanelClass(pendingDelete.step)}>
               <p className="text-sm font-medium text-ink">
                 {pendingDelete.step === 1
                   ? `Delete this ${sourceLabel(item.source).toLowerCase()}?`
@@ -333,7 +348,7 @@ function InboxRow({
                   type="button"
                   disabled={deleting}
                   onClick={onConfirmDelete}
-                  className="rounded-full bg-warn px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                  className={deleteConfirmButtonClass(pendingDelete.step)}
                 >
                   {deleting
                     ? "Deleting…"
@@ -675,7 +690,6 @@ export function CrmActivityInbox({
   const [deleting, setDeleting] = useState(false);
   const [readBusy, setReadBusy] = useState(false);
   const [flagBusy, setFlagBusy] = useState(false);
-  const [demoDeleteNotice, setDemoDeleteNotice] = useState(false);
 
   const patchItemRead = useCallback(
     (item: CrmFeedItem, read: boolean) => {
@@ -835,10 +849,6 @@ export function CrmActivityInbox({
     onSetReadState: setReadState,
     onStartDelete: (item: CrmFeedItem) => {
       setEditingNotes(false);
-      if (demoMode) {
-        setDemoDeleteNotice(true);
-        return;
-      }
       setPendingDelete({
         source: item.source,
         id: item.id,
@@ -854,6 +864,20 @@ export function CrmActivityInbox({
       }
       setDeleting(true);
       try {
+        if (demoMode) {
+          hidePlumbingDemoCrmItem(pendingDelete);
+          onItemsChange((prev) =>
+            prev.filter(
+              (i) =>
+                !(i.source === pendingDelete.source && i.id === pendingDelete.id)
+            )
+          );
+          if (selectedKey === `${pendingDelete.source}-${pendingDelete.id}`) {
+            setSelectedKey(null);
+          }
+          setPendingDelete(null);
+          return;
+        }
         const res = await fetch(
           `/api/crm/items/${pendingDelete.source}/${pendingDelete.id}`,
           { method: "DELETE", credentials: "include" }
@@ -886,30 +910,6 @@ export function CrmActivityInbox({
 
   return (
     <div className="w-full space-y-6">
-      {demoDeleteNotice && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="demo-delete-notice-title"
-        >
-          <div className="max-w-md rounded-2xl border border-rule bg-bg p-6 shadow-lg">
-            <p id="demo-delete-notice-title" className="font-display text-lg font-medium text-ink">
-              Demonstration only
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              This is for demonstration purposes only — records cannot be deleted.
-            </p>
-            <button
-              type="button"
-              onClick={() => setDemoDeleteNotice(false)}
-              className="mt-5 rounded-full bg-accent px-5 py-2 text-sm font-medium text-on-accent"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
       <InboxSection
         title="Contacts"
         items={contactItems}
