@@ -155,6 +155,13 @@ export function TermsContent() {
               >
                 Twilio&rsquo;s industry standards for US messaging terms
               </a>
+              . Public opt-in evidence for campaign review:{" "}
+              <a
+                href="https://998webdesigns.com/legal/sms-opt-in"
+                className="text-accent underline hover:text-accent-deep"
+              >
+                998webdesigns.com/legal/sms-opt-in
+              </a>
               .
             </p>
           </section>

@@ -15,6 +15,7 @@ export const INDEXABLE_ROUTES = [
   { path: "/hosting/manage", changeFrequency: "monthly" as const, priority: 0.4 },
   { path: "/legal/terms", changeFrequency: "monthly" as const, priority: 0.3 },
   { path: "/legal/privacy", changeFrequency: "monthly" as const, priority: 0.3 },
+  { path: "/legal/sms-opt-in", changeFrequency: "monthly" as const, priority: 0.3 },
 ];
 
 /** Paths crawlers should not fetch (keep in sync with sitemap). */

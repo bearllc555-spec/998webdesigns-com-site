@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { Mic, MicOff, PhoneOff, X, MessageCircle } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
@@ -259,8 +260,9 @@ export function VoiceDemoWidget() {
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
                     Enter your email to try Jarvis. We&apos;ll send a verification code, then chat
-                    about 998 — Jarvis will ask your name and phone to build your profile. Up to 3
-                    voice demos per day per email.
+                    about 998 — Jarvis may ask your name and US mobile number to build your profile.
+                    If you share your number and accept a promo offer, you may receive a one-time
+                    SMS. Up to 3 voice demos per day per email.
                   </p>
 
                   <div>
@@ -444,6 +446,20 @@ export function VoiceDemoWidget() {
 
             {caption?.role === "user" && configured && phase === "demo" && (
               <VoiceCaptionBar caption={caption} />
+            )}
+
+            {configured && (
+              <p className="border-t border-rule px-4 py-3 text-center text-[11px] leading-relaxed text-ink-soft">
+                SMS: message frequency varies. Msg &amp; data rates may apply. Reply{" "}
+                <strong>STOP</strong> to opt out · <strong>HELP</strong> for help ·{" "}
+                <Link href="/legal/privacy" className="text-accent underline">
+                  Privacy
+                </Link>{" "}
+                ·{" "}
+                <Link href="/legal/terms" className="text-accent underline">
+                  Terms
+                </Link>
+              </p>
             )}
           </div>
         </div>

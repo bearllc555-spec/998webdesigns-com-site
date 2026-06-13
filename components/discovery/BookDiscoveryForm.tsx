@@ -177,10 +177,16 @@ export function BookDiscoveryForm() {
             required
           />
           <span>
-            I agree to receive a one-time SMS verification code from 998 web designs. Message and data
-            rates may apply. Reply STOP to opt out. See our{" "}
+            I agree to receive SMS messages from 998 web designs, including a one-time verification
+            code and occasional transactional messages related to my website project. Message
+            frequency varies. Message and data rates may apply. Reply <strong>STOP</strong> to opt
+            out. Reply <strong>HELP</strong> for help. See our{" "}
             <Link href="/legal/privacy" className="text-accent underline">
               Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/legal/terms" className="text-accent underline">
+              Terms of Service
             </Link>
             .
           </span>
