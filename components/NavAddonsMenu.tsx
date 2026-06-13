@@ -10,7 +10,7 @@ import {
   dispatchAddonSelect,
   dispatchNavClose,
 } from "@/lib/addon-nav";
-import { NAV_ADDON_MENU_ITEMS } from "@/lib/addons";
+import { GROWTH_PACK_ID, NAV_ADDON_MENU_ITEMS } from "@/lib/addons";
 
 function handleAddonNavClick(
   value: string,
@@ -43,7 +43,13 @@ function Chevron({ open, className = "" }: { open?: boolean; className?: string 
   );
 }
 
-function AddonMenuLinks({
+const ADDON_LINK_CLASS =
+  "block rounded-lg px-3 py-2.5 text-sm leading-snug text-ink-soft transition hover:bg-rule-soft hover:text-ink";
+
+const GROWTH_PACK_LINK_CLASS =
+  "block rounded-lg border border-accent/25 bg-accent/[0.06] px-3 py-2.5 text-sm font-medium leading-snug text-ink transition hover:border-accent/40 hover:bg-accent/[0.1]";
+
+function AddonMenuGrid({
   onNavigate,
   className,
   pathname,
@@ -52,23 +58,44 @@ function AddonMenuLinks({
   className?: string;
   pathname: string;
 }) {
+  const standardItems = NAV_ADDON_MENU_ITEMS.filter(
+    (item) => item.value !== GROWTH_PACK_ID
+  );
+  const growthPack = NAV_ADDON_MENU_ITEMS.find(
+    (item) => item.value === GROWTH_PACK_ID
+  );
+
+  function renderLink(
+    item: (typeof NAV_ADDON_MENU_ITEMS)[number],
+    linkClass: string
+  ) {
+    return (
+      <Link
+        href={addonNavHref(item.value)}
+        onClick={(e) => {
+          handleAddonNavClick(item.value, pathname, onNavigate);
+          e.currentTarget.blur();
+        }}
+        className={linkClass}
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
   return (
-    <ul className={className}>
-      {NAV_ADDON_MENU_ITEMS.map((item) => (
-        <li key={item.value}>
-          <Link
-            href={addonNavHref(item.value)}
-            onClick={(e) => {
-              handleAddonNavClick(item.value, pathname, onNavigate);
-              e.currentTarget.blur();
-            }}
-            className="block px-4 py-2 text-sm text-ink-soft transition hover:bg-rule-soft hover:text-ink"
-          >
-            {item.label}
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className={className}>
+      <ul className="grid grid-cols-2 gap-1.5 md:grid-cols-3">
+        {standardItems.map((item) => (
+          <li key={item.value}>{renderLink(item, ADDON_LINK_CLASS)}</li>
+        ))}
+      </ul>
+      {growthPack ? (
+        <div className="mt-2 border-t border-rule pt-2">
+          {renderLink(growthPack, GROWTH_PACK_LINK_CLASS)}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -101,11 +128,8 @@ export function NavAddonsDropdown() {
             : "pointer-events-none translate-y-1 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100"
         }`}
       >
-        <div className="max-h-[min(70vh,24rem)] overflow-y-auto rounded-xl border border-rule bg-bg py-1 shadow-lg">
-          <AddonMenuLinks
-            pathname={pathname}
-            onNavigate={closeDropdown}
-          />
+        <div className="w-[34rem] max-w-[calc(100vw-2.5rem)] rounded-xl border border-rule bg-bg p-3 shadow-lg">
+          <AddonMenuGrid pathname={pathname} onNavigate={closeDropdown} />
         </div>
       </div>
     </div>
@@ -137,13 +161,13 @@ export function NavAddonsMobile({
         Add&#8209;ons
         <Chevron open={open} />
       </button>
-      {open && (
-        <AddonMenuLinks
+      {open ? (
+        <AddonMenuGrid
           pathname={pathname}
           onNavigate={closeAll}
-          className="mb-1 ml-2 border-l border-rule pl-2"
+          className="mb-2 mt-1 rounded-xl border border-rule bg-rule-soft/40 p-2"
         />
-      )}
+      ) : null}
     </li>
   );
 }
