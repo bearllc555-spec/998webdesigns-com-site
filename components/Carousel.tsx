@@ -21,7 +21,14 @@ function getTranslateX(el: HTMLElement): number {
   return new DOMMatrix(t).m41;
 }
 
-export function Carousel({ compactTop = false }: { compactTop?: boolean }) {
+export function Carousel({
+  compactTop = false,
+  hideHint = false,
+}: {
+  compactTop?: boolean;
+  /** Hide the carousel hint line (e.g. when PortfolioSection already has intro copy). */
+  hideHint?: boolean;
+}) {
   const trackRef = useRef<HTMLUListElement>(null);
   const scrollRef = useRef<HTMLUListElement>(null);
   const manualXRef = useRef<number | null>(null);
@@ -158,11 +165,13 @@ export function Carousel({ compactTop = false }: { compactTop?: boolean }) {
     <div
       className={`relative pb-14 md:pb-20 ${compactTop ? "" : "pt-16 md:pt-24"}`}
     >
-      <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
-          Hover any thumbnail to scroll through the page
-        </p>
-      </div>
+      {hideHint ? null : (
+        <div className="mx-auto max-w-6xl px-5 pb-4 md:px-8">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate">
+            Hover any thumbnail to scroll through the page
+          </p>
+        </div>
+      )}
 
       <div
         className={`relative overflow-hidden ${!reduceMotion && paused ? "portfolio-marquee--paused" : ""}`}

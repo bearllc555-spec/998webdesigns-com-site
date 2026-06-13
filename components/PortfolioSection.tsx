@@ -12,10 +12,18 @@ export function PortfolioSection({
   headingLevel = "h2",
 }: PortfolioSectionProps) {
   const HeadingTag = headingLevel;
+  // Standalone /portfolio: nav is already in document flow — large pt-* would
+  // double the gap vs home hash targets (#how, #work) where section top = viewport 0.
+  const headerPadding = showIntro
+    ? "px-5 pt-6 pb-3 md:px-8 md:pb-4"
+    : "px-5 pt-16 pb-3 md:px-8 md:pt-24 md:pb-4";
 
   return (
-    <section id="work" className="border-t border-rule">
-      <div className="mx-auto max-w-6xl px-5 pt-16 pb-3 md:px-8 md:pt-24 md:pb-4">
+    <section
+      id="work"
+      className={showIntro ? "" : "border-t border-rule"}
+    >
+      <div className={`mx-auto max-w-6xl ${headerPadding}`}>
         <div className="max-w-2xl">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
             Recent work
@@ -30,7 +38,7 @@ export function PortfolioSection({
           ) : null}
         </div>
       </div>
-      <Carousel compactTop />
+      <Carousel compactTop hideHint={showIntro} />
     </section>
   );
 }
