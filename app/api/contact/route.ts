@@ -12,10 +12,18 @@ type ContactPayload = {
   email?: string;
   businessName?: string;
   message?: string;
-  contact_hp?: string; // honeypot — must stay empty; do not use "website" (browser autofill)
-  /** @deprecated legacy honeypot key */
+  /** Bot-only fields — legitimate client JSON never includes these */
   website?: string;
+  url?: string;
+  company_url?: string;
 };
+
+const BOT_TRAP_FIELDS = ["website", "url", "company_url"] as const;
+
+function honeypotValue(body: ContactPayload, key: (typeof BOT_TRAP_FIELDS)[number]): string {
+  const v = body[key];
+  return typeof v === "string" ? v.trim() : "";
+}
 
 export async function POST(req: NextRequest) {
   const rate = await enforceApiRateLimit(req, "/api/contact");
@@ -31,13 +39,12 @@ export async function POST(req: NextRequest) {
   }
   const body = parsed.body as ContactPayload;
 
-  // Honeypot — silently accept and discard (never name this field "website"; browsers autofill it)
-  const hp =
-    (typeof body.contact_hp === "string" ? body.contact_hp : "") ||
-    (typeof body.website === "string" ? body.website : "");
-  if (hp.length > 0) {
-    console.info("[contact] honeypot discard");
-    return NextResponse.json({ ok: true });
+  // Honeypot — bots add extra fields; our UI sends only name/email/businessName/message
+  for (const key of BOT_TRAP_FIELDS) {
+    if (honeypotValue(body, key).length > 0) {
+      console.info("[contact] honeypot discard", key);
+      return NextResponse.json({ ok: true });
+    }
   }
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -121,7 +128,7 @@ export async function POST(req: NextRequest) {
       message,
     });
 
-    return NextResponse.json({ ok: true, saved: dbResult.ok });
+    return NextResponse.json({ ok: true, sent: true, saved: dbResult.ok });
   } catch (err) {
     console.error("[contact] Unexpected error:", err);
     return NextResponse.json({ error: "Failed to process contact form" }, { status: 500 });

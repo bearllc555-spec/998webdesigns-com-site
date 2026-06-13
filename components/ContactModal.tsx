@@ -19,7 +19,6 @@ type ContactFormState = {
   email: string;
   businessName: string;
   message: string;
-  contact_hp: string;
 };
 
 type ContactModalProps = {
@@ -34,7 +33,6 @@ const emptyForm = (): ContactFormState => ({
   email: "",
   businessName: "",
   message: "",
-  contact_hp: "",
 });
 
 function buildForm(prefill?: ContactPrefill): ContactFormState {
@@ -87,11 +85,16 @@ function ContactFormPanel({
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          businessName: form.businessName,
+          message: form.message,
+        }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
+      const data = (await res.json()) as { error?: string; sent?: boolean };
+      if (!res.ok || !data.sent) {
         throw new Error(data.error || "Failed to send message");
       }
 
@@ -112,14 +115,14 @@ function ContactFormPanel({
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4">
+        {/* Bot trap — not read into JSON; bots that POST extra fields are caught server-side */}
         <input
           type="text"
-          name="contact_hp_trap"
-          value={form.contact_hp}
-          onChange={(e) => set("contact_hp", e.target.value)}
+          name="website"
           tabIndex={-1}
           autoComplete="off"
           aria-hidden="true"
+          defaultValue=""
           className="absolute -z-10 h-0 w-0 opacity-0 pointer-events-none"
         />
 

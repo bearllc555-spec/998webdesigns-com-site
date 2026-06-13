@@ -30,8 +30,8 @@ describe("POST /api/contact", () => {
     delete process.env.RESEND_API_KEY;
   });
 
-  it("silently accepts honeypot submissions", async () => {
-    for (const hp of [{ contact_hp: "filled" }, { website: "https://spam.test" }]) {
+  it("silently accepts honeypot submissions without sent flag", async () => {
+    for (const hp of [{ website: "https://spam.test" }, { url: "https://spam.test" }]) {
       const res = await POST(
         contactRequest({
           name: "Bot",
