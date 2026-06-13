@@ -65,16 +65,97 @@ export function TermsContent() {
 
           <section>
             <h2 className="font-display text-2xl font-semibold text-ink">
-              3. Discovery pipeline and SMS
+              3. SMS messaging program
             </h2>
             <p className="text-ink-soft">
-              Our optional discovery flow at /book lets you request a call before checkout. By
-              checking the SMS consent box and submitting your phone number, you agree to receive a
-              one-time verification text from us (via Twilio) to confirm your number. Message and
-              data rates may apply. You may reply STOP to opt out of further texts and HELP for
-              assistance. We may email you a secure link to complete your project brief and, after a
-              discovery call, a personalized checkout link. Those links are personal — do not share
-              them. Clicking your intake email link confirms your email address for that session.
+              These Terms of Service are published at{" "}
+              <a
+                href="https://998webdesigns.com/legal/terms"
+                className="text-accent underline hover:text-accent-deep"
+              >
+                998webdesigns.com/legal/terms
+              </a>
+              . The following SMS terms apply when you opt in to text messages from 998 web designs
+              (Bear LLC).
+            </p>
+            <ul className="mt-4 list-inside list-disc space-y-3 text-ink-soft">
+              <li>
+                <strong>Program name:</strong> 998 web designs SMS Program
+              </li>
+              <li>
+                <strong>Program description:</strong> Transactional text messages from 998 web
+                designs related to your website project — including one-time phone verification on
+                our discovery form (/book), optional one-time promotional codes when you separately
+                consent during our voice demo, and project or billing texts such as secure checkout
+                links or milestone invoices for active clients. We do not send marketing SMS without
+                separate, explicit consent.
+              </li>
+              <li>
+                <strong>Message frequency:</strong> Message frequency varies depending on your
+                activity. You will typically receive one verification code per discovery session.
+                Active clients may receive occasional project-related texts when you or our team
+                request SMS delivery (for example a checkout or invoice link).
+              </li>
+              <li>
+                <strong>Message and data rates:</strong> Message and data rates may apply. Check with
+                your mobile carrier for details.
+              </li>
+              <li>
+                <strong>Support contact:</strong> For help with our SMS program, email{" "}
+                <Image
+                  src="/email-address.jpg"
+                  alt="email address: hello@998webdesigns.com"
+                  width={210}
+                  height={44}
+                  className="inline-block align-middle"
+                />{" "}
+                or{" "}
+                <button
+                  type="button"
+                  onClick={() => setContactOpen(true)}
+                  className="text-accent underline transition hover:text-accent-deep"
+                >
+                  get in touch with us
+                </button>
+                .
+              </li>
+              <li>
+                <strong>Opt-out instructions:</strong> Reply <strong>STOP</strong> to cancel
+                receiving further texts from our number. Reply <strong>HELP</strong> for help. After
+                you send STOP, we may send one confirmation text. Message and data rates may apply.
+              </li>
+              <li>
+                <strong>Privacy:</strong> How we collect and use your information — and that we do
+                not sell or share it with third parties for marketing — is described in our{" "}
+                <a
+                  href="https://998webdesigns.com/legal/privacy"
+                  className="text-accent underline hover:text-accent-deep"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </li>
+            </ul>
+            <p className="mt-4 text-ink-soft">
+              <strong>Discovery pipeline (/book):</strong> Our optional discovery flow lets you
+              request a call before checkout. By checking the SMS consent box and submitting your
+              phone number, you agree to receive a one-time verification text from us (via Twilio) to
+              confirm your number. We may email you a secure link to complete your project brief
+              and, after a discovery call, a personalized checkout link. Those links are personal —
+              do not share them. Clicking your intake email link confirms your email address for that
+              session.
+            </p>
+            <p className="mt-4 text-sm text-ink-soft">
+              For carrier and industry guidance on SMS terms of service, see{" "}
+              <a
+                href="https://help.twilio.com/articles/223134847-Industry-standards-for-US-Short-Code-Terms-of-Service"
+                className="text-accent underline hover:text-accent-deep"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Twilio&rsquo;s industry standards for US messaging terms
+              </a>
+              .
             </p>
           </section>
 
