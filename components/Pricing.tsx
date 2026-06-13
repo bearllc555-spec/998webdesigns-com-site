@@ -5,7 +5,7 @@ import {
   HOSTING_MONTHLY_PRICE_MO_LABEL,
 } from "@/lib/hosting-policy";
 
-const DESIGN_INCLUDED_HOSTING_MONTHS = 6;
+const DESIGN_INCLUDED_HOSTING_MONTHS = 3;
 const DESIGN_INCLUDED_HOSTING_VALUE =
   DESIGN_INCLUDED_HOSTING_MONTHS * HOSTING_MONTHLY_PRICE_DOLLARS;
 
@@ -42,7 +42,7 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
               $5,998{" "}
               <span className="text-2xl text-ink-soft">
-                — 50% deposit to start{" "}
+                50% deposit to start{" "}
                 <span className="text-[24px]">
                   ({DESIGN_INCLUDED_HOSTING_MONTHS} months hosting incl — a $
                   {DESIGN_INCLUDED_HOSTING_VALUE.toLocaleString("en-US")} value)
