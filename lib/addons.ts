@@ -65,6 +65,11 @@ export const ADDON_OPTIONS = [
   },
 ] as const;
 
+/** Labels for add-ons bundled in Growth Pack (nav menu, banner copy). */
+export const GROWTH_PACK_INCLUDES = GROWTH_PACK_MEMBERS.map(
+  (value) => ADDON_OPTIONS.find((a) => a.value === value)?.label ?? value
+);
+
 /** Primary nav Add-ons hover menu (desktop) and expandable list (mobile). */
 export const NAV_ADDON_MENU_ITEMS = [
   ...ADDON_OPTIONS.map((addon) => ({ label: addon.label, value: addon.value })),

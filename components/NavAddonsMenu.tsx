@@ -10,7 +10,7 @@ import {
   dispatchAddonSelect,
   dispatchNavClose,
 } from "@/lib/addon-nav";
-import { GROWTH_PACK_ID, NAV_ADDON_MENU_ITEMS } from "@/lib/addons";
+import { GROWTH_PACK_ID, GROWTH_PACK_INCLUDES, NAV_ADDON_MENU_ITEMS } from "@/lib/addons";
 
 function handleAddonNavClick(
   value: string,
@@ -47,7 +47,33 @@ const ADDON_LINK_CLASS =
   "block rounded-lg px-3 py-2.5 text-sm leading-snug text-ink-soft transition hover:bg-rule-soft hover:text-ink";
 
 const GROWTH_PACK_LINK_CLASS =
-  "block rounded-lg border border-accent/25 bg-accent/[0.06] px-3 py-2.5 text-sm font-medium leading-snug text-ink transition hover:border-accent/40 hover:bg-accent/[0.1]";
+  "block rounded-lg border border-accent/25 bg-accent/[0.06] px-3 py-3 text-sm leading-snug transition hover:border-accent/40 hover:bg-accent/[0.1]";
+
+function GrowthPackNavLink({
+  item,
+  pathname,
+  onNavigate,
+}: {
+  item: (typeof NAV_ADDON_MENU_ITEMS)[number];
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={addonNavHref(item.value)}
+      onClick={(e) => {
+        handleAddonNavClick(item.value, pathname, onNavigate);
+        e.currentTarget.blur();
+      }}
+      className={GROWTH_PACK_LINK_CLASS}
+    >
+      <span className="font-medium text-ink">{item.label}</span>
+      <span className="mt-1 block text-xs font-normal text-ink-soft">
+        Includes {GROWTH_PACK_INCLUDES.join(", ")}
+      </span>
+    </Link>
+  );
+}
 
 function AddonMenuGrid({
   onNavigate,
@@ -92,7 +118,11 @@ function AddonMenuGrid({
       </ul>
       {growthPack ? (
         <div className="mt-2 border-t border-rule pt-2">
-          {renderLink(growthPack, GROWTH_PACK_LINK_CLASS)}
+          <GrowthPackNavLink
+            item={growthPack}
+            pathname={pathname}
+            onNavigate={onNavigate}
+          />
         </div>
       ) : null}
     </div>

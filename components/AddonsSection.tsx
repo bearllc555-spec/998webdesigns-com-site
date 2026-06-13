@@ -5,6 +5,7 @@ import { useAddonNavHighlight } from "@/hooks/use-addon-nav-highlight";
 import { addonDomId } from "@/lib/addon-nav";
 import {
   GROWTH_PACK_ID,
+  GROWTH_PACK_INCLUDES,
   hasGrowthPack,
   isAddonVisuallySelected,
   isGrowthPackMember,
@@ -196,7 +197,7 @@ function GrowthPackBanner({
               growthSelected ? "text-ink-soft" : "text-white/85"
             }`}
           >
-            Hyper-Local SEO, Google Profile Optimization, and Blog Writing — bundled at a
+            {GROWTH_PACK_INCLUDES.join(", ")} — bundled at a
             discount.
           </p>
         </div>
