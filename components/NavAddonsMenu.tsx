@@ -152,7 +152,7 @@ export function NavAddonsDropdown() {
         <Chevron className="group-hover:rotate-180 group-focus-within:rotate-180" />
       </Link>
       <div
-        className={`absolute left-0 top-full z-50 pt-2 transition duration-200 ${
+        className={`absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2 transition duration-200 ${
           dismissed
             ? "pointer-events-none translate-y-1 opacity-0"
             : "pointer-events-none translate-y-1 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100"
