@@ -6,7 +6,7 @@ import { runCrmInboxFlagMigration } from "@/lib/pg-migrate-crm-inbox-flag";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — add inbox_flag column. Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - add inbox_flag column. Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

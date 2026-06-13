@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { DiscoveryIntakeForm } from "@/components/discovery/DiscoveryIntakeForm";
 
 export const metadata: Metadata = {
-  title: "Project brief — 998 web designs",
+  title: "Project brief - 998 web designs",
   robots: { index: false, follow: false },
 };
 

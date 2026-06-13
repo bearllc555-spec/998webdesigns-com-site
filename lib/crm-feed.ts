@@ -41,7 +41,7 @@ export type CrmFeedItem = {
   message: string | null;
   payload: Record<string, unknown> | null;
   phone: string | null;
-  /** Progressive contact — street through cell; partial until booking matures. */
+  /** Progressive contact - street through cell; partial until booking matures. */
   contact?: CrmContactFields;
   /** null = unread */
   readAt: string | null;
@@ -69,7 +69,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     return {
       items: [],
       error:
-        "Supabase not configured locally. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local (helmet: xwldbxburzqryxlzocck — see DEV.md).",
+        "Supabase not configured locally. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local (helmet: xwldbxburzqryxlzocck - see DEV.md).",
     };
   }
 

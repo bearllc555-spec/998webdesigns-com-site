@@ -43,10 +43,10 @@ export function TermsContent() {
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
-                <strong>Design fee:</strong> $5,998 total, paid on a 50 / 40 / 10 schedule — 50% at
+                <strong>Design fee:</strong> $5,998 total, paid on a 50 / 40 / 10 schedule - 50% at
                 checkout before your project enters the queue, 40% after design approval or
                 development start, and 10% at launch and handover. Channel-specific promo codes
-                reduce the design fee only — not hosting or card-processing fees — when entered on
+                reduce the design fee only - not hosting or card-processing fees - when entered on
                 the lead form at checkout.
               </li>
               <li>
@@ -84,7 +84,7 @@ export function TermsContent() {
               </li>
               <li>
                 <strong>Program description:</strong> Transactional text messages from 998 web
-                designs related to your website project — including one-time phone verification on
+                designs related to your website project - including one-time phone verification on
                 our discovery form (/book), optional one-time promotional codes when you separately
                 consent during our voice demo, and project or billing texts such as secure checkout
                 links or milestone invoices for active clients. We do not send marketing SMS without
@@ -125,8 +125,8 @@ export function TermsContent() {
                 you send STOP, we may send one confirmation text. Message and data rates may apply.
               </li>
               <li>
-                <strong>Privacy:</strong> How we collect and use your information — and that we do
-                not sell or share it with third parties for marketing — is described in our{" "}
+                <strong>Privacy:</strong> How we collect and use your information - and that we do
+                not sell or share it with third parties for marketing - is described in our{" "}
                 <a
                   href="https://998webdesigns.com/legal/privacy"
                   className="text-accent underline hover:text-accent-deep"
@@ -141,7 +141,7 @@ export function TermsContent() {
               request a call before checkout. By checking the SMS consent box and submitting your
               phone number, you agree to receive a one-time verification text from us (via Twilio) to
               confirm your number. We may email you a secure link to complete your project brief
-              and, after a discovery call, a personalized checkout link. Those links are personal —
+              and, after a discovery call, a personalized checkout link. Those links are personal -
               do not share them. Clicking your intake email link confirms your email address for that
               session.
             </p>
@@ -187,7 +187,7 @@ export function TermsContent() {
             <p className="text-ink-soft">
               Your project is considered complete if we do not receive feedback or revision requests
               within 14 days of delivering a draft. Completed designs are held on file for 90 days
-              — if you return within that window, we&apos;ll pick up where we left off under the
+              - if you return within that window, we&apos;ll pick up where we left off under the
               standard edit terms. After 90 days, a re-engagement fee of $349 applies to reopen the
               project.
             </p>

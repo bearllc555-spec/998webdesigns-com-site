@@ -19,7 +19,7 @@ function isMemoryDuplicate(eventId: string): boolean {
 
 /**
  * Reserve event_id before handling. Returns duplicate when Stripe retries a completed event.
- * unavailable = no Supabase or table missing — in-memory dedup applies for this instance.
+ * unavailable = no Supabase or table missing - in-memory dedup applies for this instance.
  */
 export async function claimStripeWebhookEvent(eventId: string): Promise<WebhookClaimResult> {
   if (isMemoryDuplicate(eventId)) return "duplicate";
@@ -35,7 +35,7 @@ export async function claimStripeWebhookEvent(eventId: string): Promise<WebhookC
   const msg = error.message ?? "";
   if (code === "23505" || /duplicate key/i.test(msg)) return "duplicate";
   if (code === "PGRST205" || code === "42P01" || /does not exist/i.test(msg)) {
-    console.warn("[webhook] processed_stripe_events table missing — run latest Supabase migration");
+    console.warn("[webhook] processed_stripe_events table missing - run latest Supabase migration");
     return "unavailable";
   }
 

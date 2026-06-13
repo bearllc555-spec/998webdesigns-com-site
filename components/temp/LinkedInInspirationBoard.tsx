@@ -147,7 +147,7 @@ export function LinkedInInspirationBoard() {
         <h1>LinkedIn profile inspiration</h1>
         <p>{LINKEDIN_INSPIRATION_INTRO}</p>
         <p className="temp-linkedin-hint">
-          Add, edit, or remove profiles below. Saved in this browser — use Export
+          Add, edit, or remove profiles below. Saved in this browser - use Export
           to back up or move to another device.
         </p>
       </header>

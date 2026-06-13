@@ -19,7 +19,7 @@ describe("checkout pricing", () => {
     expect(checkoutTotalCents("monthly", "card")).toBe(617794);
   });
 
-  it("due today is design only — no hosting at signup", () => {
+  it("due today is design only - no hosting at signup", () => {
     expect(checkoutDueTodayCents("monthly", "ach")).toBe(599800);
     expect(checkoutDueTodayCents("monthly", "card")).toBe(617794);
     expect(checkoutDueTodayCents("ten_year", "ach")).toBe(599800);

@@ -84,7 +84,7 @@ export function HostingManageForm() {
           </h1>
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
             Enter the email on your 998 account. We will send a one-time link to Stripe&apos;s
-            secure billing portal — update your card, view invoices, or cancel hosting (effective
+            secure billing portal - update your card, view invoices, or cancel hosting (effective
             at the end of your current billing period).
           </p>
           <p className="mt-3 text-sm text-ink-soft">

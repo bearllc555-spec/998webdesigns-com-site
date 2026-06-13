@@ -10,7 +10,7 @@ import {
 } from "@/lib/voice-demo-plumbing-constants";
 
 export const metadata: Metadata = {
-  title: `${PLUMBING_DEMO_BUSINESS_NAME} — Jarvis voice demo`,
+  title: `${PLUMBING_DEMO_BUSINESS_NAME} - Jarvis voice demo`,
   description:
     "Try Jarvis, the AI receptionist for Metro Plumbing & Drain. Book appointments, get pricing, and handle emergencies by voice.",
   robots: { index: false, follow: false },
@@ -35,7 +35,7 @@ export default function PlumbersDemoPage() {
       <main className="mx-auto max-w-3xl px-4 py-10">
         <div className="mb-8 space-y-3 text-center">
           <h1 className="font-display text-3xl font-semibold text-ink">
-            Talk to Jarvis — your plumbing receptionist
+            Talk to Jarvis - your plumbing receptionist
           </h1>
           <p className="mx-auto max-w-xl text-sm text-ink-soft">
             This demo runs on the same voice stack as 998&apos;s site assistant, wired to Metro

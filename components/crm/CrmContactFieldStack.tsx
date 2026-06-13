@@ -15,7 +15,7 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Street → line 2 → city → state → zip → cell — blanks show as em dash. */
+/** Street → line 2 → city → state → zip → cell - blanks show as em dash. */
 export function CrmContactFieldStack({ contact }: CrmContactFieldStackProps) {
   const c = contact ?? {};
   return (

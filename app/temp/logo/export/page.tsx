@@ -4,7 +4,7 @@ import "../../linkedin-export.css";
 import "../logo.css";
 
 export const metadata: Metadata = {
-  title: { absolute: "998 webdesigns logo — PNG export" },
+  title: { absolute: "998 webdesigns logo - PNG export" },
   robots: { index: false, follow: false },
 };
 
@@ -23,7 +23,7 @@ export default function TempLogoExportPage() {
         Download PNG
       </a>
       <p className="linkedin-export-caption">
-        {BANNER_LOGO.designLabel} — transparent PNG. Right-click the image →{" "}
+        {BANNER_LOGO.designLabel} - transparent PNG. Right-click the image →{" "}
         <strong>Save image as…</strong>
       </p>
     </div>

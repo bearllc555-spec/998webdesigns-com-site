@@ -6,7 +6,7 @@ import { runInboundSmsMigration } from "@/lib/pg-migrate-inbound-sms";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — create inbound_sms table (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - create inbound_sms table (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

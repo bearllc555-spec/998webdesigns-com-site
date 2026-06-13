@@ -30,7 +30,7 @@ function stripeDashboardBase(): string {
     : "https://dashboard.stripe.com/test";
 }
 
-/** New lead submitted — checkout link generated (payment may still be pending). */
+/** New lead submitted - checkout link generated (payment may still be pending). */
 export async function sendInternalLeadSubmittedEmail(
   lead: ValidatedLead,
   checkoutUrl: string,
@@ -48,10 +48,10 @@ export async function sendInternalLeadSubmittedEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] New lead — ${lead.businessName} (awaiting payment)`,
+    subject: `[998] New lead - ${lead.businessName} (awaiting payment)`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
-        <h2 style="margin: 0 0 12px;">New lead — payment not completed yet</h2>
+        <h2 style="margin: 0 0 12px;">New lead - payment not completed yet</h2>
         <p><strong>Plan:</strong> ${escapeHtml(paymentOptionLabel(lead.paymentOption))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(paymentChannelLabel(lead.paymentChannel))}</p>
         <p><strong>Checkout total:</strong> ${escapeHtml(formatCheckoutUsd(checkoutDueTodayCents(lead.hostingChoice, lead.paymentChannel, lead.promoCode, lead.paymentOption)))}</p>
@@ -68,7 +68,7 @@ export async function sendInternalLeadSubmittedEmail(
         <p><strong>Name:</strong> ${escapeHtml(lead.fullName)}</p>
         <p><strong>Company:</strong> ${lead.businessName ? escapeHtml(lead.businessName) : "&nbsp;"}</p>
         <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
-        <p><strong>Heard about us:</strong> ${escapeHtml(formatHearAboutSources(lead.hearAboutSources, lead.hearAboutOther) || "—")}</p>
+        <p><strong>Heard about us:</strong> ${escapeHtml(formatHearAboutSources(lead.hearAboutSources, lead.hearAboutOther) || "-")}</p>
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Checkout link:</strong> <a href="${escapeHtml(checkoutUrl)}">Open Stripe Checkout</a></p>
         <p><strong>Stripe session:</strong> <a href="${dash}/checkout/sessions/${checkoutSessionId}">${escapeHtml(checkoutSessionId)}</a></p>
@@ -96,7 +96,7 @@ export async function sendInternalPaymentEmail(
   const amount =
     session.amount_total != null
       ? `$${(session.amount_total / 100).toFixed(2)} ${(session.currency ?? "usd").toUpperCase()}`
-      : "—";
+      : "-";
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -107,7 +107,7 @@ export async function sendInternalPaymentEmail(
       ? "Bank (ACH)"
       : meta.paymentChannel === "card"
         ? "Card"
-        : "—";
+        : "-";
   const achNote = options?.settledAfterAch
     ? "<p style=\"font-size: 14px; color: #52525b;\">ACH settlement completed (async payment succeeded).</p>"
     : "";
@@ -115,7 +115,7 @@ export async function sendInternalPaymentEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] Paid in full — ${meta.businessName || email}`,
+    subject: `[998] Paid in full - ${meta.businessName || email}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">New checkout completed</h2>
@@ -123,12 +123,12 @@ export async function sendInternalPaymentEmail(
         <p><strong>Payment method:</strong> ${escapeHtml(channelLabel)}</p>
         ${achNote}
         <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
-        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
-        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "-")}</p>
+        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "-")}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-        <p><strong>Hosting:</strong> ${escapeHtml(meta.hostingChoice || "—")}</p>
+        <p><strong>Hosting:</strong> ${escapeHtml(meta.hostingChoice || "-")}</p>
         <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
-        <p style="font-size: 14px; color: #52525b;">Paid in full — no follow-up invoice for the design fee.</p>
+        <p style="font-size: 14px; color: #52525b;">Paid in full - no follow-up invoice for the design fee.</p>
         <p style="font-size: 14px; color: #71717a; margin-top: 24px;">Sent automatically from /api/stripe/webhook</p>
       </div>
     `,
@@ -139,7 +139,7 @@ export async function sendInternalPaymentEmail(
   }
 }
 
-/** ACH settlement failed — follow up with the customer manually. */
+/** ACH settlement failed - follow up with the customer manually. */
 export async function sendInternalAchFailedEmail(
   session: Stripe.Checkout.Session
 ): Promise<void> {
@@ -159,12 +159,12 @@ export async function sendInternalAchFailedEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] ACH payment failed — ${meta.businessName || email}`,
+    subject: `[998] ACH payment failed - ${meta.businessName || email}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">Bank payment did not settle</h2>
-        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
-        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "-")}</p>
+        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "-")}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
         <p style="font-size: 14px; color: #52525b;">Lead status set to bank_payment_failed. Contact the customer for another payment method.</p>
@@ -201,7 +201,7 @@ export async function sendInternalLifetimeHostingPaidEmail(
   const amount =
     session.amount_total != null
       ? `$${(session.amount_total / 100).toFixed(2)} ${(session.currency ?? "usd").toUpperCase()}`
-      : "—";
+      : "-";
 
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -213,7 +213,7 @@ export async function sendInternalLifetimeHostingPaidEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] 10-year hosting paid — ${meta.businessName || email}`,
+    subject: `[998] 10-year hosting paid - ${meta.businessName || email}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">10-year hosting payment cleared</h2>
@@ -221,8 +221,8 @@ export async function sendInternalLifetimeHostingPaidEmail(
         <p><strong>Payment method:</strong> ${escapeHtml(checkoutSessionPaymentLabel(session))}</p>
         ${achNote}
         <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
-        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "—")}</p>
-        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "—")}</p>
+        <p><strong>Name:</strong> ${escapeHtml(meta.fullName || "-")}</p>
+        <p><strong>Company:</strong> ${escapeHtml(meta.businessName || "-")}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Stripe session:</strong> <a href="${dashboardBase}/checkout/sessions/${session.id}">${escapeHtml(session.id)}</a></p>
         <p style="font-size: 14px; color: #52525b;">Day-31 10-year hosting payment. Hosting is active for ten years.</p>
@@ -248,7 +248,7 @@ export async function sendInternalHostingRenewalFailedEmail(
   const amount =
     invoice.amount_due != null
       ? `$${(invoice.amount_due / 100).toFixed(2)} ${(invoice.currency ?? "usd").toUpperCase()}`
-      : "—";
+      : "-";
   const customerEmail =
     (invoice as Stripe.Invoice & { customer_email?: string | null }).customer_email ??
     "(unknown)";
@@ -260,7 +260,7 @@ export async function sendInternalHostingRenewalFailedEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] Hosting renewal failed — ${customerEmail}`,
+    subject: `[998] Hosting renewal failed - ${customerEmail}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">${HOSTING_MONTHLY_PRICE_MO_LABEL} hosting payment failed</h2>
@@ -294,7 +294,7 @@ export async function sendInternalHostingCanceledEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: NOTIFY_TO,
-    subject: `[998] Hosting subscription ended — ${subscription.id}`,
+    subject: `[998] Hosting subscription ended - ${subscription.id}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <h2 style="margin: 0 0 12px;">Month-to-month hosting canceled</h2>

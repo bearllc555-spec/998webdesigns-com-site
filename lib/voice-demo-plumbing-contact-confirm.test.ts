@@ -183,7 +183,7 @@ describe("voice-demo-plumbing-contact-confirm", () => {
   it("detects scheduling chained after phone read-back", () => {
     expect(
       assistantChainedSchedulingAfterPhone(
-        "2 0 1 5 5 5 1 2 3 4 — is that right? What day works for you?"
+        "2 0 1 5 5 5 1 2 3 4 - is that right? What day works for you?"
       )
     ).toBe(true);
     expect(

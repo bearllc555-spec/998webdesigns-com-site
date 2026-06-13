@@ -1,6 +1,6 @@
 import { isAssistantFarewell } from "@/lib/voice-demo-farewell";
 
-/** Fixed wrap-up question cycle — Q1→Q5, then repeat. */
+/** Fixed wrap-up question cycle - Q1→Q5, then repeat. */
 export const VOICE_DEMO_WRAPUP_QUESTIONS = [
   "Is there anything else I can help you with today?",
   "Do you have any other questions?",
@@ -9,10 +9,10 @@ export const VOICE_DEMO_WRAPUP_QUESTIONS = [
   "Did I address all your concerns today?",
 ] as const;
 
-/** Hidden client cue — never spoken aloud; nudges Jarvis to ask the next wrap-up question. */
+/** Hidden client cue - never spoken aloud; nudges Jarvis to ask the next wrap-up question. */
 export const VOICE_DEMO_WRAPUP_READY_CUE = "[wrapup-ready]";
 
-/** @deprecated Use VOICE_DEMO_WRAPUP_READY_CUE — old tag caused Jarvis to say "pause" aloud. */
+/** @deprecated Use VOICE_DEMO_WRAPUP_READY_CUE - old tag caused Jarvis to say "pause" aloud. */
 export const VOICE_DEMO_WRAPUP_PAUSE_CUE = VOICE_DEMO_WRAPUP_READY_CUE;
 
 /** Comfortable beat after a substantive FAQ answer before the next wrap-up question (ms). */
@@ -55,7 +55,7 @@ const SMALL_TALK_REPLY_PATTERNS = [
   /\bpleasure to (meet|speak|talk)\b/i,
 ];
 
-/** Visitor pleasantry — not a product/FAQ question. */
+/** Visitor pleasantry - not a product/FAQ question. */
 export function isUserSmallTalk(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
@@ -64,7 +64,7 @@ export function isUserSmallTalk(text: string): boolean {
   return false;
 }
 
-/** Visitor asked about 998 services — eligible for post-answer wrap-up later. */
+/** Visitor asked about 998 services - eligible for post-answer wrap-up later. */
 export function isUserSubstantiveQuestion(text: string): boolean {
   const t = text.trim();
   if (!t || isUserSmallTalk(t)) return false;
@@ -73,7 +73,7 @@ export function isUserSubstantiveQuestion(text: string): boolean {
   return false;
 }
 
-/** Assistant answered small talk only — no wrap-up yet. */
+/** Assistant answered small talk only - no wrap-up yet. */
 export function isAssistantSmallTalkReply(text: string): boolean {
   const trimmed = text.trim();
   if (!trimmed || isAssistantWrapUpQuestion(trimmed)) return false;
@@ -115,7 +115,7 @@ export function shouldScheduleWrapUpAfterAnswer(
   return true;
 }
 
-/** Jarvis read a hidden cue or meta instruction aloud — recover with the real wrap-up line. */
+/** Jarvis read a hidden cue or meta instruction aloud - recover with the real wrap-up line. */
 export function isAssistantHiddenCueLeak(text: string): boolean {
   const t = text.trim();
   if (!t) return false;
@@ -137,7 +137,7 @@ export function wrapUpQuestionAtIndex(index: number): string {
 export function buildWrapUpPauseNudge(questionIndex = 0): string {
   const q = wrapUpQuestionAtIndex(questionIndex);
   return (
-    `${VOICE_DEMO_WRAPUP_READY_CUE} Say ONLY this exact question — no preamble, no meta commentary: ` +
+    `${VOICE_DEMO_WRAPUP_READY_CUE} Say ONLY this exact question - no preamble, no meta commentary: ` +
     `"${q}" STOP and wait for their answer. ` +
     `Never read bracketed tags aloud. Never say the word pause.`
   );
@@ -146,7 +146,7 @@ export function buildWrapUpPauseNudge(questionIndex = 0): string {
 export function buildWrapUpCueLeakRecoveryNudge(questionIndex = 0): string {
   const q = wrapUpQuestionAtIndex(questionIndex);
   return (
-    `[wrapup-cue-leak] You leaked a hidden system tag or said pause — visitor heard gibberish. ` +
+    `[wrapup-cue-leak] You leaked a hidden system tag or said pause - visitor heard gibberish. ` +
     `Apologize briefly for the hiccup, then say ONLY: "${q}" STOP and wait. ` +
     `Do not end the call. Do not read any bracketed text aloud.`
   );

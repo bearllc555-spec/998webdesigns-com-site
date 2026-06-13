@@ -1,4 +1,4 @@
--- Metro Plumbing & Drain demo — appointments booked via Jarvis on /demo/plumbers
+-- Metro Plumbing & Drain demo - appointments booked via Jarvis on /demo/plumbers
 create table if not exists public.jarvis_plumbing_jobs (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references public.voice_demo_leads (id) on delete cascade,

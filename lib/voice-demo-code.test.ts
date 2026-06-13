@@ -73,7 +73,7 @@ describe("voice demo farewell", () => {
   it("detects assistant sign-off", () => {
     expect(isAssistantFarewell("Have a pleasant day, sir.")).toBe(true);
     expect(
-      isAssistantFarewell("Thank you for contacting 998 web designs — goodbye.")
+      isAssistantFarewell("Thank you for contacting 998 web designs - goodbye.")
     ).toBe(true);
     expect(isAssistantFarewell("Hosting is $98 per month.")).toBe(false);
     expect(
@@ -81,14 +81,14 @@ describe("voice demo farewell", () => {
     ).toBe(false);
     expect(isAssistantFarewell("We take care of hosting, SSL, and updates.")).toBe(false);
     expect(isAssistantFarewell("I'll take care of that for you, sir.")).toBe(false);
-    expect(isAssistantFarewell("Take care, sir — goodbye.")).toBe(true);
+    expect(isAssistantFarewell("Take care, sir - goodbye.")).toBe(true);
     expect(
       isAssistantFarewell(
-        "We build custom websites for local businesses, sir — mobile-friendly pages, hosting included. It is my pleasure assisting you with your website design needs."
+        "We build custom websites for local businesses, sir - mobile-friendly pages, hosting included. It is my pleasure assisting you with your website design needs."
       )
     ).toBe(false);
     expect(
-      isAssistantExplicitGoodbye("Thank you for contacting 998 web designs — goodbye.")
+      isAssistantExplicitGoodbye("Thank you for contacting 998 web designs - goodbye.")
     ).toBe(true);
     const hangupOpts = (overrides: Record<string, unknown> = {}) => ({
       visitorExplicitlyDone: false,
@@ -107,7 +107,7 @@ describe("voice demo farewell", () => {
       )
     ).toBe(true);
     const serviceAnswer =
-      "We build custom websites for local businesses, sir — mobile-friendly pages, hosting included, and a clear design timeline. Our design fee covers strategy, copy, and launch on 998 hosting.";
+      "We build custom websites for local businesses, sir - mobile-friendly pages, hosting included, and a clear design timeline. Our design fee covers strategy, copy, and launch on 998 hosting.";
     expect(
       shouldClientScheduleFarewellHangup(
         serviceAnswer,
@@ -130,7 +130,7 @@ describe("voice demo farewell", () => {
     expect(isUserExplicitlyDone("What is hosting?")).toBe(false);
   });
 
-  it("blocks model end_conversation — client owns hangup", () => {
+  it("blocks model end_conversation - client owns hangup", () => {
     expect(
       canModelEndConversation({
         farewellSent: false,
@@ -144,7 +144,7 @@ describe("voice demo farewell", () => {
         farewellSent: true,
         goodbyeNudgeSent: true,
         visitorExplicitlyDone: true,
-        assistantText: "Thank you for contacting 998 web designs — goodbye.",
+        assistantText: "Thank you for contacting 998 web designs - goodbye.",
       })
     ).toBe(false);
   });

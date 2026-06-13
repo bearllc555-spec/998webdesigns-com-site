@@ -86,7 +86,7 @@ export function CrmInboxFlagButton({
         e.stopPropagation();
         onCycle();
       }}
-      title={`${crmInboxFlagLabel(flag)} — click to change`}
+      title={`${crmInboxFlagLabel(flag)} - click to change`}
       aria-label={`${crmInboxFlagLabel(flag)}. Click to cycle flag.`}
       className={`crm-inbox-flag-btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition hover:bg-rule-soft/80 disabled:opacity-50 ${className}`}
     >

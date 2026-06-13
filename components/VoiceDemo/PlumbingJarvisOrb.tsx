@@ -12,7 +12,7 @@ type PlumbingJarvisOrbProps = {
   connecting: boolean;
 };
 
-/** Plumbing voice orb — hollow center, blurred dash when idle, hot rim when speaking. */
+/** Plumbing voice orb - hollow center, blurred dash when idle, hot rim when speaking. */
 export function PlumbingJarvisOrb({
   levels,
   speaking,
@@ -36,7 +36,7 @@ export function PlumbingJarvisOrb({
 
   return (
     <div className="relative flex h-28 w-28 items-center justify-center" aria-hidden>
-      {/* Card halo — exaggerated when Jarvis speaks */}
+      {/* Card halo - exaggerated when Jarvis speaks */}
       <div
         className="pointer-events-none absolute inset-0 rounded-full"
         style={{
@@ -48,7 +48,7 @@ export function PlumbingJarvisOrb({
         }}
       />
 
-      {/* Outer voice ring — only while Jarvis speaks */}
+      {/* Outer voice ring - only while Jarvis speaks */}
       {speaking && (
         <div
           className="pointer-events-none absolute rounded-full border border-sky-200"
@@ -62,7 +62,7 @@ export function PlumbingJarvisOrb({
         />
       )}
 
-      {/* Hollow ring — center stays blank (card shows through) */}
+      {/* Hollow ring - center stays blank (card shows through) */}
       <div
         className="pointer-events-none absolute rounded-full bg-transparent"
         style={{
@@ -75,7 +75,7 @@ export function PlumbingJarvisOrb({
         }}
       />
 
-      {/* Idle — blurred dash travels the rim */}
+      {/* Idle - blurred dash travels the rim */}
       {idleAlive && (
         <div className="pointer-events-none absolute inset-[4px] animate-[plumbing-orb-orbit_6.5s_linear_infinite]">
           <div

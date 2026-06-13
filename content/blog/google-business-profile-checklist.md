@@ -17,11 +17,11 @@ Do this before you touch anything else on the web.
 1. **Claim and verify the listing.** If you are not the verified owner, a competitor or a random customer effectively controls your brand on Google.
 2. **Pick one primary category that matches what you actually sell.** "Contractor" is vague. "Plumber" or "Landscape designer" is better. Add secondary categories only if they are real services you book.
 3. **Write a plain-language description.** Two or three sentences: what you do, where you work, what makes you easy to hire. No keyword stuffing.
-4. **Set service areas or an address — honestly.** Fake virtual offices get listings suspended. If you are mobile-only, use service areas.
+4. **Set service areas or an address - honestly.** Fake virtual offices get listings suspended. If you are mobile-only, use service areas.
 5. **Add a booking or contact path.** Phone number, contact form URL, or online booking link. Match what you answer fastest.
-6. **Upload six real photos minimum.** Storefront or wrapped truck, team on a job, finished work, equipment. Skip stock photography — it reads as empty.
+6. **Upload six real photos minimum.** Storefront or wrapped truck, team on a job, finished work, equipment. Skip stock photography - it reads as empty.
 7. **Turn on messaging only if someone checks it daily.** An unanswered message is worse than no message option.
-8. **Post once this week.** A single update — seasonal tip, a completed job, holiday hours. Stale profiles look abandoned.
+8. **Post once this week.** A single update - seasonal tip, a completed job, holiday hours. Stale profiles look abandoned.
 
 ## What moves the needle after the basics
 
@@ -35,7 +35,7 @@ Do this before you touch anything else on the web.
 
 ## Common mistakes
 
-- **Duplicate listings** for the same business — pick one, merge or remove the rest.
+- **Duplicate listings** for the same business - pick one, merge or remove the rest.
 - **Keyword-stuffed business names** like "Joe's Plumbing - Best Emergency Plumber NYC Cheap." Google penalizes this.
 - **A website link that 404s or goes to a Facebook page with no phone number.** The click should land somewhere that converts.
 

@@ -32,7 +32,7 @@ async function sendTelegramHtmlToChat(
 export async function sendTelegramHtml(html: string): Promise<void> {
   const { botToken, chatIds } = await loadTelegramConfig();
   if (!botToken || chatIds.length === 0) {
-    console.warn("[telegram] bot token or chat id(s) missing — skip notify");
+    console.warn("[telegram] bot token or chat id(s) missing - skip notify");
     return;
   }
 

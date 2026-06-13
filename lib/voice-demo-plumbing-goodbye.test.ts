@@ -31,7 +31,7 @@ describe("voice-demo-plumbing-goodbye", () => {
   it("detects plumbing assistant farewell phrasing", () => {
     expect(
       isPlumbingAssistantFarewell(
-        "Thanks for calling Metro Plumbing and Drain — goodbye!"
+        "Thanks for calling Metro Plumbing and Drain - goodbye!"
       )
     ).toBe(true);
     expect(isPlumbingAssistantFarewell("Your appointment is Thursday at 2.")).toBe(
@@ -42,7 +42,7 @@ describe("voice-demo-plumbing-goodbye", () => {
   it("does not treat the mandatory opening as farewell", () => {
     expect(
       isPlumbingAssistantFarewell(
-        "Thanks for calling Metro Plumbing and Drain — I'm Jarvis. How can I help you today?"
+        "Thanks for calling Metro Plumbing and Drain - I'm Jarvis. How can I help you today?"
       )
     ).toBe(false);
   });

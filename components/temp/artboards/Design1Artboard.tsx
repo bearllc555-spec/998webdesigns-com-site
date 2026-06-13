@@ -21,7 +21,7 @@ export function Design1Artboard() {
           </h1>
           <p className="tagline">
             <strong>High-converting websites</strong>
-            <span className="tagline-sub">Built in 7 business days — no agency bloat.</span>
+            <span className="tagline-sub">Built in 7 business days - no agency bloat.</span>
           </p>
         </div>
 

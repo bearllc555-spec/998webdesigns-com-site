@@ -33,7 +33,7 @@ describe("voice-demo-promo-offer", () => {
 
 describe("promo consent blocks client hangup", () => {
   const bundled =
-    `${VOICE_DEMO_PROMO_EMAIL_ASK_LINE} Thank you for contacting 998 web designs — goodbye.`;
+    `${VOICE_DEMO_PROMO_EMAIL_ASK_LINE} Thank you for contacting 998 web designs - goodbye.`;
 
   it("blocks hangup while awaiting promo consent even if visitor is done", () => {
     expect(

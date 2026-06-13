@@ -1,4 +1,4 @@
-/** Lead form — "Where did you hear about us?" checkbox options. */
+/** Lead form - "Where did you hear about us?" checkbox options. */
 export const HEAR_ABOUT_SOURCES = [
   "LinkedIn",
   "X.com",

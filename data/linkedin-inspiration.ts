@@ -14,7 +14,7 @@ export const LINKEDIN_INSPIRATION_PROFILES: LinkedInInspirationProfile[] = [
     name: "Anthony De Meo",
     href: "https://www.linkedin.com/in/anthony-de-meo-285999397/",
     summary:
-      "Founder of 998 web designs — growth systems for local service businesses. Handcrafted sites from $5,998, 7-day delivery, and clear offer positioning (LINKEDIN20) on the live profile banner.",
+      "Founder of 998 web designs - growth systems for local service businesses. Handcrafted sites from $5,998, 7-day delivery, and clear offer positioning (LINKEDIN20) on the live profile banner.",
   },
   {
     name: "Jaydeep Dobariya",

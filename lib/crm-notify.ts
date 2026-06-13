@@ -16,18 +16,18 @@ export type CrmNotifyKind =
   | "blog_published";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
-  lead_submitted: "New lead — form submitted",
-  lead_checkout: "Lead — checkout link sent",
-  lead_paid: "Lead — paid in full",
-  lead_ach_pending: "Lead — ACH pending settlement",
-  lead_ach_failed: "Lead — ACH failed",
-  lead_hosting_payment_failed: "Hosting — renewal failed",
-  lead_hosting_canceled: "Hosting — subscription ended",
-  lifetime_hosting_paid: "10-year hosting — paid",
-  lifetime_hosting_ach_pending: "10-year hosting — ACH pending",
+  lead_submitted: "New lead - form submitted",
+  lead_checkout: "Lead - checkout link sent",
+  lead_paid: "Lead - paid in full",
+  lead_ach_pending: "Lead - ACH pending settlement",
+  lead_ach_failed: "Lead - ACH failed",
+  lead_hosting_payment_failed: "Hosting - renewal failed",
+  lead_hosting_canceled: "Hosting - subscription ended",
+  lifetime_hosting_paid: "10-year hosting - paid",
+  lifetime_hosting_ach_pending: "10-year hosting - ACH pending",
   contact: "Contact form",
   inbound_sms: "Inbound SMS",
-  blog_published: "Blog — new post published",
+  blog_published: "Blog - new post published",
 };
 
 export type CrmNotifyInput = {
@@ -65,7 +65,7 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
   ];
 
   if (input.fullName) lines.push(telegramLine("Name", input.fullName));
-  lines.push(telegramLine("Company", input.businessName?.trim() || "—"));
+  lines.push(telegramLine("Company", input.businessName?.trim() || "-"));
   if (input.email) lines.push(telegramLine("Email", input.email));
   if (input.phone) lines.push(telegramLine("Phone", input.phone));
   if (input.status) lines.push(telegramLine("Status", input.status));

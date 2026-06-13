@@ -4,7 +4,7 @@ import {
 } from "@/lib/voice-demo-phase";
 import { isAssistantHiddenCueLeak } from "@/lib/voice-demo-wrapup-nudge";
 
-/** Visitor said they are finished — allows end_conversation after farewell. */
+/** Visitor said they are finished - allows end_conversation after farewell. */
 export function isUserExplicitlyDone(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
@@ -15,15 +15,15 @@ export function isUserExplicitlyDone(text: string): boolean {
   );
 }
 
-/** @deprecated Demo hangup is client-owned — see lib/voice-demo-phase.ts */
+/** @deprecated Demo hangup is client-owned - see lib/voice-demo-phase.ts */
 export { canModelEndConversation } from "@/lib/voice-demo-phase";
 
-/** Visitor echoed goodbye after Jarvis already closed — end the call, do not reply again. */
+/** Visitor echoed goodbye after Jarvis already closed - end the call, do not reply again. */
 export function isUserFarewellEcho(text: string): boolean {
   return isVisitorFarewellAck(text);
 }
 
-/** Caller echoed goodbye/thanks after Jarvis signed off — fast disconnect (all demos). */
+/** Caller echoed goodbye/thanks after Jarvis signed off - fast disconnect (all demos). */
 export function isVisitorFarewellAck(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
@@ -36,19 +36,19 @@ export function isVisitorFarewellAck(text: string): boolean {
   );
 }
 
-/** Hidden cue — farewell already spoken; model must stay silent. */
+/** Hidden cue - farewell already spoken; model must stay silent. */
 export const VOICE_DEMO_FAREWELL_HOLD_CUE = "[farewell-hold]";
 
 export function buildFarewellHoldNudge(): string {
   return (
-    `${VOICE_DEMO_FAREWELL_HOLD_CUE} You already said goodbye. Stay completely silent — ` +
+    `${VOICE_DEMO_FAREWELL_HOLD_CUE} You already said goodbye. Stay completely silent - ` +
     `do not say "thank you for contacting" again. Do not call end_conversation again. The call is ending.`
   );
 }
 
 const FAREWELL_TAIL_CHARS = 240;
 
-/** Sign-offs are spoken at the end of a turn — ignore earlier small-talk in the same turn. */
+/** Sign-offs are spoken at the end of a turn - ignore earlier small-talk in the same turn. */
 export function assistantFarewellTail(text: string): string {
   const trimmed = text.trim();
   if (trimmed.length <= FAREWELL_TAIL_CHARS) return trimmed;
@@ -77,7 +77,7 @@ export function isSubstantiveServiceSpeech(text: string): boolean {
   );
 }
 
-/** Canonical sign-off — safe to end the call (thank-you line or explicit goodbye). */
+/** Canonical sign-off - safe to end the call (thank-you line or explicit goodbye). */
 export function isAssistantExplicitGoodbye(text: string): boolean {
   const tail = assistantFarewellTail(text).toLowerCase();
   if (!tail || isAssistantOnboardingOrHelpSpeech(text)) return false;
@@ -97,7 +97,7 @@ export function isAssistantFarewellPhrase(text: string): boolean {
   if (/\bhave a pleasant (day|evening)\b/.test(t)) return true;
   if (/\bgood evening\b/.test(t) && /\b(goodbye|contacting)\b/.test(t)) return true;
 
-  // "take care" as a sign-off — not "take care of your website / hosting"
+  // "take care" as a sign-off - not "take care of your website / hosting"
   if (/\btake care\b/.test(t) && !/\btake care of\b/.test(t)) return true;
 
   return false;
@@ -109,7 +109,7 @@ export function isAssistantFarewell(text: string): boolean {
   return isAssistantFarewellPhrase(assistantFarewellTail(text));
 }
 
-/** Client auto-hangup — delegates to phase-aware rules (no stray FAQ sign-off). */
+/** Client auto-hangup - delegates to phase-aware rules (no stray FAQ sign-off). */
 export function shouldClientScheduleFarewellHangup(
   text: string,
   opts: {

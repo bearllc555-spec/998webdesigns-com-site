@@ -1,9 +1,9 @@
 /**
- * 998WebDesigns — AgentMail Auto-Responder
+ * 998WebDesigns - AgentMail Auto-Responder
  * Cloudflare Worker
  *
  * Triggered instantly by AgentMail webhooks on message.received.
- * AgentMail delivers via Svix — verify svix-* headers, not x-webhook-secret.
+ * AgentMail delivers via Svix - verify svix-* headers, not x-webhook-secret.
  */
 
 import { Webhook } from "svix";
@@ -68,7 +68,7 @@ function buildReplyText(originalMessage) {
 
 Thank you for reaching out to 998WebDesigns!
 
-I'm Anthony's AI agent — I'm writing to let you know that your message has been received loud and clear. Anthony will personally review it and get back to you shortly.
+I'm Anthony's AI agent - I'm writing to let you know that your message has been received loud and clear. Anthony will personally review it and get back to you shortly.
 
 In the meantime, feel free to visit our website or reply to this email if you have anything to add.
 
@@ -90,7 +90,7 @@ function buildReplyHtml(originalMessage) {
   <p>${greeting}</p>
   <p>Thank you for reaching out to <strong>998WebDesigns</strong>!</p>
   <p>
-    I'm Anthony's AI agent — I'm writing to let you know that your message has been received
+    I'm Anthony's AI agent - I'm writing to let you know that your message has been received
     loud and clear. Anthony will personally review it and get back to you shortly.
   </p>
   <p>
@@ -158,7 +158,7 @@ async function sendAutoReply(message, apiKey) {
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`AgentMail send failed: ${response.status} — ${err}`);
+    throw new Error(`AgentMail send failed: ${response.status} - ${err}`);
   }
 
   return await response.json();
@@ -176,7 +176,7 @@ function verifyWebhook(request, rawBody, env) {
     return;
   }
 
-  // Legacy fallback — AgentMail does not send this header by default.
+  // Legacy fallback - AgentMail does not send this header by default.
   const legacySecret = env.WEBHOOK_SECRET?.trim();
   if (!legacySecret) return;
 

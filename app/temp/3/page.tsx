@@ -11,7 +11,7 @@ export default function TempV3Page() {
       <BannerDesignNav />
 
       <LinkedInBannerPreview
-        designLabel="Design 3 — Manhattan · frosted offer"
+        designLabel="Design 3 - Manhattan · frosted offer"
         exportHref="/temp/3/export"
       >
         <Design3Artboard />

@@ -1,5 +1,5 @@
 /**
- * Promo codes — design fee and (when noted) 10-year hosting.
+ * Promo codes - design fee and (when noted) 10-year hosting.
  * Percent codes apply to design only. Fixed codes use cents off list prices.
  */
 export type DesignPromoEntry = {
@@ -10,7 +10,7 @@ export type DesignPromoEntry = {
   fixedDesignOffCents?: number;
   /** Only valid when lead selects 10-year hosting. */
   requiresTenYearHosting?: boolean;
-  /** Cents off list 10-year hosting ($2,996) — bundle codes only. */
+  /** Cents off list 10-year hosting ($2,996) - bundle codes only. */
   fixedTenYearHostingOffCents?: number;
   /** Last valid calendar day (America/New_York), YYYY-MM-DD inclusive. */
   expiresOn?: string;

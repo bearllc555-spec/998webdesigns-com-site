@@ -28,7 +28,7 @@ export async function sendContactConfirmationEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <hello@998webdesigns.com>",
     to: input.email,
-    subject: "Thank you for reaching out — 998 web designs",
+    subject: "Thank you for reaching out - 998 web designs",
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <p>Hi ${escapeHtml(input.name)},</p>

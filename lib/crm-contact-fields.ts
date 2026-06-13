@@ -10,7 +10,7 @@ export type CrmContactFields = {
 
 export function displayCrmContactValue(value: string | null | undefined): string {
   const t = value?.trim();
-  return t ? t : "—";
+  return t ? t : "-";
 }
 
 export function assemblePlumbingServiceAddress(parts: CrmContactFields): string | null {

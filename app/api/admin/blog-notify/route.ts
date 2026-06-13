@@ -6,7 +6,7 @@ import { enforceAdminRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — record blog post in CRM + Telegram. Bearer: BALANCE_CAPTURE_SECRET. Body: { slug, forceNotify? } */
+/** POST - record blog post in CRM + Telegram. Bearer: BALANCE_CAPTURE_SECRET. Body: { slug, forceNotify? } */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

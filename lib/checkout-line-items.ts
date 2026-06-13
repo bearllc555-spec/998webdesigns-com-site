@@ -22,14 +22,14 @@ function designLineItem(lead: ValidatedLead): Stripe.Checkout.SessionCreateParam
     ? `50% deposit today; 40% after design approval; 10% at launch (${totalLabel}).`
     : FULL_PRODUCT.description;
   const description = promo
-    ? `${scheduleNote} (${promo.code} — ${promoLabel})`
+    ? `${scheduleNote} (${promo.code} - ${promoLabel})`
     : scheduleNote;
 
   return {
     price_data: {
       currency: "usd",
       product_data: {
-        name: isDeposit ? "Website Design — 50% deposit" : FULL_PRODUCT.name,
+        name: isDeposit ? "Website Design - 50% deposit" : FULL_PRODUCT.name,
         description,
       },
       unit_amount: amount,

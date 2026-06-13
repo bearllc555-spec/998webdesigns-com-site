@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   }
   const body = parsed.body as LeadPayload;
 
-  // Honeypot — silently accept and discard
+  // Honeypot - silently accept and discard
   if (body.website && typeof body.website === "string" && body.website.length > 0) {
     return NextResponse.json({ ok: true, ignored: true });
   }

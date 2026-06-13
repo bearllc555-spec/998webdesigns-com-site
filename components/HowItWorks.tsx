@@ -4,23 +4,23 @@ const steps = [
   {
     n: "01",
     title: "Fill out the form",
-    body: "Tell us about your business — who you serve, what you do, what you want the site to do for you. If you'd like add-ons at launch — SEO, chatbot, booking calendar, and more — select them here and we'll scope everything into one timeline.",
+    body: "Tell us about your business - who you serve, what you do, what you want the site to do for you. If you'd like add-ons at launch - SEO, chatbot, booking calendar, and more - select them here and we'll scope everything into one timeline.",
     cta: true,
   },
   {
     n: "02",
     title: "Pay through Stripe",
-    body: `On the last form step, pick monthly or 10-year hosting, then pay the 50% design deposit — your first ${HOSTING_TRIAL_DAYS} days of hosting are free. The remaining 40% and 10% are invoiced at the milestones on our pricing page. Card is default; bank transfer avoids the 3% fee on the amount due today. Hosting billing starts ${HOSTING_TRIAL_DAYS} days after your deposit clears (${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 for 10-year; domain .com/.net/.org included with 10-year). The design clock starts when the deposit clears (bank transfers may take a few business days).`,
+    body: `On the last form step, pick monthly or 10-year hosting, then pay the 50% design deposit - your first ${HOSTING_TRIAL_DAYS} days of hosting are free. The remaining 40% and 10% are invoiced at the milestones on our pricing page. Card is default; bank transfer avoids the 3% fee on the amount due today. Hosting billing starts ${HOSTING_TRIAL_DAYS} days after your deposit clears (${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 for 10-year; domain .com/.net/.org included with 10-year). The design clock starts when the deposit clears (bank transfers may take a few business days).`,
   },
   {
     n: "03",
     title: "We build your site",
-    body: "We build your site in 7 business days. If you selected add-ons, setup runs in parallel — most add-ons go live within 1–3 business days of site delivery. Full-stack builds (3 or more add-ons) are delivered within 14 business days.",
+    body: "We build your site in 7 business days. If you selected add-ons, setup runs in parallel - most add-ons go live within 1–3 business days of site delivery. Full-stack builds (3 or more add-ons) are delivered within 14 business days.",
   },
   {
     n: "04",
     title: "Approve and go live",
-    body: "You approve the draft and we launch the same day. The 40% milestone is due at development start; only the scheduled 10% remains at handover — no surprise line items at approval.",
+    body: "You approve the draft and we launch the same day. The 40% milestone is due at development start; only the scheduled 10% remains at handover - no surprise line items at approval.",
   },
 ];
 
@@ -64,7 +64,7 @@ export function HowItWorks() {
           ))}
         </ol>
 
-        {/* What Comes Next — post-steps fork */}
+        {/* What Comes Next - post-steps fork */}
         <div className="mt-10">
           <p className="mb-4 text-xs font-medium uppercase tracking-widest text-accent">
             What Comes Next
@@ -83,7 +83,7 @@ export function HowItWorks() {
                 Keep growing
               </p>
               <p className="text-sm text-ink-soft">
-                Add-ons you selected go live within 1–3 days of your site. New ones can be added any time — each one compounds the last.
+                Add-ons you selected go live within 1–3 days of your site. New ones can be added any time - each one compounds the last.
               </p>
             </div>
           </div>

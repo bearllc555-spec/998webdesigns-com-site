@@ -9,7 +9,7 @@ describe("formatVoiceDemoOpsTimeline", () => {
         at: "2026-06-07T16:00:00.000Z",
         kind: "session_anomaly",
         severity: "warn",
-        message: "Gemini goAway — reconnecting before disconnect",
+        message: "Gemini goAway - reconnecting before disconnect",
         meta: { attempt: 2 },
       },
     ];

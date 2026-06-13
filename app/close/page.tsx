@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { CloseCheckoutClient } from "@/components/discovery/CloseCheckoutClient";
 
 export const metadata: Metadata = {
-  title: "Your checkout — 998 web designs",
+  title: "Your checkout - 998 web designs",
   robots: { index: false, follow: false },
 };
 

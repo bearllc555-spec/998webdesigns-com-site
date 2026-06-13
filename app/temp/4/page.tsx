@@ -11,7 +11,7 @@ export default function TempV4Page() {
       <BannerDesignNav />
 
       <LinkedInBannerPreview
-        designLabel="Design 4 — wireframe + slanted offer (LinkedIn reference)"
+        designLabel="Design 4 - wireframe + slanted offer (LinkedIn reference)"
         exportHref="/temp/4/export"
       >
         <Design4Artboard />

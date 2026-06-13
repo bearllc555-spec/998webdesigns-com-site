@@ -86,7 +86,7 @@ export function CloseCheckoutClient({ token }: { token: string }) {
     <div className="mx-auto max-w-xl">
       <h1 className="font-display text-3xl font-medium text-ink md:text-4xl">Your checkout</h1>
       <p className="mt-4 text-ink-soft">
-        Hi {data.fullName} — here is the package we configured for{" "}
+        Hi {data.fullName} - here is the package we configured for{" "}
         <strong>{data.businessName}</strong> on our call.
       </p>
       <ul className="mt-8 space-y-2 text-sm text-ink-soft">

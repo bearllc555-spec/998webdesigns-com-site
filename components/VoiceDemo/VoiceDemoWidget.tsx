@@ -34,11 +34,11 @@ export function VoiceDemoWidget() {
     onPhaseTransition: (transition) => {
       if (transition.kind === "verified") {
         setPhase("demo");
-        setStatus("Verified — ask Jarvis anything about 998.");
+        setStatus("Verified - ask Jarvis anything about 998.");
       }
     },
     onUnexpectedClose: () => {
-      setStatus("Session paused — tap Start voice to continue.");
+      setStatus("Session paused - tap Start voice to continue.");
     },
     onConversationEnd: () => {
       setCaption(null);
@@ -167,7 +167,7 @@ export function VoiceDemoWidget() {
       }
       setTypedCode("");
       setPhase("demo");
-      setStatus("Verified — tap Start voice to talk with Jarvis.");
+      setStatus("Verified - tap Start voice to talk with Jarvis.");
     } catch {
       setFormError("Network error.");
     } finally {
@@ -260,7 +260,7 @@ export function VoiceDemoWidget() {
                 <form onSubmit={startDemo} className="space-y-4">
                   <p className="text-sm text-ink-soft">
                     Enter your email to try Jarvis. We&apos;ll send a verification code, then chat
-                    about 998 — Jarvis may ask your name and US mobile number to build your profile.
+                    about 998 - Jarvis may ask your name and US mobile number to build your profile.
                     If you share your number and accept a promo offer, you may receive a one-time
                     SMS. Up to 3 voice demos per day per email.
                   </p>

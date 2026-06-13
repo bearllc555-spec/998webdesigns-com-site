@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const url = `https://998webdesigns.com/blog/${slug}`;
 
   return {
-    title: `${post.title} — 998 web designs`,
+    title: `${post.title} - 998 web designs`,
     description: post.description,
     robots: { index: true, follow: true },
     openGraph: {

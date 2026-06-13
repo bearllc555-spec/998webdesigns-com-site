@@ -7,7 +7,7 @@ import { portfolio, type PortfolioItem } from "@/data/portfolio";
 const LOOP_COPIES = 2;
 const loopPortfolio = Array.from({ length: LOOP_COPIES }, () => portfolio).flat();
 
-/** Target drift speed — duration is derived from one copy width ÷ this. */
+/** Target drift speed - duration is derived from one copy width ÷ this. */
 const MARQUEE_SPEED_PX_S = 28;
 
 const CARD_WIDTH =
@@ -275,7 +275,7 @@ function PortfolioPreview({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={item.thumbnail}
-        alt={`${item.name} — ${item.industry}`}
+        alt={`${item.name} - ${item.industry}`}
         loading="lazy"
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-top thumb-img--pan transition-opacity duration-300"

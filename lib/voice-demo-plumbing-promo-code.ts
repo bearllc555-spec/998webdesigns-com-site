@@ -2,12 +2,12 @@ import { randomBytes } from "node:crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getLatestPlumbingJobForLead } from "@/lib/voice-demo-plumbing-db";
 
-/** Client-facing coupon prefix — Metro Plumbing & Drain demo. */
+/** Client-facing coupon prefix - Metro Plumbing & Drain demo. */
 export const PLUMBING_PROMO_CODE_PREFIX = "MPD-";
 
 const PROMO_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-/** e.g. MPD-K7N2P4 — avoids O/0 and I/1 for phone/readability. */
+/** e.g. MPD-K7N2P4 - avoids O/0 and I/1 for phone/readability. */
 export function generatePlumbingPromoCode(): string {
   const bytes = randomBytes(6);
   let suffix = "";

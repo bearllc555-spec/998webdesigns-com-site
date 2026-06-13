@@ -6,7 +6,7 @@ import { runBlogPostsMigration } from "@/lib/pg-migrate-blog-posts";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — create blog_posts table (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - create blog_posts table (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

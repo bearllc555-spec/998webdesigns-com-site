@@ -4,11 +4,11 @@
 
 ## You are already set up for day-to-day use
 
-- **Vercel** ↔ Supabase helmet (env vars) — connected in Integrations
+- **Vercel** ↔ Supabase helmet (env vars) - connected in Integrations
 - **Tables** on production: `wd_leads`, `contact_submissions`, `api_rate_limits`
-- **App** reads/writes via API routes — no GitHub required
+- **App** reads/writes via API routes - no GitHub required
 
-## Supabase dashboard “GitHub” form — optional
+## Supabase dashboard “GitHub” form - optional
 
 You can **ignore** it or leave as-is (repo + working directory `.` + **Deploy to production** ON).
 

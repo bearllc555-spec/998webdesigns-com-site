@@ -5,14 +5,14 @@ import { BlogPostCard } from "@/components/blog/BlogPostCard";
 import { getAllPosts } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: "Field notes — 998 web designs",
+  title: "Field notes - 998 web designs",
   description:
-    "Practical advice for local service businesses — websites, Google Business Profile, local SEO, and getting the phone to ring.",
+    "Practical advice for local service businesses - websites, Google Business Profile, local SEO, and getting the phone to ring.",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Field notes — 998 web designs",
+    title: "Field notes - 998 web designs",
     description:
-      "Practical advice for local service businesses — websites, Google Business Profile, local SEO, and getting the phone to ring.",
+      "Practical advice for local service businesses - websites, Google Business Profile, local SEO, and getting the phone to ring.",
     url: "https://998webdesigns.com/blog",
   },
 };
@@ -37,7 +37,7 @@ export default function BlogIndexPage() {
                 Practical advice for local businesses that want the phone to ring.
               </h1>
               <p className="mt-5 text-lg leading-relaxed text-ink-soft">
-                No fluff — websites, Google Business Profile, local search, and what
+                No fluff - websites, Google Business Profile, local search, and what
                 actually moves the needle when you run a service business.
               </p>
             </div>

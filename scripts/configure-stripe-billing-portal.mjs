@@ -49,7 +49,7 @@ let config = configs.data.find((c) => c.is_default) ?? configs.data[0];
 if (config) {
   config = await stripe.billingPortal.configurations.update(config.id, {
     business_profile: {
-      headline: "998 web designs — hosting billing",
+      headline: "998 web designs - hosting billing",
     },
     features: desiredFeatures,
   });
@@ -57,7 +57,7 @@ if (config) {
 } else {
   config = await stripe.billingPortal.configurations.create({
     business_profile: {
-      headline: "998 web designs — hosting billing",
+      headline: "998 web designs - hosting billing",
     },
     features: desiredFeatures,
   });

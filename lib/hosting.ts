@@ -13,8 +13,8 @@ export function hostingChoiceLabel(choice: HostingChoice): string {
 export function hostingChoiceShortLabel(choice: HostingChoice): string {
   switch (choice) {
     case "ten_year":
-      return "10-year hosting — $2,996";
+      return "10-year hosting - $2,996";
     case "monthly":
-      return `Month-to-month — ${HOSTING_MONTHLY_PRICE_MO_LABEL}`;
+      return `Month-to-month - ${HOSTING_MONTHLY_PRICE_MO_LABEL}`;
   }
 }

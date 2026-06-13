@@ -22,7 +22,7 @@ export function FeatureImagePreview({
       <div className="feature-preview-meta">
         <h2>{designLabel}</h2>
         <p>
-          LinkedIn treasury card size ({LINKEDIN_TREASURY_IMAGE_W}×{LINKEDIN_TREASURY_IMAGE_H}px) —
+          LinkedIn treasury card size ({LINKEDIN_TREASURY_IMAGE_W}×{LINKEDIN_TREASURY_IMAGE_H}px) -
           not the profile cover mockup. <strong>Click the image</strong> to open the full file.
         </p>
       </div>

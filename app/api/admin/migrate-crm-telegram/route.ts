@@ -6,7 +6,7 @@ import { runCrmTelegramMigration } from "@/lib/pg-migrate-crm-telegram";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — create crm_telegram_settings (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - create crm_telegram_settings (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

@@ -9,7 +9,7 @@ export const REQUIRED_WEBHOOK_EVENTS = [
   "checkout.session.async_payment_failed",
 ] as const;
 
-/** Month-to-month hosting lifecycle — subscribe in Stripe when billing monthly hosting clients. */
+/** Month-to-month hosting lifecycle - subscribe in Stripe when billing monthly hosting clients. */
 export const RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS = [
   "invoice.payment_failed",
   "customer.subscription.deleted",
@@ -55,7 +55,7 @@ export async function probeStripeOps(): Promise<{
       snapshot.achEnabled = Boolean(pmc.us_bank_account?.available);
       if (!snapshot.achEnabled) {
         warnings.push(
-          "Stripe: US bank account (ACH Direct Debit) is off — Settings → Payment methods."
+          "Stripe: US bank account (ACH Direct Debit) is off - Settings → Payment methods."
         );
       }
     } else {
@@ -94,7 +94,7 @@ export async function probeStripeOps(): Promise<{
     }
   } catch {
     warnings.push(
-      "Stripe dashboard probe failed — verify ACH and webhook manually in Stripe."
+      "Stripe dashboard probe failed - verify ACH and webhook manually in Stripe."
     );
     snapshot = {
       achEnabled: null,

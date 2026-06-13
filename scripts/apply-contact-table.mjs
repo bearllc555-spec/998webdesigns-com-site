@@ -73,8 +73,8 @@ async function main() {
       );
       console.log(
         check.rowCount
-          ? `OK — contact_submissions exists (via ${config.host ?? "uri"})`
-          : "FAIL — query ran but table not found"
+          ? `OK - contact_submissions exists (via ${config.host ?? "uri"})`
+          : "FAIL - query ran but table not found"
       );
       await client.end();
       process.exit(check.rowCount ? 0 : 1);

@@ -5,7 +5,7 @@ import {
   isAssistantFarewellPhrase,
 } from "@/lib/voice-demo-farewell";
 
-/** Jarvis asked permission to email the VOICE20 coupon — must wait for yes/no before goodbye. */
+/** Jarvis asked permission to email the VOICE20 coupon - must wait for yes/no before goodbye. */
 export function isAssistantPromoOffer(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
@@ -42,7 +42,7 @@ export const VOICE_DEMO_PROMO_OFFER_WAIT_CUE = "[promo-offer-wait]";
 
 export function buildPromoOfferWaitNudge(): string {
   return (
-    `${VOICE_DEMO_PROMO_OFFER_WAIT_CUE} You asked about the coupon — STOP and wait for yes or no. ` +
+    `${VOICE_DEMO_PROMO_OFFER_WAIT_CUE} You asked about the coupon - STOP and wait for yes or no. ` +
     `Do not say goodbye yet. If yes → send_promo_email, then one brief sign-off in a new turn. ` +
     `If no → one brief sign-off only. Never combine the coupon question and goodbye in one turn.`
   );
@@ -51,7 +51,7 @@ export function buildPromoOfferWaitNudge(): string {
 export function buildPromoOfferSplitNudge(): string {
   return (
     `${VOICE_DEMO_PROMO_OFFER_WAIT_CUE} You bundled the coupon question with goodbye in one turn. ` +
-    `Stay silent now and wait for their yes or no — do not repeat goodbye. ` +
+    `Stay silent now and wait for their yes or no - do not repeat goodbye. ` +
     `If yes → send_promo_email then sign off once. If no → sign off once only.`
   );
 }

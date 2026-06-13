@@ -35,7 +35,7 @@ export async function insertContactSubmission(
     if (error) {
       if (isMissingContactTable(error)) {
         console.error(
-          "[contact] contact_submissions table missing — run supabase/contact-submissions.sql in Supabase SQL editor"
+          "[contact] contact_submissions table missing - run supabase/contact-submissions.sql in Supabase SQL editor"
         );
         return { ok: false, reason: "table_missing", detail: error.message };
       }

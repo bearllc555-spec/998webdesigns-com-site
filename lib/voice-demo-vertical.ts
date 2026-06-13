@@ -1,4 +1,4 @@
-/** Voice demo vertical — marketing site vs industry demo pages. */
+/** Voice demo vertical - marketing site vs industry demo pages. */
 export type VoiceDemoVertical = "marketing" | "plumbers";
 
 export const VOICE_DEMO_VERTICALS: VoiceDemoVertical[] = ["marketing", "plumbers"];

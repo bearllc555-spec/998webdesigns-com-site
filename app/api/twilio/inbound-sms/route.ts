@@ -30,7 +30,7 @@ function emptyTwiml(): NextResponse {
   });
 }
 
-/** Twilio inbound SMS webhook — stores in CRM inbox and alerts Telegram. */
+/** Twilio inbound SMS webhook - stores in CRM inbox and alerts Telegram. */
 export async function POST(req: NextRequest) {
   const creds = twilioCredentials();
   if (!creds) {

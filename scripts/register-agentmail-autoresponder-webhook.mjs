@@ -35,7 +35,7 @@ const apiKey =
 const workerUrl = process.env.WORKER_URL?.trim() || DEFAULT_WORKER_URL;
 
 if (!apiKey) {
-  console.error("Missing AgentMail API key — save to .local/998-agentmail-api-key-998webdesigns.txt");
+  console.error("Missing AgentMail API key - save to .local/998-agentmail-api-key-998webdesigns.txt");
   process.exit(1);
 }
 
@@ -98,7 +98,7 @@ if (!detailRes.ok || !detail.secret) {
 const signingPath = path.join(workspaceLocal, "998-agentmail-webhook-signing-secret.txt");
 fs.writeFileSync(signingPath, `${detail.secret}\n`, "utf8");
 
-console.log("OK — webhook subscribed to", INBOX_ID);
+console.log("OK - webhook subscribed to", INBOX_ID);
 console.log("Worker URL:", workerUrl);
 console.log("Webhook ID:", webhookId);
 console.log("Signing secret saved:", signingPath);

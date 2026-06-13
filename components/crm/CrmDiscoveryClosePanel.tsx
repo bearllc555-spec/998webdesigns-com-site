@@ -139,7 +139,7 @@ export function CrmDiscoveryClosePanel({
   if (!phoneVerified) {
     return (
       <p className="text-sm text-ink-soft">
-        Phone not verified yet — complete SMS verification on /book before sending a checkout link.
+        Phone not verified yet - complete SMS verification on /book before sending a checkout link.
       </p>
     );
   }

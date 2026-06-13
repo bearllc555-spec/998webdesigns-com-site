@@ -124,7 +124,7 @@ export function DiscoveryIntakeForm() {
     <div className="mx-auto max-w-xl px-5 py-16 md:py-24">
       <h1 className="font-display text-3xl font-medium text-ink md:text-4xl">Your project brief</h1>
       <p className="mt-4 text-ink-soft">
-        Hi {fullName} — tell us about the business ({email}). This takes about 3 minutes.
+        Hi {fullName} - tell us about the business ({email}). This takes about 3 minutes.
       </p>
       <form onSubmit={submitIntake} className="mt-8 space-y-5">
         <FixedFormField

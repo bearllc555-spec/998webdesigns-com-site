@@ -14,13 +14,13 @@ export function PlumbingDemoCapabilities() {
           What Jarvis can handle
         </h2>
         <p className="text-sm leading-relaxed text-ink-soft">
-          Just talk naturally — like you would with a real receptionist. Ask about your problem,
+          Just talk naturally - like you would with a real receptionist. Ask about your problem,
           pricing, emergencies, or say you want to book. Jarvis has been programmed with Metro
           Plumbing &amp; Drain&apos;s full knowledge base, including everything below (and he can
           book appointments and send confirmation emails in this demo).
         </p>
         <p className="text-sm leading-relaxed text-ink-soft">
-          If he is not confident in an answer, he will not guess — he will take your name and phone
+          If he is not confident in an answer, he will not guess - he will take your name and phone
           number and have someone from the team call you back.
         </p>
         <p className="text-sm text-ink-soft">

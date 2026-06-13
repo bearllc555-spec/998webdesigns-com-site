@@ -6,7 +6,7 @@ import { runInboundSmsWdLeadMigration } from "@/lib/pg-migrate-inbound-sms-wd-le
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — add inbound_sms.wd_lead_id + backfill (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - add inbound_sms.wd_lead_id + backfill (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

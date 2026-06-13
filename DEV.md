@@ -1,4 +1,4 @@
-# Local development — 998webdesigns-com-site
+# Local development - 998webdesigns-com-site
 
 Anthony often runs **multiple Cursor windows** on Windows 11. This doc keeps local URLs, ports, and sessions predictable.
 
@@ -17,7 +17,7 @@ Anthony often runs **multiple Cursor windows** on Windows 11. This doc keeps loc
 
 ### CRM inside Cursor (Simple Browser)
 
-1. **Run Task:** `Terminal` → `Run Task…` → **`998: dev + CRM tab`** — waits for Next ready, opens `/crm` in the editor browser panel (tab title **CRM**).
+1. **Run Task:** `Terminal` → `Run Task…` → **`998: dev + CRM tab`** - waits for Next ready, opens `/crm` in the editor browser panel (tab title **CRM**).
 2. **Already on port 3000?** Run Task → **`998: open CRM in Cursor browser`** only.
 3. **Manual:** Command Palette → **`Simple Browser: Show`** → `http://localhost:3000/crm`
 
@@ -25,7 +25,7 @@ Use the in-editor browser for CRM so it stays beside your code. External Chrome 
 
 ### CRM shows no messages locally (empty inbox)
 
-The feed reads **helmet** (`xwldbxburzqryxlzocck`), same as production. If `.env.local` still points at the old Slatepress project (`jxthwtflrzudepxysgje`), the API returns **200 with zero rows** — not a browser bug.
+The feed reads **helmet** (`xwldbxburzqryxlzocck`), same as production. If `.env.local` still points at the old Slatepress project (`jxthwtflrzudepxysgje`), the API returns **200 with zero rows** - not a browser bug.
 
 **Fix:** Sync Supabase vars from `slatepress/.local/supabase-998-helmet-notes.txt` into repo `.env.local`:
 
@@ -44,7 +44,7 @@ Then **restart** `npm run dev` (Next only loads `.env.local` at startup).
 ## One Cursor window ≈ one job
 
 - Open the **repo root** (`998webdesigns-com-site`), not the parent `slatepress` folder.
-- **One** `npm run dev` per machine for this repo. If Next says another dev server is already running, use that instance or stop it — do not start a second copy.
+- **One** `npm run dev` per machine for this repo. If Next says another dev server is already running, use that instance or stop it - do not start a second copy.
 - Strategy/copy-only work belongs in **Cowork**, not a second dev server here.
 
 ---
@@ -113,5 +113,5 @@ Project path is under `OneDrive\Documents\Claude\...`. Pause OneDrive before lon
 
 ## Related docs
 
-- `CLAUDE.md` — stack, env, ship loop, pricing lock
-- `DEPLOYMENT.md` — Vercel / Stripe production wiring
+- `CLAUDE.md` - stack, env, ship loop, pricing lock
+- `DEPLOYMENT.md` - Vercel / Stripe production wiring

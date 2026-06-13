@@ -5,12 +5,12 @@ import { Footer } from "@/components/Footer";
 import { HostingManageForm } from "@/components/HostingManageForm";
 
 export const metadata: Metadata = {
-  title: "Manage hosting billing — 998 web designs",
+  title: "Manage hosting billing - 998 web designs",
   description:
     "Month-to-month hosting clients: request a secure link to update payment method or cancel hosting via Stripe.",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Manage hosting billing — 998 web designs",
+    title: "Manage hosting billing - 998 web designs",
     description:
       "Request a secure one-time link to Stripe billing portal for month-to-month hosting.",
     url: "https://998webdesigns.com/hosting/manage",

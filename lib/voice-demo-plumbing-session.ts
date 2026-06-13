@@ -1,5 +1,5 @@
 /**
- * Plumbing demo stays on the line through booking — no mid-call FAQ wrap-up hangup.
+ * Plumbing demo stays on the line through booking - no mid-call FAQ wrap-up hangup.
  * After Jarvis's final sign-off, client schedules post-farewell idle hangup + End call blink.
  */
 
@@ -25,7 +25,7 @@ export function isPlumbingVisitorEndingCall(text: string): boolean {
   return false;
 }
 
-/** Caller is still booking — resets a prior false "ending" signal mid-scheduling. */
+/** Caller is still booking - resets a prior false "ending" signal mid-scheduling. */
 export function isPlumbingBookingContinuation(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
@@ -50,7 +50,7 @@ export function isPlumbingBookingContinuation(text: string): boolean {
   );
 }
 
-/** Caller confirmed concerns were addressed — proceed to final sign-off. */
+/** Caller confirmed concerns were addressed - proceed to final sign-off. */
 export function isPlumbingVisitorConfirmedConcerns(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t || isPlumbingVisitorDeclinedConcerns(text)) return false;
@@ -63,13 +63,13 @@ export function isPlumbingVisitorConfirmedConcerns(text: string): boolean {
   );
 }
 
-/** Caller echoed goodbye/thanks after Jarvis signed off — fast disconnect. */
+/** Caller echoed goodbye/thanks after Jarvis signed off - fast disconnect. */
 export function isPlumbingVisitorFarewellAck(text: string): boolean {
-  // Re-export shared ack matcher — keep plumbing import path for tests/callers.
+  // Re-export shared ack matcher - keep plumbing import path for tests/callers.
   return isVisitorFarewellAck(text);
 }
 
-/** Caller still has concerns or wants to continue — do not sign off. */
+/** Caller still has concerns or wants to continue - do not sign off. */
 export function isPlumbingVisitorDeclinedConcerns(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;

@@ -85,8 +85,8 @@ export function milestoneCheckoutTotalCents(
 
 export function milestoneLabel(key: DesignMilestoneKey): string {
   return key === "milestone2"
-    ? "40% — design approval / development start"
-    : "10% — launch and handover";
+    ? "40% - design approval / development start"
+    : "10% - launch and handover";
 }
 
 export function milestoneShortLabel(key: DesignMilestoneKey): string {
@@ -95,8 +95,8 @@ export function milestoneShortLabel(key: DesignMilestoneKey): string {
 
 export function milestoneLineItemName(key: DesignMilestoneKey): string {
   return key === "milestone2"
-    ? "Website Design — 40% (development start)"
-    : "Website Design — 10% (launch & handover)";
+    ? "Website Design - 40% (development start)"
+    : "Website Design - 10% (launch & handover)";
 }
 
 export function milestoneLineItemDescription(
@@ -135,7 +135,7 @@ export function canSendMilestoneInvoice(
   key: DesignMilestoneKey
 ): { ok: true } | { ok: false; error: string } {
   if (parsePaymentOption(payload) !== "deposit") {
-    return { ok: false, error: "This lead paid the design fee in full — no milestones." };
+    return { ok: false, error: "This lead paid the design fee in full - no milestones." };
   }
   if (status === "paid_in_full") {
     return { ok: false, error: "Design fee is already paid in full." };

@@ -68,7 +68,7 @@ export async function sendMilestoneInvoiceEmail(params: {
 
   return sendResendEmail(
     params.email,
-    `Design fee invoice — ${milestoneShortLabel(params.milestone)} — 998 web designs`,
+    `Design fee invoice - ${milestoneShortLabel(params.milestone)} - 998 web designs`,
     html
   );
 }
@@ -80,6 +80,6 @@ export async function sendMilestoneInvoiceSms(params: {
   checkoutUrl: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const label = milestoneShortLabel(params.milestone);
-  const body = `Hi ${params.fullName.split(" ")[0] || "there"} — your 998 web designs ${label} invoice is ready: ${params.checkoutUrl}`;
+  const body = `Hi ${params.fullName.split(" ")[0] || "there"} - your 998 web designs ${label} invoice is ready: ${params.checkoutUrl}`;
   return sendTwilioSms(params.phone, body);
 }

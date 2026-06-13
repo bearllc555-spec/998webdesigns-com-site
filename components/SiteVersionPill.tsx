@@ -4,7 +4,7 @@ type SiteVersionPillProps = {
   className?: string;
 };
 
-/** Deploy-propagation tell — same label as home nav/footer (`lib/version.ts`). */
+/** Deploy-propagation tell - same label as home nav/footer (`lib/version.ts`). */
 export function SiteVersionPill({ className }: SiteVersionPillProps) {
   return (
     <span

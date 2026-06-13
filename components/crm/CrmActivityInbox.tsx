@@ -126,7 +126,7 @@ type CrmActivityInboxProps = {
   plumbingDemoItems?: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
   onReload: () => Promise<void>;
-  /** Public demo — local-only inbox edits; delete shows a notice instead of removing rows. */
+  /** Public demo - local-only inbox edits; delete shows a notice instead of removing rows. */
   demoMode?: boolean;
   /** Hide 998web / Plumbing Jarvis demo inbox cards (Metro Plumbing demo CRM). */
   hideJarvisDemoSections?: boolean;
@@ -341,7 +341,7 @@ function InboxRow({
               <p className="text-sm font-medium text-ink">
                 {pendingDelete.step === 1
                   ? `Delete this ${sourceLabel(item.source).toLowerCase()}?`
-                  : "Final confirmation — this cannot be undone"}
+                  : "Final confirmation - this cannot be undone"}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
@@ -376,8 +376,8 @@ function InboxRow({
             messagePlaceholder={
               isWdLeadFeedItem(item)
                 ? item.source === "client"
-                  ? "Active client — notes, milestones, and payload below."
-                  : "Project brief — see notes and payload below."
+                  ? "Active client - notes, milestones, and payload below."
+                  : "Project brief - see notes and payload below."
                 : item.source === "sms"
                   ? "Inbound SMS"
                   : item.source === "blog"
@@ -490,7 +490,7 @@ function InboxRow({
                       onChange={(e) => onNotesDraftChange(e.target.value)}
                       rows={4}
                       className="w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"
-                      placeholder="Call notes — scope discussed, objections, follow-ups…"
+                      placeholder="Call notes - scope discussed, objections, follow-ups…"
                     />
                     <div className="flex gap-2">
                       <button
@@ -922,14 +922,14 @@ export function CrmActivityInbox({
         items={leadItems}
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
-        emptyLabel="No open leads — checkout pending or not started."
+        emptyLabel="No open leads - checkout pending or not started."
       />
       <InboxSection
         title="Clients"
         items={clientItems}
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
-        emptyLabel="No clients yet — appears here after the 50% deposit (or pay-in-full) clears."
+        emptyLabel="No clients yet - appears here after the 50% deposit (or pay-in-full) clears."
       />
       <InboxSection
         title="Texts"

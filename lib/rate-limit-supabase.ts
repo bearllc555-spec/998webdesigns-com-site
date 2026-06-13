@@ -25,7 +25,7 @@ export async function checkRateLimitSupabase(
   try {
     return await checkWithClient(supa, key, config);
   } catch (err) {
-    console.error("[rate-limit] Supabase check failed — using in-memory fallback:", err);
+    console.error("[rate-limit] Supabase check failed - using in-memory fallback:", err);
     return { allowed: true, usedDatabase: false };
   }
 }
@@ -45,7 +45,7 @@ async function checkWithClient(
   if (selectError) {
     if (isMissingTableError(selectError)) {
       console.error(
-        "[rate-limit] api_rate_limits table missing — run supabase/schema.sql in Supabase SQL editor"
+        "[rate-limit] api_rate_limits table missing - run supabase/schema.sql in Supabase SQL editor"
       );
     }
     return { allowed: true, usedDatabase: false };

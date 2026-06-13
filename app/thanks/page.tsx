@@ -8,7 +8,7 @@ import { HOSTING_MONTHLY_PRICE_MO_LABEL, HOSTING_TRIAL_DAYS } from "@/lib/hostin
 import { stripe } from "@/lib/stripe";
 
 export const metadata = {
-  title: "Payment received — let's build your site! | 998 web designs",
+  title: "Payment received - let's build your site! | 998 web designs",
   robots: { index: false, follow: false },
 };
 
@@ -71,10 +71,10 @@ export default async function Thanks({
             </p>
             <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
               {isMilestone2 || isMilestone3
-                ? "Thanks — we\u2019re waiting on your milestone transfer"
+                ? "Thanks - we\u2019re waiting on your milestone transfer"
                 : isDeposit
-                  ? "Thanks — we\u2019re waiting on your deposit transfer"
-                  : "Thanks — we\u2019re waiting on your bank transfer"}
+                  ? "Thanks - we\u2019re waiting on your deposit transfer"
+                  : "Thanks - we\u2019re waiting on your bank transfer"}
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-ink-soft">
               Your ACH payment was authorized in Stripe. Banks usually take a few business days to
@@ -84,7 +84,7 @@ export default async function Thanks({
 
             <div className="mt-8 rounded-2xl border border-accent/30 bg-accent/[0.06] p-6">
               <p className="font-display text-lg font-medium text-ink">
-                <span className="text-accent">Processing — not in the queue yet</span>
+                <span className="text-accent">Processing - not in the queue yet</span>
               </p>
               <p className="mt-2 text-sm text-ink-soft">
                 The 7 business-day design clock starts when your bank payment settles, not
@@ -135,12 +135,12 @@ export default async function Thanks({
           </p>
             <h1 className="mt-4 font-display text-4xl font-medium leading-tight md:text-6xl">
               {isMilestone3
-                ? "Thanks — design fee paid in full!"
+                ? "Thanks - design fee paid in full!"
                 : isMilestone2
-                  ? "Thanks — your 40% payment is in!"
+                  ? "Thanks - your 40% payment is in!"
                   : isDeposit
-                    ? "Thanks — your 50% deposit is in!"
-                    : "Thanks — you\u2019re paid in full!"}
+                    ? "Thanks - your 50% deposit is in!"
+                    : "Thanks - you\u2019re paid in full!"}
             </h1>
           <p className="mt-6 text-lg leading-relaxed text-ink-soft">
             Your payment has been received. A receipt is on its way to your email. Here&apos;s
@@ -151,12 +151,12 @@ export default async function Thanks({
             <p className="font-display text-lg font-medium text-ink">
               <span className="text-success">
                 {isMilestone3
-                  ? "Paid in full — you\u2019re all set"
+                  ? "Paid in full - you\u2019re all set"
                   : isMilestone2
                     ? "40% milestone received"
                     : isDeposit
-                      ? "50% deposit received — you\u2019re in the queue"
-                      : "Paid in full — you\u2019re all set"}
+                      ? "50% deposit received - you\u2019re in the queue"
+                      : "Paid in full - you\u2019re all set"}
               </span>
             </p>
             {isMilestone3 ? (
@@ -181,7 +181,7 @@ export default async function Thanks({
               <p className="mt-2 text-sm text-ink-soft">
                 No follow-up invoices for the design fee. Your first {HOSTING_TRIAL_DAYS} days of hosting are free.
                 Month-to-month hosting ({HOSTING_MONTHLY_PRICE_MO_LABEL}) or 10-year hosting ($2,996) is billed starting {HOSTING_TRIAL_DAYS}
-                days after your design payment cleared — not in this Checkout.
+                days after your design payment cleared - not in this Checkout.
               </p>
             )}
           </div>
@@ -211,7 +211,7 @@ export default async function Thanks({
             <p className="mt-3 text-base leading-relaxed text-ink">
               If we send a design draft and don&rsquo;t hear back within 14 days, we&apos;ll mark
               the project complete and deliver the best version we have. Your files are held for 90
-              days — come back in that window under normal edit terms. After 90 days, a $349
+              days - come back in that window under normal edit terms. After 90 days, a $349
               re-engagement fee applies to reopen. We say this here so it&apos;s never a surprise
               later.
             </p>

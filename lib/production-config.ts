@@ -64,56 +64,56 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   const { snapshot: stripeOps, warnings: stripeWarnings } = await probeStripeOps();
   warnings.push(...stripeWarnings);
   if (!process.env.RESEND_API_KEY?.trim()) {
-    warnings.push("RESEND_API_KEY missing — contact and lead emails will fail.");
+    warnings.push("RESEND_API_KEY missing - contact and lead emails will fail.");
   }
   if (!supabase.configured) {
     warnings.push(
-      "Supabase service role not configured — wd_leads and distributed rate limits degraded."
+      "Supabase service role not configured - wd_leads and distributed rate limits degraded."
     );
   } else if (!supabase.wdLeadsTable) {
-    warnings.push("wd_leads table missing — run supabase/schema.sql in Supabase SQL editor.");
+    warnings.push("wd_leads table missing - run supabase/schema.sql in Supabase SQL editor.");
   } else if (!supabase.apiRateLimitsTable) {
     warnings.push(
-      "api_rate_limits table missing — run supabase/schema.sql for global rate limits."
+      "api_rate_limits table missing - run supabase/schema.sql for global rate limits."
     );
   } else if (!supabase.contactSubmissionsTable) {
     warnings.push(
-      "contact_submissions table missing — run supabase/contact-submissions.sql in Supabase SQL editor."
+      "contact_submissions table missing - run supabase/contact-submissions.sql in Supabase SQL editor."
     );
   } else if (!supabase.stripeSubscriptionColumn) {
     warnings.push(
-      "wd_leads.stripe_subscription_id column missing — run supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql."
+      "wd_leads.stripe_subscription_id column missing - run supabase/migrations/20260602120000_wd_leads_stripe_subscription.sql."
     );
   } else if (!supabase.hostingBillingColumns) {
     warnings.push(
-      "wd_leads hosting billing columns missing — POST /api/admin/migrate-hosting-billing with BALANCE_CAPTURE_SECRET."
+      "wd_leads hosting billing columns missing - POST /api/admin/migrate-hosting-billing with BALANCE_CAPTURE_SECRET."
     );
   } else if (!supabase.crmTelegramSettingsTable) {
     warnings.push(
-      "crm_telegram_settings table missing — POST /api/admin/migrate-crm-telegram with BALANCE_CAPTURE_SECRET."
+      "crm_telegram_settings table missing - POST /api/admin/migrate-crm-telegram with BALANCE_CAPTURE_SECRET."
     );
   } else if (!supabase.processedStripeEventsTable) {
     warnings.push(
-      "processed_stripe_events table missing — run supabase/migrations/20260605140000_processed_stripe_events.sql."
+      "processed_stripe_events table missing - run supabase/migrations/20260605140000_processed_stripe_events.sql."
     );
   } else if (!supabase.discoveryProspectsTable) {
     warnings.push(
-      "discovery_prospects table missing — POST /api/admin/migrate-discovery with BALANCE_CAPTURE_SECRET."
+      "discovery_prospects table missing - POST /api/admin/migrate-discovery with BALANCE_CAPTURE_SECRET."
     );
   }
   const crmSecretSource = crmAdminSecretSource();
   if (vercelEnv === "production" && crmSecretSource !== "dedicated") {
     warnings.push(
-      "CRM_ADMIN_SECRET missing on Production — /crm login disabled until set (do not reuse BALANCE_CAPTURE_SECRET)."
+      "CRM_ADMIN_SECRET missing on Production - /crm login disabled until set (do not reuse BALANCE_CAPTURE_SECRET)."
     );
   }
   if (!process.env.BALANCE_CAPTURE_SECRET?.trim()) {
-    warnings.push("BALANCE_CAPTURE_SECRET missing — env-status API returns 503.");
+    warnings.push("BALANCE_CAPTURE_SECRET missing - env-status API returns 503.");
   }
   const cronSecretConfigured = Boolean(process.env.CRON_SECRET?.trim());
   if (vercelEnv === "production" && !cronSecretConfigured) {
     warnings.push(
-      "CRON_SECRET not set — ten-year hosting cron uses BALANCE_CAPTURE_SECRET fallback."
+      "CRON_SECRET not set - ten-year hosting cron uses BALANCE_CAPTURE_SECRET fallback."
     );
   }
   const twilioVerifyConfigured = Boolean(
@@ -123,13 +123,13 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   );
   if (vercelEnv === "production" && !twilioVerifyConfigured) {
     warnings.push(
-      "Twilio Verify env missing — /book discovery SMS step disabled until TWILIO_* vars are set."
+      "Twilio Verify env missing - /book discovery SMS step disabled until TWILIO_* vars are set."
     );
   }
   const twilioMessaging = twilioMessagingConfigured();
   if (vercelEnv === "production" && !twilioMessaging) {
     warnings.push(
-      "TWILIO_MESSAGING_FROM missing — CRM checkout SMS disabled until a Twilio sending number is set."
+      "TWILIO_MESSAGING_FROM missing - CRM checkout SMS disabled until a Twilio sending number is set."
     );
   }
 

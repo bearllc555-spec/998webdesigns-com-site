@@ -21,7 +21,7 @@ export function Design2Artboard() {
             <span className="logo-rest">webdesigns</span>
           </h1>
           <p className="tagline">
-            <strong>High-converting websites</strong> — built in 7 business days, no agency bloat.
+            <strong>High-converting websites</strong> - built in 7 business days, no agency bloat.
           </p>
         </div>
 

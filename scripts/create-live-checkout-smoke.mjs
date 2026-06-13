@@ -31,7 +31,7 @@ const session = await stripe.checkout.sessions.create({
         currency: "usd",
         product_data: {
           name: "Live webhook smoke ($1)",
-          description: "Ops verification — refund in Stripe Dashboard after delivery shows 200.",
+          description: "Ops verification - refund in Stripe Dashboard after delivery shows 200.",
         },
         unit_amount: 100,
       },

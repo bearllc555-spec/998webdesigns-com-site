@@ -20,7 +20,7 @@ export function PlumbingDemoPostCta({ emphasized = false }: PlumbingDemoPostCtaP
         Want Jarvis answering your calls?
       </p>
       <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-        The Launchpad starts at <strong className="text-ink">$3,998</strong> — code{" "}
+        The Launchpad starts at <strong className="text-ink">$3,998</strong> - code{" "}
         <strong className="font-mono text-ink">{LAUNCHPAD_PROMO}</strong> expires June 30.
       </p>
       <Link

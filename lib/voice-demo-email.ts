@@ -64,5 +64,5 @@ export async function sendVoiceDemoPromoEmail(
     </div>
   `;
 
-  return sendResendEmail(email, "Your 20% design fee code — 998 web designs", html);
+  return sendResendEmail(email, "Your 20% design fee code - 998 web designs", html);
 }

@@ -6,7 +6,7 @@ import { runHostingBillingMigration } from "@/lib/pg-migrate-hosting-billing";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — add lifetime hosting billing columns on wd_leads (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - add lifetime hosting billing columns on wd_leads (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

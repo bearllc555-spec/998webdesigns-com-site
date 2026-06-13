@@ -6,7 +6,7 @@
  * - fullPage screenshot (clip does not capture below the viewport)
  * - slow scroll preload for lazy-loaded sections/images
  * - hero <video>: viewport shot after play/seek, composited over fullPage top
- *   (fullPage alone renders <video> as blank — JetVIP, New Empire, etc.)
+ *   (fullPage alone renders <video> as blank - JetVIP, New Empire, etc.)
  */
 
 import { chromium } from "playwright";

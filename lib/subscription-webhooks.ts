@@ -25,7 +25,7 @@ function subscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
   return null;
 }
 
-/** Failed monthly hosting renewal — alert ops to contact the client. */
+/** Failed monthly hosting renewal - alert ops to contact the client. */
 export async function handleInvoicePaymentFailed(
   invoice: Stripe.Invoice
 ): Promise<void> {

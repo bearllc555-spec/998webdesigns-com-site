@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { voiceDemoToolDeclarations } from "@/lib/voice-demo-tools";
 
 describe("voiceDemoToolDeclarations", () => {
-  it("does not declare end_conversation — client owns hangup", () => {
+  it("does not declare end_conversation - client owns hangup", () => {
     const tools = voiceDemoToolDeclarations("demo");
     const decls = tools[0]?.functionDeclarations ?? [];
     const names = decls.map((d) => d.name);

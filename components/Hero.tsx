@@ -13,7 +13,7 @@ export function Hero() {
         <HeroHeadline className="font-display text-5xl font-bold leading-[1.04] tracking-[-0.035em] text-ink md:text-[68px]" />
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft md:text-xl">
-          The site is step one. Stack on SEO, chatbot, email automation, and content — each module
+          The site is step one. Stack on SEO, chatbot, email automation, and content - each module
           compounds the last until your pipeline runs itself.
         </p>
 

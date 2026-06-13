@@ -6,7 +6,7 @@ import { runVoiceDemoOpsMigration } from "@/lib/pg-migrate-voice-demo-ops";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — add voice_demo_leads ops_log column (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - add voice_demo_leads ops_log column (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

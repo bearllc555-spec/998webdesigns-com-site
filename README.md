@@ -1,6 +1,6 @@
 # 998webdesigns-com-site
 
-Marketing site and lead funnel for [998 web designs](https://998webdesigns.com) — Next.js 16, Stripe Checkout, Resend, Supabase.
+Marketing site and lead funnel for [998 web designs](https://998webdesigns.com) - Next.js 16, Stripe Checkout, Resend, Supabase.
 
 | | |
 |---|---|

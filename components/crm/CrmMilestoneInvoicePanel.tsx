@@ -24,7 +24,7 @@ type Props = {
 
 function milestoneStatusLabel(key: DesignMilestoneKey, paid: boolean, sent: boolean): string {
   if (paid) return "Paid";
-  if (sent) return "Invoice sent — awaiting payment";
+  if (sent) return "Invoice sent - awaiting payment";
   return "Not sent";
 }
 
@@ -106,7 +106,7 @@ export function CrmMilestoneInvoicePanel({ leadId, status, payload, phone, email
     <div className="mt-4 rounded-xl border border-rule bg-rule-soft/20 p-4">
       <h3 className="font-display text-base font-medium text-ink">Design balance invoices</h3>
       <p className="mt-1 text-xs text-ink-soft">
-        50% deposit collected — send the 40% and 10% milestones manually when due.
+        50% deposit collected - send the 40% and 10% milestones manually when due.
       </p>
 
       <ul className="mt-4 space-y-3 text-sm">

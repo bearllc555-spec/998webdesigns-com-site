@@ -1,7 +1,7 @@
 import { generateSixDigitCode } from "@/lib/voice-demo-code";
 import { insertVoiceDemoLead, markVoiceDemoVerified } from "@/lib/voice-demo-db";
 
-/** Plumbing demo skips OTP — email gate only, verified immediately for voice. */
+/** Plumbing demo skips OTP - email gate only, verified immediately for voice. */
 export async function startPlumbingDemoLead(
   email: string,
   ip: string | null

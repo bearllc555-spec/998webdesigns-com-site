@@ -1,6 +1,6 @@
 import { VOICE_DEMO_CALL_IDLE_HANGUP_MS } from "@/lib/voice-demo-constants";
 
-/** Metro Plumbing & Drain — demo business (docs/jarvis_plumbing_complete.md). */
+/** Metro Plumbing & Drain - demo business (docs/jarvis_plumbing_complete.md). */
 export const PLUMBING_DEMO_BUSINESS_NAME = "Metro Plumbing & Drain";
 
 export const PLUMBING_DEMO_TAGLINE = "Licensed & insured · Tri-State (NJ, NY, CT)";
@@ -14,7 +14,7 @@ export const PLUMBING_DEMO_EMERGENCY_DISPATCH_FEE = 150;
 export const PLUMBING_DEMO_SESSION_START_CUE = "[plumbing-session-start]";
 
 export const PLUMBING_DEMO_OPENING_LINE =
-  "Thanks for calling Metro Plumbing and Drain — I'm Jarvis. How can I help you today?";
+  "Thanks for calling Metro Plumbing and Drain - I'm Jarvis. How can I help you today?";
 
 export {
   VOICE_DEMO_END_CALL_BLINK_DELAY_MS as PLUMBING_END_CALL_GLOW_DELAY_MS,
@@ -25,9 +25,9 @@ export {
 /** After a contact read-back, client nudge fires once playback ends (ms). */
 export const PLUMBING_CONTACT_POST_READBACK_PAUSE_MS = 2_000;
 
-/** Extra beat after phone digit read-back — callers verify digits before scheduling. */
+/** Extra beat after phone digit read-back - callers verify digits before scheduling. */
 export const PLUMBING_PHONE_POST_READBACK_PAUSE_MS = 3_500;
 
 /** After booking wind-down (pre-farewell), idle hangup uses shared demo constant. */
-/** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS — kept for plumbing imports. */
+/** @deprecated Use VOICE_DEMO_CALL_IDLE_HANGUP_MS - kept for plumbing imports. */
 export const PLUMBING_IDLE_HANGUP_MS = VOICE_DEMO_CALL_IDLE_HANGUP_MS;

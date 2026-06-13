@@ -10,14 +10,14 @@ export default function TempPage() {
       <BannerDesignNav />
 
       <LinkedInBannerPreview
-        designLabel="Design 1 — Manhattan clean (no offer)"
+        designLabel="Design 1 - Manhattan clean (no offer)"
         exportHref="/temp/export"
       >
         <Design1Artboard />
       </LinkedInBannerPreview>
 
       <p className="hint">
-        Preview matches your live LinkedIn card (792×198). Brand sits right of your profile photo —
+        Preview matches your live LinkedIn card (792×198). Brand sits right of your profile photo -
         no offer panel. Click cover for upload PNG.
       </p>
     </div>

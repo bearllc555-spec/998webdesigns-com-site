@@ -11,7 +11,7 @@ export default function TempV2Page() {
       <BannerDesignNav />
 
       <LinkedInBannerPreview
-        designLabel="Design 2 — Manhattan · Geist + Inter"
+        designLabel="Design 2 - Manhattan · Geist + Inter"
         exportHref="/temp/2/export"
       >
         <Design2Artboard />

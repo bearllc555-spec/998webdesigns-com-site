@@ -4,7 +4,7 @@ const LINE1 = "we don't sell websites.";
 const LINE2_PREFIX = "we build ";
 const LINE2_ACCENT = "growth systems.";
 
-/** ~80ms per letter — slow reveal on load */
+/** ~80ms per letter - slow reveal on load */
 const LETTER_DELAY_S = 0.08;
 
 function Letter({

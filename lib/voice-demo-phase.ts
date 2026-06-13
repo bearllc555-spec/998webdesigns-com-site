@@ -4,7 +4,7 @@ import {
   isSubstantiveServiceSpeech,
 } from "@/lib/voice-demo-farewell";
 
-/** Single session lane — client owns transitions and hangup. */
+/** Single session lane - client owns transitions and hangup. */
 export type VoiceDemoSessionPhase =
   | "onboarding"
   | "helping"
@@ -47,7 +47,7 @@ export function deriveVoiceDemoSessionPhase(input: VoiceDemoPhaseInput): VoiceDe
 }
 
 /**
- * Client may schedule disconnect — never on stray FAQ sign-off mid-call.
+ * Client may schedule disconnect - never on stray FAQ sign-off mid-call.
  * Model does not own hangup in demo mode.
  */
 export function canClientScheduleHangup(opts: {
@@ -81,7 +81,7 @@ export function canClientScheduleHangup(opts: {
   return false;
 }
 
-/** Demo: model must never end the call — client disconnects after goodbye playback. */
+/** Demo: model must never end the call - client disconnects after goodbye playback. */
 export function canModelEndConversation(_opts: {
   farewellSent: boolean;
   goodbyeNudgeSent: boolean;
@@ -93,5 +93,5 @@ export function canModelEndConversation(_opts: {
 }
 
 export const TOOL_END_CONVERSATION_CLIENT_OWNED =
-  "Do not call end_conversation — the system ends the call automatically after your final goodbye. " +
+  "Do not call end_conversation - the system ends the call automatically after your final goodbye. " +
   "Say your sign-off once, then stay silent.";

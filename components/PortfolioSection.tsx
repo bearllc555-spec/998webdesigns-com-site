@@ -1,7 +1,7 @@
 import { Carousel } from "./Carousel";
 
 type PortfolioSectionProps = {
-  /** Standalone /portfolio page — extra intro line under the headline. */
+  /** Standalone /portfolio page - extra intro line under the headline. */
   showIntro?: boolean;
   /** h1 on /portfolio; h2 on home (inside hero flow). */
   headingLevel?: "h1" | "h2";
@@ -12,7 +12,7 @@ export function PortfolioSection({
   headingLevel = "h2",
 }: PortfolioSectionProps) {
   const HeadingTag = headingLevel;
-  // Standalone /portfolio: nav is already in document flow — large pt-* would
+  // Standalone /portfolio: nav is already in document flow - large pt-* would
   // double the gap vs home hash targets (#how, #work) where section top = viewport 0.
   const headerPadding = showIntro
     ? "px-5 pt-6 pb-3 md:px-8 md:pb-4"

@@ -41,7 +41,7 @@ export default async function CrmLoginPage({ searchParams }: Props) {
           CRM sign in
           <SiteVersionPill />
         </h1>
-        <p className="mt-2 text-sm text-ink-soft">Private — not indexed.</p>
+        <p className="mt-2 text-sm text-ink-soft">Private - not indexed.</p>
       </div>
       <CrmLoginForm />
     </div>

@@ -46,7 +46,7 @@ export async function sendPromoToVerifiedEmailLead(
   return { sent: true, alreadySent: false };
 }
 
-/** Idempotent — retries delivery if this lead verified email but promo not yet recorded. */
+/** Idempotent - retries delivery if this lead verified email but promo not yet recorded. */
 export async function ensurePromoEmailForLeadId(leadId: string): Promise<PromoEmailResult> {
   const row = await getVoiceDemoLead(leadId);
   if (!row) {

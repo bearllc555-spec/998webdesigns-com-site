@@ -6,7 +6,7 @@ import { runDiscoveryMigration } from "@/lib/pg-migrate-discovery";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — create discovery_prospects table (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - create discovery_prospects table (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

@@ -12,7 +12,7 @@ export default function TempLogoPage() {
         <div className="logo-preview-meta">
           <h2>{BANNER_LOGO.designLabel}</h2>
           <p>
-            Transparent PNG wordmark — Geist display, <strong>998</strong> in brand blue.{" "}
+            Transparent PNG wordmark - Geist display, <strong>998</strong> in brand blue.{" "}
             <a href={BANNER_LOGO.exportHref}>Open full file</a>
           </p>
         </div>
@@ -32,7 +32,7 @@ export default function TempLogoPage() {
         </a>
       </div>
 
-      <p className="hint">Logo PNG — transparent background, not a LinkedIn banner format.</p>
+      <p className="hint">Logo PNG - transparent background, not a LinkedIn banner format.</p>
     </div>
   );
 }

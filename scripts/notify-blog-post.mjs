@@ -79,7 +79,7 @@ async function main() {
     try {
       const result = await notifySlug(baseUrl, secret, slug, force);
       if (result.skipped) {
-        console.log(`skip ${slug} (already in CRM — use --force to re-notify)`);
+        console.log(`skip ${slug} (already in CRM - use --force to re-notify)`);
       } else if (result.notified) {
         console.log(`ok   ${slug} -> ${result.url} (CRM + Telegram)`);
       } else {

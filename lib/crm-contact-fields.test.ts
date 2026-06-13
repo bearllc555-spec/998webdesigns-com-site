@@ -7,8 +7,8 @@ import {
 
 describe("crm-contact-fields", () => {
   it("shows em dash for blank values", () => {
-    expect(displayCrmContactValue(null)).toBe("—");
-    expect(displayCrmContactValue("  ")).toBe("—");
+    expect(displayCrmContactValue(null)).toBe("-");
+    expect(displayCrmContactValue("  ")).toBe("-");
     expect(displayCrmContactValue("973-555-0142")).toBe("973-555-0142");
   });
 

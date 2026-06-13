@@ -9,7 +9,7 @@ describe("diagnoseVoiceDemoOpsSession", () => {
         at: "2026-06-07T12:00:00.000Z",
         kind: "session_anomaly",
         severity: "warn",
-        message: "Gemini goAway — reconnecting before disconnect",
+        message: "Gemini goAway - reconnecting before disconnect",
       },
       {
         at: "2026-06-07T12:00:02.000Z",
@@ -21,7 +21,7 @@ describe("diagnoseVoiceDemoOpsSession", () => {
         at: "2026-06-07T12:00:10.000Z",
         kind: "client_hangup_scheduled",
         severity: "warn",
-        message: "Live reconnect paused — waiting for user tap",
+        message: "Live reconnect paused - waiting for user tap",
       },
     ];
     const d = diagnoseVoiceDemoOpsSession(events);

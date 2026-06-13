@@ -94,7 +94,7 @@ export function PrivacyContent() {
             <p className="mt-4 text-ink-soft">
               We do not sell your personal information. We do not use lead or contact data to build
               advertising profiles. We do not share, sell, rent, or lease your personal
-              information — including your mobile phone number — to third parties for their marketing,
+              information - including your mobile phone number - to third parties for their marketing,
               promotional, or lead-generation purposes.
             </p>
           </section>
@@ -109,14 +109,14 @@ export function PrivacyContent() {
               during our voice demo, we may send a one-time promotional code by text. For active
               clients, we may send transactional texts such as checkout links or milestone invoices
               when you or our team request email and/or SMS delivery. Message frequency varies by
-              your activity — typically one verification code per session, plus occasional
+              your activity - typically one verification code per session, plus occasional
               project-related messages tied to your request. Message and data rates may apply.
             </p>
             <p className="mt-4 text-ink-soft">
               Reply STOP to opt out of further texts from our number; reply HELP for help. We do not
               send marketing SMS without separate, explicit consent. Your mobile number is used only
               for verification, scheduling follow-up, and project or billing communications related
-              to your request — not sold, rented, or shared with third parties for their marketing.
+              to your request - not sold, rented, or shared with third parties for their marketing.
             </p>
             <p className="mt-4 text-ink-soft">
               Our SMS program privacy terms are described on this page at{" "}
@@ -160,7 +160,7 @@ export function PrivacyContent() {
             </p>
             <p className="mt-4 text-ink-soft">
               We share data with service providers (for example Twilio, Stripe, Resend, Supabase,
-              and Vercel) only as needed to run the service — such as sending a text you requested,
+              and Vercel) only as needed to run the service - such as sending a text you requested,
               processing a payment, or hosting the site. Those providers process data on our behalf;
               we do not authorize them to use your information for their own marketing. We do not
               disclose your personal information to unrelated third parties for their marketing

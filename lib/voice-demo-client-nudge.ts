@@ -20,7 +20,7 @@ export function createVoiceDemoNudgeQueue(): VoiceDemoNudgeQueue {
 
 /**
  * Send a client-owned nudge only after assistant playback is idle (unless hardStop).
- * Never inject turnComplete while Jarvis is still speaking — avoids interrupt loops.
+ * Never inject turnComplete while Jarvis is still speaking - avoids interrupt loops.
  */
 export async function sendVoiceDemoClientNudge(
   session: Session,

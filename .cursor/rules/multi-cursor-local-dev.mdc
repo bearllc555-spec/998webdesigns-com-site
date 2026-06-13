@@ -1,5 +1,5 @@
 ---
-description: Multi-Cursor Windows local dev — port 3000, one server, prod vs local
+description: Multi-Cursor Windows local dev - port 3000, one server, prod vs local
 alwaysApply: true
 ---
 
@@ -15,7 +15,7 @@ Read `DEV.md` in this repo for full detail. Enforce these defaults in every sess
 
 ## One dev server
 
-- At most one `next dev` for this repo. If port 3000 is in use, diagnose with `netstat` / kill stray `node.exe` — do not start a duplicate on another port without Anthony asking.
+- At most one `next dev` for this repo. If port 3000 is in use, diagnose with `netstat` / kill stray `node.exe` - do not start a duplicate on another port without Anthony asking.
 
 ## Multi-window safety
 
@@ -33,4 +33,4 @@ Read `DEV.md` in this repo for full detail. Enforce these defaults in every sess
 ## Handoff language
 
 - **Marketing site:** http://localhost:3000
-- **CRM:** http://localhost:3000/crm — prefer Cursor Simple Browser for CRM work in this repo.
+- **CRM:** http://localhost:3000/crm - prefer Cursor Simple Browser for CRM work in this repo.

@@ -1,4 +1,4 @@
-# Stripe setup — 998webdesigns.com
+# Stripe setup - 998webdesigns.com
 
 Quick reference. Secrets live in `slatepress/.local/` (gitignored). Never commit keys.
 
@@ -39,7 +39,7 @@ After any change: redeploy Production or push to `main`.
 
 ---
 
-## Stripe Dashboard — test webhook (production URL)
+## Stripe Dashboard - test webhook (production URL)
 
 1. https://dashboard.stripe.com/test/webhooks (Sandbox on)
 2. **Add endpoint** → `https://998webdesigns.com/api/stripe/webhook`
@@ -56,7 +56,7 @@ After any change: redeploy Production or push to `main`.
 2. Webhooks → endpoint `https://998webdesigns.com/api/stripe/webhook` must listen for:
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded` (ACH settled)
-   - `checkout.session.async_payment_failed` (ACH failed — alerts hello@)
+   - `checkout.session.async_payment_failed` (ACH failed - alerts hello@)
    - `invoice.payment_failed` (monthly hosting renewal failed)
    - `customer.subscription.deleted` (hosting canceled)
 3. `GET /api/admin/env-status` (Bearer `BALANCE_CAPTURE_SECRET`) surfaces `readyForLiveCharges`, `stripeOps`, and any missing events.
@@ -113,7 +113,7 @@ Or ask Cursor in Agent mode after the two `.local` files are filled.
 
 5. env-status → one small real charge on https://998webdesigns.com → refund in Stripe if needed.
 
-**Local `.env.local` stays on test keys** — do not use live keys for `npm run dev`.
+**Local `.env.local` stays on test keys** - do not use live keys for `npm run dev`.
 
 ---
 
@@ -124,7 +124,7 @@ Or ask Cursor in Agent mode after the two `.local` files are filled.
 - Month-to-month hosting: **$98/mo** after 30-day trial (`lib/hosting-policy.ts` → `HOSTING_MONTHLY_PRODUCT` in Checkout subscription `price_data`)
 - Optional 10-year hosting: **$2,996** on day 31 when selected on lead form
 
-See `lib/checkout-line-items.ts`. New Checkout sessions use dynamic `price_data` — no Dashboard price ID to update for new signups.
+See `lib/checkout-line-items.ts`. New Checkout sessions use dynamic `price_data` - no Dashboard price ID to update for new signups.
 
 ---
 

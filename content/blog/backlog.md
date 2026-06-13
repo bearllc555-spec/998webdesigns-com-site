@@ -1,4 +1,4 @@
-# Field notes — content backlog and schedule
+# Field notes - content backlog and schedule
 
 **Cadence:** 2 posts per month · **Publish:** Tuesday or Wednesday before 10am ET · **Voice:** operator-direct, brand-neutral (see [README.md](./README.md))
 
@@ -27,14 +27,14 @@ After each publish: run `npm run blog:notify -- <slug>` (records in CRM + Telegr
 
 ## Topic rotation (repeat after post 12)
 
-1. **Local search / GBP** — checklists, reviews, map pack
-2. **Website decisions** — pricing logic, pages, mobile, DIY vs custom
-3. **Portfolio / proof** — one build walkthrough per cycle (link live demo)
-4. **Ops / hiring psychology** — follow-up, when a site is not enough
+1. **Local search / GBP** - checklists, reviews, map pack
+2. **Website decisions** - pricing logic, pages, mobile, DIY vs custom
+3. **Portfolio / proof** - one build walkthrough per cycle (link live demo)
+4. **Ops / hiring psychology** - follow-up, when a site is not enough
 
 ---
 
-## Draft queue (titles only — pick next from top)
+## Draft queue (titles only - pick next from top)
 
 - "Why your homepage hero does not need a carousel"
 - "Service-area pages: when they help and when they are spam"
@@ -50,7 +50,7 @@ After each publish: run `npm run blog:notify -- <slug>` (records in CRM + Telegr
 2. `npm run build` (optional local sanity check)
 3. Bump `SITE_VERSION` in `lib/version.ts`
 4. Commit + push to `main`
-5. **`npm run blog:notify -- {slug}`** — CRM Blog row + Telegram link
+5. **`npm run blog:notify -- {slug}`** - CRM Blog row + Telegram link
 6. Optional: LinkedIn pull-quote + link same day
 
 First-time setup (once per environment): `POST /api/admin/migrate-blog-posts` with `BALANCE_CAPTURE_SECRET` to create the `blog_posts` table.

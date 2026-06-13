@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
     },
   },
   // Legacy client modules (voice demo WebRTC hook, discovery flows, demo CRM) predate
-  // React Compiler hook rules — tracked for refactor; do not fail CI on push.
+  // React Compiler hook rules - tracked for refactor; do not fail CI on push.
   {
     files: [
       "components/demo/**/*.{ts,tsx}",

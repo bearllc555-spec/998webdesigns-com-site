@@ -18,14 +18,14 @@ export function isPlumbingOpeningLine(text: string): boolean {
 }
 
 export const PLUMBING_POST_OPENING_LISTEN = `AFTER OPENING (critical):
-- Your opening is done. When the caller speaks, respond immediately — listen to their plumbing issue or question and help them.
+- Your opening is done. When the caller speaks, respond immediately - listen to their plumbing issue or question and help them.
 - Never stay silent after they talk. Do not repeat the full introduction.`;
 
 /** Hidden nudge when the caller spoke after the opening but Jarvis stayed quiet. */
 export function buildPlumbingPostOpeningListenNudge(): string {
   return (
     `${PLUMBING_POST_OPENING_CUE} You already introduced yourself and asked how you can help. ` +
-    `The caller is speaking — respond now: address their plumbing question or problem in plain language. ` +
+    `The caller is speaking - respond now: address their plumbing question or problem in plain language. ` +
     `Do NOT repeat the opening greeting. Do NOT stay silent.`
   );
 }

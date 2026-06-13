@@ -156,7 +156,7 @@ type LiveMessage = {
 
 type ConnectOptions = {
   resume?: boolean;
-  /** User tapped Start voice — clears reconnect pause and gives one fresh try. */
+  /** User tapped Start voice - clears reconnect pause and gives one fresh try. */
   userInitiated?: boolean;
 };
 
@@ -181,7 +181,7 @@ const MAX_RECONNECT_ATTEMPTS = 2;
 const PLUMBING_MAX_RECONNECT_ATTEMPTS = 4;
 const URGENT_RECONNECT_DELAY_MS = 250;
 const RECONNECT_DEBOUNCE_MS = 900;
-/** Throttle session_resumption ops — Gemini can rotate handles many times per second. */
+/** Throttle session_resumption ops - Gemini can rotate handles many times per second. */
 const RESUMPTION_OPS_MIN_INTERVAL_MS = 10_000;
 const MAX_CONNECT_IN_FLIGHT_WAITS = 5;
 const RESUME_NUDGE_COOLDOWN_MS = 45_000;
@@ -387,7 +387,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       hangupReasonRef.current = "reconnect_exhausted";
       logVoiceDemoOps({
         kind: "client_hangup_scheduled",
-        message: "Live reconnect paused — waiting for user tap",
+        message: "Live reconnect paused - waiting for user tap",
         severity: "warn",
         meta: { phase: getSessionPhase(), hangupReason: "reconnect_exhausted", reason },
       });
@@ -408,7 +408,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (reconnectScheduledRef.current) return;
       reconnectScheduledRef.current = true;
       setConnecting(true);
-      optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+      optionsRef.current.onStatus?.("Connection refreshing - one moment…");
       logVoiceDemoOps({
         kind: "session_anomaly",
         message: `Scheduling live reconnect: ${reason}`,
@@ -456,7 +456,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (defer.defer) return;
     pendingReconnectRef.current = null;
     setConnecting(true);
-    optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+    optionsRef.current.onStatus?.("Connection refreshing - one moment…");
     scheduleLiveReconnect(pending.reason, pending.meta);
   }, [scheduleLiveReconnect]);
 
@@ -490,7 +490,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         return;
       }
       setConnecting(true);
-      optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+      optionsRef.current.onStatus?.("Connection refreshing - one moment…");
       const urgent = isUrgentLiveReconnectReason(reason);
       scheduleLiveReconnect(reason, meta, { urgent });
     },
@@ -530,8 +530,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     logVoiceDemoOps({
       kind: "session_anomaly",
       message: helpOnly
-        ? "Post-name help-only nudge — salutation spoken without help line"
-        : "Post-name greeting nudge — model idle after save_name",
+        ? "Post-name help-only nudge - salutation spoken without help line"
+        : "Post-name greeting nudge - model idle after save_name",
       severity: "warn",
       meta: { name, helpOnly },
     });
@@ -823,7 +823,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     if (!res.ok) {
       const message =
         res.status === 401
-          ? "Session expired — refresh the page and start voice again."
+          ? "Session expired - refresh the page and start voice again."
           : typeof data.error === "string"
             ? data.error
             : `Tool HTTP ${res.status}`;
@@ -879,7 +879,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     clearWrapUpTimer();
     logVoiceDemoOps({
       kind: "session_anomaly",
-      message: "Jarvis leaked hidden cue — wrap-up recovery nudge sent",
+      message: "Jarvis leaked hidden cue - wrap-up recovery nudge sent",
       severity: "warn",
     });
     try {
@@ -1053,7 +1053,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       plumbingMidCallNudgeLastAtRef.current = now;
       logVoiceDemoOps({
         kind: "session_anomaly",
-        message: "Plumbing mid-call silence — listen nudge sent",
+        message: "Plumbing mid-call silence - listen nudge sent",
         severity: "warn",
         meta: { phase: getSessionPhase() },
       });
@@ -1147,7 +1147,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     plumbingGoodbyeNudgeSentRef.current = true;
     logVoiceDemoOps({
       kind: "goodbye_nudge",
-      message: "Plumbing goodbye beat — delaying Jarvis sign-off",
+      message: "Plumbing goodbye beat - delaying Jarvis sign-off",
       meta: { beatMs: PLUMBING_GOODBYE_BEAT_MS },
     });
     plumbingGoodbyeNudgeTimerRef.current = setTimeout(() => {
@@ -1231,9 +1231,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       if (!sessionRef.current) return;
       applyMicMuted(muted);
       if (muted) {
-        optionsRef.current.onStatus?.("Microphone paused — tap the mic to resume.");
+        optionsRef.current.onStatus?.("Microphone paused - tap the mic to resume.");
       } else {
-        optionsRef.current.onStatus?.("Microphone on — Jarvis can hear you.");
+        optionsRef.current.onStatus?.("Microphone on - Jarvis can hear you.");
         touchCallIdleReset();
       }
     },
@@ -1304,7 +1304,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       latchFarewellClosing();
       await sleep(PHASE_TAIL_MS);
       optionsRef.current.onConversationEnd?.();
-      optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
+      optionsRef.current.onStatus?.("Call ended - tap Start voice to chat again.");
       disconnect(true);
     } finally {
       farewellDisconnectingRef.current = false;
@@ -1327,7 +1327,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       hangupReasonRef.current = "plumbing_idle_silence";
       logVoiceDemoOps({
         kind: "client_hangup_scheduled",
-        message: "Call idle silence — ending call",
+        message: "Call idle silence - ending call",
         meta: { phase: getSessionPhase(), hangupReason: "plumbing_idle_silence" },
       });
       void finishConversation();
@@ -1359,7 +1359,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       hangupReasonRef.current = reason;
       logVoiceDemoOps({
         kind: "client_hangup_scheduled",
-        message: "Visitor farewell echo — immediate hangup",
+        message: "Visitor farewell echo - immediate hangup",
         meta: { phase: getSessionPhase(), hangupReason: reason },
       });
       latchFarewellClosing();
@@ -1369,7 +1369,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       postFarewellDeadlineRef.current = 0;
       micRef.current?.stop();
       optionsRef.current.onConversationEnd?.();
-      optionsRef.current.onStatus?.("Call ended — tap Start voice to chat again.");
+      optionsRef.current.onStatus?.("Call ended - tap Start voice to chat again.");
       disconnect(true);
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
@@ -1421,7 +1421,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     }
     logVoiceDemoOps({
       kind: "client_hangup_scheduled",
-      message: "Post-farewell — ending call",
+      message: "Post-farewell - ending call",
       meta: {
         phase: getSessionPhase(),
         hangupReason: reason,
@@ -1498,7 +1498,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         const timeLeft = message.goAway.timeLeft ?? null;
         logVoiceDemoOps({
           kind: "session_anomaly",
-          message: "Gemini goAway — will reconnect after assistant finishes",
+          message: "Gemini goAway - will reconnect after assistant finishes",
           severity: "warn",
           meta: {
             durationMs,
@@ -1652,7 +1652,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 farewellHoldSentRef.current = true;
                 logVoiceDemoOps({
                   kind: "farewell_hold",
-                  message: "Muted repeat assistant audio after farewell — hold nudge sent",
+                  message: "Muted repeat assistant audio after farewell - hold nudge sent",
                 });
                 try {
                   void sendClientNudge(buildFarewellHoldNudge());
@@ -2145,7 +2145,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             savedNameRef.current = seed.savedName;
           }
         } catch {
-          /* status optional — fresh onboarding if unavailable */
+          /* status optional - fresh onboarding if unavailable */
         }
       }
 
@@ -2196,7 +2196,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
         const resumptionHandle = sessionResumptionHandleRef.current ?? undefined;
 
-        // Ephemeral live tokens lock connect config server-side — only pass
+        // Ephemeral live tokens lock connect config server-side - only pass
         // sessionResumption on resume (handle from prior SessionResumptionUpdate).
         const session = await ai.live.connect({
           model: tokenData.model ?? VOICE_DEMO_LIVE_MODEL,
@@ -2224,7 +2224,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               startOrbLoop();
               optionsRef.current.onStatus?.(
                 resume
-                  ? "Back with you — keep talking."
+                  ? "Back with you - keep talking."
                   : isPlumbingDemo
                     ? plumbingDemoOpeningStatus()
                     : voiceDemoOpeningStatus(mode)
@@ -2319,13 +2319,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               const durationMs = Date.now() - connectedAtRef.current;
               logVoiceDemoOps({
                 kind: "session_anomaly",
-                message: "Live session error — scheduling reconnect",
+                message: "Live session error - scheduling reconnect",
                 severity: "warn",
                 meta: { durationMs },
               });
               if (!farewellDisconnectingRef.current && !intentionalDisconnectRef.current) {
                 setConnecting(true);
-                optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+                optionsRef.current.onStatus?.("Connection refreshing - one moment…");
                 requestLiveReconnect("websocket_error", { durationMs });
               } else {
                 setError("Voice connection error.");
@@ -2336,7 +2336,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 intentionalDisconnectRef.current || farewellDisconnectingRef.current;
               if (!intentional) {
                 setConnecting(true);
-                optionsRef.current.onStatus?.("Connection refreshing — one moment…");
+                optionsRef.current.onStatus?.("Connection refreshing - one moment…");
                 const durationMs = Date.now() - connectedAtRef.current;
                 logVoiceDemoOps({
                   kind: "session_anomaly",

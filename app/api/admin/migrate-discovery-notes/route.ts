@@ -6,7 +6,7 @@ import { runDiscoveryCrmNotesMigration } from "@/lib/pg-migrate-discovery-notes"
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST — add discovery_prospects.crm_notes (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
+/** POST - add discovery_prospects.crm_notes (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {

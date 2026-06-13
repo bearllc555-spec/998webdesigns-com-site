@@ -4,7 +4,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Schedule your call — 998 web designs",
+  title: "Schedule your call - 998 web designs",
   robots: { index: false, follow: false },
 };
 
@@ -20,7 +20,7 @@ export default async function SchedulePage({ searchParams }: Props) {
       <main id="main" className="mx-auto max-w-xl px-5 py-16 md:py-24">
         <h1 className="font-display text-3xl font-medium text-ink md:text-4xl">Book your call</h1>
         <p className="mt-4 text-ink-soft">
-          Brief received. Pick a time that works — we will walk through scope, hosting, and add-ons on
+          Brief received. Pick a time that works - we will walk through scope, hosting, and add-ons on
           the call, then email you a personalized checkout link.
         </p>
         {bookUrl ? (

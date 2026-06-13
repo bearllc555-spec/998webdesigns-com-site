@@ -94,8 +94,8 @@ async function main() {
       );
       console.log(
         cols.rows.length === 3
-          ? "OK — lifetime hosting billing columns exist"
-          : `WARN — columns found: ${cols.rows.map((r) => r.column_name).join(", ")}`
+          ? "OK - lifetime hosting billing columns exist"
+          : `WARN - columns found: ${cols.rows.map((r) => r.column_name).join(", ")}`
       );
       await client.end();
       return;

@@ -244,7 +244,7 @@ export function CrmTelegramAdminBot() {
                     onChange={(e) => setBotToken(e.target.value)}
                     placeholder={
                       hasStoredBot
-                        ? `Saved ${status.settings.botTokenMasked ?? ""} — paste to replace`
+                        ? `Saved ${status.settings.botTokenMasked ?? ""} - paste to replace`
                         : "Paste token from @BotFather"
                     }
                     className="mt-1 w-full rounded-xl border border-rule bg-bg px-3 py-2 text-sm"

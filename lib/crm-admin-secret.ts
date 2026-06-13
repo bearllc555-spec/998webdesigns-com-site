@@ -1,4 +1,4 @@
-/** Admin auth for /crm and /api/crm/* — CRM_ADMIN_SECRET required in production. */
+/** Admin auth for /crm and /api/crm/* - CRM_ADMIN_SECRET required in production. */
 export function crmAdminSecret(): string | null {
   const dedicated = process.env.CRM_ADMIN_SECRET?.trim();
   if (dedicated) return dedicated;

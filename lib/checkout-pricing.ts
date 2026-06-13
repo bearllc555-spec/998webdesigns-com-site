@@ -12,7 +12,7 @@ export const CARD_PROCESSING_PRODUCT = {
   description: "Processing fee for credit/debit card payments on the design fee.",
 } as const;
 
-/** Design subtotal due at Checkout — full fee or 50% deposit. */
+/** Design subtotal due at Checkout - full fee or 50% deposit. */
 export function checkoutSubtotalCents(
   _hostingChoice?: HostingChoice,
   promoCode?: string,

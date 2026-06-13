@@ -10,9 +10,9 @@ export const LINKEDIN_PROFILE_CARD_W = 792;
 export const LINKEDIN_COVER_DISPLAY_W = LINKEDIN_PROFILE_CARD_W;
 export const LINKEDIN_COVER_DISPLAY_H = 198;
 
-/** Outer frame (figure) — 160×160 on live profile. */
+/** Outer frame (figure) - 160×160 on live profile. */
 export const LINKEDIN_AVATAR_FRAME_SIZE = 160;
-/** Inner photo — 152×152 inside the frame. */
+/** Inner photo - 152×152 inside the frame. */
 export const LINKEDIN_AVATAR_SIZE = 152;
 /** Offset from card left edge to photo frame (220 − 196 = 28). */
 export const LINKEDIN_AVATAR_LEFT = 28;
@@ -23,7 +23,7 @@ export const LINKEDIN_AVATAR_OVERLAP_PX = 96;
 /** LinkedIn scales 1584-wide upload to 792 display (exactly 50%). */
 export const LINKEDIN_DISPLAY_SCALE = LINKEDIN_COVER_DISPLAY_W / LINKEDIN_COVER_UPLOAD_W;
 
-/** Synced from live profile — anthony-de-meo-285999397 (updated 2026-06-06). */
+/** Synced from live profile - anthony-de-meo-285999397 (updated 2026-06-06). */
 export const LINKEDIN_AVATAR_IMAGE_SRC = "/temp/anthony-linkedin-avatar.jpg?v=20260606";
 
 /**
@@ -33,12 +33,12 @@ export const LINKEDIN_AVATAR_IMAGE_SRC = "/temp/anthony-linkedin-avatar.jpg?v=20
 export const LINKEDIN_TREASURY_IMAGE_W = 480;
 export const LINKEDIN_TREASURY_IMAGE_H = 322;
 
-/** 32px gap after photo frame right edge — brand/logo safe on 1584×396 artboard. */
+/** 32px gap after photo frame right edge - brand/logo safe on 1584×396 artboard. */
 export const LINKEDIN_ARTBOARD_CONTENT_PAD_LEFT = Math.ceil(
   (LINKEDIN_AVATAR_LEFT + LINKEDIN_AVATAR_FRAME_SIZE + 32) / LINKEDIN_DISPLAY_SCALE
 );
 
-/** Offer panel copy — keep in sync across /temp banner artboards. */
+/** Offer panel copy - keep in sync across /temp banner artboards. */
 export const LINKEDIN_BANNER_OFFER_KICKER = "20% off";
 export const LINKEDIN_BANNER_OFFER_CODE = "use code LINKEDIN20";
 export const LINKEDIN_BANNER_LIST_PRICE = "$5,998";
@@ -65,13 +65,13 @@ export const BANNER_FEATURE_ROUTES = [
     exportHref: "/temp/feature/1/export",
     label: "Feature 1",
     imageSrc: "/temp/feature-1-linkedin.png",
-    designLabel: "Feature 1 — SaaS compact offer (uploaded)",
+    designLabel: "Feature 1 - SaaS compact offer (uploaded)",
   },
   {
     previewHref: "/temp/feature/2",
     exportHref: "/temp/feature/2/export",
     label: "Feature 2",
     imageSrc: "/temp/feature-2-linkedin.png?v=20260606b",
-    designLabel: "Feature 2 — SaaS offer with slanted mark (uploaded)",
+    designLabel: "Feature 2 - SaaS offer with slanted mark (uploaded)",
   },
 ] as const;

@@ -14,7 +14,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: { absolute: "LinkedIn banner preview — 998 webdesigns" },
+  title: { absolute: "LinkedIn banner preview - 998 webdesigns" },
   robots: { index: false, follow: false },
 };
 

@@ -14,21 +14,21 @@ function speakDomain(domain: string): string {
   return `at ${domain.replace(/\./g, " dot ")}`;
 }
 
-/** Natural pronunciation — e.g. ademeo@gmail.com → "ademeo at gmail dot com". */
+/** Natural pronunciation - e.g. ademeo@gmail.com → "ademeo at gmail dot com". */
 export function pronounceEmailForVoice(email: string): string {
   const parts = splitEmail(email);
   if (!parts) return email.trim().toLowerCase();
   return `${parts.local} ${speakDomain(parts.domain)}`;
 }
 
-/** Letter-by-letter local part — e.g. "a d e m e o". */
+/** Letter-by-letter local part - e.g. "a d e m e o". */
 export function spellEmailLocalPartForVoice(email: string): string {
   const parts = splitEmail(email);
   if (!parts) return email.trim().toLowerCase();
   return spellLocalPart(parts.local);
 }
 
-/** Domain only — e.g. "at gmail dot com", "at abcplumbing dot com". */
+/** Domain only - e.g. "at gmail dot com", "at abcplumbing dot com". */
 export function pronounceEmailDomainForVoice(email: string): string {
   const parts = splitEmail(email);
   if (!parts) return email.trim().toLowerCase();
@@ -52,7 +52,7 @@ export function buildEmailVoiceReadBack(email: string): EmailVoiceReadBack | nul
   };
 }
 
-/** Combined spell (legacy) — local part letter-by-letter then @domain. */
+/** Combined spell (legacy) - local part letter-by-letter then @domain. */
 export function spellEmailForVoice(email: string): string {
   const parts = splitEmail(email);
   if (!parts) return email.trim().toLowerCase();

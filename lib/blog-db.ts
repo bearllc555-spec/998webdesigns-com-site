@@ -63,7 +63,7 @@ export async function insertBlogPostRecord(input: {
       return {
         ok: false,
         detail:
-          "blog_posts table missing — POST /api/admin/migrate-blog-posts with BALANCE_CAPTURE_SECRET",
+          "blog_posts table missing - POST /api/admin/migrate-blog-posts with BALANCE_CAPTURE_SECRET",
       };
     }
     console.warn("[blog-db] insert failed:", error.message);

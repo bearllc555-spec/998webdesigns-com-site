@@ -40,7 +40,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "save_name",
           description:
-            "Save visitor name for CRM profile. Call as soon as they give their name — first onboarding step after verify.",
+            "Save visitor name for CRM profile. Call as soon as they give their name - first onboarding step after verify.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -76,7 +76,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
               userConfirmed: {
                 type: Type.BOOLEAN,
                 description:
-                  "True when visitor said yes/correct after digit read-back — saves phone to profile only",
+                  "True when visitor said yes/correct after digit read-back - saves phone to profile only",
               },
             },
             required: ["phone", "smsConsent"],
@@ -99,7 +99,7 @@ export function voiceDemoToolDeclarations(mode: VoiceDemoToolMode): ToolListUnio
         {
           name: "confirm_phone_number",
           description:
-            "When visitor said yes/correct after digit read-back. Saves phone to profile only — no SMS.",
+            "When visitor said yes/correct after digit read-back. Saves phone to profile only - no SMS.",
           parameters: { type: Type.OBJECT, properties: {} },
         },
         {
@@ -291,11 +291,11 @@ export async function executeVoiceDemoTool(
 
     if (emailOk) {
       const parts = [
-        "Promo emailed — tell them briefly it is on its way (you already had their permission). Mention spam folder if natural.",
+        "Promo emailed - tell them briefly it is on its way (you already had their permission). Mention spam folder if natural.",
       ];
       if (bundle.sms) {
         if (smsOk) {
-          parts.push("Text sent to their profile phone too — mention briefly if natural.");
+          parts.push("Text sent to their profile phone too - mention briefly if natural.");
         } else if (!bundle.sms.ok) {
           parts.push(
             `SMS did not send (${bundle.sms.error}). Apologize for the text only; email is fine. They can call send_promo_sms to retry.`
@@ -355,7 +355,7 @@ export async function executeVoiceDemoTool(
       return {
         ok: true,
         phoneConfirmed: true,
-        message: "Phone saved to profile. Continue onboarding or FAQ — no coupon unless PROMO OFFER rules apply.",
+        message: "Phone saved to profile. Continue onboarding or FAQ - no coupon unless PROMO OFFER rules apply.",
       };
     }
 
@@ -377,7 +377,7 @@ export async function executeVoiceDemoTool(
     return {
       ok: true,
       phoneConfirmed: true,
-      message: "Phone saved to profile. Continue — no coupon unless they accept a later promo offer.",
+      message: "Phone saved to profile. Continue - no coupon unless they accept a later promo offer.",
     };
   }
 
@@ -406,7 +406,7 @@ export async function executeVoiceDemoTool(
       callbackLogged: true,
       message:
         `Callback logged for ${visitorName} at ${phone}. ` +
-        `Tell the visitor someone from 998 web designs will call them back as soon as we can — ` +
+        `Tell the visitor someone from 998 web designs will call them back as soon as we can - ` +
         `do NOT guess an answer to their question.`,
     };
   }

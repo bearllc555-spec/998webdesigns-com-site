@@ -83,7 +83,7 @@ export async function enforceAdminRateLimit(
   }
 
   if (supabaseAdmin()) {
-    console.error("[rate-limit] Admin route denied — distributed limit unavailable");
+    console.error("[rate-limit] Admin route denied - distributed limit unavailable");
     return { allowed: false, retryAfterSec: 60 };
   }
 

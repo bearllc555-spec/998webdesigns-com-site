@@ -1,0 +1,19 @@
+{
+  "source": "https://www.linkedin.com/in/anthony-de-meo-285999397/",
+  "capturedAt": "2026-06-05",
+  "viewport": { "width": 1536, "height": 695 },
+  "profileCard": {
+    "coverImg": { "width": 792, "height": 198, "left": 196, "top": 76, "bottom": 274 },
+    "photoFigure": { "width": 160, "height": 160, "left": 220, "top": 178, "bottom": 338 },
+    "photoImg": { "width": 152, "height": 152, "left": 224, "top": 182, "bottom": 334 }
+  },
+  "derived": {
+    "cardWidthPx": 792,
+    "coverHeightPx": 198,
+    "coverAspectRatio": 4,
+    "photoLeftFromCardEdgePx": 28,
+    "photoOverlapIntoCoverPx": 96,
+    "uploadToDisplayScale": 0.5
+  },
+  "notes": "Cover alt=Cover photo. Photo sits ~96px into cover from bottom edge (160px frame). Upload 1584x396 displays at ~50% on desktop."
+}

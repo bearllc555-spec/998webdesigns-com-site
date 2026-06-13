@@ -87,7 +87,7 @@ export function BannerExportView({
             src={pngUrl}
             width={LINKEDIN_COVER_UPLOAD_W}
             height={LINKEDIN_COVER_UPLOAD_H}
-            alt={`${designLabel} — LinkedIn banner ${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H}`}
+            alt={`${designLabel} - LinkedIn banner ${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H}`}
             className="linkedin-export-image"
           />
           <a href={pngUrl} download={fileName} className="linkedin-export-download">
@@ -97,7 +97,7 @@ export function BannerExportView({
       )}
 
       <p className="linkedin-export-caption">
-        {designLabel} — <strong>{LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px</strong>.
+        {designLabel} - <strong>{LINKEDIN_COVER_UPLOAD_W}×{LINKEDIN_COVER_UPLOAD_H}px</strong>.
         {status === "ready" ? (
           <> Right-click the image → <strong>Save image as…</strong></>
         ) : (

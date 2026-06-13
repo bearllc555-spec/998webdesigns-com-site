@@ -94,8 +94,8 @@ async function main() {
       );
       console.log(
         col.rows.length
-          ? "OK — wd_leads.stripe_subscription_id exists"
-          : "WARN — column still missing"
+          ? "OK - wd_leads.stripe_subscription_id exists"
+          : "WARN - column still missing"
       );
       await client.end();
       return;

@@ -1,7 +1,7 @@
 // Portfolio carousel data.
-// Thumbnail: public/portfolio/<slug>.jpg — scripts/capture-portfolio-poster.mjs (full-page JPEG, pan on hover)
+// Thumbnail: public/portfolio/<slug>.jpg - scripts/capture-portfolio-poster.mjs (full-page JPEG, pan on hover)
 //
-// LOCKED — portfolio dev URLs (2026-06-06). Do NOT swap to apex/stale domains unless Anthony
+// LOCKED - portfolio dev URLs (2026-06-06). Do NOT swap to apex/stale domains unless Anthony
 // explicitly instructs. These are the current live demos for carousel links AND poster capture:
 //   serenity-spa          → serenity-spa-3r8.pages.dev
 //   tuscano-excavating    → tuscano-excavating.pages.dev
@@ -16,7 +16,7 @@ export type PortfolioItem = {
   slug: string;
   name: string;
   industry: string;
-  /** Live client URL only — do not link to third-party template demos. */
+  /** Live client URL only - do not link to third-party template demos. */
   url?: string;
   /** Full-page screenshot; hover pans top → bottom in the carousel. */
   thumbnail: string;

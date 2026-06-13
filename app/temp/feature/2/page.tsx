@@ -18,7 +18,7 @@ export default function TempFeature2Page() {
         exportHref={feature.exportHref}
       />
 
-      <p className="hint">LinkedIn treasury card size (480×322) — not the profile cover mockup.</p>
+      <p className="hint">LinkedIn treasury card size (480×322) - not the profile cover mockup.</p>
     </div>
   );
 }

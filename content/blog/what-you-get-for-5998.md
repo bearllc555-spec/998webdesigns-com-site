@@ -10,21 +10,21 @@ When you shop for a website, you get three very different products that all get 
 
 A DIY builder subscription. A freelance custom build quoted hourly. A flat-fee package with a countdown clock. The price tags overlap; the outcomes do not.
 
-This post unpacks the flat-fee model at **$5,998** — what that number is supposed to cover, what it explicitly does not, and when it makes sense for a local service business.
+This post unpacks the flat-fee model at **$5,998** - what that number is supposed to cover, what it explicitly does not, and when it makes sense for a local service business.
 
 ## What the design fee is for
 
-**A custom site built for your business, not a template with your logo dropped in.** That means structure, layout, and copy placement tuned to how your customers actually hire you — emergency calls vs. estimate requests vs. booking online.
+**A custom site built for your business, not a template with your logo dropped in.** That means structure, layout, and copy placement tuned to how your customers actually hire you - emergency calls vs. estimate requests vs. booking online.
 
-**Delivery in about 7 business days after payment clears.** The clock starts when the check (or card charge) lands, not when you "get around to" sending photos. Speed is part of the product — it forces both sides to show up prepared.
+**Delivery in about 7 business days after payment clears.** The clock starts when the check (or card charge) lands, not when you "get around to" sending photos. Speed is part of the product - it forces both sides to show up prepared.
 
-**Technical basics that affect trust and search.** Mobile layout, reasonable load speed, clean page structure, meta titles and descriptions. Not a full SEO campaign — the foundation so Google can read the site and humans do not bounce on a phone.
+**Technical basics that affect trust and search.** Mobile layout, reasonable load speed, clean page structure, meta titles and descriptions. Not a full SEO campaign - the foundation so Google can read the site and humans do not bounce on a phone.
 
 **First 90 days of hosting free.** After that you choose monthly hosting or a 10-year prepay option (domain .com/.net/.org included). Hosting is separate from design because it is ongoing infrastructure, not a one-time build.
 
 ## What it is not
 
-**Full copywriting from scratch.** If you have no logo, no photos, and no idea what you offer, someone still has to produce that. Design packages that assume you bring raw materials — or you pay for creative separately.
+**Full copywriting from scratch.** If you have no logo, no photos, and no idea what you offer, someone still has to produce that. Design packages that assume you bring raw materials - or you pay for creative separately.
 
 **Unlimited revision rounds.** Flat fee plus fast delivery only works with boundaries. Typical policy: a defined review window after delivery, then hourly or packaged edits. Without that, "flat fee" becomes unlimited labor.
 
@@ -43,9 +43,9 @@ This post unpacks the flat-fee model at **$5,998** — what that number is suppo
 
 ## When to choose something else
 
-- You need heavy custom software (marketplaces, logins, complex quoting engines) — that is a product build, not a marketing site.
-- You have zero assets and want someone to invent the business from scratch — budget for strategy and creative first.
-- You are not ready to answer the phone when traffic shows up — fix operations before you buy traffic or polish.
+- You need heavy custom software (marketplaces, logins, complex quoting engines) - that is a product build, not a marketing site.
+- You have zero assets and want someone to invent the business from scratch - budget for strategy and creative first.
+- You are not ready to answer the phone when traffic shows up - fix operations before you buy traffic or polish.
 
 ## The honest comparison
 

@@ -32,7 +32,7 @@ export async function deliverVoiceDemoPromoSms(leadId: string): Promise<VoiceDem
   }
 
   const first = row.full_name?.split(" ")[0] ?? "there";
-  const body = `Hi ${first} — your 998 web designs code: ${VOICE_DEMO_PROMO_CODE} (20% off design fee). Start at ${marketingSiteOrigin()}/start`;
+  const body = `Hi ${first} - your 998 web designs code: ${VOICE_DEMO_PROMO_CODE} (20% off design fee). Start at ${marketingSiteOrigin()}/start`;
   const sms = await sendTwilioSms(row.phone, body);
   if (!sms.ok) {
     console.warn("[voice-demo-promo-sms] Twilio send failed", {
@@ -71,7 +71,7 @@ export function promoSmsToolPayload(result: VoiceDemoPromoSmsResult): Record<str
     smsConfigured: result.smsConfigured,
     error: result.error,
     message: result.smsConfigured
-      ? "SMS failed — apologize briefly; offer send_promo_email if they have not received the code yet."
-      : "SMS not available — apologize; offer send_promo_email to their verified address instead. Do NOT say a text was sent.",
+      ? "SMS failed - apologize briefly; offer send_promo_email if they have not received the code yet."
+      : "SMS not available - apologize; offer send_promo_email to their verified address instead. Do NOT say a text was sent.",
   };
 }

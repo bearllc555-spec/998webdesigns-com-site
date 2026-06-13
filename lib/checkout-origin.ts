@@ -43,7 +43,7 @@ export function resolveCheckoutOrigin(
   return "https://998webdesigns.com";
 }
 
-/** Stripe success/cancel URLs — never trust arbitrary Origin headers. */
+/** Stripe success/cancel URLs - never trust arbitrary Origin headers. */
 export function checkoutOrigin(req: NextRequest): string {
   return resolveCheckoutOrigin(req.headers.get("origin"));
 }

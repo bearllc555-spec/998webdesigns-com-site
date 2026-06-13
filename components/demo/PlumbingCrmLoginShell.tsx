@@ -26,7 +26,7 @@ export function PlumbingCrmLoginShell() {
             CRM sign in
             <SiteVersionPill />
           </h1>
-          <p className="mt-2 text-sm text-ink-soft">Private demonstration — not indexed.</p>
+          <p className="mt-2 text-sm text-ink-soft">Private demonstration - not indexed.</p>
         </div>
       </div>
 

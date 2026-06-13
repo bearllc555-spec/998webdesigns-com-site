@@ -68,8 +68,8 @@ async function main() {
       );
       console.log(
         check.rowCount
-          ? `OK — migration ${VERSION} recorded (via ${config.host})`
-          : "FAIL — row not found after insert"
+          ? `OK - migration ${VERSION} recorded (via ${config.host})`
+          : "FAIL - row not found after insert"
       );
       await client.end();
       process.exit(check.rowCount ? 0 : 1);

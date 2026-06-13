@@ -3,7 +3,7 @@ import { PLUMBING_DEMO_BUSINESS_NAME } from "@/lib/voice-demo-plumbing-constants
 
 const BIZ = PLUMBING_DEMO_BUSINESS_NAME;
 
-/** Fictional Metro Plumbing CRM activity — never written to production tables. */
+/** Fictional Metro Plumbing CRM activity - never written to production tables. */
 export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
   const items: CrmFeedItem[] = [
     {
@@ -12,7 +12,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       at: "2026-06-08T14:22:00.000Z",
       title: "Maria Torres",
       email: "mtorres@example.com",
-      businessName: "Torres Family — Montclair, NJ",
+      businessName: "Torres Family - Montclair, NJ",
       status: null,
       notes: null,
       stripeSessionId: null,
@@ -49,9 +49,9 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       at: "2026-06-08T16:40:00.000Z",
       title: "Sarah Klein",
       email: "sarah.klein@example.com",
-      businessName: "Klein Residence — Ridgewood, NJ",
+      businessName: "Klein Residence - Ridgewood, NJ",
       status: "deposit_paid",
-      notes: "Jarvis booked water heater replacement — 40 gal gas, attic install.",
+      notes: "Jarvis booked water heater replacement - 40 gal gas, attic install.",
       stripeSessionId: null,
       stripeSubscriptionId: null,
       message: "Water heater replacement · Thu Jun 12 · 9–11 AM window",
@@ -77,12 +77,12 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       at: "2026-06-08T11:15:00.000Z",
       title: "David Okonkwo",
       email: "d.okonkwo@example.com",
-      businessName: "Okonkwo Home — Teaneck, NJ",
+      businessName: "Okonkwo Home - Teaneck, NJ",
       status: "awaiting_deposit",
       notes: null,
       stripeSessionId: null,
       stripeSubscriptionId: null,
-      message: "Emergency leak under kitchen sink — callback requested after voice demo.",
+      message: "Emergency leak under kitchen sink - callback requested after voice demo.",
       phone: "(551) 555-4401",
       contact: { cellPhone: "(551) 555-4401" },
       payload: { source: "jarvis_voice_demo" },
@@ -97,7 +97,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       email: "dispatch@robertssons.example",
       businessName: "Robert & Sons Mechanical",
       status: "paid_in_full",
-      notes: "Commercial client — quarterly backflow testing. Next visit Sep 2026.",
+      notes: "Commercial client - quarterly backflow testing. Next visit Sep 2026.",
       stripeSessionId: null,
       stripeSubscriptionId: null,
       message: "Active client · backflow certification on file",
@@ -149,7 +149,7 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       notes: null,
       stripeSessionId: null,
       stripeSubscriptionId: null,
-      message: "Thanks — tech was great yesterday. Leaving a Google review tonight.",
+      message: "Thanks - tech was great yesterday. Leaving a Google review tonight.",
       phone: "(914) 555-1188",
       contact: { cellPhone: "(914) 555-1188" },
       payload: { direction: "inbound" },
@@ -162,9 +162,9 @@ export function getPlumbingDemoCrmSeedItems(): CrmFeedItem[] {
       at: "2026-06-06T15:30:00.000Z",
       title: "Patel Plumbing Supply",
       email: "partners@patelsupply.example",
-      businessName: "Patel Plumbing Supply — Newark",
+      businessName: "Patel Plumbing Supply - Newark",
       status: "discovery_scheduled",
-      notes: "Referral partner call — co-marketing flyer for trade customers.",
+      notes: "Referral partner call - co-marketing flyer for trade customers.",
       stripeSessionId: null,
       stripeSubscriptionId: null,
       message: "Discovery call booked · Mon Jun 9 · 2:00 PM ET",

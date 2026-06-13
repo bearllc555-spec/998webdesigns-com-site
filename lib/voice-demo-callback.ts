@@ -11,7 +11,7 @@ export function isVoiceDemoCallbackSummary(summary: string | null | undefined): 
   return Boolean(summary?.trim().startsWith(VOICE_DEMO_CALLBACK_SUMMARY_PREFIX));
 }
 
-/** US callback number for marketing Jarvis — E.164 when possible. */
+/** US callback number for marketing Jarvis - E.164 when possible. */
 export function voiceDemoCallbackPhone(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;

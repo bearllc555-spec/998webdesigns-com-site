@@ -95,7 +95,7 @@ export function LinkedInBannerPreview({
         <div className="linkedin-profile-stub" aria-hidden="true">
           <div
             className="linkedin-avatar"
-            title="Profile photo — overlaps bottom-left of cover on LinkedIn"
+            title="Profile photo - overlaps bottom-left of cover on LinkedIn"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

@@ -1,7 +1,7 @@
 import type { CrmFeedItem } from "@/lib/crm-feed";
 import type { CrmInboxFlag } from "@/lib/crm-inbox-flag";
 
-/** sessionStorage — cleared on demo CRM logout and login so inbox resets to seed defaults. */
+/** sessionStorage - cleared on demo CRM logout and login so inbox resets to seed defaults. */
 export const PLUMBING_DEMO_CRM_SESSION_STORE_KEY = "plumbing-demo-crm-session-v1";
 export const PLUMBING_DEMO_CRM_HIDDEN_STORE_KEY = "plumbing-demo-crm-hidden-v1";
 

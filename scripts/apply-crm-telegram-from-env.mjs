@@ -69,8 +69,8 @@ async function main() {
       const host = config.host ?? "pooler";
       console.log(
         check.rows.length
-          ? `OK — crm_telegram_settings on ${host}`
-          : `WARN — ran on ${host} but table not visible`
+          ? `OK - crm_telegram_settings on ${host}`
+          : `WARN - ran on ${host} but table not visible`
       );
       await client.end();
       return;

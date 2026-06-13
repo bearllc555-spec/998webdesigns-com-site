@@ -9,7 +9,7 @@ import "../linkedin-banner.css";
 import "../linkedin-export.css";
 
 export const metadata: Metadata = {
-  title: { absolute: `LinkedIn banner export — Design 1 (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H})` },
+  title: { absolute: `LinkedIn banner export - Design 1 (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H})` },
   robots: { index: false, follow: false },
 };
 

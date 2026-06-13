@@ -15,7 +15,7 @@ type ContactPayload = {
   email?: string;
   businessName?: string;
   message?: string;
-  /** Bot-only fields — legitimate client JSON never includes these */
+  /** Bot-only fields - legitimate client JSON never includes these */
   website?: string;
   url?: string;
   company_url?: string;
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   }
   const body = parsed.body as ContactPayload;
 
-  // Honeypot — bots add extra fields; our UI sends only name/email/businessName/message
+  // Honeypot - bots add extra fields; our UI sends only name/email/businessName/message
   for (const key of BOT_TRAP_FIELDS) {
     if (honeypotValue(body, key).length > 0) {
       console.info("[contact] honeypot discard", key);

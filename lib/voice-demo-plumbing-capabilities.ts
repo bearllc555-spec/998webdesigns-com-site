@@ -1,4 +1,4 @@
-/** Demo-page copy — mirrors docs/jarvis_plumbing_complete.md Q&A knowledge base. */
+/** Demo-page copy - mirrors docs/jarvis_plumbing_complete.md Q&A knowledge base. */
 
 export type PlumbingDemoCapabilityGroup = {
   id: string;

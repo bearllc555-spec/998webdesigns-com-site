@@ -10,7 +10,7 @@ import "../linkedin-banner-d4.css";
 import "../../linkedin-export.css";
 
 export const metadata: Metadata = {
-  title: { absolute: `LinkedIn banner export — Design 4 (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H})` },
+  title: { absolute: `LinkedIn banner export - Design 4 (${LINKEDIN_COVER_UPLOAD_W}×${LINKEDIN_COVER_UPLOAD_H})` },
   robots: { index: false, follow: false },
 };
 

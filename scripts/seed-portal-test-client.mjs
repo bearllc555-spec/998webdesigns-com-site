@@ -114,7 +114,7 @@ const row = {
   stripe_deposit_invoice_id: `seed_portal_${Date.now()}`,
   stripe_subscription_id: subscription.id,
   hosting_billing_starts_at: billingStarts.toISOString(),
-  notes: "Portal test seed — safe to delete after QA",
+  notes: "Portal test seed - safe to delete after QA",
 };
 
 const { data: existing } = await supabase

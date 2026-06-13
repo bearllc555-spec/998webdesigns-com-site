@@ -124,7 +124,7 @@ function ContactFormPanel({
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4">
-        {/* Bot trap — not read into JSON; bots that POST extra fields are caught server-side */}
+        {/* Bot trap - not read into JSON; bots that POST extra fields are caught server-side */}
         <input
           type="text"
           name="website"

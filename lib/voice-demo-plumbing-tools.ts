@@ -86,7 +86,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "save_plumbing_contact",
           description:
-            "Save caller details as you collect them — call after each field (name, address, email, phone, date/time, service type). Tool response tells you how to reconfirm aloud before continuing.",
+            "Save caller details as you collect them - call after each field (name, address, email, phone, date/time, service type). Tool response tells you how to reconfirm aloud before continuing.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -305,7 +305,7 @@ export async function executeVoiceDemoPlumbingTool(
           scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail);
         }
         emailMessage =
-          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) is sending to the updated address — after reconfirming the new email aloud, tell the caller to check inbox and spam.";
+          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) is sending to the updated address - after reconfirming the new email aloud, tell the caller to check inbox and spam.";
       }
     }
 
@@ -363,7 +363,7 @@ export async function executeVoiceDemoPlumbingTool(
     const unchangedNote =
       !reconfirmMessage &&
       (visitorName || serviceAddress || email || phone || appointmentDate || timeWindow || serviceType)
-        ? " Contact updated — value already on file; do NOT read back again. Continue to the next question."
+        ? " Contact updated - value already on file; do NOT read back again. Continue to the next question."
         : "";
 
     const message = reconfirmMessage
@@ -418,9 +418,9 @@ export async function executeVoiceDemoPlumbingTool(
       message:
         `Callback logged for ${visitorName} at ${phone}. ` +
         (phoneSpoken
-          ? `If not done yet, reconfirm name and phone — read digits: "${phoneSpoken}" — then `
+          ? `If not done yet, reconfirm name and phone - read digits: "${phoneSpoken}" - then `
           : "") +
-        `tell the caller someone from Metro Plumbing & Drain will call them back as soon as we can — ` +
+        `tell the caller someone from Metro Plumbing & Drain will call them back as soon as we can - ` +
         `do NOT guess an answer to their question.`,
     };
   }
@@ -439,7 +439,7 @@ export async function executeVoiceDemoPlumbingTool(
     const issueDescription =
       typeof args.issueDescription === "string" ? args.issueDescription.trim() : "";
     const isEmergency = args.isEmergency === true;
-    /** Every standard booking gets the $50 promo email — do not rely on the model flag. */
+    /** Every standard booking gets the $50 promo email - do not rely on the model flag. */
     const grantPromo = !isEmergency;
 
     if (!visitorName || !email || !isValidEmail(email) || !serviceAddress || !serviceType) {
@@ -518,8 +518,8 @@ export async function executeVoiceDemoPlumbingTool(
       emailSent: true,
       status,
       message: grantPromo
-        ? "Appointment booked. One confirmation email is sending with their $50 coupon inside — tell the caller to check inbox and spam for that email. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
-        : "Appointment booked. Confirmation email is sending — recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
+        ? "Appointment booked. One confirmation email is sending with their $50 coupon inside - tell the caller to check inbox and spam for that email. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
+        : "Appointment booked. Confirmation email is sending - recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
     };
   }
 

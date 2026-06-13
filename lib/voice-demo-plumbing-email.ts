@@ -127,14 +127,14 @@ export function buildPlumbingEmail(
               ? `Your code: <strong style="font-size: 18px; letter-spacing: 0.06em;">${escapeHtml(promoCode)}</strong><br />`
               : ""
           }
-          Present this code when we arrive — $${PLUMBING_DEMO_PROMO_AMOUNT} off this visit.
+          Present this code when we arrive - $${PLUMBING_DEMO_PROMO_AMOUNT} off this visit.
         </p>`
       : "";
 
   switch (template) {
     case "appointment":
       return {
-        subject: "Your Appointment is Confirmed — Metro Plumbing & Drain",
+        subject: "Your Appointment is Confirmed - Metro Plumbing & Drain",
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>Your appointment with ${escapeHtml(PLUMBING_DEMO_BUSINESS_NAME)} is confirmed.</p>
@@ -149,7 +149,7 @@ export function buildPlumbingEmail(
       };
     case "emergency":
       return {
-        subject: "Emergency Tech Dispatched — Metro Plumbing & Drain",
+        subject: "Emergency Tech Dispatched - Metro Plumbing & Drain",
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>We've received your emergency request and a technician has been dispatched.</p>
@@ -162,25 +162,25 @@ export function buildPlumbingEmail(
       };
     case "quote_followup":
       return {
-        subject: "Your Metro Plumbing & Drain Quote — Here's What We Discussed",
+        subject: "Your Metro Plumbing & Drain Quote - Here's What We Discussed",
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>Thanks for reaching out. Here's a summary of what we discussed:</p>
           <p><strong>Service:</strong> ${service}<br />
           <strong>Estimated range:</strong> ${price}</p>
           <p>Free estimates on non-emergency work. 1-year labor warranty. Licensed in NJ and NY.</p>
-          <p><strong>Your $${PLUMBING_DEMO_PROMO_AMOUNT} discount</strong> is available when you book — reply to this email when you're ready.</p>
+          <p><strong>Your $${PLUMBING_DEMO_PROMO_AMOUNT} discount</strong> is available when you book - reply to this email when you're ready.</p>
         `),
       };
     case "after_hours":
       return {
-        subject: "We Got Your Message — Metro Plumbing & Drain",
+        subject: "We Got Your Message - Metro Plumbing & Drain",
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>Thanks for contacting ${escapeHtml(PLUMBING_DEMO_BUSINESS_NAME)}. Our office is currently closed, but we received your message.</p>
           <p><strong>Regarding:</strong> ${escapeHtml(payload.inquirySummary ?? service)}</p>
           <p>Someone will call you back on the next business day (Mon–Fri 7am–7pm, Sat 8am–4pm).</p>
-          <p>If your situation becomes urgent — active leak, burst pipe, sewage backup — call back and tell Jarvis it's an emergency. We dispatch 24/7 within 2 hours.</p>
+          <p>If your situation becomes urgent - active leak, burst pipe, sewage backup - call back and tell Jarvis it's an emergency. We dispatch 24/7 within 2 hours.</p>
         `),
       };
     case "promo": {
@@ -189,13 +189,13 @@ export function buildPlumbingEmail(
           <strong style="font-size: 20px; letter-spacing: 0.06em;">${escapeHtml(promoCode)}</strong></p>`
         : "";
       return {
-        subject: `Your $${PLUMBING_DEMO_PROMO_AMOUNT} Discount — Metro Plumbing & Drain`,
+        subject: `Your $${PLUMBING_DEMO_PROMO_AMOUNT} Discount - Metro Plumbing & Drain`,
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>Here's your $${PLUMBING_DEMO_PROMO_AMOUNT} discount from ${escapeHtml(PLUMBING_DEMO_BUSINESS_NAME)}, as discussed.</p>
           ${codeLine}
-          <p><strong>Applied to:</strong> ${service} — or any service you book.</p>
-          <p>Present this code when you confirm or when we arrive — we'll apply it automatically.</p>
+          <p><strong>Applied to:</strong> ${service} - or any service you book.</p>
+          <p>Present this code when you confirm or when we arrive - we'll apply it automatically.</p>
         `),
       };
     }

@@ -1,4 +1,4 @@
-# Jarvis voice — Schedar (locked reference)
+# Jarvis voice - Schedar (locked reference)
 
 Canonical snapshot of the 998 homepage voice demo stack as of **v34.17**.  
 Use this file to restore or compare voice settings if production drifts.
@@ -9,7 +9,7 @@ Use this file to restore or compare voice settings if production drifts.
 Jarvis = Gemini Live gemini-2.5-flash-native-audio-preview-12-2025 + prebuilt voice "Schedar" + client playback 0.95 + British butler persona
 ```
 
-## Gemini Live (server — locked at ephemeral token creation)
+## Gemini Live (server - locked at ephemeral token creation)
 
 | Parameter | Value |
 |-----------|--------|
@@ -58,13 +58,13 @@ Jarvis = Gemini Live gemini-2.5-flash-native-audio-preview-12-2025 + prebuilt vo
 | Assistant receive sample rate | `24000` Hz PCM |
 | Mic MIME sent to Gemini | `audio/pcm;rate=16000` |
 
-## Persona (system prompt — shapes delivery, not a voice API knob)
+## Persona (system prompt - shapes delivery, not a voice API knob)
 
 From `VOICE_DEMO_PERSONA` in `lib/voice-demo-system-prompt.ts`:
 
-- **Character:** Jarvis — refined British butler; calm, precise, understated dry wit
+- **Character:** Jarvis - refined British butler; calm, precise, understated dry wit
 - **Address:** "sir" / "madam" until the visitor shares a name
-- **Tone:** Laid-back and chill — never salesy, cartoonish, or theatrical
+- **Tone:** Laid-back and chill - never salesy, cartoonish, or theatrical
 - **Pacing:** Speak slowly; one thought at a time; brief pauses between sentences; one question per turn
 - **Barge-in:** Stop immediately when the visitor speaks; do not talk over them
 
@@ -87,7 +87,7 @@ export const VOICE_DEMO_PLAYBACK_RATE = 0.95;
 
 ## Why the voice can sound slightly different between sessions
 
-The **voice name has not changed** — it is always `Schedar`. Perceived drift usually comes from:
+The **voice name has not changed** - it is always `Schedar`. Perceived drift usually comes from:
 
 - Google updating the native-audio **preview** model
 - Session **reconnect** / `goAway` resumption

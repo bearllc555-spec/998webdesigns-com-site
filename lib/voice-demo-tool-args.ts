@@ -7,7 +7,7 @@ export function coerceToolString(value: unknown): string {
   return "";
 }
 
-/** Accept true, "true", "yes", 1 — models often send loose truthy values. */
+/** Accept true, "true", "yes", 1 - models often send loose truthy values. */
 export function coerceToolBoolean(value: unknown): boolean {
   if (value === true) return true;
   if (value === false || value == null) return false;

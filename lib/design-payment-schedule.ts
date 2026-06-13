@@ -62,9 +62,9 @@ export function designPaymentScheduleLines(
   hostingChoice?: HostingChoice
 ): string[] {
   return [
-    `50% deposit today — ${formatCheckoutUsd(designDepositCents(promoCode, hostingChoice))}`,
-    `40% after design approval or development start — ${formatCheckoutUsd(designMilestone2Cents(promoCode, hostingChoice))}`,
-    `10% at launch and handover — ${formatCheckoutUsd(designMilestone3Cents(promoCode, hostingChoice))}`,
-    `Total design fee — ${formatCheckoutUsd(designTotalCents(promoCode, hostingChoice))}`,
+    `50% deposit today - ${formatCheckoutUsd(designDepositCents(promoCode, hostingChoice))}`,
+    `40% after design approval or development start - ${formatCheckoutUsd(designMilestone2Cents(promoCode, hostingChoice))}`,
+    `10% at launch and handover - ${formatCheckoutUsd(designMilestone3Cents(promoCode, hostingChoice))}`,
+    `Total design fee - ${formatCheckoutUsd(designTotalCents(promoCode, hostingChoice))}`,
   ];
 }

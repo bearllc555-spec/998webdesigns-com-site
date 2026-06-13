@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Stripe from "stripe";
 
-/** Mirror of lib/design-promo-codes.ts — update both when adding codes. */
+/** Mirror of lib/design-promo-codes.ts - update both when adding codes. */
 const DESIGN_PROMO_CODES = [{ code: "LINKEDIN20", percentOff: 20 }];
 
 function loadEnv(file) {
@@ -50,7 +50,7 @@ async function ensurePromotionCode(couponId, code) {
 async function main() {
   const product = await stripe.products.create({
     name: "Website Design (998)",
-    description: "$5,998 design fee — promo codes discount design line only in app checkout",
+    description: "$5,998 design fee - promo codes discount design line only in app checkout",
     metadata: { site: "998webdesigns.com", line: "design_fee" },
   });
   console.log("Product:", product.id);

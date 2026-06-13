@@ -24,7 +24,7 @@ export async function sendHostingPortalMagicLinkEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: email,
-    subject: "Manage your hosting billing — 998 web designs",
+    subject: "Manage your hosting billing - 998 web designs",
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <p>Hi,</p>

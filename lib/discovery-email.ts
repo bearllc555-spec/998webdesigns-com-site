@@ -51,13 +51,13 @@ export async function sendDiscoveryIntakeEmail(
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
       <p>Hi ${escapeHtml(fullName)},</p>
-      <p>Your phone is verified. Click below to complete your project brief — opening the link also confirms your email.</p>
+      <p>Your phone is verified. Click below to complete your project brief - opening the link also confirms your email.</p>
       <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Complete your brief</a></p>
       <p style="font-size: 14px; color: #52525b;">This link expires in 48 hours. Questions? Reply or write hello@998webdesigns.com.</p>
     </div>
   `;
 
-  return sendResendEmail(email, "Complete your project brief — 998 web designs", html);
+  return sendResendEmail(email, "Complete your project brief - 998 web designs", html);
 }
 
 export async function sendDiscoveryCloseEmail(
@@ -70,13 +70,13 @@ export async function sendDiscoveryCloseEmail(
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
       <p>Hi ${escapeHtml(fullName)},</p>
-      <p>Great speaking with you. Your personalized checkout is ready — package and add-ons are pre-filled from our call.</p>
+      <p>Great speaking with you. Your personalized checkout is ready - package and add-ons are pre-filled from our call.</p>
       <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Review and pay</a></p>
       <p style="font-size: 14px; color: #52525b;">This link expires in 7 days. Do not share it. Questions? hello@998webdesigns.com.</p>
     </div>
   `;
 
-  return sendResendEmail(email, "Your checkout link — 998 web designs", html);
+  return sendResendEmail(email, "Your checkout link - 998 web designs", html);
 }
 
 export async function sendDiscoveryCloseSms(
@@ -90,6 +90,6 @@ export async function sendDiscoveryCloseSms(
   }
 
   const firstName = fullName.trim().split(/\s+/)[0] || "there";
-  const body = `Hi ${firstName} — your 998 web designs checkout is ready: ${url}`;
+  const body = `Hi ${firstName} - your 998 web designs checkout is ready: ${url}`;
   return sendTwilioSms(phoneE164, body);
 }

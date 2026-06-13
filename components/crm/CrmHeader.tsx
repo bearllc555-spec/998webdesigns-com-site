@@ -10,15 +10,15 @@ import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
 type CrmHeaderProps = {
   title: string;
   subtitle?: string;
-  /** Eyebrow above the title — default 998 CRM. */
+  /** Eyebrow above the title - default 998 CRM. */
   brandLabel?: string;
   /** Hide Telegram/admin menu (public demo CRM). */
   hideAdmin?: boolean;
-  /** Session DELETE endpoint — default /api/crm/session */
+  /** Session DELETE endpoint - default /api/crm/session */
   sessionApiPath?: string;
   /** Where to send the browser after sign-out. */
   afterLogoutPath?: string;
-  /** Messages nav target — default /crm */
+  /** Messages nav target - default /crm */
   messagesHref?: string;
   /** Replaces Home in the sub-nav (e.g. Voice demo). */
   secondaryNavLink?: { href: string; label: string };

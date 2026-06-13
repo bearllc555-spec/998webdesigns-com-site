@@ -66,7 +66,7 @@ describe("voice-demo-system-prompt verify", () => {
     email_verified_at: null,
   } as VoiceDemoLeadRow;
 
-  it("requires typed verification only — no spoken codes", () => {
+  it("requires typed verification only - no spoken codes", () => {
     const prompt = voiceDemoVerifySystemPrompt(unverifiedRow);
     expect(prompt).toMatch(/TYPED ONLY/i);
     expect(prompt).toMatch(/typing field/i);

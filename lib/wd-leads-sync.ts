@@ -3,7 +3,7 @@ import { mergeMilestonePaid } from "@/lib/design-milestone-payments";
 import { hostingBillingStartsAt } from "@/lib/hosting-policy";
 import { getWdLeadById, updateLatestWdLeadByEmail, updateWdLead } from "@/lib/leads-db";
 
-/** After Checkout session is created — checkout link sent, payment pending. */
+/** After Checkout session is created - checkout link sent, payment pending. */
 export async function syncWdLeadCheckoutCreated(
   leadId: string | undefined,
   session: Stripe.Checkout.Session
@@ -76,7 +76,7 @@ export function isLifetimeHostingCheckout(session: Stripe.Checkout.Session): boo
   return type === "lifetime_hosting" || type === "ten_year_hosting";
 }
 
-/** Design fee deposit (50%) collected — balance due at milestones. */
+/** Design fee deposit (50%) collected - balance due at milestones. */
 export async function syncWdLeadDepositPaid(session: Stripe.Checkout.Session): Promise<void> {
   if (isLifetimeHostingCheckout(session)) return;
 
@@ -120,7 +120,7 @@ export async function syncWdLeadMilestone2Paid(session: Stripe.Checkout.Session)
   });
 }
 
-/** 10% design milestone collected — design fee paid in full. */
+/** 10% design milestone collected - design fee paid in full. */
 export async function syncWdLeadMilestone3Paid(session: Stripe.Checkout.Session): Promise<void> {
   const leadId = session.metadata?.wdLeadId;
   if (!leadId) return;
@@ -138,7 +138,7 @@ export async function syncWdLeadMilestone3Paid(session: Stripe.Checkout.Session)
   });
 }
 
-/** Design fee paid in full — starts free hosting window (HOSTING_TRIAL_DAYS). */
+/** Design fee paid in full - starts free hosting window (HOSTING_TRIAL_DAYS). */
 export async function syncWdLeadPaidInFull(session: Stripe.Checkout.Session): Promise<void> {
   if (isLifetimeHostingCheckout(session)) {
     await syncWdLeadLifetimeHostingPaid(session);

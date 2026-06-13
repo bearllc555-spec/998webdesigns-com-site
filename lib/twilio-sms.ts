@@ -82,7 +82,7 @@ export async function sendTwilioSms(
     return { ok: false, error: "Twilio accepted the message but returned no message SID." };
   }
 
-  // API 201 only means queued — carriers can still reject (e.g. A2P 10DLC error 30034).
+  // API 201 only means queued - carriers can still reject (e.g. A2P 10DLC error 30034).
   await sleep(2500);
   const final = await fetchTwilioMessage(creds.accountSid, creds.authToken, messageSid);
   const status = final?.status ?? created.status;

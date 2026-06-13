@@ -98,8 +98,8 @@ async function main() {
       );
       console.log(
         check.rows.length
-          ? "OK — crm_telegram_settings exists"
-          : "WARN — migration ran but table not found"
+          ? "OK - crm_telegram_settings exists"
+          : "WARN - migration ran but table not found"
       );
       await client.end();
       return;

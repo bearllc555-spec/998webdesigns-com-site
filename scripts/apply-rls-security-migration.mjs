@@ -105,7 +105,7 @@ for (const config of configs) {
       console.error("Incomplete:", bad.map((r) => r.table_name).join(", "));
       process.exit(1);
     }
-    console.log("OK — RLS security hardening applied");
+    console.log("OK - RLS security hardening applied");
     await client.end();
     process.exit(0);
   } catch (err) {

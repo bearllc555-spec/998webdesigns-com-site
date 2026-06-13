@@ -63,7 +63,7 @@ export async function sendLeadCheckoutEmail(
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: lead.email,
-    subject: "Complete your payment — 998 web designs",
+    subject: "Complete your payment - 998 web designs",
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <p>Hi ${escapeHtml(lead.fullName)},</p>
@@ -71,7 +71,7 @@ export async function sendLeadCheckoutEmail(
         <p><strong>Hosting:</strong> ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}</p>
         <p><strong>Payment method:</strong> ${escapeHtml(methodLabel)}</p>
         ${promoNote}
-        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)} (design fee only — first ${HOSTING_TRIAL_DAYS} days of hosting are free)</p>
+        <p><strong>Amount due at checkout:</strong> ${escapeHtml(totalLabel)} (design fee only - first ${HOSTING_TRIAL_DAYS} days of hosting are free)</p>
         ${scheduleHtml}
         <p style="font-size: 14px; color: #52525b;">Hosting billing starts ${HOSTING_TRIAL_DAYS} days after payment clears: ${escapeHtml(hostingChoiceLabel(lead.hostingChoice))}.</p>
         ${achNote}

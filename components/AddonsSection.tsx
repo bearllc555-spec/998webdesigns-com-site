@@ -19,7 +19,7 @@ const ADDONS = [
     setup: "$299",
     monthly: "$79",
     bullets: [
-      "Answer visitor questions around the clock — typed chat on your site",
+      "Answer visitor questions around the clock - typed chat on your site",
       "Process orders and quote requests",
       "Send brochures, pricing, and documentation",
       "Schedule appointments and callbacks",
@@ -32,11 +32,11 @@ const ADDONS = [
     setup: "$499",
     monthly: "$149",
     bullets: [
-      "Talk to your site — the same voice assistant visitors can try on our home page",
+      "Talk to your site - the same voice assistant visitors can try on our home page",
       "Visitors speak or type; Jarvis answers in a natural, on-brand voice",
       "Captures name, email, and phone; sends promo codes when visitors are ready",
       "Handles after-hours questions so you do not miss serious inquiries",
-      "Hosted on our cloud edge service only — low latency for real-time voice",
+      "Hosted on our cloud edge service only - low latency for real-time voice",
     ],
   },
   {
@@ -45,7 +45,7 @@ const ADDONS = [
     setup: "$399",
     monthly: "$149",
     bullets: [
-      "Answer your business line 24/7 — nights, weekends, and when you're on a job",
+      "Answer your business line 24/7 - nights, weekends, and when you're on a job",
       "Greet callers by name, capture name, number, and what they need",
       "Book appointments and route urgent calls to your cell",
       "Answer FAQs about hours, service area, pricing ranges, and availability",
@@ -97,7 +97,7 @@ const ADDONS = [
     setup: "$299",
     monthly: "$249",
     bullets: [
-      "Tune your site to pull traffic from your exact service area—not generic national keywords",
+      "Tune your site to pull traffic from your exact service area-not generic national keywords",
       "Pages for each city, town, or ZIP you want to own",
       "On‑page copy, headings, and structure aligned with how locals search",
       "Technical basics: speed, mobile UX, and crawlability that affect local rankings",
@@ -110,7 +110,7 @@ const ADDONS = [
     setup: "$149",
     monthly: "$79",
     bullets: [
-      "Complete, accurate Google Business Profile—photos, hours, services, and attributes",
+      "Complete, accurate Google Business Profile-photos, hours, services, and attributes",
       "One of the most underused levers local businesses ignore",
       "Review requests, replies, and reputation workflows that build trust",
       "Profile posts, offers, and Q&A so you look active on Maps",
@@ -197,7 +197,7 @@ function GrowthPackBanner({
               growthSelected ? "text-ink-soft" : "text-white/85"
             }`}
           >
-            {GROWTH_PACK_INCLUDES.join(", ")} — bundled at a
+            {GROWTH_PACK_INCLUDES.join(", ")} - bundled at a
             discount.
           </p>
         </div>
@@ -366,7 +366,7 @@ export function AddonsSection() {
           <p className="mt-4 text-base leading-relaxed text-ink-soft">
             Every build includes options for blog writing & local posts, hyper‑local SEO, Google
             Profile Optimization (including review requests), email/SMS follow‑ups, social media management,
-            booking calendar, an AI receptionist, a typed AI agent chatbot, and Jarvis — our voice
+            booking calendar, an AI receptionist, a typed AI agent chatbot, and Jarvis - our voice
             chatbot.
           </p>
         </div>
@@ -376,7 +376,7 @@ export function AddonsSection() {
             Agencies charge $500–$2,000/month for local SEO alone.
           </p>
           <p className="mt-1 text-sm text-ink-soft">
-            We don&apos;t. Every add-on below is priced for real small businesses — not agency
+            We don&apos;t. Every add-on below is priced for real small businesses - not agency
             retainers.
           </p>
         </div>

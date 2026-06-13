@@ -7,7 +7,7 @@ import "../../feature-banner.css";
 const feature = BANNER_FEATURE_ROUTES[0];
 
 export const metadata: Metadata = {
-  title: { absolute: "Feature 1 — full image export" },
+  title: { absolute: "Feature 1 - full image export" },
   robots: { index: false, follow: false },
 };
 

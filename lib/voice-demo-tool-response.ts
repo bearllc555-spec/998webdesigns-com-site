@@ -15,7 +15,7 @@ const SILENT_ON_SUCCESS = new Set([
 ]);
 
 /**
- * Model should speak from save_name / phone staging tool messages — not SILENT.
+ * Model should speak from save_name / phone staging tool messages - not SILENT.
  * Blocked/error responses are always SILENT so Jarvis does not read error JSON aloud.
  */
 export function shouldUseSilentToolScheduling(

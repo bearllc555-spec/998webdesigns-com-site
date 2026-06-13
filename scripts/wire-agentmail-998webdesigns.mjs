@@ -78,4 +78,4 @@ execSync("npx wrangler secret put AGENTMAIL_WEBHOOK_SIGNING_SECRET", {
 
 execSync("npx wrangler deploy", { cwd: workerDir, stdio: "inherit" });
 
-console.log("OK — Worker wired to", INBOX_ID);
+console.log("OK - Worker wired to", INBOX_ID);

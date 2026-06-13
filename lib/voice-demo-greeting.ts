@@ -1,15 +1,15 @@
-/** Hidden client cue — never spoken aloud; triggers Jarvis's mandatory opening. */
+/** Hidden client cue - never spoken aloud; triggers Jarvis's mandatory opening. */
 export const VOICE_DEMO_SESSION_START_CUE = "[session-start]";
 
 export const VOICE_DEMO_INTRO_LINE =
-  "Hello — I'm Jarvis, the AI assistant for 998. Who do I have the pleasure of speaking with?";
+  "Hello - I'm Jarvis, the AI assistant for 998. Who do I have the pleasure of speaking with?";
 
 /** First line after the visitor shares their name (demo onboarding). */
 export const VOICE_DEMO_POST_NAME_LINE = "How may I help you today?";
 
-export const VOICE_DEMO_MANDATORY_OPENING = `MANDATORY OPENING (your very first spoken turn in every session — never skip, never wait for the visitor to speak first):
+export const VOICE_DEMO_MANDATORY_OPENING = `MANDATORY OPENING (your very first spoken turn in every session - never skip, never wait for the visitor to speak first):
 Deliver both parts in one calm British butler greeting:
-1. Introduce yourself: "Hello — I'm Jarvis, the AI assistant for 998."
+1. Introduce yourself: "Hello - I'm Jarvis, the AI assistant for 998."
 2. Immediately ask: "Who do I have the pleasure of speaking with?"
 When you receive the hidden client cue "${VOICE_DEMO_SESSION_START_CUE}", speak this opening right away. Do not read the cue aloud. Do not repeat the full introduction later unless the visitor asks who you are.`;
 
@@ -31,7 +31,7 @@ export function isAssistantPostNameGreeting(text: string): boolean {
   return /how may i help you today/i.test(text.trim().toLowerCase());
 }
 
-/** Name salutation after save_name — hello/hi/good day + visitor first name. */
+/** Name salutation after save_name - hello/hi/good day + visitor first name. */
 export function isAssistantNameSalutation(text: string, firstName?: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
@@ -43,7 +43,7 @@ export function isAssistantNameSalutation(text: string, firstName?: string): boo
   return /\b(hello|hi|hey|good day),?\s+[a-z]{2,}\b/i.test(t);
 }
 
-/** Name salutation without the help line — greeting was cut off or help line missing. */
+/** Name salutation without the help line - greeting was cut off or help line missing. */
 export function isAssistantPartialPostNameGreeting(text: string, firstName?: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t || isAssistantPostNameGreeting(text)) return false;
@@ -54,7 +54,7 @@ export function buildSaveNameToolMessage(visitorName: string, alreadyGreeted: bo
   const first = visitorName.split(/\s+/)[0] ?? visitorName;
   if (alreadyGreeted) {
     return (
-      `Name saved (${visitorName}). You already spoke "${VOICE_DEMO_POST_NAME_LINE}" — ` +
+      `Name saved (${visitorName}). You already spoke "${VOICE_DEMO_POST_NAME_LINE}" - ` +
       `stay completely silent and listen. Do not repeat the greeting.`
     );
   }
@@ -64,10 +64,10 @@ export function buildSaveNameToolMessage(visitorName: string, alreadyGreeted: bo
   );
 }
 
-/** Hidden cue — name saved but post-name greeting not spoken yet; speak now. */
+/** Hidden cue - name saved but post-name greeting not spoken yet; speak now. */
 export const VOICE_DEMO_POST_NAME_PENDING_CUE = "[post-name-pending]";
 
-/** Wait after save_name before nudging — model often idles until visitor speaks. */
+/** Wait after save_name before nudging - model often idles until visitor speaks. */
 export const POST_NAME_GREETING_NUDGE_MS = 900;
 
 export function buildPostNameGreetingNudge(visitorName: string): string {
@@ -79,27 +79,27 @@ export function buildPostNameGreetingNudge(visitorName: string): string {
   );
 }
 
-/** Hidden cue — name salutation already spoken; only the help question is missing. */
+/** Hidden cue - name salutation already spoken; only the help question is missing. */
 export const VOICE_DEMO_POST_NAME_HELP_ONLY_CUE = "[post-name-help-only]";
 
 export function buildPostNameHelpOnlyNudge(): string {
   return (
     `${VOICE_DEMO_POST_NAME_HELP_ONLY_CUE} You already greeted them by name. ` +
-    `Speak ONLY: "${VOICE_DEMO_POST_NAME_LINE}" — do not repeat their name or say hello again.`
+    `Speak ONLY: "${VOICE_DEMO_POST_NAME_LINE}" - do not repeat their name or say hello again.`
   );
 }
 
-/** Hidden cue — post-name line already spoken; model must stay silent. */
+/** Hidden cue - post-name line already spoken; model must stay silent. */
 export const VOICE_DEMO_POST_NAME_HOLD_CUE = "[post-name-hold]";
 
 export function buildPostNameHoldNudge(): string {
   return (
-    `${VOICE_DEMO_POST_NAME_HOLD_CUE} You already said "${VOICE_DEMO_POST_NAME_LINE}" — ` +
+    `${VOICE_DEMO_POST_NAME_HOLD_CUE} You already said "${VOICE_DEMO_POST_NAME_LINE}" - ` +
     `stay completely silent and listen. Do not repeat the greeting.`
   );
 }
 
-/** Hidden cue — WebSocket resumed; do not replay intro or duplicate greetings. */
+/** Hidden cue - WebSocket resumed; do not replay intro or duplicate greetings. */
 export const VOICE_DEMO_SESSION_RESUME_CUE = "[session-resume]";
 
 export function buildSessionResumeNudge(opts: {
@@ -114,12 +114,12 @@ export function buildSessionResumeNudge(opts: {
   }
   if (opts.nameOnFile) {
     return (
-      `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed. You may have heard ${opts.nameOnFile} — ` +
+      `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed. You may have heard ${opts.nameOnFile} - ` +
       `call save_name if not saved yet, then one brief help question only. Do not repeat the full introduction.`
     );
   }
   return (
-    `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed. Listen for the visitor's name — ` +
+    `${VOICE_DEMO_SESSION_RESUME_CUE} Connection resumed. Listen for the visitor's name - ` +
     `do not repeat your full introduction.`
   );
 }

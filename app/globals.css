@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 /* ============================================================
-   998webdesigns design tokens — primitive → semantic
+   998webdesigns design tokens - primitive → semantic
    ============================================================ */
 
 :root {
-  /* Primitive — palette */
+  /* Primitive - palette */
   --c-white: #ffffff;
   --c-ink-900: #0a0a0a;
   --c-ink-800: #18181b;
@@ -66,7 +66,7 @@
   --shadow-btn-glow: 0 2px 4px rgba(10, 10, 10, 0.05), 0 10px 22px rgba(113, 113, 122, 0.18);
 }
 
-/* Cool charcoal dark mode — not pure black */
+/* Cool charcoal dark mode - not pure black */
 .dark {
   --bg: #151a23;
   --ink: #e8ecf4;
@@ -254,7 +254,7 @@ body {
   padding: 0;
 }
 
-/* CRM inbox row — full-width hover (badge + star included) */
+/* CRM inbox row - full-width hover (badge + star included) */
 .crm-inbox-row-interactive {
   cursor: pointer;
   transition:
@@ -266,7 +266,7 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* CRM inbox — unread row (light theme only; dark theme untouched) */
+/* CRM inbox - unread row (light theme only; dark theme untouched) */
 html:not(.dark) .crm-inbox-row-unread.crm-inbox-row-interactive {
   background-color: var(--c-white) !important;
 }
@@ -286,7 +286,7 @@ html.dark .crm-inbox-row-unread .crm-inbox-row-unread-text {
   font-weight: 700 !important;
 }
 
-/* CRM inbox — read row (light theme only) */
+/* CRM inbox - read row (light theme only) */
 html:not(.dark) .crm-inbox-row-read.crm-inbox-row-interactive {
   background-color: var(--c-rule-soft) !important;
 }
@@ -296,7 +296,7 @@ html:not(.dark) .crm-inbox-row-read.crm-inbox-row-interactive:hover {
   box-shadow: var(--shadow-md);
 }
 
-/* Dark — full-row hover (not just the flag column) */
+/* Dark - full-row hover (not just the flag column) */
 html.dark .crm-inbox-row-unread.crm-inbox-row-interactive:hover {
   background-color: #3f3f46 !important;
   box-shadow: var(--shadow-md);
@@ -338,7 +338,7 @@ html.dark .crm-inbox-row-read-badge {
   display: none;
 }
 
-/* Portfolio carousel — transform marquee (seamless infinite loop) */
+/* Portfolio carousel - transform marquee (seamless infinite loop) */
 @keyframes portfolio-marquee {
   from {
     transform: translate3d(0, 0, 0);
@@ -391,7 +391,7 @@ html.dark .crm-inbox-row-read-badge {
   transition: none !important;
 }
 
-/* Jarvis voice orb — idle breathe when connected */
+/* Jarvis voice orb - idle breathe when connected */
 @keyframes jarvis-breathe {
   0%,
   100% {
@@ -404,7 +404,7 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
-/* Plumbing Jarvis orb — reference voice-assistant-animation-003 (simplified) */
+/* Plumbing Jarvis orb - reference voice-assistant-animation-003 (simplified) */
 @keyframes plumbing-orb-breathe {
   0%,
   100% {
@@ -433,7 +433,7 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
-/* Hero headline — letter-by-letter reveal (opacity only, no blur) */
+/* Hero headline - letter-by-letter reveal (opacity only, no blur) */
 @keyframes hero-letter-in {
   from {
     opacity: 0;
@@ -456,7 +456,7 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
-/* Reduced motion — respect user setting */
+/* Reduced motion - respect user setting */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -465,7 +465,7 @@ html.dark .crm-inbox-row-read-badge {
   }
 }
 
-/* Card hover — lift, shadow, accent border (not used on carousel) */
+/* Card hover - lift, shadow, accent border (not used on carousel) */
 @layer components {
   .card-lift {
     transition:
@@ -482,7 +482,7 @@ html.dark .crm-inbox-row-read-badge {
 
 }
 
-/* Button glow — unlayered so hover shadow beats Tailwind utilities (e.g. shadow-sm) */
+/* Button glow - unlayered so hover shadow beats Tailwind utilities (e.g. shadow-sm) */
 button:not(:disabled),
 a.rounded-full {
   transition:
@@ -513,7 +513,7 @@ a.rounded-full:hover {
   text-decoration-color: var(--accent);
 }
 
-/* Focus ring — WCAG AA */
+/* Focus ring - WCAG AA */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;

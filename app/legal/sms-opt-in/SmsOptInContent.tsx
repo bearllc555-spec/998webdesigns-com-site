@@ -64,7 +64,7 @@ export function SmsOptInContent() {
             >
               https://998webdesigns.com/
             </a>{" "}
-            — click <strong>Talk to Jarvis</strong> (fixed button, bottom-right).
+            - click <strong>Talk to Jarvis</strong> (fixed button, bottom-right).
           </p>
           <ol className="mt-4 list-inside list-decimal space-y-2 text-ink-soft">
             <li>User enters email and receives a one-time email verification code (not SMS).</li>
@@ -79,7 +79,7 @@ export function SmsOptInContent() {
             </li>
             <li>
               On <strong>yes</strong>, the system saves the number only when{" "}
-              <code className="text-xs">smsConsent: true</code> is recorded — verbal agreement to
+              <code className="text-xs">smsConsent: true</code> is recorded - verbal agreement to
               save the number and possible future SMS.
             </li>
             <li>

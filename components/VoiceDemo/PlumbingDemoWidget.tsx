@@ -37,7 +37,7 @@ export function PlumbingDemoWidget() {
     vertical: "plumbers",
     onUnexpectedClose: () => {
       setStatus(
-        "Line paused — your booking is saved. Tap Start voice when you are ready to continue."
+        "Line paused - your booking is saved. Tap Start voice when you are ready to continue."
       );
     },
     onConversationEnd: () => {
@@ -119,7 +119,7 @@ export function PlumbingDemoWidget() {
       }
       setCaption(null);
       setPhase("demo");
-      setStatus("Ready — tap Start voice to call Jarvis.");
+      setStatus("Ready - tap Start voice to call Jarvis.");
     } catch {
       setFormError("Network error. Try again.");
     } finally {
@@ -166,7 +166,7 @@ export function PlumbingDemoWidget() {
         {configured && phase === "gate" && (
           <form onSubmit={startDemo} className="space-y-4">
             <p className="text-sm text-ink-soft">
-              Enter your email to try Jarvis — Metro Plumbing&apos;s AI receptionist. No verification
+              Enter your email to try Jarvis - Metro Plumbing&apos;s AI receptionist. No verification
               code; jump straight into a voice call about services, pricing, or booking.
             </p>
             <div>

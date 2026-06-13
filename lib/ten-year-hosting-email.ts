@@ -31,12 +31,12 @@ export async function sendTenYearHostingCheckoutEmail(params: {
   const { error } = await resend.emails.send({
     from: "998 web designs <website@998webdesigns.com>",
     to: params.email,
-    subject: `Your ${HOSTING_TRIAL_DAYS}-day free hosting period has ended — complete 10-year hosting`,
+    subject: `Your ${HOSTING_TRIAL_DAYS}-day free hosting period has ended - complete 10-year hosting`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
         <p>Hi ${escapeHtml(params.fullName)},</p>
         <p>Your complimentary hosting period for <strong>${escapeHtml(params.businessName)}</strong> has ended. To keep your site hosted for ten years, complete your one-time 10-year hosting payment.</p>
-        <p><strong>Amount due:</strong> ${escapeHtml(amount)} (10-year hosting — domain registration for .com, .net, or .org included; hosting begins when this payment clears)</p>
+        <p><strong>Amount due:</strong> ${escapeHtml(amount)} (10-year hosting - domain registration for .com, .net, or .org included; hosting begins when this payment clears)</p>
         <p style="margin: 24px 0;">
           <a href="${escapeHtml(params.checkoutUrl)}" style="display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600;">Pay for 10-year hosting</a>
         </p>

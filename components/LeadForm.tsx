@@ -174,7 +174,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return;
-    if (form.website) return; // honeypot tripped — silently no-op
+    if (form.website) return; // honeypot tripped - silently no-op
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -242,7 +242,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
           className="mt-10 rounded-2xl border border-rule bg-bg p-6 shadow-sm md:p-8"
           noValidate
         >
-          {/* Honeypot — hidden from real users */}
+          {/* Honeypot - hidden from real users */}
           <input
             type="text"
             name="website"
@@ -467,7 +467,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
                       Most Popular
                     </span>
                     <span className="block font-display text-base font-medium text-ink">
-                      Growth Pack — Hyper-Local SEO + Google Profile Optimization + Blog Writing &amp; Local Posts
+                      Growth Pack - Hyper-Local SEO + Google Profile Optimization + Blog Writing &amp; Local Posts
                     </span>
                     <span className="text-sm text-ink-soft">
                       $647 setup · $399/mo{" "}
@@ -567,7 +567,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
                       const summary = designPromoSummary(form.promoCode, hostingChoice);
                       const bundle = bundleTotalCents(form.promoCode, hostingChoice);
                       if (bundle != null && summary) return summary;
-                      return `${summary} — ${formatCheckoutUsd(
+                      return `${summary} - ${formatCheckoutUsd(
                         designFeeCents(form.promoCode, hostingChoice)
                       )} design`;
                     }
@@ -582,8 +582,8 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
               <Field label="Hosting (select one)" required error={errors.hostingChoice}>
                 <div className="grid gap-2 md:grid-cols-2">
                   {([
-                    ["ten_year", "10-year — $2,996 after free month"],
-                    ["monthly", `Month-to-month — ${HOSTING_MONTHLY_PRICE_MO_LABEL} after free month`],
+                    ["ten_year", "10-year - $2,996 after free month"],
+                    ["monthly", `Month-to-month - ${HOSTING_MONTHLY_PRICE_MO_LABEL} after free month`],
                   ] as const).map(([val, label]) => (
                     <label
                       key={val}
@@ -645,7 +645,7 @@ export function LeadForm({ initialPromo = "" }: LeadFormProps) {
                 <div className="mt-4 grid gap-2 md:grid-cols-2">
                   {([
                     ["card", "Credit or debit card", "3% processing fee on design fee only"],
-                    ["ach", "Pay by bank instead", "List price on design — no 3% fee"],
+                    ["ach", "Pay by bank instead", "List price on design - no 3% fee"],
                   ] as const).map(([val, title, hint]) => {
                     const channel = val as PaymentChannel;
                     const total =

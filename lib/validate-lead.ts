@@ -101,7 +101,7 @@ export function validateLeadPayload(
   if (paymentOption && !["full", "deposit"].includes(paymentOption)) {
     return {
       ok: false,
-      error: "Invalid paymentOption — must be deposit or full",
+      error: "Invalid paymentOption - must be deposit or full",
     };
   }
   if (!paymentChannel || !["ach", "card"].includes(paymentChannel)) {
@@ -125,7 +125,7 @@ export function validateLeadPayload(
     if (!isValidDesignPromoCode(promoCode, promoContext)) {
       return {
         ok: false,
-        error: "Invalid promo code — remove it or contact us if you expected a discount",
+        error: "Invalid promo code - remove it or contact us if you expected a discount",
       };
     }
   }
