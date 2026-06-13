@@ -8,6 +8,14 @@ import {
   addonDomId,
   addonValueFromHash,
 } from "@/lib/addon-nav";
+import { GROWTH_PACK_ID, GROWTH_PACK_MEMBERS } from "@/lib/addons";
+
+function scrollTargetId(value: string): string {
+  if (value === GROWTH_PACK_ID) {
+    return addonDomId(GROWTH_PACK_MEMBERS[0]);
+  }
+  return addonDomId(value);
+}
 
 function clearAddonHash() {
   const { pathname, search } = window.location;
@@ -25,7 +33,7 @@ export function useAddonNavHighlight() {
 
   const scrollToAddon = useCallback((value: string) => {
     requestAnimationFrame(() => {
-      document.getElementById(addonDomId(value))?.scrollIntoView({
+      document.getElementById(scrollTargetId(value))?.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });

@@ -139,12 +139,10 @@ const GROWTH_MEMBER_ADDONS = ADDONS.filter((a) => isGrowthPackMember(a.value));
 
 function GrowthPackBanner({
   growthSelected,
-  highlighted,
   onToggle,
   onCardClick,
 }: {
   growthSelected: boolean;
-  highlighted: boolean;
   onToggle: (value: string) => void;
   onCardClick: (e: React.MouseEvent) => void;
 }) {
@@ -153,11 +151,9 @@ function GrowthPackBanner({
       id={addonDomId(GROWTH_PACK_ID)}
       onClick={onCardClick}
       className={
-        highlighted
-          ? "relative mt-8 scroll-mt-24 rounded-xl border-2 border-accent bg-accent/[0.06] px-4 py-3 shadow-md ring-2 ring-accent/25 transition-colors duration-200"
-          : growthSelected
-            ? "relative mt-8 scroll-mt-24 rounded-xl border border-green-500 bg-green-50 px-4 py-3 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
-            : "mt-8 scroll-mt-24 rounded-xl bg-accent px-4 py-3 text-white"
+        growthSelected
+          ? "relative mt-8 scroll-mt-24 rounded-xl border border-green-500 bg-green-50 px-4 py-3 shadow-sm transition-colors duration-200 dark:bg-green-950/20"
+          : "mt-8 scroll-mt-24 rounded-xl bg-accent px-4 py-3 text-white"
       }
     >
       {growthSelected && (
@@ -303,9 +299,14 @@ export function AddonsSection() {
     isGrowthPackMember(value) &&
     !selectedAddons.includes(value);
 
+  function isNavHighlighted(addonValue: string): boolean {
+    if (highlighted === addonValue) return true;
+    return highlighted === GROWTH_PACK_ID && isGrowthPackMember(addonValue);
+  }
+
   function renderAddonCard(addon: AddonItem) {
     const selected = isSelected(addon.value);
-    const navHighlighted = highlighted === addon.value;
+    const navHighlighted = isNavHighlighted(addon.value);
     return (
       <div
         key={addon.value}
@@ -385,7 +386,6 @@ export function AddonsSection() {
 
         <GrowthPackBanner
           growthSelected={growthSelected}
-          highlighted={highlighted === GROWTH_PACK_ID}
           onToggle={handleToggle}
           onCardClick={(e) => handleCardClick(e, GROWTH_PACK_ID)}
         />
