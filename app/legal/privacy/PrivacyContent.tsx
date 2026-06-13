@@ -25,6 +25,12 @@ export function PrivacyContent() {
               policy explains what we collect when you use 998webdesigns.com, submit our lead or
               contact forms, or pay for a website package.
             </p>
+            <p className="mt-4 text-ink-soft">
+              This document details what personal information we collect, how we use it, and confirms
+              that we do not sell your information or share it with third parties for their marketing
+              or promotional purposes. We use your data only to operate our services, deliver your
+              project, and communicate with you about your request.
+            </p>
           </section>
 
           <section>
@@ -35,6 +41,13 @@ export function PrivacyContent() {
               We collect only what we need to respond, build your site, and process payment.
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
+              <li>
+                <strong>Mobile phone numbers:</strong> Optional phone on the lead form; phone
+                number and SMS consent on the discovery form (/book); phone collected during our
+                voice demo when you agree to save your number; inbound texts you send to our business
+                number; and phone on file for clients who receive transactional project or billing
+                texts from our team.
+              </li>
               <li>
                 <strong>Lead form:</strong> Name, business name, email, optional phone, contact
                 preference, business and project details, hosting preference, payment option, optional
@@ -73,13 +86,16 @@ export function PrivacyContent() {
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>Respond to inquiries and deliver your website project</li>
               <li>Send transactional email (receipts, drafts, project updates)</li>
+              <li>Send transactional SMS you opted into (verification codes, checkout links, project updates)</li>
               <li>Process payments and hosting-related billing through Stripe</li>
               <li>Operate, secure, and improve the website</li>
               <li>Comply with law and prevent fraud or abuse</li>
             </ul>
             <p className="mt-4 text-ink-soft">
-              We do not sell your personal information. We do not use lead data to build advertising
-              profiles.
+              We do not sell your personal information. We do not use lead or contact data to build
+              advertising profiles. We do not share, sell, rent, or lease your personal
+              information — including your mobile phone number — to third parties for their marketing,
+              promotional, or lead-generation purposes.
             </p>
           </section>
 
@@ -88,11 +104,29 @@ export function PrivacyContent() {
               4. SMS and phone communications
             </h2>
             <p className="text-ink-soft">
-              If you opt in on our discovery form, we may send you a one-time SMS verification code
-              through Twilio to confirm your phone number. Message and data rates may apply. Reply
-              STOP to opt out of further texts; reply HELP for help. We do not send marketing SMS
-              without separate consent. Your mobile number is used for verification, scheduling
-              follow-up, and project updates related to your request — not sold to third parties.
+              If you opt in on our discovery form (/book), we may send you a one-time SMS
+              verification code through Twilio to confirm your phone number. With separate consent
+              during our voice demo, we may send a one-time promotional code by text. For active
+              clients, we may send transactional texts such as checkout links or milestone invoices
+              when you or our team request email and/or SMS delivery. Message frequency varies by
+              your activity — typically one verification code per session, plus occasional
+              project-related messages tied to your request. Message and data rates may apply.
+            </p>
+            <p className="mt-4 text-ink-soft">
+              Reply STOP to opt out of further texts from our number; reply HELP for help. We do not
+              send marketing SMS without separate, explicit consent. Your mobile number is used only
+              for verification, scheduling follow-up, and project or billing communications related
+              to your request — not sold, rented, or shared with third parties for their marketing.
+            </p>
+            <p className="mt-4 text-ink-soft">
+              Our SMS program privacy terms are described on this page at{" "}
+              <a
+                href="https://998webdesigns.com/legal/privacy"
+                className="text-accent underline hover:text-accent-deep"
+              >
+                998webdesigns.com/legal/privacy
+              </a>
+              .
             </p>
           </section>
 
@@ -102,8 +136,17 @@ export function PrivacyContent() {
             </h2>
             <p className="text-ink-soft">
               Lead submissions may be stored in our database (Supabase) and are accessible to our
-              team. Contact form and lead confirmation emails are sent through Resend. Payments are
-              processed by Stripe under{" "}
+              team. Contact form and lead confirmation emails are sent through Resend. SMS is
+              delivered through Twilio under{" "}
+              <a
+                href="https://www.twilio.com/legal/privacy"
+                className="text-accent underline hover:text-accent-deep"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Twilio&rsquo;s privacy policy
+              </a>
+              . Payments are processed by Stripe under{" "}
               <a
                 href="https://stripe.com/privacy"
                 className="text-accent underline hover:text-accent-deep"
@@ -113,8 +156,15 @@ export function PrivacyContent() {
                 Stripe&rsquo;s privacy policy
               </a>
               . Site analytics may be collected by Vercel Analytics. Hosting and file delivery use
-              our cloud hosting vendors. We share data with service providers only as needed to run
-              the service, not for their independent marketing.
+              our cloud hosting vendors.
+            </p>
+            <p className="mt-4 text-ink-soft">
+              We share data with service providers (for example Twilio, Stripe, Resend, Supabase,
+              and Vercel) only as needed to run the service — such as sending a text you requested,
+              processing a payment, or hosting the site. Those providers process data on our behalf;
+              we do not authorize them to use your information for their own marketing. We do not
+              disclose your personal information to unrelated third parties for their marketing
+              purposes.
             </p>
           </section>
 
