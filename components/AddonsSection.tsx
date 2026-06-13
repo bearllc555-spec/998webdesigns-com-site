@@ -141,14 +141,17 @@ function GrowthPackBanner({
   growthSelected,
   highlighted,
   onToggle,
+  onCardClick,
 }: {
   growthSelected: boolean;
   highlighted: boolean;
   onToggle: (value: string) => void;
+  onCardClick: (e: React.MouseEvent) => void;
 }) {
   return (
     <div
       id={addonDomId(GROWTH_PACK_ID)}
+      onClick={onCardClick}
       className={
         highlighted
           ? "relative mt-8 scroll-mt-24 rounded-xl border-2 border-accent bg-accent/[0.06] px-4 py-3 shadow-md ring-2 ring-accent/25 transition-colors duration-200"
@@ -281,7 +284,12 @@ function AddonCardCta({
 
 export function AddonsSection() {
   const selectedAddons = useSelectedAddons();
-  const { highlighted } = useAddonNavHighlight();
+  const { highlighted, toggleHighlight } = useAddonNavHighlight();
+
+  function handleCardClick(e: React.MouseEvent, value: string) {
+    if ((e.target as HTMLElement).closest("button, a, label, input")) return;
+    toggleHighlight(value);
+  }
 
   function handleToggle(value: string) {
     toggleAddon(value);
@@ -302,6 +310,7 @@ export function AddonsSection() {
       <div
         key={addon.value}
         id={addonDomId(addon.value)}
+        onClick={(e) => handleCardClick(e, addon.value)}
         className={
           navHighlighted
             ? "relative flex h-full scroll-mt-24 flex-col rounded-xl border-2 border-accent bg-accent/[0.06] p-6 shadow-md ring-2 ring-accent/25 transition-colors duration-200"
@@ -378,6 +387,7 @@ export function AddonsSection() {
           growthSelected={growthSelected}
           highlighted={highlighted === GROWTH_PACK_ID}
           onToggle={handleToggle}
+          onCardClick={(e) => handleCardClick(e, GROWTH_PACK_ID)}
         />
 
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

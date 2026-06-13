@@ -8,48 +8,68 @@ import {
   addonValueFromHash,
 } from "@/lib/addon-nav";
 
-const HIGHLIGHT_MS = 4500;
+function clearAddonHash() {
+  const { pathname, search } = window.location;
+  window.history.replaceState(null, "", `${pathname}${search}`);
+}
+
+function setAddonHash(value: string) {
+  const { pathname, search } = window.location;
+  window.history.replaceState(null, "", `${pathname}${search}#${addonDomId(value)}`);
+}
 
 export function useAddonNavHighlight() {
   const [highlighted, setHighlighted] = useState<string | null>(null);
   const pathname = usePathname();
 
-  const focusAddon = useCallback((value: string) => {
-    const id = addonDomId(value);
-    setHighlighted(value);
+  const scrollToAddon = useCallback((value: string) => {
     requestAnimationFrame(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById(addonDomId(value))?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     });
   }, []);
 
+  const toggleHighlight = useCallback(
+    (value: string) => {
+      setHighlighted((current) => {
+        if (current === value) {
+          clearAddonHash();
+          return null;
+        }
+        setAddonHash(value);
+        scrollToAddon(value);
+        return value;
+      });
+    },
+    [scrollToAddon]
+  );
+
   useEffect(() => {
-    let clearTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const armHighlight = (value: string) => {
-      if (clearTimer) clearTimeout(clearTimer);
-      focusAddon(value);
-      clearTimer = setTimeout(() => setHighlighted(null), HIGHLIGHT_MS);
-    };
-
-    const fromHash = () => {
+    const applyFromHash = () => {
       const value = addonValueFromHash(window.location.hash);
-      if (value) armHighlight(value);
+      if (value) {
+        setHighlighted(value);
+        scrollToAddon(value);
+      } else {
+        setHighlighted(null);
+      }
     };
 
     const onFocusEvent = (e: Event) => {
       const value = (e as CustomEvent<{ value: string }>).detail?.value;
-      if (value) armHighlight(value);
+      if (value) toggleHighlight(value);
     };
 
-    fromHash();
-    window.addEventListener("hashchange", fromHash);
+    applyFromHash();
+    window.addEventListener("hashchange", applyFromHash);
     window.addEventListener(ADDON_FOCUS_EVENT, onFocusEvent);
     return () => {
-      if (clearTimer) clearTimeout(clearTimer);
-      window.removeEventListener("hashchange", fromHash);
+      window.removeEventListener("hashchange", applyFromHash);
       window.removeEventListener(ADDON_FOCUS_EVENT, onFocusEvent);
     };
-  }, [focusAddon, pathname]);
+  }, [toggleHighlight, scrollToAddon, pathname]);
 
-  return { highlighted, focusAddon };
+  return { highlighted, toggleHighlight };
 }
