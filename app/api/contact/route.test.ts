@@ -43,7 +43,7 @@ describe("POST /api/contact", () => {
       expect(res.status).toBe(400);
       expect(await res.json()).toEqual({
         sent: false,
-        error: expect.stringMatching(/not sent/i),
+        error: expect.stringMatching(/experiencing difficulties/i),
       });
     }
   });

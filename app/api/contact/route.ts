@@ -4,6 +4,7 @@ import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import { isValidEmail } from "@/lib/validate-email";
 import { readJsonBody } from "@/lib/read-json-body";
+import { CONTACT_NOT_SENT_MESSAGE } from "@/lib/contact-send-failed-copy";
 
 export const runtime = "nodejs";
 
@@ -19,9 +20,6 @@ type ContactPayload = {
 };
 
 const BOT_TRAP_FIELDS = ["website", "url", "company_url"] as const;
-
-const CONTACT_NOT_SENT =
-  "Your message was not sent. Please try again or email hello@998webdesigns.com directly.";
 
 function contactFailure(error: string, status: number) {
   return NextResponse.json({ sent: false, error }, { status });
@@ -53,7 +51,7 @@ export async function POST(req: NextRequest) {
   for (const key of BOT_TRAP_FIELDS) {
     if (honeypotValue(body, key).length > 0) {
       console.info("[contact] honeypot discard", key);
-      return contactFailure(CONTACT_NOT_SENT, 400);
+      return contactFailure(CONTACT_NOT_SENT_MESSAGE, 400);
     }
   }
 

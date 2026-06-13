@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { FixedFormField, MessageFormField } from "@/components/form-field-stack";
 import type { ContactPrefill } from "@/lib/contact-prefill";
+import { CONTACT_NOT_SENT_EMAIL } from "@/lib/contact-send-failed-copy";
 
 export type { ContactPrefill } from "@/lib/contact-prefill";
 
@@ -59,7 +60,7 @@ function ContactFormPanel({
   const [form, setForm] = useState(() => buildForm(prefill));
   const [errors, setErrors] = useState<Partial<Record<keyof ContactFormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitFailed, setSubmitFailed] = useState(false);
 
   const set = <K extends keyof ContactFormState>(k: K, v: ContactFormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -79,7 +80,7 @@ function ContactFormPanel({
     if (!validate()) return;
 
     setSubmitting(true);
-    setSubmitError(null);
+    setSubmitFailed(false);
 
     try {
       const res = await fetch("/api/contact", {
@@ -97,21 +98,18 @@ function ContactFormPanel({
       try {
         data = await res.json();
       } catch {
-        throw new Error(
-          "Your message was not sent. Please try again or email hello@998webdesigns.com directly."
-        );
+        setSubmitFailed(true);
+        return;
       }
 
       if (!res.ok || data.sent !== true) {
-        throw new Error(
-          data.error ||
-            "Your message was not sent. Please try again or email hello@998webdesigns.com directly."
-        );
+        setSubmitFailed(true);
+        return;
       }
 
       onSubmitted();
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Something went wrong");
+    } catch {
+      setSubmitFailed(true);
     } finally {
       setSubmitting(false);
     }
@@ -180,13 +178,21 @@ function ContactFormPanel({
           disabled={submitting}
         />
 
-        {submitError && (
+        {submitFailed && (
           <div
             role="alert"
             className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn"
           >
             <p className="font-medium">Message not sent</p>
-            <p className="mt-1">{submitError}</p>
+            <p className="mt-1">
+              Sorry, we are experiencing difficulties. You can send directly to:{" "}
+              <a
+                href={`mailto:${CONTACT_NOT_SENT_EMAIL}`}
+                className="font-medium underline underline-offset-2"
+              >
+                {CONTACT_NOT_SENT_EMAIL}
+              </a>
+            </p>
           </div>
         )}
 
