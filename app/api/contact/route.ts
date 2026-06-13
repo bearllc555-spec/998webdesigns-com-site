@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { insertContactSubmission } from "@/lib/contact-db";
+import { sendContactConfirmationEmail } from "@/lib/contact-confirmation-email";
+import { sendContactInternalEmail } from "@/lib/contact-internal-email";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import { isValidEmail } from "@/lib/validate-email";
@@ -102,30 +104,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { Resend } = await import("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const [internal, confirmation] = await Promise.all([
+      sendContactInternalEmail({ name, email, businessName, message }),
+      sendContactConfirmationEmail({ name, email }),
+    ]);
 
-    const { error } = await resend.emails.send({
-      from: "website@998webdesigns.com",
-      to: "hello@998webdesigns.com",
-      subject: `New Contact Form Submission from ${name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-          <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
-          <p><strong>Company:</strong> ${businessName ? escapeHtml(businessName) : "&nbsp;"}</p>
-          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          <p><strong>Message:</strong></p>
-          <p style="white-space: pre-wrap; background-color: #f5f5f5; padding: 12px; border-radius: 4px;">
-            ${escapeHtml(message)}
-          </p>
-        </div>
-      `,
-    });
-
-    if (error) {
-      console.error("[contact] Resend error:", error);
-      return contactFailure("Failed to send email", 500);
+    if (!internal.ok) {
+      return contactFailure(internal.error, 500);
+    }
+    if (!confirmation.ok) {
+      return contactFailure(confirmation.error, 500);
     }
 
     await notifyCrmActivity({
@@ -141,15 +129,4 @@ export async function POST(req: NextRequest) {
     console.error("[contact] Unexpected error:", err);
     return contactFailure("Failed to process contact form", 500);
   }
-}
-
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
 }
