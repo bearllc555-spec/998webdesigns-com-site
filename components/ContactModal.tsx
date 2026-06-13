@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { FixedFormField, MessageFormField } from "@/components/form-field-stack";
 import type { ContactPrefill } from "@/lib/contact-prefill";
-import { CONTACT_NOT_SENT_EMAIL } from "@/lib/contact-send-failed-copy";
+import { CONTACT_NOT_SENT_MESSAGE } from "@/lib/contact-send-failed-copy";
 
 export type { ContactPrefill } from "@/lib/contact-prefill";
 
@@ -184,15 +184,7 @@ function ContactFormPanel({
             className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn"
           >
             <p className="font-medium">Message not sent</p>
-            <p className="mt-1">
-              Sorry, we are experiencing difficulties. You can send directly to:{" "}
-              <a
-                href={`mailto:${CONTACT_NOT_SENT_EMAIL}`}
-                className="font-medium underline underline-offset-2"
-              >
-                {CONTACT_NOT_SENT_EMAIL}
-              </a>
-            </p>
+            <p className="mt-1">{CONTACT_NOT_SENT_MESSAGE}</p>
           </div>
         )}
 
