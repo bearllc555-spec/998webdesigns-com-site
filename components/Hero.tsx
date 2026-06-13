@@ -51,6 +51,9 @@ export function Hero() {
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
               Recent work
             </p>
+            <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
+              built by hand for local business.
+            </h2>
           </div>
         </div>
         <Carousel />

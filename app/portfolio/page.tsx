@@ -27,8 +27,8 @@ export default function PortfolioPage() {
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
                 Recent work
               </p>
-              <h1 className="mt-4 font-display text-4xl font-medium leading-tight tracking-tight text-ink md:text-5xl">
-                Sites we&apos;ve built for local businesses.
+              <h1 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
+                built by hand for local business.
               </h1>
               <p className="mt-5 text-lg leading-relaxed text-ink-soft">
                 Hover any thumbnail to preview the live site. Open a card to visit it in a new tab.
