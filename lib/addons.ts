@@ -65,6 +65,12 @@ export const ADDON_OPTIONS = [
   },
 ] as const;
 
+/** Primary nav Add-ons hover menu (desktop) and expandable list (mobile). */
+export const NAV_ADDON_MENU_ITEMS = [
+  ...ADDON_OPTIONS.map((addon) => ({ label: addon.label })),
+  { label: "Growth Pack" },
+] as const;
+
 export function getSelectedAddons(): string[] {
   if (typeof window === "undefined") return [];
   try {

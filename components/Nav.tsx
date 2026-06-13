@@ -10,8 +10,9 @@ import { ContactModal } from "./ContactModal";
 import { SiteVersionPill } from "./SiteVersionPill";
 import { ThemeToggle } from "./ThemeToggle";
 
+import { NavAddonsDropdown, NavAddonsMobile } from "./NavAddonsMenu";
+
 const NAV_LINKS = [
-  { href: "/#addons", label: "Add\u2011ons" },
   { href: "/portfolio", label: "Work" },
   { href: "/#how", label: "Process" },
   { href: "/pricing", label: "Pricing" },
@@ -60,6 +61,7 @@ export function Nav() {
           </Link>
 
           <div className="hidden items-center gap-5 text-sm text-ink-soft md:flex">
+            <NavAddonsDropdown />
             {NAV_LINKS.map(({ href, label }) => (
               <Link key={href} href={href} className="nav-link transition hover:text-ink">
                 {label}
@@ -123,6 +125,7 @@ export function Nav() {
               className="relative z-40 border-t border-rule bg-bg px-5 py-4 md:hidden"
             >
               <ul className="flex flex-col gap-1 text-sm">
+                <NavAddonsMobile onNavigate={closeMenu} />
                 {NAV_LINKS.map(({ href, label }) => (
                   <li key={href}>
                     <Link
