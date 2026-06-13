@@ -30,7 +30,7 @@ describe("POST /api/contact", () => {
     delete process.env.RESEND_API_KEY;
   });
 
-  it("silently accepts honeypot submissions without sent flag", async () => {
+  it("rejects honeypot submissions with sent false", async () => {
     for (const hp of [{ website: "https://spam.test" }, { url: "https://spam.test" }]) {
       const res = await POST(
         contactRequest({
@@ -40,8 +40,11 @@ describe("POST /api/contact", () => {
           ...hp,
         })
       );
-      expect(res.status).toBe(200);
-      expect(await res.json()).toEqual({ ok: true });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({
+        sent: false,
+        error: expect.stringMatching(/not sent/i),
+      });
     }
   });
 
@@ -59,10 +62,11 @@ describe("POST /api/contact", () => {
     expect((await res.json()).error).toMatch(/email/i);
   });
 
-  it("returns 500 when Resend is not configured", async () => {
+  it("returns 500 with sent false when Resend is not configured", async () => {
     const res = await POST(
       contactRequest({ name: "Ann", email: "ann@example.com", message: "hello" })
     );
     expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ sent: false, error: "Failed to send email" });
   });
 });

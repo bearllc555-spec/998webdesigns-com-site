@@ -20,6 +20,13 @@ type ContactPayload = {
 
 const BOT_TRAP_FIELDS = ["website", "url", "company_url"] as const;
 
+const CONTACT_NOT_SENT =
+  "Your message was not sent. Please try again or email hello@998webdesigns.com directly.";
+
+function contactFailure(error: string, status: number) {
+  return NextResponse.json({ sent: false, error }, { status });
+}
+
 function honeypotValue(body: ContactPayload, key: (typeof BOT_TRAP_FIELDS)[number]): string {
   const v = body[key];
   return typeof v === "string" ? v.trim() : "";
@@ -29,13 +36,16 @@ export async function POST(req: NextRequest) {
   const rate = await enforceApiRateLimit(req, "/api/contact");
   if (!rate.allowed) {
     const body = rateLimitResponse(rate.retryAfterSec);
-    return NextResponse.json({ error: body.error }, { status: body.status, headers: body.headers });
+    return NextResponse.json(
+      { sent: false, error: body.error },
+      { status: body.status, headers: body.headers }
+    );
   }
 
   const parsed = await readJsonBody(req);
   if (!parsed.ok) {
     const status = parsed.error === "Request body too large" ? 413 : 400;
-    return NextResponse.json({ error: parsed.error }, { status });
+    return contactFailure(parsed.error, status);
   }
   const body = parsed.body as ContactPayload;
 
@@ -43,7 +53,7 @@ export async function POST(req: NextRequest) {
   for (const key of BOT_TRAP_FIELDS) {
     if (honeypotValue(body, key).length > 0) {
       console.info("[contact] honeypot discard", key);
-      return NextResponse.json({ ok: true });
+      return contactFailure(CONTACT_NOT_SENT, 400);
     }
   }
 
@@ -54,16 +64,16 @@ export async function POST(req: NextRequest) {
     typeof body.businessName === "string" ? body.businessName.trim() : "";
 
   if (!name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    return contactFailure("Name is required", 400);
   }
   if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    return contactFailure("Email is required", 400);
   }
   if (!isValidEmail(email)) {
-    return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+    return contactFailure("Invalid email address", 400);
   }
   if (!message) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    return contactFailure("Message is required", 400);
   }
 
   const submittedAt = new Date().toISOString();
@@ -90,7 +100,7 @@ export async function POST(req: NextRequest) {
 
   if (!process.env.RESEND_API_KEY) {
     console.error("[contact] RESEND_API_KEY not configured");
-    return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    return contactFailure("Failed to send email", 500);
   }
 
   try {
@@ -117,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("[contact] Resend error:", error);
-      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+      return contactFailure("Failed to send email", 500);
     }
 
     void notifyCrmActivity({
@@ -131,7 +141,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, sent: true, saved: dbResult.ok });
   } catch (err) {
     console.error("[contact] Unexpected error:", err);
-    return NextResponse.json({ error: "Failed to process contact form" }, { status: 500 });
+    return contactFailure("Failed to process contact form", 500);
   }
 }
 

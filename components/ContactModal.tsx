@@ -93,9 +93,20 @@ function ContactFormPanel({
         }),
       });
 
-      const data = (await res.json()) as { error?: string; sent?: boolean };
-      if (!res.ok || !data.sent) {
-        throw new Error(data.error || "Failed to send message");
+      let data: { error?: string; sent?: boolean } = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(
+          "Your message was not sent. Please try again or email hello@998webdesigns.com directly."
+        );
+      }
+
+      if (!res.ok || data.sent !== true) {
+        throw new Error(
+          data.error ||
+            "Your message was not sent. Please try again or email hello@998webdesigns.com directly."
+        );
       }
 
       onSubmitted();
@@ -170,9 +181,13 @@ function ContactFormPanel({
         />
 
         {submitError && (
-          <p role="alert" className="text-sm text-warn">
-            {submitError}
-          </p>
+          <div
+            role="alert"
+            className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm text-warn"
+          >
+            <p className="font-medium">Message not sent</p>
+            <p className="mt-1">{submitError}</p>
+          </div>
         )}
 
         <div className="flex gap-3 pt-4">
