@@ -5,6 +5,7 @@ import { Mail } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { onHomeLogoClick } from "@/lib/home-link";
+import { NAV_CLOSE_EVENT } from "@/lib/addon-nav";
 import { SITE_VERSION } from "@/lib/version";
 import { ContactModal } from "./ContactModal";
 import { SiteVersionPill } from "./SiteVersionPill";
@@ -37,6 +38,12 @@ export function Nav() {
       document.body.style.overflow = "";
     };
   }, [menuOpen]);
+
+  useEffect(() => {
+    const closeMenu = () => setMenuOpen(false);
+    window.addEventListener(NAV_CLOSE_EVENT, closeMenu);
+    return () => window.removeEventListener(NAV_CLOSE_EVENT, closeMenu);
+  }, []);
 
   const closeMenu = () => setMenuOpen(false);
 

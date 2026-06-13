@@ -1,4 +1,10 @@
 export const ADDON_FOCUS_EVENT = "addon-focus";
+export const NAV_CLOSE_EVENT = "nav-close";
+
+export function dispatchNavClose(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(NAV_CLOSE_EVENT));
+}
 
 export function addonDomId(value: string): string {
   return `addon-${value}`;
