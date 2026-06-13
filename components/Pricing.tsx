@@ -18,7 +18,7 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 font-display text-3xl font-medium leading-tight md:text-5xl">
-            simple, transparent pricing
+            simple, transparent pricing.
           </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
             Every site starts at a flat $5,998 design fee. Your first 30 days of hosting are free —
