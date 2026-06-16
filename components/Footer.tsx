@@ -4,9 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { onHomeLogoClick } from "@/lib/home-link";
-import { SITE_VERSION } from "@/lib/version";
 import { ContactModal } from "./ContactModal";
-import { SiteVersionPill } from "./SiteVersionPill";
 
 export function Footer() {
   const pathname = usePathname();
@@ -20,14 +18,13 @@ export function Footer() {
             <Link
               href="/"
               onClick={(e) => onHomeLogoClick(e, pathname)}
-              aria-label={`998 webdesigns home, ${SITE_VERSION}`}
+              aria-label="998 webdesigns home"
               className="flex items-baseline gap-2 text-base font-semibold tracking-tight"
             >
               <span className="flex items-baseline gap-1">
                 <span className="text-accent font-bold">998</span>
                 <span className="text-ink">webdesigns</span>
               </span>
-              <SiteVersionPill />
             </Link>
             <p className="mt-2 text-sm text-slate">
               A handcrafted website for $5,998.
