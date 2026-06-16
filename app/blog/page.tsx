@@ -19,9 +19,6 @@ export const metadata: Metadata = {
 
 export default function BlogIndexPage() {
   const posts = getAllPosts();
-  const featured = posts.filter((p) => p.featured);
-  const others = posts.filter((p) => !p.featured);
-  const ordered = featured.length > 0 ? [...featured, ...others] : posts;
 
   return (
     <div className="min-h-screen bg-bg">
@@ -49,7 +46,7 @@ export default function BlogIndexPage() {
             <p className="text-ink-soft">New articles coming soon.</p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {ordered.map((post) => (
+              {posts.map((post) => (
                 <BlogPostCard key={post.slug} post={post} />
               ))}
             </div>

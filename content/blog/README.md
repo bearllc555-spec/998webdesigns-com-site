@@ -28,7 +28,7 @@ publishedAt: "2026-06-07"
 updatedAt: "2026-06-07"   # optional
 author: "998 web designs"
 tags: ["local-seo", "google-business"]
-featured: false           # optional - pins to top of index
+featured: false           # optional - reserved; index sorts by publishedAt only
 ---
 ```
 

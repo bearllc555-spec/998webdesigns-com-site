@@ -7,6 +7,14 @@ import type { BlogPost, BlogPostMeta } from "@/lib/blog-types";
 
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
+/** Date-only YYYY-MM-DD strings must not use UTC midnight (displays as prior day in US TZ). */
+function parsePublishDate(iso: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    return new Date(`${iso}T12:00:00.000Z`);
+  }
+  return new Date(iso);
+}
+
 function readingMinutes(text: string): number {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 220));
@@ -51,7 +59,8 @@ export function getAllPosts(): BlogPost[] {
     .map(parseFile)
     .sort(
       (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+        parsePublishDate(b.publishedAt).getTime() -
+        parsePublishDate(a.publishedAt).getTime(),
     );
 }
 
@@ -71,6 +80,15 @@ export function toPostMeta(post: BlogPost): BlogPostMeta {
 }
 
 export function formatPostDate(iso: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+  }
   return new Date(iso).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
