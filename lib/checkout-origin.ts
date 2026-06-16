@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
+import { SITE_ORIGIN } from "@/lib/site-origin";
 
 const PRODUCTION_ORIGINS = new Set([
-  "https://998webdesigns.com",
+  SITE_ORIGIN,
   "https://www.998webdesigns.com",
 ]);
 
@@ -26,11 +27,14 @@ export function resolveCheckoutOrigin(
   originHeader: string | null,
   env: CheckoutOriginEnv = process.env as CheckoutOriginEnv
 ): string {
-  if (!originHeader) return "https://998webdesigns.com";
+  if (!originHeader) return SITE_ORIGIN;
 
   const origin = originHeader.replace(/\/$/, "");
 
-  if (PRODUCTION_ORIGINS.has(origin)) return origin;
+  if (PRODUCTION_ORIGINS.has(origin)) {
+    if (origin === "https://www.998webdesigns.com") return SITE_ORIGIN;
+    return origin;
+  }
 
   if (env.VERCEL_ENV === "preview" && isVercelPreviewOrigin(origin)) {
     return origin;
@@ -40,7 +44,7 @@ export function resolveCheckoutOrigin(
     return origin;
   }
 
-  return "https://998webdesigns.com";
+  return SITE_ORIGIN;
 }
 
 /** Stripe success/cancel URLs - never trust arbitrary Origin headers. */

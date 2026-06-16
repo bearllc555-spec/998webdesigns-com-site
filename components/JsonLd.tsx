@@ -1,10 +1,11 @@
 import { faq, faqPlainAnswer } from "@/data/faq";
+import { SITE_ORIGIN } from "@/lib/site-origin";
 
 const ORGANIZATION = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "998 web designs",
-  url: "https://998webdesigns.com",
+  url: SITE_ORIGIN,
   description:
     "Growth systems for local service businesses - handcrafted websites from $5,998, optional SEO, automation, and AI add-ons.",
   email: "hello@998webdesigns.com",

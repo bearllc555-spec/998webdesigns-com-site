@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Nav } from "@/components/Nav";
 import { Hero } from "@/components/Hero";
 import { PortfolioSection } from "@/components/PortfolioSection";
@@ -8,6 +9,9 @@ import { FAQ } from "@/components/FAQ";
 import { LeadForm } from "@/components/LeadForm";
 import { Footer } from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
+import { withSiteSeo } from "@/lib/site-origin";
+
+export const metadata: Metadata = withSiteSeo("/", {});
 
 export default function Home() {
   return (

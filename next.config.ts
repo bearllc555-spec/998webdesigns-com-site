@@ -31,6 +31,16 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.998webdesigns.com" }],
+        destination: "https://998webdesigns.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

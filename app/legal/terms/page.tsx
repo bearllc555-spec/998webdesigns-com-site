@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { TermsContent } from "./TermsContent";
+import { withSiteSeo } from "@/lib/site-origin";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteSeo("/legal/terms", {
   title: "Terms of Service - 998 web designs",
   description: "Terms of service for 998 web designs",
   robots: { index: true, follow: true },
-};
+});
 
 export default function TermsPage() {
   return (

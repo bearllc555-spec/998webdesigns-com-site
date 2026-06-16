@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { BlogPostBody } from "@/components/blog/BlogPostBody";
 import { BlogCta } from "@/components/blog/BlogCta";
 import { formatPostDate, getAllSlugs, getPostBySlug } from "@/lib/blog";
+import { SITE_ORIGIN, withSiteSeo } from "@/lib/site-origin";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -20,21 +21,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = getPostBySlug(slug);
   if (!post) return { title: "Post not found" };
 
-  const url = `https://998webdesigns.com/blog/${slug}`;
+  const path = `/blog/${slug}`;
 
-  return {
+  return withSiteSeo(path, {
     title: `${post.title} - 998 web designs`,
     description: post.description,
     robots: { index: true, follow: true },
     openGraph: {
       title: post.title,
       description: post.description,
-      url,
       type: "article",
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt ?? post.publishedAt,
     },
-  };
+  });
 }
 
 function BlogPostingJsonLd({
@@ -56,11 +56,11 @@ function BlogPostingJsonLd({
     publisher: {
       "@type": "Organization",
       name: "998 web designs",
-      url: "https://998webdesigns.com",
+      url: SITE_ORIGIN,
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://998webdesigns.com/blog/${post.slug}`,
+      "@id": `${SITE_ORIGIN}/blog/${post.slug}`,
     },
   };
 

@@ -3,6 +3,7 @@ import {
   HOSTING_MONTHLY_PRICE_MO_LABEL,
   HOSTING_TRIAL_DAYS,
 } from "@/lib/hosting-policy";
+import { siteUrl } from "@/lib/site-origin";
 
 export type FAQItem = { q: string; a: string };
 
@@ -11,7 +12,7 @@ const FAQ_LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
 /** Plain text for JSON-LD - expands [label](/path) to label (full URL). */
 export function faqPlainAnswer(a: string): string {
   return a.replace(FAQ_LINK_RE, (_, label: string, href: string) => {
-    const url = href.startsWith("/") ? `https://998webdesigns.com${href}` : href;
+    const url = href.startsWith("/") ? siteUrl(href) : href;
     return `${label} (${url})`;
   });
 }

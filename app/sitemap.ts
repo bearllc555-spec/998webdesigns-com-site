@@ -1,14 +1,13 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
+import { SITE_ORIGIN } from "@/lib/site-origin";
 import { INDEXABLE_ROUTES, SITEMAP_LAST_MODIFIED } from "@/lib/sitemap-config";
-
-const BASE = "https://998webdesigns.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date(SITEMAP_LAST_MODIFIED);
 
   const staticRoutes = INDEXABLE_ROUTES.map(({ path, changeFrequency, priority }) => ({
-    url: path ? `${BASE}${path}` : BASE,
+    url: path ? `${SITE_ORIGIN}${path}` : SITE_ORIGIN,
     lastModified,
     changeFrequency,
     priority,
@@ -19,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const parsed = new Date(raw);
     const postModified = Number.isNaN(parsed.getTime()) ? lastModified : parsed;
     return {
-      url: `${BASE}/blog/${post.slug}`,
+      url: `${SITE_ORIGIN}/blog/${post.slug}`,
       lastModified: postModified,
       changeFrequency: "monthly" as const,
       priority: 0.6,

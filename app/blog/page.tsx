@@ -3,8 +3,9 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { BlogPostCard } from "@/components/blog/BlogPostCard";
 import { getAllPosts } from "@/lib/blog";
+import { withSiteSeo } from "@/lib/site-origin";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteSeo("/blog", {
   title: "Field notes - 998 web designs",
   description:
     "Practical advice for local service businesses - websites, Google Business Profile, local SEO, and getting the phone to ring.",
@@ -13,9 +14,8 @@ export const metadata: Metadata = {
     title: "Field notes - 998 web designs",
     description:
       "Practical advice for local service businesses - websites, Google Business Profile, local SEO, and getting the phone to ring.",
-    url: "https://998webdesigns.com/blog",
   },
-};
+});
 
 export default function BlogIndexPage() {
   const posts = getAllPosts();

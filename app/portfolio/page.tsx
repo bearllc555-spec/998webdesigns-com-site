@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { PortfolioSection } from "@/components/PortfolioSection";
+import { withSiteSeo } from "@/lib/site-origin";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSiteSeo("/portfolio", {
   title: "Recent work - 998 web designs",
   description:
     "Client websites built by 998 web designs - local service businesses, spas, contractors, and more.",
@@ -12,9 +13,8 @@ export const metadata: Metadata = {
     title: "Recent work - 998 web designs",
     description:
       "Client websites built by 998 web designs - local service businesses, spas, contractors, and more.",
-    url: "https://998webdesigns.com/portfolio",
   },
-};
+});
 
 export default function PortfolioPage() {
   return (

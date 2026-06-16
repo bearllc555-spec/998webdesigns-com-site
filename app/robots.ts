@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { siteUrl } from "@/lib/site-origin";
 import { ROBOTS_DISALLOW } from "@/lib/sitemap-config";
 
 export default function robots(): MetadataRoute.Robots {
@@ -8,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ROBOTS_DISALLOW,
     },
-    sitemap: "https://998webdesigns.com/sitemap.xml",
+    sitemap: siteUrl("/sitemap.xml"),
   };
 }

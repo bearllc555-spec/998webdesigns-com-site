@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AddonSummaryBar } from "@/components/AddonSummaryBar";
 import { SkipLink } from "@/components/SkipLink";
 import { VoiceDemoWidgetGate } from "@/components/VoiceDemo/VoiceDemoWidgetGate";
+import { SITE_ORIGIN, siteUrl } from "@/lib/site-origin";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,12 +25,12 @@ export const metadata: Metadata = {
   title: "998 web designs - growth systems for local businesses. Sites from $5,998.",
   description:
     "We build growth systems for local service businesses - handcrafted websites from $5,998, delivered in 7 business days. Stack SEO, automation, and AI add-ons when you are ready.",
-  metadataBase: new URL("https://998webdesigns.com"),
+  metadataBase: new URL(SITE_ORIGIN),
   openGraph: {
     title: "998 web designs - growth systems for local businesses",
     description:
       "Handcrafted websites from $5,998. Delivered in 7 business days. Stack SEO, chatbot, email automation, and content add-ons as you grow.",
-    url: "https://998webdesigns.com",
+    url: siteUrl(),
     siteName: "998 web designs",
     type: "website",
     images: [

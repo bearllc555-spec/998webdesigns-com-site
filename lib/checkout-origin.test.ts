@@ -1,21 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { resolveCheckoutOrigin } from "@/lib/checkout-origin";
+import { SITE_ORIGIN } from "@/lib/site-origin";
 
 describe("resolveCheckoutOrigin", () => {
   it("defaults to production when origin missing", () => {
-    expect(resolveCheckoutOrigin(null, {})).toBe("https://998webdesigns.com");
+    expect(resolveCheckoutOrigin(null, {})).toBe(SITE_ORIGIN);
   });
 
   it("allows production domain", () => {
-    expect(resolveCheckoutOrigin("https://998webdesigns.com", {})).toBe(
-      "https://998webdesigns.com"
+    expect(resolveCheckoutOrigin(SITE_ORIGIN, {})).toBe(SITE_ORIGIN);
+  });
+
+  it("normalizes www to apex canonical", () => {
+    expect(resolveCheckoutOrigin("https://www.998webdesigns.com", {})).toBe(
+      SITE_ORIGIN,
     );
   });
 
   it("blocks unknown origins", () => {
-    expect(resolveCheckoutOrigin("https://evil.example", {})).toBe(
-      "https://998webdesigns.com"
-    );
+    expect(resolveCheckoutOrigin("https://evil.example", {})).toBe(SITE_ORIGIN);
   });
 
   it("allows localhost in development", () => {
