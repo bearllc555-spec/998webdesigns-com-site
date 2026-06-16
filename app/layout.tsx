@@ -24,7 +24,7 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "998 web designs - growth systems for local businesses. Sites from $5,998.",
   description:
-    "We build growth systems for local service businesses - handcrafted websites from $5,998, delivered in 7 business days. Stack SEO, automation, and AI add-ons when you are ready.",
+    "We build growth systems for local service businesses - handcrafted websites from $5,998, delivered in 7 business days. Stack SEO, automation, and AI add-ons.",
   metadataBase: new URL(SITE_ORIGIN),
   openGraph: {
     title: "998 web designs - growth systems for local businesses",
