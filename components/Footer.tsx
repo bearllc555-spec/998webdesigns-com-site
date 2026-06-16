@@ -22,7 +22,7 @@ export function Footer() {
               className="flex items-baseline gap-2 text-xl font-semibold tracking-tight"
             >
               <span className="flex items-baseline gap-1">
-                <span className="text-accent font-bold">998</span>
+                <span className="text-accent text-[22px] font-bold">998</span>
                 <span className="text-ink">webdesigns</span>
               </span>
             </Link>
