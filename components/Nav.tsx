@@ -56,7 +56,7 @@ export function Nav() {
             href="/"
             onClick={(e) => onHomeLogoClick(e, pathname)}
             aria-label="998 webdesigns home"
-            className="flex items-baseline gap-2 text-lg font-semibold tracking-tight"
+            className="flex items-baseline gap-2 text-xl font-semibold tracking-tight"
           >
             <span className="flex items-baseline gap-1">
               <span className="text-accent font-bold">998</span>
