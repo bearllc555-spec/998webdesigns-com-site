@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
     author?: string;
     featured?: boolean;
     ogImageUrl?: string | null;
+    staffNotes?: string;
   };
   try {
     body = await req.json();
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
     author: body.author,
     featured: body.featured,
     ogImageUrl: body.ogImageUrl ?? null,
+    staffNotes: body.staffNotes,
   });
 
   if (!result.ok) {

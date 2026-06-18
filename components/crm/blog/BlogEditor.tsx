@@ -24,6 +24,7 @@ type FormState = {
   author: string;
   featured: boolean;
   ogImageUrl: string;
+  staffNotes: string;
 };
 
 const EMPTY: FormState = {
@@ -35,6 +36,7 @@ const EMPTY: FormState = {
   author: "998 web designs",
   featured: false,
   ogImageUrl: "",
+  staffNotes: "",
 };
 
 function fromPost(post: BlogDashboardPost): FormState {
@@ -47,6 +49,7 @@ function fromPost(post: BlogDashboardPost): FormState {
     author: post.author,
     featured: post.featured,
     ogImageUrl: post.ogImageUrl ?? "",
+    staffNotes: post.staffNotes ?? "",
   };
 }
 
@@ -61,6 +64,7 @@ export function BlogEditor({ postId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [scheduleAt, setScheduleAt] = useState("");
+  const [notesOpen, setNotesOpen] = useState(false);
 
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const mediaRef = useRef<HTMLInputElement>(null);
@@ -82,6 +86,7 @@ export function BlogEditor({ postId }: Props) {
       setMeta(data.post);
       setForm(fromPost(data.post));
       setId(data.post.id);
+      if (data.post.staffNotes?.trim()) setNotesOpen(true);
     } catch {
       setError("Could not load post.");
     } finally {
@@ -110,6 +115,7 @@ export function BlogEditor({ postId }: Props) {
       author: form.author,
       featured: form.featured,
       ogImageUrl: form.ogImageUrl || null,
+      staffNotes: form.staffNotes,
     };
   }
 
@@ -390,6 +396,37 @@ export function BlogEditor({ postId }: Props) {
                 placeholder="https://..."
               />
             </label>
+
+            {/* Staff notes (internal only - never shown on the public site) */}
+            <div className="rounded-xl border border-rule">
+              <button
+                type="button"
+                onClick={() => setNotesOpen((v) => !v)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left"
+                aria-expanded={notesOpen}
+              >
+                <span className="flex items-center gap-2 text-sm font-medium text-ink">
+                  Staff notes
+                  <span className="text-xs font-normal text-ink-soft">
+                    internal only{form.staffNotes.trim() ? "" : " - empty"}
+                  </span>
+                </span>
+                <span className="text-xs text-ink-soft">{notesOpen ? "Hide" : "Show"}</span>
+              </button>
+              {notesOpen && (
+                <div className="border-t border-rule p-4">
+                  <textarea
+                    className="h-40 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none placeholder:text-neutral-400 focus:border-accent"
+                    value={form.staffNotes}
+                    onChange={(e) => set("staffNotes", e.target.value)}
+                    placeholder="Notes for the team: status, who is working on it, follow-ups, sources, anything to keep everyone on the same page."
+                  />
+                  <p className="mt-2 text-xs text-ink-soft">
+                    Visible to staff in this editor only. Saved with the post; never published.
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Editor + preview */}
             <div className="grid gap-4 lg:grid-cols-2">

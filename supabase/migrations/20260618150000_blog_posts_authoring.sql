@@ -16,7 +16,9 @@ alter table public.blog_posts
   add column if not exists status       text not null default 'draft',
   add column if not exists scheduled_at timestamptz,
   add column if not exists updated_at   timestamptz not null default now(),
-  add column if not exists view_count   integer not null default 0;
+  add column if not exists view_count   integer not null default 0,
+  -- Internal editorial notes for staff (never shown on the public site).
+  add column if not exists staff_notes  text;
 
 -- status enum guard (added separately so re-runs do not fail if it exists)
 do $$
@@ -37,3 +39,6 @@ update public.blog_posts
 
 create index if not exists blog_posts_status_idx on public.blog_posts (status);
 create index if not exists blog_posts_scheduled_at_idx on public.blog_posts (scheduled_at);
+
+-- Refresh PostgREST's schema cache so new columns are queryable immediately.
+notify pgrst, 'reload schema';

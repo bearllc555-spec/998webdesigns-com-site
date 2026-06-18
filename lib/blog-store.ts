@@ -31,6 +31,7 @@ type BlogPostRow = {
   created_at: string;
   updated_at: string | null;
   view_count: number | null;
+  staff_notes: string | null;
 };
 
 /** Admin/dashboard view of a post (any status). */
@@ -51,10 +52,11 @@ export type BlogDashboardPost = {
   createdAt: string;
   updatedAt: string | null;
   viewCount: number;
+  staffNotes: string;
 };
 
 const COLUMNS =
-  "id, slug, title, description, body, url, tags, author, featured, og_image_url, status, published_at, scheduled_at, created_at, updated_at, view_count";
+  "id, slug, title, description, body, url, tags, author, featured, og_image_url, status, published_at, scheduled_at, created_at, updated_at, view_count, staff_notes";
 
 const MISSING_TABLE = /blog_posts|schema cache|does not exist|column .* does not exist/i;
 
@@ -92,6 +94,7 @@ function rowToDashboard(row: BlogPostRow): BlogDashboardPost {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     viewCount: row.view_count ?? 0,
+    staffNotes: row.staff_notes ?? "",
   };
 }
 
@@ -240,6 +243,7 @@ export type CreateDraftInput = {
   author?: string;
   featured?: boolean;
   ogImageUrl?: string | null;
+  staffNotes?: string;
 };
 
 export async function createDraftPost(
@@ -265,6 +269,7 @@ export async function createDraftPost(
       author: input.author?.trim() || "998 web designs",
       featured: Boolean(input.featured),
       og_image_url: input.ogImageUrl ?? null,
+      staff_notes: input.staffNotes ?? null,
       status: "draft",
       published_at: null,
       scheduled_at: null,
@@ -296,6 +301,7 @@ export type UpdatePostInput = {
   author?: string;
   featured?: boolean;
   ogImageUrl?: string | null;
+  staffNotes?: string;
 };
 
 /** Edit content/metadata. Never touches status or published_at. */
@@ -324,6 +330,7 @@ export async function updatePost(
   if (input.author !== undefined) patch.author = input.author.trim() || "998 web designs";
   if (input.featured !== undefined) patch.featured = Boolean(input.featured);
   if (input.ogImageUrl !== undefined) patch.og_image_url = input.ogImageUrl;
+  if (input.staffNotes !== undefined) patch.staff_notes = input.staffNotes;
 
   const { data, error } = await supa
     .from("blog_posts")

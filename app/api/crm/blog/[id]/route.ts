@@ -48,6 +48,7 @@ export async function PATCH(
     author?: string;
     featured?: boolean;
     ogImageUrl?: string | null;
+    staffNotes?: string;
   };
   try {
     body = await req.json();
@@ -64,6 +65,7 @@ export async function PATCH(
     author: body.author,
     featured: body.featured,
     ogImageUrl: body.ogImageUrl,
+    staffNotes: body.staffNotes,
   });
 
   if (!result.ok) {
