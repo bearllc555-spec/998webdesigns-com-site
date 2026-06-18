@@ -17,6 +17,7 @@ export function BlogAdminList() {
   const [posts, setPosts] = useState<BlogDashboardPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -101,6 +102,7 @@ export function BlogAdminList() {
     if (file) {
       setImporting(true);
       setError(null);
+      setNotice(null);
       try {
         const form = new FormData();
         form.append("file", file);
@@ -114,6 +116,22 @@ export function BlogAdminList() {
           setError(data.error ?? "Import failed.");
           return;
         }
+        // Zip import: multiple drafts -> reload list and summarize.
+        if (Array.isArray(data.imported)) {
+          const failedCount = Array.isArray(data.failed) ? data.failed.length : 0;
+          let msg = `Imported ${data.count} draft${data.count === 1 ? "" : "s"} from the zip.`;
+          if (failedCount > 0) {
+            const detail = data.failed
+              .map((f: { name: string; detail: string }) => `${f.name} (${f.detail})`)
+              .join("; ");
+            msg += ` ${failedCount} skipped: ${detail}`;
+          }
+          if (data.count > 0) setNotice(msg);
+          else setError(msg);
+          await load();
+          return;
+        }
+        // Single file: jump straight into the editor.
         window.location.href = `/crm/blog/${data.post.id}`;
         return;
       } catch {
@@ -137,7 +155,7 @@ export function BlogAdminList() {
             <input
               ref={fileRef}
               type="file"
-              accept=".md,.markdown,.mdx,.txt"
+              accept=".md,.markdown,.mdx,.txt,.zip"
               className="hidden"
               onChange={onImport}
             />
@@ -147,7 +165,7 @@ export function BlogAdminList() {
               disabled={importing}
               className="rounded-full border border-rule px-4 py-2 text-sm text-ink-soft hover:border-accent/50 disabled:opacity-50"
             >
-              {importing ? "Importing..." : "Import .md"}
+              {importing ? "Importing..." : "Import .md / .zip"}
             </button>
             <Link
               href="/crm/blog/new"
@@ -163,6 +181,12 @@ export function BlogAdminList() {
         {error && (
           <div className="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300">
             {error}
+          </div>
+        )}
+
+        {notice && (
+          <div className="mb-6 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300">
+            {notice}
           </div>
         )}
 
