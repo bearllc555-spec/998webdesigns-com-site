@@ -22,6 +22,12 @@ export function BlogAdminList() {
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [note, setNote] = useState("");
+  const [savedNote, setSavedNote] = useState("");
+  const [noteUpdatedAt, setNoteUpdatedAt] = useState<string | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteSaving, setNoteSaving] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -41,9 +47,51 @@ export function BlogAdminList() {
     }
   }, []);
 
+  const loadNote = useCallback(async () => {
+    try {
+      const res = await fetch("/api/crm/blog/note", { credentials: "include" });
+      if (!res.ok) return;
+      const data = (await res.json()) as { note?: { note: string; updatedAt: string | null } };
+      const value = data.note?.note ?? "";
+      setNote(value);
+      setSavedNote(value);
+      setNoteUpdatedAt(data.note?.updatedAt ?? null);
+      if (value.trim()) setNoteOpen(true);
+    } catch {
+      /* non-critical */
+    }
+  }, []);
+
   useEffect(() => {
     load();
-  }, [load]);
+    loadNote();
+  }, [load, loadNote]);
+
+  async function saveNote() {
+    setNoteSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/crm/blog/note", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? "Could not save the team note.");
+        return;
+      }
+      const value = data.note?.note ?? note;
+      setSavedNote(value);
+      setNoteUpdatedAt(data.note?.updatedAt ?? new Date().toISOString());
+      setNotice("Team note saved.");
+    } catch {
+      setError("Could not save the team note.");
+    } finally {
+      setNoteSaving(false);
+    }
+  }
 
   const grouped = useMemo(() => {
     const map: Record<string, BlogDashboardPost[]> = {};
@@ -189,6 +237,49 @@ export function BlogAdminList() {
             {notice}
           </div>
         )}
+
+        {/* Shared team note - internal, visible to all staff on this dashboard */}
+        <div className="mb-8 rounded-xl border border-rule">
+          <button
+            type="button"
+            onClick={() => setNoteOpen((v) => !v)}
+            className="flex w-full items-center justify-between px-4 py-3 text-left"
+            aria-expanded={noteOpen}
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-ink">
+              Team note
+              <span className="text-xs font-normal text-ink-soft">
+                shared - staff only
+                {noteUpdatedAt ? ` - updated ${formatDateTime(noteUpdatedAt)}` : ""}
+                {note.trim() ? "" : " - empty"}
+              </span>
+            </span>
+            <span className="text-xs text-ink-soft">{noteOpen ? "Hide" : "Show"}</span>
+          </button>
+          {noteOpen && (
+            <div className="border-t border-rule p-4">
+              <textarea
+                className="h-40 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-black outline-none placeholder:text-neutral-400 focus:border-accent"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="A shared note for the whole team: priorities, what is in progress, who is handling what, anything to keep everyone on the same page."
+              />
+              <div className="mt-2 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={saveNote}
+                  disabled={noteSaving || note === savedNote}
+                  className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-deep disabled:opacity-50"
+                >
+                  {noteSaving ? "Saving..." : note === savedNote ? "Saved" : "Save note"}
+                </button>
+                <span className="text-xs text-ink-soft">
+                  Visible to all staff in the dashboard. Never published.
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <p className="text-ink-soft">Loading...</p>

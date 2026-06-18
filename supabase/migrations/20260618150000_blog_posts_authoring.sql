@@ -40,5 +40,15 @@ update public.blog_posts
 create index if not exists blog_posts_status_idx on public.blog_posts (status);
 create index if not exists blog_posts_scheduled_at_idx on public.blog_posts (scheduled_at);
 
--- Refresh PostgREST's schema cache so new columns are queryable immediately.
+-- Shared staff note pinned to the top of the /crm/blog dashboard (singleton row).
+-- Internal only; never shown on the public site. Service-role API access.
+create table if not exists public.blog_dashboard_note (
+  id text primary key default 'default' check (id = 'default'),
+  note text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+alter table public.blog_dashboard_note enable row level security;
+
+-- Refresh PostgREST's schema cache so new columns/tables are queryable immediately.
 notify pgrst, 'reload schema';
