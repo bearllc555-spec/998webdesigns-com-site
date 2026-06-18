@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyBearerSecret } from "@/lib/admin-auth";
-import { publishBlogPostToCrm } from "@/lib/blog-publish";
 import { enforceAdminRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { runBlogAuthoringMigration } from "@/lib/pg-migrate-blog-authoring";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST - record blog post in CRM + Telegram. Bearer: BALANCE_CAPTURE_SECRET. Body: { slug, forceNotify? } */
+/** POST - add authoring columns to blog_posts (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {
@@ -26,23 +26,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { slug?: string; forceNotify?: boolean };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  const slug = body.slug?.trim();
-  if (!slug) {
-    return NextResponse.json({ error: "slug is required" }, { status: 400 });
-  }
-
-  const result = await publishBlogPostToCrm(slug);
-
+  const result = await runBlogAuthoringMigration();
   if (!result.ok) {
     return NextResponse.json({ error: result.detail }, { status: 500 });
   }
 
-  return NextResponse.json(result);
+  return NextResponse.json({ ok: true, via: result.via });
 }

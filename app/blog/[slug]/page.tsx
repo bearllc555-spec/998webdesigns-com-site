@@ -5,20 +5,20 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { BlogPostBody } from "@/components/blog/BlogPostBody";
 import { BlogCta } from "@/components/blog/BlogCta";
-import { formatPostDate, getAllSlugs, getPostBySlug } from "@/lib/blog";
+import { formatPostDate, getPostBySlug } from "@/lib/blog";
+import { incrementViewCount } from "@/lib/blog-store";
+import type { BlogPost } from "@/lib/blog-types";
 import { SITE_ORIGIN, withSiteSeo } from "@/lib/site-origin";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return getAllSlugs().map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   if (!post) return { title: "Post not found" };
 
   const path = `/blog/${slug}`;
@@ -37,11 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-function BlogPostingJsonLd({
-  post,
-}: {
-  post: NonNullable<ReturnType<typeof getPostBySlug>>;
-}) {
+function BlogPostingJsonLd({ post }: { post: BlogPost }) {
   const json = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -74,8 +70,10 @@ function BlogPostingJsonLd({
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   if (!post) notFound();
+
+  void incrementViewCount(slug);
 
   return (
     <div className="min-h-screen bg-bg">

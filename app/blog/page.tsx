@@ -17,8 +17,10 @@ export const metadata: Metadata = withSiteSeo("/blog", {
   },
 });
 
-export default function BlogIndexPage() {
-  const posts = getAllPosts();
+export const dynamic = "force-dynamic";
+
+export default async function BlogIndexPage() {
+  const posts = await getAllPosts();
 
   return (
     <div className="min-h-screen bg-bg">

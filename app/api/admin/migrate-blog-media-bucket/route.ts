@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyBearerSecret } from "@/lib/admin-auth";
-import { publishBlogPostToCrm } from "@/lib/blog-publish";
 import { enforceAdminRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
+import { BLOG_MEDIA_BUCKET } from "@/lib/blog-media";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** POST - record blog post in CRM + Telegram. Bearer: BALANCE_CAPTURE_SECRET. Body: { slug, forceNotify? } */
+/** POST - create the public blog-media storage bucket (idempotent). Bearer: BALANCE_CAPTURE_SECRET. */
 export async function POST(req: NextRequest) {
   const rate = await enforceAdminRateLimit(req, "/api/admin/env-status");
   if (!rate.allowed) {
@@ -26,23 +27,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { slug?: string; forceNotify?: boolean };
-  try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  const supa = supabaseAdmin();
+  if (!supa) {
+    return NextResponse.json({ error: "Supabase not configured" }, { status: 503 });
   }
 
-  const slug = body.slug?.trim();
-  if (!slug) {
-    return NextResponse.json({ error: "slug is required" }, { status: 400 });
+  const { error } = await supa.storage.createBucket(BLOG_MEDIA_BUCKET, {
+    public: true,
+    fileSizeLimit: "10MB",
+    allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif", "image/avif"],
+  });
+
+  if (error && !/already exists/i.test(error.message)) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const result = await publishBlogPostToCrm(slug);
-
-  if (!result.ok) {
-    return NextResponse.json({ error: result.detail }, { status: 500 });
-  }
-
-  return NextResponse.json(result);
+  return NextResponse.json({ ok: true, bucket: BLOG_MEDIA_BUCKET, created: !error });
 }

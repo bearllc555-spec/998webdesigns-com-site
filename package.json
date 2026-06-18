@@ -11,6 +11,7 @@
     "capture-portfolio-poster": "node scripts/capture-portfolio-poster.mjs",
     "capture-logo-png": "node scripts/capture-logo-png.mjs",
     "blog:notify": "node scripts/notify-blog-post.mjs",
+    "blog:setup": "node scripts/setup-blog-db.mjs",
     "voice-demo:ops-report": "node --env-file=.env.local scripts/voice-demo-ops-report.mjs"
   },
   "dependencies": {

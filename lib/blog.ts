@@ -1,77 +1,23 @@
 import "server-only";
 
-import fs from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
 import type { BlogPost, BlogPostMeta } from "@/lib/blog-types";
+import {
+  getAllPublishedPosts,
+  getPublishedPostBySlug,
+  getPublishedSlugs,
+} from "@/lib/blog-store";
 
-const BLOG_DIR = path.join(process.cwd(), "content", "blog");
-
-/** Date-only YYYY-MM-DD strings must not use UTC midnight (displays as prior day in US TZ). */
-function parsePublishDate(iso: string): Date {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
-    return new Date(`${iso}T12:00:00.000Z`);
-  }
-  return new Date(iso);
+/** Live published posts, newest first. Source of truth: Supabase blog_posts. */
+export async function getAllPosts(): Promise<BlogPost[]> {
+  return getAllPublishedPosts();
 }
 
-function readingMinutes(text: string): number {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words / 220));
+export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  return getPublishedPostBySlug(slug);
 }
 
-function parseFile(filename: string): BlogPost {
-  const slug = filename.replace(/\.md$/, "");
-  const raw = fs.readFileSync(path.join(BLOG_DIR, filename), "utf8");
-  const { data, content } = matter(raw);
-
-  const publishedAt = String(data.publishedAt ?? "");
-  const title = String(data.title ?? slug);
-  const description = String(data.description ?? "");
-
-  return {
-    slug,
-    title,
-    description,
-    publishedAt,
-    updatedAt: data.updatedAt ? String(data.updatedAt) : undefined,
-    author: data.author ? String(data.author) : "998 web designs",
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-    featured: Boolean(data.featured),
-    content: content.trim(),
-    readingMinutes: readingMinutes(content),
-  };
-}
-
-function listMarkdownFiles(): string[] {
-  if (!fs.existsSync(BLOG_DIR)) return [];
-  return fs
-    .readdirSync(BLOG_DIR)
-    .filter(
-      (name) =>
-        name.endsWith(".md") && name !== "README.md" && name !== "backlog.md",
-    )
-    .sort();
-}
-
-export function getAllPosts(): BlogPost[] {
-  return listMarkdownFiles()
-    .map(parseFile)
-    .sort(
-      (a, b) =>
-        parsePublishDate(b.publishedAt).getTime() -
-        parsePublishDate(a.publishedAt).getTime(),
-    );
-}
-
-export function getPostBySlug(slug: string): BlogPost | undefined {
-  const filename = `${slug}.md`;
-  if (!listMarkdownFiles().includes(filename)) return undefined;
-  return parseFile(filename);
-}
-
-export function getAllSlugs(): string[] {
-  return listMarkdownFiles().map((name) => name.replace(/\.md$/, ""));
+export async function getAllSlugs(): Promise<string[]> {
+  return getPublishedSlugs();
 }
 
 export function toPostMeta(post: BlogPost): BlogPostMeta {
@@ -80,6 +26,7 @@ export function toPostMeta(post: BlogPost): BlogPostMeta {
 }
 
 export function formatPostDate(iso: string): string {
+  if (!iso) return "";
   if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
     const [y, m, d] = iso.split("-").map(Number);
     return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {

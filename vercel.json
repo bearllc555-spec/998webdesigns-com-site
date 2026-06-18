@@ -4,6 +4,30 @@
     {
       "path": "/api/cron/ten-year-hosting",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-blog",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-blog",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-blog",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-blog",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-blog",
+      "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-blog",
+      "schedule": "0 20 * * *"
     }
   ]
 }

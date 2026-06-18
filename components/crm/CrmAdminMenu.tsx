@@ -11,13 +11,14 @@ import {
 
 export function CrmAdminMenu() {
   const pathname = usePathname();
-  const onTelegram = pathname?.startsWith("/crm/telegram") ?? false;
+  const onAdmin =
+    (pathname?.startsWith("/crm/telegram") || pathname?.startsWith("/crm/blog")) ?? false;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         className={`rounded-full px-4 py-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
-          onTelegram
+          onAdmin
             ? "bg-accent text-white hover:bg-accent-deep"
             : "border border-rule bg-bg text-ink hover:border-accent/50"
         }`}
@@ -25,6 +26,9 @@ export function CrmAdminMenu() {
         Admin
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[10rem] border-rule bg-bg">
+        <DropdownMenuItem asChild className="cursor-pointer text-ink focus:bg-accent/10 focus:text-ink">
+          <Link href="/crm/blog">Blog</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer text-ink focus:bg-accent/10 focus:text-ink">
           <Link href="/crm/telegram">Telegram</Link>
         </DropdownMenuItem>

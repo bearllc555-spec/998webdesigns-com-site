@@ -112,6 +112,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("blog_posts")
       .select("id, slug, title, description, url, published_at, read_at, inbox_flag")
+      .not("published_at", "is", null)
       .order("published_at", { ascending: false })
       .limit(limit),
     supa

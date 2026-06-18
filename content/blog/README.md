@@ -1,5 +1,12 @@
 # 998 Field notes - editorial rules
 
+> **Authoring is now in the CRM dashboard at `/crm/blog`** (stage, edit, schedule,
+> publish, delete, track views). Posts live in Supabase `blog_posts` - the DB is
+> the source of truth, not these markdown files. The files below are the original
+> seed posts, imported once via `npm run blog:setup`. The publish date is set
+> automatically when a post is published (or when a scheduled post goes live).
+> The voice rules below still apply when writing in the dashboard.
+
 Voice: **operator-direct, brand-neutral.**
 
 ## Do
