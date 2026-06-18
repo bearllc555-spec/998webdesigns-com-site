@@ -21,14 +21,15 @@ export const STATUS_BADGE: Record<BlogStatus, string> = {
 /**
  * Editorial posting order from content/blog/00-posting-sequence-all-30.md,
  * keyed by the live DB slug. Drives dashboard ordering so the next article to
- * post sits at the top of its section. Gaps (#5, #17, #25) are articles not yet
- * written/imported. Posts not listed here (e.g. the original 3) sort after.
+ * post sits at the top of its section. Posts not listed here (e.g. the original
+ * 3) sort after.
  */
 export const POST_SEQUENCE: Record<string, number> = {
   "why-isn-t-my-plumbing-business-showing-up-on-google": 1,
   "how-to-get-more-roofing-leads-without-buying-them-from-a-lead-service": 2,
   "how-much-should-a-plumbing-or-roofing-website-cost-in-2026": 3,
   "do-plumbers-really-need-a-website-if-most-work-comes-from-referrals": 4,
+  "how-to-show-up-for-near-me-searches": 5,
   "what-actually-makes-a-plumbing-website-convert-visitors-into-calls": 6,
   "why-is-my-contractor-website-so-slow-on-phones-and-why-it-matters": 7,
   "how-to-get-more-google-reviews-for-your-plumbing-or-roofing-business": 8,
@@ -40,6 +41,7 @@ export const POST_SEQUENCE: Record<string, number> = {
   "how-to-get-customers-to-leave-reviews-with-photos-and-why-it-matters": 14,
   "what-is-a-good-website-actually-worth-to-a-plumber-the-math": 15,
   "missed-calls-are-costing-roofers-jobs-is-an-ai-receptionist-the-fix": 16,
+  "how-to-write-plumbing-service-pages-that-rank": 17,
   "how-to-win-jobs-when-a-competitor-always-undercuts-your-price": 18,
   "what-to-look-for-when-hiring-someone-to-build-your-contractor-website": 19,
   "how-long-does-it-take-to-build-a-contractor-website": 20,
@@ -47,6 +49,7 @@ export const POST_SEQUENCE: Record<string, number> = {
   "do-i-need-a-website-or-is-a-facebook-page-enough-for-my-trade-business": 22,
   "can-an-ai-chatbot-actually-help-a-plumbing-or-roofing-website": 23,
   "should-roofers-offer-online-booking-or-stick-to-phone-calls": 24,
+  "plumbing-website-examples-what-good-looks-like": 25,
   "do-i-need-a-separate-page-for-each-town-i-serve": 26,
   "how-to-get-a-brand-new-contractor-website-found-on-google-faster": 27,
   "is-it-worth-paying-for-google-ads-as-a-plumber-or-roofer": 28,
