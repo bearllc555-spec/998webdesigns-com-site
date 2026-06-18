@@ -8,8 +8,10 @@ import {
   STATUS_BADGE,
   STATUS_LABEL,
   STATUS_ORDER,
+  compareBySequence,
   formatDate,
   formatDateTime,
+  postSequence,
   type BlogDashboardPost,
 } from "@/components/crm/blog/blog-admin-shared";
 
@@ -97,6 +99,7 @@ export function BlogAdminList() {
     const map: Record<string, BlogDashboardPost[]> = {};
     for (const status of STATUS_ORDER) map[status] = [];
     for (const p of posts) (map[p.status] ??= []).push(p);
+    for (const status of Object.keys(map)) map[status].sort(compareBySequence);
     return map;
   }, [posts]);
 
@@ -304,6 +307,14 @@ export function BlogAdminList() {
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
+                            {postSequence(post.slug) !== null && (
+                              <span
+                                className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-accent"
+                                title="Posting sequence"
+                              >
+                                #{postSequence(post.slug)}
+                              </span>
+                            )}
                             <span
                               className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_BADGE[post.status]}`}
                             >
