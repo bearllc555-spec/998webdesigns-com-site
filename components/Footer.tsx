@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { onHomeLogoClick } from "@/lib/home-link";
 import { ContactModal } from "./ContactModal";
+import { SiteVersionPill } from "./SiteVersionPill";
 
 export function Footer() {
   const pathname = usePathname();
@@ -68,9 +69,12 @@ export function Footer() {
             </button>
           </nav>
         </div>
-        <p className="border-t border-rule px-5 py-5 text-center text-xs text-slate md:px-8">
-          &copy; 2026 998webdesigns.com &middot; A Bear LLC digital property
-        </p>
+        <div className="flex items-center justify-between gap-4 border-t border-rule px-5 py-5 md:px-8">
+          <p className="flex-1 text-center text-xs text-slate">
+            &copy; 2026 998webdesigns.com &middot; A Bear LLC digital property
+          </p>
+          <SiteVersionPill className="shrink-0" />
+        </div>
       </footer>
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </>
