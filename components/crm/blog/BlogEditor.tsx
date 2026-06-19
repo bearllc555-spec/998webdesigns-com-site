@@ -536,6 +536,12 @@ export function BlogEditor({ postId }: Props) {
                   >
                     {scheduleLabel}
                   </button>
+                  <Link
+                    href="/crm/blog"
+                    className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-deep"
+                  >
+                    Back home
+                  </Link>
                 </div>
               </div>
 
