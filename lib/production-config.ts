@@ -103,6 +103,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "discovery_prospects table missing - POST /api/admin/migrate-discovery with BALANCE_CAPTURE_SECRET."
     );
+  } else if (!supabase.discoveryCompanyNameColumn) {
+    warnings.push(
+      "discovery_prospects.company_name column missing - POST /api/admin/migrate-discovery-company-name with BALANCE_CAPTURE_SECRET."
+    );
   }
   const crmSecretSource = crmAdminSecretSource();
   if (vercelEnv === "production" && crmSecretSource !== "dedicated") {

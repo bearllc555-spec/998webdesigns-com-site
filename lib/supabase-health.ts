@@ -10,6 +10,7 @@ export type SupabaseHealth = {
   crmTelegramSettingsTable: boolean;
   processedStripeEventsTable: boolean;
   discoveryProspectsTable: boolean;
+  discoveryCompanyNameColumn: boolean;
 };
 
 /** Lightweight schema probe (no row data returned). */
@@ -26,10 +27,11 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
       crmTelegramSettingsTable: false,
       processedStripeEventsTable: false,
       discoveryProspectsTable: false,
+      discoveryCompanyNameColumn: false,
     };
   }
 
-  const [leads, limits, contacts, subscriptionCol, hostingBillingCol, crmTelegram, stripeEvents, discovery] =
+  const [leads, limits, contacts, subscriptionCol, hostingBillingCol, crmTelegram, stripeEvents, discovery, discoveryCompanyName] =
     await Promise.all([
     supa.from("wd_leads").select("id", { head: true, count: "exact" }).limit(0),
     supa
@@ -60,6 +62,10 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
       .from("discovery_prospects")
       .select("id", { head: true, count: "exact" })
       .limit(0),
+    supa
+      .from("discovery_prospects")
+      .select("company_name", { head: true, count: "exact" })
+      .limit(0),
   ]);
 
   return {
@@ -72,6 +78,7 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     crmTelegramSettingsTable: !isMissingTable(crmTelegram.error),
     processedStripeEventsTable: !isMissingTable(stripeEvents.error),
     discoveryProspectsTable: !isMissingTable(discovery.error),
+    discoveryCompanyNameColumn: !isMissingColumn(discoveryCompanyName.error),
   };
 }
 
