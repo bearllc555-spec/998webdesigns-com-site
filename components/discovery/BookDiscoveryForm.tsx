@@ -168,6 +168,8 @@ export function BookDiscoveryForm() {
           value={phone}
           onChange={setPhone}
           required
+          hint="We'll text a one-time verification code to this number."
+          autoComplete="tel"
         />
         <MessageFormField
           id="goal"

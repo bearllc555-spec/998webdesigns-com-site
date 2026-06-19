@@ -25,6 +25,7 @@ type FixedFormFieldProps = {
   type?: "text" | "email";
   required?: boolean;
   optionalHint?: boolean;
+  hint?: string;
   placeholder?: string;
   error?: string;
   disabled?: boolean;
@@ -39,6 +40,7 @@ export function FixedFormField({
   type = "text",
   required,
   optionalHint,
+  hint,
   placeholder,
   error,
   disabled,
@@ -51,6 +53,7 @@ export function FixedFormField({
         {required && <span className="ml-1 text-accent">*</span>}
         {optionalHint && <span className="ml-1 font-normal text-slate">(optional)</span>}
       </label>
+      {hint && <p className="mb-2 text-xs leading-relaxed text-slate">{hint}</p>}
       <input
         id={id}
         type={type}
