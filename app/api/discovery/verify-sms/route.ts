@@ -5,6 +5,7 @@ import {
   markDiscoveryPhoneVerified,
 } from "@/lib/discovery-db";
 import { sendDiscoveryIntakeEmail } from "@/lib/discovery-email";
+import { notifyCrmActivity } from "@/lib/crm-notify";
 import { readJsonBody } from "@/lib/read-json-body";
 import { checkSmsVerification } from "@/lib/twilio-verify";
 
@@ -42,6 +43,16 @@ export async function POST(req: NextRequest) {
 
   await markDiscoveryPhoneVerified(prospectId);
   await sendDiscoveryIntakeEmail(prospect.full_name, prospect.email, prospectId);
+
+  void notifyCrmActivity({
+    kind: "discovery_phone_verified",
+    businessName: prospect.company_name ?? "",
+    fullName: prospect.full_name,
+    email: prospect.email,
+    phone: prospect.phone,
+    status: "phone_verified",
+    message: prospect.goal ?? undefined,
+  });
 
   return NextResponse.json({ ok: true });
 }
