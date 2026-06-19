@@ -58,7 +58,6 @@ export function BlogAdminList() {
       setNote(value);
       setSavedNote(value);
       setNoteUpdatedAt(data.note?.updatedAt ?? null);
-      if (value.trim()) setNoteOpen(true);
     } catch {
       /* non-critical */
     }

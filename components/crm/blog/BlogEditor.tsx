@@ -95,7 +95,6 @@ export function BlogEditor({ postId }: Props) {
       setForm(fromPost(data.post));
       setScheduleAt(scheduleLocalFromPost(data.post));
       setId(data.post.id);
-      if (data.post.staffNotes?.trim()) setNotesOpen(true);
     } catch {
       setError("Could not load post.");
     } finally {
