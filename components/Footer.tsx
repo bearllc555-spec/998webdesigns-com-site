@@ -69,12 +69,12 @@ export function Footer() {
             </button>
           </nav>
         </div>
-        <div className="flex items-center justify-between gap-4 border-t border-rule px-5 py-5 md:px-8">
-          <p className="flex-1 text-center text-xs text-slate">
+        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-rule px-5 py-5 text-center text-xs text-slate md:px-8">
+          <span>
             &copy; 2026 998webdesigns.com &middot; A Bear LLC digital property
-          </p>
-          <SiteVersionPill className="shrink-0" />
-        </div>
+          </span>
+          <SiteVersionPill />
+        </p>
       </footer>
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </>
