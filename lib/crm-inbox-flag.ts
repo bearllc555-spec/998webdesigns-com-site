@@ -28,6 +28,7 @@ export async function setCrmItemInboxFlag(
     | "client"
     | "contact"
     | "discovery"
+    | "linkedin"
     | "sms"
     | "voice_demo"
     | "plumbing_demo"
@@ -50,7 +51,9 @@ export async function setCrmItemInboxFlag(
             ? voiceDemoTable
             : source === "blog"
               ? "blog_posts"
-              : "discovery_prospects";
+              : source === "linkedin"
+                ? "linkedin_prospects"
+                : "discovery_prospects";
   const inbox_flag = flag;
 
   const { error } = await supa.from(table).update({ inbox_flag }).eq("id", id);

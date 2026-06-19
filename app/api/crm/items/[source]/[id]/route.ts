@@ -9,6 +9,7 @@ import {
 } from "@/lib/crm-inbox-flag";
 import { setCrmItemReadState } from "@/lib/crm-read-state";
 import { deleteDiscoveryProspect } from "@/lib/discovery-db";
+import { deleteLinkedinProspect } from "@/lib/linkedin-prospect";
 import { deleteVoiceDemoLead } from "@/lib/voice-demo-db";
 import { deleteWdLead } from "@/lib/leads-db";
 import { isCrmRequestAuthorized } from "@/lib/crm-session";
@@ -37,6 +38,7 @@ export async function DELETE(
     source !== "client" &&
     source !== "contact" &&
     source !== "discovery" &&
+    source !== "linkedin" &&
     source !== "sms" &&
     source !== "voice_demo" &&
     source !== "plumbing_demo" &&
@@ -56,7 +58,9 @@ export async function DELETE(
             ? await deleteVoiceDemoLead(id)
             : source === "blog"
               ? await deleteBlogPost(id)
-              : await deleteDiscoveryProspect(id);
+              : source === "linkedin"
+                ? await deleteLinkedinProspect(id)
+                : await deleteDiscoveryProspect(id);
 
   if (!ok) {
     return NextResponse.json({ error: "Delete failed" }, { status: 500 });
@@ -85,6 +89,7 @@ export async function PATCH(
     source !== "client" &&
     source !== "contact" &&
     source !== "discovery" &&
+    source !== "linkedin" &&
     source !== "sms" &&
     source !== "voice_demo" &&
     source !== "plumbing_demo" &&

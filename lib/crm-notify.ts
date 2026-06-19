@@ -13,7 +13,11 @@ export type CrmNotifyKind =
   | "lifetime_hosting_ach_pending"
   | "contact"
   | "inbound_sms"
-  | "blog_published";
+  | "blog_published"
+  | "linkedin_email_captured"
+  | "linkedin_instantly_enrolled"
+  | "linkedin_instantly_replied"
+  | "linkedin_meeting_booked";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_submitted: "New lead - form submitted",
@@ -28,6 +32,10 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   contact: "Contact form",
   inbound_sms: "Inbound SMS",
   blog_published: "Blog - new post published",
+  linkedin_email_captured: "LinkedIn - email captured",
+  linkedin_instantly_enrolled: "LinkedIn - enrolled in Instantly",
+  linkedin_instantly_replied: "LinkedIn/Instantly - reply received",
+  linkedin_meeting_booked: "LinkedIn/Instantly - meeting booked",
 };
 
 export type CrmNotifyInput = {

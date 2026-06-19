@@ -50,6 +50,10 @@ export function CrmDashboard() {
     () => items.filter((i) => i.source === "discovery"),
     [items]
   );
+  const linkedinItems = useMemo(
+    () => items.filter((i) => i.source === "linkedin"),
+    [items]
+  );
   const smsItems = useMemo(() => items.filter((i) => i.source === "sms"), [items]);
   const blogItems = useMemo(() => items.filter((i) => i.source === "blog"), [items]);
   const voiceDemoItems = useMemo(
@@ -61,7 +65,7 @@ export function CrmDashboard() {
     [items]
   );
   const unreadCount = items.filter(isCrmFeedItemUnread).length;
-  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} 998web Jarvis · ${plumbingDemoItems.length} plumbing Jarvis`;
+  const countsLabel = `${contactItems.length} contacts · ${leadItems.length} leads · ${clientItems.length} clients · ${discoveryItems.length} discovery · ${linkedinItems.length} linkedin · ${smsItems.length} texts · ${blogItems.length} blog · ${voiceDemoItems.length} 998web Jarvis · ${plumbingDemoItems.length} plumbing Jarvis`;
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
@@ -96,6 +100,7 @@ export function CrmDashboard() {
             leadItems={leadItems}
             clientItems={clientItems}
             discoveryItems={discoveryItems}
+            linkedinItems={linkedinItems}
             smsItems={smsItems}
             blogItems={blogItems}
             voiceDemoItems={voiceDemoItems}

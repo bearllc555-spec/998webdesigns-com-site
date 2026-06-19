@@ -124,5 +124,40 @@ create table if not exists public.inbound_sms (
 
 alter table public.inbound_sms enable row level security;
 
+-- LinkedIn outreach (OpenOutreach -> Instantly handoff)
+create table if not exists public.linkedin_prospects (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  openoutreach_lead_id integer not null,
+  openoutreach_deal_id integer,
+  public_identifier text not null,
+  linkedin_url text not null,
+  full_name text,
+  company_name text,
+  email text not null,
+  email_source text not null default 'chat_message',
+  email_captured_at timestamptz,
+  email_capture_snippet text,
+  linkedin_state text,
+  campaign_name text,
+  status text not null default 'email_captured',
+  instantly_lead_id text,
+  instantly_campaign_id text,
+  instantly_enrolled_at timestamptz,
+  instantly_last_event_at timestamptz,
+  instantly_last_event_type text,
+  crm_notes text,
+  chat_summary jsonb,
+  profile_summary jsonb,
+  read_at timestamptz,
+  inbox_flag text check (inbox_flag is null or inbox_flag in ('star', 'check', 'alert'))
+);
+
+create unique index if not exists linkedin_prospects_openoutreach_lead_idx
+  on public.linkedin_prospects (openoutreach_lead_id);
+
+alter table public.linkedin_prospects enable row level security;
+
 -- Optional: purge stale rate-limit rows (run via cron or manually)
 -- delete from public.api_rate_limits where window_ends_at < now() - interval '1 day';

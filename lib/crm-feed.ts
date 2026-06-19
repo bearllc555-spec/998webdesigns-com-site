@@ -22,6 +22,7 @@ export type CrmFeedSource =
   | "client"
   | "contact"
   | "discovery"
+  | "linkedin"
   | "sms"
   | "voice_demo"
   | "plumbing_demo"
@@ -77,6 +78,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     leadsRes,
     contactsRes,
     discoveryRes,
+    linkedinRes,
     voiceDemoRes,
     blogRes,
     inboundRes,
@@ -99,6 +101,13 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       .from("discovery_prospects")
       .select(
         "id, created_at, updated_at, email, full_name, phone, status, goal, intake, close_draft, crm_notes, wd_lead_id, read_at, inbox_flag"
+      )
+      .order("updated_at", { ascending: false })
+      .limit(limit),
+    supa
+      .from("linkedin_prospects")
+      .select(
+        "id, created_at, updated_at, email, full_name, company_name, status, linkedin_url, public_identifier, email_capture_snippet, crm_notes, campaign_name, linkedin_state, instantly_last_event_type, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -148,6 +157,10 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   if (discoveryRes.error && !isMissingDiscoveryTable(discoveryRes.error)) {
     console.warn("[crm-feed] discovery_prospects:", discoveryRes.error.message);
     errors.push(`discovery: ${discoveryRes.error.message}`);
+  }
+  if (linkedinRes.error && !isMissingTable(linkedinRes.error)) {
+    console.warn("[crm-feed] linkedin_prospects:", linkedinRes.error.message);
+    errors.push(`linkedin: ${linkedinRes.error.message}`);
   }
   if (voiceDemoRes.error && !isMissingTable(voiceDemoRes.error)) {
     console.warn("[crm-feed] voice_demo_leads:", voiceDemoRes.error.message);
@@ -262,6 +275,33 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
         closeDraft: row.close_draft,
         wdLeadId: row.wd_lead_id ?? null,
         hasSmsThread: Boolean(latestSms),
+      },
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
+    });
+  }
+
+  for (const row of linkedinRes.data ?? []) {
+    items.push({
+      id: row.id,
+      source: "linkedin",
+      at: (row.updated_at as string) ?? (row.created_at as string),
+      title: (row.full_name as string) || (row.public_identifier as string) || "LinkedIn prospect",
+      email: row.email as string,
+      businessName: (row.company_name as string) ?? "",
+      status: row.status as string,
+      notes: (row.crm_notes as string | null) ?? null,
+      stripeSessionId: null,
+      stripeSubscriptionId: null,
+      message:
+        (row.email_capture_snippet as string | null) ??
+        (row.instantly_last_event_type as string | null),
+      phone: null,
+      payload: {
+        linkedinUrl: row.linkedin_url,
+        publicIdentifier: row.public_identifier,
+        linkedinState: row.linkedin_state,
+        campaignName: row.campaign_name,
       },
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),

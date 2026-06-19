@@ -12,6 +12,8 @@ export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/contact": { limit: 10, windowMs: 60_000 },
   "/api/hosting/portal/request": { limit: 5, windowMs: 60_000 },
   "/api/admin/env-status": { limit: 5, windowMs: 60_000 },
+  "/api/outreach/linkedin/sync": { limit: 30, windowMs: 60_000 },
+  "/api/instantly/webhook": { limit: 120, windowMs: 60_000 },
   "/api/crm/session": { limit: 10, windowMs: 60_000 },
   "/api/crm/feed": { limit: 60, windowMs: 60_000 },
   "/api/demo/plumbers/crm/feed": { limit: 60, windowMs: 60_000 },

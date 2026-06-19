@@ -21,6 +21,7 @@ type PendingDelete = {
     | "client"
     | "contact"
     | "discovery"
+    | "linkedin"
     | "sms"
     | "voice_demo"
     | "plumbing_demo"
@@ -34,6 +35,7 @@ function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "lead") return "Lead";
   if (source === "client") return "Client";
   if (source === "discovery") return "Discovery";
+  if (source === "linkedin") return "LinkedIn";
   if (source === "sms") return "Text";
   if (source === "voice_demo") return "998web Jarvis";
   if (source === "plumbing_demo") return "Plumbing Jarvis";
@@ -120,6 +122,7 @@ type CrmActivityInboxProps = {
   leadItems: CrmFeedItem[];
   clientItems: CrmFeedItem[];
   discoveryItems: CrmFeedItem[];
+  linkedinItems?: CrmFeedItem[];
   smsItems: CrmFeedItem[];
   blogItems: CrmFeedItem[];
   voiceDemoItems?: CrmFeedItem[];
@@ -673,6 +676,7 @@ export function CrmActivityInbox({
   leadItems,
   clientItems,
   discoveryItems,
+  linkedinItems = [],
   smsItems,
   blogItems,
   voiceDemoItems = [],
@@ -962,6 +966,13 @@ export function CrmActivityInbox({
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
         emptyLabel="No published posts logged yet."
+      />
+      <InboxSection
+        title="LinkedIn outreach"
+        items={linkedinItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No LinkedIn emails synced yet."
       />
       <InboxSection
         title="Discovery"

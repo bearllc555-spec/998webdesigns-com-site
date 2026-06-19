@@ -7,6 +7,7 @@ export async function setCrmItemReadState(
     | "client"
     | "contact"
     | "discovery"
+    | "linkedin"
     | "sms"
     | "voice_demo"
     | "plumbing_demo"
@@ -29,7 +30,9 @@ export async function setCrmItemReadState(
             ? voiceDemoTable
             : source === "blog"
               ? "blog_posts"
-              : "discovery_prospects";
+              : source === "linkedin"
+                ? "linkedin_prospects"
+                : "discovery_prospects";
   const read_at = read ? new Date().toISOString() : null;
 
   const { error } = await supa.from(table).update({ read_at }).eq("id", id);
