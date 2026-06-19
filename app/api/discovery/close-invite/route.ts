@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
   const businessName =
     str(parsed.body.businessName) ||
     prospect.intake?.businessName ||
+    prospect.company_name ||
     null;
 
   if (!prospect.intake) {

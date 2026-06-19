@@ -8,6 +8,7 @@ import type {
 
 export type InsertDiscoveryProspectInput = {
   full_name: string;
+  company_name: string;
   email: string;
   phone: string;
   goal: string | null;

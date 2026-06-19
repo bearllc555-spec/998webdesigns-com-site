@@ -13,6 +13,7 @@ type Step = "details" | "verify" | "done";
 export function BookDiscoveryForm() {
   const [step, setStep] = useState<Step>("details");
   const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [goal, setGoal] = useState("");
@@ -31,7 +32,7 @@ export function BookDiscoveryForm() {
       const res = await fetch("/api/discovery/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, phone, goal, smsConsent, website }),
+        body: JSON.stringify({ fullName, companyName, email, phone, goal, smsConsent, website }),
       });
       const data = (await res.json()) as { ok?: boolean; prospectId?: string; error?: string };
       if (!res.ok || !data.prospectId) {
@@ -144,6 +145,13 @@ export function BookDiscoveryForm() {
           label="Full name"
           value={fullName}
           onChange={setFullName}
+          required
+        />
+        <FixedFormField
+          id="companyName"
+          label="Company name"
+          value={companyName}
+          onChange={setCompanyName}
           required
         />
         <FixedFormField

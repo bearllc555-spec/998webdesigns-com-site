@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     ok: true,
     fullName: prospect.full_name,
     email: prospect.email,
+    companyName: prospect.company_name ?? "",
     goal: prospect.goal,
     intakeSubmitted: Boolean(prospect.intake_submitted_at),
   });
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
 
   void notifyCrmActivity({
     kind: "lead_submitted",
-    businessName: validated.data.businessName,
+    businessName: validated.data.businessName || prospect.company_name || "",
     fullName: prospect.full_name,
     email: prospect.email,
     status: "discovery_intake",

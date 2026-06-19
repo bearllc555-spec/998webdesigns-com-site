@@ -90,6 +90,7 @@ create table if not exists public.discovery_prospects (
   updated_at timestamptz not null default now(),
   status text not null default 'started',
   full_name text not null,
+  company_name text,
   email text not null,
   phone text not null,
   goal text,

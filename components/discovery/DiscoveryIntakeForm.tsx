@@ -40,6 +40,7 @@ export function DiscoveryIntakeForm() {
           ok?: boolean;
           fullName?: string;
           email?: string;
+          companyName?: string;
           goal?: string;
           intakeSubmitted?: boolean;
           error?: string;
@@ -50,6 +51,7 @@ export function DiscoveryIntakeForm() {
         }
         setFullName(data.fullName ?? "");
         setEmail(data.email ?? "");
+        if (data.companyName) setBusinessName(data.companyName);
         if (data.goal) setNotes(data.goal);
         if (data.intakeSubmitted) setAlreadyDone(true);
       } catch {

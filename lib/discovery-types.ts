@@ -42,6 +42,7 @@ export type DiscoveryProspectRow = {
   updated_at: string;
   status: DiscoveryStatus;
   full_name: string;
+  company_name: string | null;
   email: string;
   phone: string;
   goal: string | null;

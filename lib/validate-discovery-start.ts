@@ -3,6 +3,7 @@ import { normalizePhoneE164 } from "@/lib/twilio-verify";
 
 export type ValidatedDiscoveryStart = {
   fullName: string;
+  companyName: string;
   email: string;
   phoneE164: string;
   goal: string;
@@ -17,12 +18,14 @@ export function validateDiscoveryStartPayload(
   body: Record<string, unknown>
 ): { ok: true; data: ValidatedDiscoveryStart } | { ok: false; error: string } {
   const fullName = str(body.fullName);
+  const companyName = str(body.companyName);
   const email = str(body.email);
   const phoneRaw = str(body.phone);
   const goal = str(body.goal) ?? "";
   const smsConsent = body.smsConsent === true;
 
   if (!fullName) return { ok: false, error: "Missing required field: fullName" };
+  if (!companyName) return { ok: false, error: "Missing required field: companyName" };
   if (!email) return { ok: false, error: "Missing required field: email" };
   if (!isValidEmail(email)) return { ok: false, error: "Invalid email address" };
   if (!phoneRaw) return { ok: false, error: "Missing required field: phone" };
@@ -37,6 +40,6 @@ export function validateDiscoveryStartPayload(
 
   return {
     ok: true,
-    data: { fullName, email, phoneE164, goal, smsConsent: true },
+    data: { fullName, companyName, email, phoneE164, goal, smsConsent: true },
   };
 }

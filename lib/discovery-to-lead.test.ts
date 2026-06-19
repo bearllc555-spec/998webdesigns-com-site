@@ -8,6 +8,7 @@ const baseProspect: DiscoveryProspectRow = {
   updated_at: "2026-06-06T00:00:00Z",
   status: "intake_complete",
   full_name: "Jane Doe",
+  company_name: "Acme Co",
   email: "jane@example.com",
   phone: "+15551234567",
   goal: "Need a new site",

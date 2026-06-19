@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
   const inserted = await insertDiscoveryProspect({
     full_name: validated.data.fullName,
+    company_name: validated.data.companyName,
     email: validated.data.email.toLowerCase(),
     phone: validated.data.phoneE164,
     goal: validated.data.goal || null,

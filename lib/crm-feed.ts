@@ -100,7 +100,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     supa
       .from("discovery_prospects")
       .select(
-        "id, created_at, updated_at, email, full_name, phone, status, goal, intake, close_draft, crm_notes, wd_lead_id, read_at, inbox_flag"
+        "id, created_at, updated_at, email, full_name, phone, status, goal, company_name, intake, close_draft, crm_notes, wd_lead_id, read_at, inbox_flag"
       )
       .order("updated_at", { ascending: false })
       .limit(limit),
@@ -241,6 +241,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
 
   for (const row of discoveryRes.data ?? []) {
     const intake = row.intake as { businessName?: string } | null;
+    const companyName = (row as { company_name?: string | null }).company_name ?? "";
     const wdLeadId = (row as { wd_lead_id?: string | null }).wd_lead_id ?? null;
     const latestSms =
       latestSmsByProspect.get(row.id as string) ??
@@ -256,7 +257,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       at,
       title: row.full_name,
       email: row.email,
-      businessName: intake?.businessName ?? "",
+      businessName: intake?.businessName ?? companyName,
       status: row.status,
       notes: (row as { crm_notes?: string | null }).crm_notes ?? null,
       stripeSessionId: null,
