@@ -53,6 +53,14 @@ function fromPost(post: BlogDashboardPost): FormState {
   };
 }
 
+/** Pre-fill the schedule input from a scheduled post (local datetime); else blank. */
+function scheduleLocalFromPost(post: BlogDashboardPost): string {
+  if (post.status === "scheduled" && post.scheduledAt) {
+    return toDatetimeLocalValue(new Date(post.scheduledAt));
+  }
+  return "";
+}
+
 export function BlogEditor({ postId }: Props) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [meta, setMeta] = useState<BlogDashboardPost | null>(null);
@@ -85,6 +93,7 @@ export function BlogEditor({ postId }: Props) {
       const data = (await res.json()) as { post: BlogDashboardPost };
       setMeta(data.post);
       setForm(fromPost(data.post));
+      setScheduleAt(scheduleLocalFromPost(data.post));
       setId(data.post.id);
       if (data.post.staffNotes?.trim()) setNotesOpen(true);
     } catch {
@@ -177,6 +186,7 @@ export function BlogEditor({ postId }: Props) {
       const post = data.post as BlogDashboardPost;
       setMeta(post);
       setForm(fromPost(post));
+      setScheduleAt(scheduleLocalFromPost(post));
       setMessage(
         action === "publish"
           ? "Published. Date auto-recorded."
@@ -276,6 +286,21 @@ export function BlogEditor({ postId }: Props) {
         ? `${STATUS_LABEL[meta.status]} for ${formatDateTime(meta.scheduledAt)}`
         : STATUS_LABEL[meta.status]
     : "New draft";
+
+  // Schedule button state: green "Scheduled" when the input matches the saved
+  // schedule; "Reschedule" once the date is edited; "Schedule" otherwise.
+  const savedScheduleLocal =
+    meta && meta.status === "scheduled" && meta.scheduledAt
+      ? toDatetimeLocalValue(new Date(meta.scheduledAt))
+      : "";
+  const isScheduledSynced = Boolean(savedScheduleLocal) && scheduleAt === savedScheduleLocal;
+  const scheduleLabel = busy
+    ? "..."
+    : isScheduledSynced
+      ? "Scheduled"
+      : meta?.status === "scheduled"
+        ? "Reschedule"
+        : "Schedule";
 
   const inputClass =
     "w-full rounded-lg border border-rule bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent";
@@ -486,27 +511,39 @@ export function BlogEditor({ postId }: Props) {
                 Publish now
               </button>
 
-              <div className="flex items-end gap-2">
-                <label className="block">
-                  <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft">
-                    Schedule for
+              <div className="flex flex-col gap-1">
+                <div className="flex items-end gap-2">
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft">
+                      Schedule for
+                    </span>
+                    <input
+                      type="datetime-local"
+                      className={inputClass}
+                      value={scheduleAt}
+                      min={toDatetimeLocalValue(new Date())}
+                      onChange={(e) => setScheduleAt(e.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={publishWithSchedule}
+                    disabled={saving || busy || !scheduleAt || isScheduledSynced}
+                    className={
+                      isScheduledSynced
+                        ? "rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-100"
+                        : "rounded-full border border-rule px-4 py-2 text-sm text-ink-soft hover:border-accent/50 disabled:opacity-50"
+                    }
+                  >
+                    {scheduleLabel}
+                  </button>
+                </div>
+                {savedScheduleLocal && meta?.scheduledAt && (
+                  <span className="text-xs text-ink-soft">
+                    Scheduled for {formatDateTime(meta.scheduledAt)}. Change the date and click
+                    Reschedule to update.
                   </span>
-                  <input
-                    type="datetime-local"
-                    className={inputClass}
-                    value={scheduleAt}
-                    min={toDatetimeLocalValue(new Date())}
-                    onChange={(e) => setScheduleAt(e.target.value)}
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={publishWithSchedule}
-                  disabled={saving || busy}
-                  className="rounded-full border border-rule px-4 py-2 text-sm text-ink-soft hover:border-accent/50 disabled:opacity-50"
-                >
-                  Schedule
-                </button>
+                )}
               </div>
 
               {meta && meta.status !== "draft" && (
