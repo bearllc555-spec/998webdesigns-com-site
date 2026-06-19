@@ -538,12 +538,6 @@ export function BlogEditor({ postId }: Props) {
                     {scheduleLabel}
                   </button>
                 </div>
-                {savedScheduleLocal && meta?.scheduledAt && (
-                  <span className="text-xs text-ink-soft">
-                    Scheduled for {formatDateTime(meta.scheduledAt)}. Change the date and click
-                    Reschedule to update.
-                  </span>
-                )}
               </div>
 
               {meta && meta.status !== "draft" && (
