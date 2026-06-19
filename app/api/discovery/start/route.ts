@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { insertDiscoveryProspect } from "@/lib/discovery-db";
+import { notifyCrmActivity } from "@/lib/crm-notify";
 import { readJsonBody } from "@/lib/read-json-body";
 import { startSmsVerification } from "@/lib/twilio-verify";
 import { validateDiscoveryStartPayload } from "@/lib/validate-discovery-start";
@@ -54,6 +55,16 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     );
   }
+
+  await notifyCrmActivity({
+    kind: "discovery_started",
+    businessName: validated.data.companyName,
+    fullName: validated.data.fullName,
+    email: validated.data.email,
+    phone: validated.data.phoneE164,
+    status: "awaiting_sms_verify",
+    message: validated.data.goal || undefined,
+  });
 
   const sms = await startSmsVerification(validated.data.phoneE164);
   if (!sms.ok) {

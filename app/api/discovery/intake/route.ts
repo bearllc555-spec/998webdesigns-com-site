@@ -74,12 +74,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Could not save intake" }, { status: 500 });
   }
 
-  void notifyCrmActivity({
-    kind: "lead_submitted",
+  await notifyCrmActivity({
+    kind: "discovery_intake",
     businessName: validated.data.businessName || prospect.company_name || "",
     fullName: prospect.full_name,
     email: prospect.email,
-    status: "discovery_intake",
+    phone: prospect.phone,
+    status: "brief_submitted",
   });
 
   return NextResponse.json({ ok: true });

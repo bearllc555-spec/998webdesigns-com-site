@@ -18,7 +18,9 @@ export type CrmNotifyKind =
   | "linkedin_instantly_enrolled"
   | "linkedin_instantly_replied"
   | "linkedin_meeting_booked"
-  | "discovery_phone_verified";
+  | "discovery_started"
+  | "discovery_phone_verified"
+  | "discovery_intake";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_submitted: "New lead - form submitted",
@@ -37,7 +39,9 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   linkedin_instantly_enrolled: "LinkedIn - enrolled in Instantly",
   linkedin_instantly_replied: "LinkedIn/Instantly - reply received",
   linkedin_meeting_booked: "LinkedIn/Instantly - meeting booked",
+  discovery_started: "Discovery call - form submitted",
   discovery_phone_verified: "Discovery call - phone verified",
+  discovery_intake: "Discovery call - brief submitted",
 };
 
 export type CrmNotifyInput = {

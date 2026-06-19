@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   await markDiscoveryPhoneVerified(prospectId);
   await sendDiscoveryIntakeEmail(prospect.full_name, prospect.email, prospectId);
 
-  void notifyCrmActivity({
+  await notifyCrmActivity({
     kind: "discovery_phone_verified",
     businessName: prospect.company_name ?? "",
     fullName: prospect.full_name,
