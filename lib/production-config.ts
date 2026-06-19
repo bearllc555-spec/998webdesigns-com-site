@@ -1,3 +1,4 @@
+import { discoveryBookCallUrl, DISCOVERY_BOOK_CALL_URL } from "@/lib/book-call";
 import { crmAdminSecretSource } from "@/lib/crm-admin-secret";
 import { twilioMessagingConfigured } from "@/lib/twilio-sms";
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
@@ -21,6 +22,8 @@ export type ProductionConfigStatus = {
   cronSecretConfigured: boolean;
   twilioVerifyConfigured: boolean;
   twilioMessagingConfigured: boolean;
+  bookCallUrl: string;
+  bookCallUrlFromEnv: boolean;
   stripeOps: StripeOpsSnapshot | null;
   warnings: string[];
   readyForLiveCharges: boolean;
@@ -133,6 +136,14 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     );
   }
 
+  const bookCallUrlFromEnv = Boolean(process.env.NEXT_PUBLIC_BOOK_CALL_URL?.trim());
+  const bookCallUrl = discoveryBookCallUrl();
+  if (bookCallUrl !== DISCOVERY_BOOK_CALL_URL) {
+    warnings.push(
+      "NEXT_PUBLIC_BOOK_CALL_URL does not match canonical bearllc555 Calendly - /book/schedule may point at the wrong account.",
+    );
+  }
+
   const resendConfigured = Boolean(process.env.RESEND_API_KEY?.trim());
   const supabaseConfigured =
     supabase.configured && supabase.wdLeadsTable && supabase.apiRateLimitsTable;
@@ -164,6 +175,8 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     cronSecretConfigured,
     twilioVerifyConfigured,
     twilioMessagingConfigured: twilioMessaging,
+    bookCallUrl,
+    bookCallUrlFromEnv,
     stripeOps,
     warnings,
     readyForLiveCharges,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
+import { discoveryBookCallUrl } from "@/lib/book-call";
 
 export const metadata: Metadata = {
   title: "Schedule your call - 998 web designs",
@@ -12,7 +13,7 @@ type Props = { searchParams: Promise<{ token?: string }> };
 
 export default async function SchedulePage({ searchParams }: Props) {
   const { token } = await searchParams;
-  const bookUrl = process.env.NEXT_PUBLIC_BOOK_CALL_URL?.trim();
+  const bookUrl = discoveryBookCallUrl();
 
   return (
     <div className="min-h-screen bg-bg">
