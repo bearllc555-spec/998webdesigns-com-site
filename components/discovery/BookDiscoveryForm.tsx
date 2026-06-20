@@ -7,6 +7,7 @@ import {
   FixedFormField,
   MessageFormField,
 } from "@/components/form-field-stack";
+import { DISCOVERY_BOOK_CALL_URL } from "@/lib/book-call";
 
 type Step = "details" | "verify" | "done";
 
@@ -76,9 +77,17 @@ export function BookDiscoveryForm() {
       <div className="mx-auto max-w-xl px-5 py-16 md:py-24">
         <h1 className="font-display text-3xl font-medium text-ink md:text-4xl">Check your email</h1>
         <p className="mt-4 text-ink-soft">
-          We sent a secure link to <strong>{email}</strong>. Open it to complete your project brief,
-          then book a call. The link also confirms your email.
+          We sent a scheduling link to <strong>{email}</strong>. Open it to book your discovery call
+          on our calendar. The link also confirms your email.
         </p>
+        <a
+          href={DISCOVERY_BOOK_CALL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white"
+        >
+          Open scheduling calendar
+        </a>
         <p className="mt-6 text-sm text-slate">
           Prefer to skip the call?{" "}
           <Link href="/start" className="text-accent underline hover:text-accent-deep">
@@ -126,8 +135,8 @@ export function BookDiscoveryForm() {
     <div className="mx-auto max-w-xl px-5 py-16 md:py-24">
       <h1 className="font-display text-3xl font-medium text-ink md:text-4xl">Book a discovery call</h1>
       <p className="mt-4 text-ink-soft">
-        Not ready to pay yet? Tell us what you need. We verify your phone by text, email you a brief,
-        then hop on a call before sending a personalized checkout link.
+        Not ready to pay yet? Tell us what you need. We verify your phone by text, email you a
+        scheduling link, then hop on a call before sending a personalized checkout link.
       </p>
       <form onSubmit={startDiscovery} className="mt-8 space-y-5">
         <input

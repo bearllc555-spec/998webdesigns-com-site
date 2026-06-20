@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   createDiscoveryCloseToken,
   createDiscoveryIntakeToken,
+  createDiscoveryScheduleToken,
+  verifyDiscoveryScheduleToken,
   verifyDiscoveryToken,
 } from "@/lib/discovery-token";
 
@@ -30,5 +32,15 @@ describe("discovery-token", () => {
   it("round-trips close tokens", () => {
     const token = createDiscoveryCloseToken("xyz", 1_700_000_000_000);
     expect(verifyDiscoveryToken(token!, "close", 1_700_000_000_000)?.prospectId).toBe("xyz");
+  });
+
+  it("round-trips schedule tokens", () => {
+    const token = createDiscoveryScheduleToken("sched-1", 1_700_000_000_000);
+    expect(verifyDiscoveryToken(token!, "schedule", 1_700_000_000_000)?.prospectId).toBe("sched-1");
+  });
+
+  it("verifyDiscoveryScheduleToken accepts legacy intake tokens", () => {
+    const token = createDiscoveryIntakeToken("legacy-1", 1_700_000_000_000);
+    expect(verifyDiscoveryScheduleToken(token!, 1_700_000_000_000)?.prospectId).toBe("legacy-1");
   });
 });

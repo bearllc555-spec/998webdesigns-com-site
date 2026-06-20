@@ -1,4 +1,7 @@
-import { createDiscoveryCloseToken, createDiscoveryIntakeToken } from "@/lib/discovery-token";
+import {
+  createDiscoveryCloseToken,
+  createDiscoveryScheduleToken,
+} from "@/lib/discovery-token";
 import { marketingSiteOrigin } from "@/lib/site-origin";
 import { sendTwilioSms } from "@/lib/twilio-sms";
 
@@ -6,6 +9,12 @@ export function buildDiscoveryCloseUrl(prospectId: string): string | null {
   const token = createDiscoveryCloseToken(prospectId);
   if (!token) return null;
   return `${marketingSiteOrigin()}/close?token=${encodeURIComponent(token)}`;
+}
+
+export function buildDiscoveryScheduleUrl(prospectId: string): string | null {
+  const token = createDiscoveryScheduleToken(prospectId);
+  if (!token) return null;
+  return `${marketingSiteOrigin()}/book/schedule?token=${encodeURIComponent(token)}`;
 }
 
 function escapeHtml(text: string): string {
@@ -39,25 +48,24 @@ async function sendResendEmail(to: string, subject: string, html: string): Promi
   return true;
 }
 
-export async function sendDiscoveryIntakeEmail(
+export async function sendDiscoveryScheduleEmail(
   fullName: string,
   email: string,
   prospectId: string
 ): Promise<boolean> {
-  const token = createDiscoveryIntakeToken(prospectId);
-  if (!token) return false;
+  const url = buildDiscoveryScheduleUrl(prospectId);
+  if (!url) return false;
 
-  const url = `${marketingSiteOrigin()}/book/intake?token=${encodeURIComponent(token)}`;
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
       <p>Hi ${escapeHtml(fullName)},</p>
-      <p>Your phone is verified. Click below to complete your project brief - opening the link also confirms your email.</p>
-      <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Complete your brief</a></p>
+      <p>Your phone is verified. Click below to book your discovery call - opening the link also confirms your email.</p>
+      <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Book your call</a></p>
       <p style="font-size: 14px; color: #52525b;">This link expires in 48 hours. Questions? Reply or write hello@998webdesigns.com.</p>
     </div>
   `;
 
-  return sendResendEmail(email, "Complete your project brief - 998 web designs", html);
+  return sendResendEmail(email, "Book your discovery call - 998 web designs", html);
 }
 
 export async function sendDiscoveryCloseEmail(

@@ -3,8 +3,10 @@ import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import {
   getDiscoveryProspect,
   markDiscoveryPhoneVerified,
+  saveDiscoveryIntake,
 } from "@/lib/discovery-db";
-import { sendDiscoveryIntakeEmail } from "@/lib/discovery-email";
+import { sendDiscoveryScheduleEmail } from "@/lib/discovery-email";
+import { buildMinimalDiscoveryIntake } from "@/lib/discovery-intake-stub";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import { readJsonBody } from "@/lib/read-json-body";
 import { checkSmsVerification } from "@/lib/twilio-verify";
@@ -42,7 +44,15 @@ export async function POST(req: NextRequest) {
   }
 
   await markDiscoveryPhoneVerified(prospectId);
-  await sendDiscoveryIntakeEmail(prospect.full_name, prospect.email, prospectId);
+
+  if (!prospect.intake_submitted_at) {
+    await saveDiscoveryIntake(
+      prospectId,
+      buildMinimalDiscoveryIntake(prospect.company_name ?? "", prospect.goal)
+    );
+  }
+
+  await sendDiscoveryScheduleEmail(prospect.full_name, prospect.email, prospectId);
 
   await notifyCrmActivity({
     kind: "discovery_phone_verified",

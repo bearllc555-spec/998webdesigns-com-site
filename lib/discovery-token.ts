@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
-export type DiscoveryTokenPurpose = "intake" | "close";
+export type DiscoveryTokenPurpose = "intake" | "close" | "schedule";
 
 export type DiscoveryTokenPayload = {
   prospectId: string;
@@ -9,6 +9,7 @@ export type DiscoveryTokenPayload = {
 };
 
 const INTAKE_TTL_MS = 48 * 60 * 60 * 1000;
+const SCHEDULE_TTL_MS = INTAKE_TTL_MS;
 const CLOSE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function discoverySigningSecret(): string | null {
@@ -40,6 +41,20 @@ function createToken(
 
 export function createDiscoveryIntakeToken(prospectId: string, now = Date.now()): string | null {
   return createToken(prospectId, "intake", INTAKE_TTL_MS, now);
+}
+
+export function createDiscoveryScheduleToken(prospectId: string, now = Date.now()): string | null {
+  return createToken(prospectId, "schedule", SCHEDULE_TTL_MS, now);
+}
+
+/** Schedule links: accept new schedule tokens or legacy intake tokens. */
+export function verifyDiscoveryScheduleToken(
+  token: string,
+  now = Date.now()
+): DiscoveryTokenPayload | null {
+  return (
+    verifyDiscoveryToken(token, "schedule", now) ?? verifyDiscoveryToken(token, "intake", now)
+  );
 }
 
 export function createDiscoveryCloseToken(prospectId: string, now = Date.now()): string | null {

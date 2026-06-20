@@ -1,24 +1,18 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
-import { DiscoveryIntakeForm } from "@/components/discovery/DiscoveryIntakeForm";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Project brief - 998 web designs",
+  title: "Schedule your call - 998 web designs",
   robots: { index: false, follow: false },
 };
 
-export default function DiscoveryIntakePage() {
-  return (
-    <div className="min-h-screen bg-bg">
-      <Nav />
-      <main id="main">
-        <Suspense fallback={<p className="px-5 py-16 text-ink-soft">Loading…</p>}>
-          <DiscoveryIntakeForm />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
-  );
+type Props = { searchParams: Promise<{ token?: string }> };
+
+/** Legacy intake URLs redirect to scheduling (brief step removed). */
+export default async function DiscoveryIntakePage({ searchParams }: Props) {
+  const { token } = await searchParams;
+  if (token?.trim()) {
+    redirect(`/book/schedule?token=${encodeURIComponent(token.trim())}`);
+  }
+  redirect("/book/schedule");
 }

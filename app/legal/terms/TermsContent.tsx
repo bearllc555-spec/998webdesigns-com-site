@@ -140,10 +140,10 @@ export function TermsContent() {
               <strong>Discovery pipeline (/book):</strong> Our optional discovery flow lets you
               request a call before checkout. By checking the SMS consent box and submitting your
               phone number, you agree to receive a one-time verification text from us (via Twilio) to
-              confirm your number. We may email you a secure link to complete your project brief
-              and, after a discovery call, a personalized checkout link. Those links are personal -
-              do not share them. Clicking your intake email link confirms your email address for that
-              session.
+              confirm your number. We may email you a secure link to book a discovery call on our
+              calendar and, after that call, a personalized checkout link. Those links are personal -
+              do not share them. Clicking your scheduling email link confirms your email address for
+              that session.
             </p>
             <p className="mt-4 text-sm text-ink-soft">
               For carrier and industry guidance on SMS terms of service, see{" "}
