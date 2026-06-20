@@ -144,7 +144,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   const bookCallUrl = discoveryBookCallUrl();
   if (bookCallUrl !== DISCOVERY_BOOK_CALL_URL) {
     warnings.push(
-      "NEXT_PUBLIC_BOOK_CALL_URL does not match canonical bearllc555 Calendly - /book/schedule may point at the wrong account.",
+      "NEXT_PUBLIC_BOOK_CALL_URL does not match canonical 998webdesigns Calendly - /book/schedule may point at the wrong account.",
     );
   }
 
