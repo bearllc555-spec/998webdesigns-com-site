@@ -155,6 +155,74 @@ export async function saveDiscoveryCloseDraft(
   });
 }
 
+export async function findDiscoveryProspectByEmail(
+  email: string
+): Promise<DiscoveryProspectRow | null> {
+  const supa = supabaseAdmin();
+  if (!supa) return null;
+
+  const trimmed = email.trim();
+  if (!trimmed) return null;
+
+  const { data, error } = await supa
+    .from("discovery_prospects")
+    .select("*")
+    .ilike("email", trimmed)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as DiscoveryProspectRow;
+}
+
+export async function markDiscoveryCallBooked(
+  id: string,
+  eventStartAt: string,
+  inviteeUri?: string | null
+): Promise<boolean> {
+  const row = await getDiscoveryProspect(id);
+  if (!row) return false;
+
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = {
+    call_booked_at: row.call_booked_at ?? now,
+    calendly_event_start_at: eventStartAt,
+    status: "call_booked",
+  };
+
+  if (inviteeUri?.trim()) {
+    patch.calendly_invitee_uri = inviteeUri.trim();
+  }
+
+  if (!row.email_verified_at) {
+    patch.email_verified_at = now;
+  }
+
+  return updateDiscoveryProspect(id, patch);
+}
+
+export async function clearDiscoveryCallBooking(id: string): Promise<boolean> {
+  const row = await getDiscoveryProspect(id);
+  if (!row) return false;
+
+  const status =
+    row.intake_submitted_at != null
+      ? "intake_complete"
+      : row.email_verified_at
+        ? "email_verified"
+        : row.phone_verified_at
+          ? "phone_verified"
+          : "started";
+
+  return updateDiscoveryProspect(id, {
+    call_booked_at: null,
+    calendly_event_start_at: null,
+    calendly_invitee_uri: null,
+    status,
+  });
+}
+
 export async function linkDiscoveryWdLead(id: string, wdLeadId: string): Promise<boolean> {
   return updateDiscoveryProspect(id, { wd_lead_id: wdLeadId });
 }

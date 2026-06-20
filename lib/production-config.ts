@@ -140,6 +140,12 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     );
   }
 
+  if (vercelEnv === "production" && !process.env.CALENDLY_WEBHOOK_SIGNING_KEY?.trim()) {
+    warnings.push(
+      "CALENDLY_WEBHOOK_SIGNING_KEY missing - /api/calendly/webhook will reject events until set."
+    );
+  }
+
   const bookCallUrlFromEnv = Boolean(process.env.NEXT_PUBLIC_BOOK_CALL_URL?.trim());
   const bookCallUrl = discoveryBookCallUrl();
   if (bookCallUrl !== DISCOVERY_BOOK_CALL_URL) {

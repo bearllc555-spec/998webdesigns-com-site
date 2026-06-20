@@ -34,12 +34,15 @@ const baseProspect: DiscoveryProspectRow = {
   },
   intake_submitted_at: "2026-06-06T00:00:00Z",
   call_booked_at: null,
+  calendly_event_start_at: null,
+  calendly_invitee_uri: null,
   close_draft: null,
   close_sent_at: null,
   wd_lead_id: null,
   ip: null,
   read_at: null,
   inbox_flag: null,
+  crm_notes: null,
 };
 
 describe("discoveryProspectToLead", () => {

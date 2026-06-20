@@ -100,6 +100,8 @@ create table if not exists public.discovery_prospects (
   intake jsonb,
   intake_submitted_at timestamptz,
   call_booked_at timestamptz,
+  calendly_event_start_at timestamptz,
+  calendly_invitee_uri text,
   close_draft jsonb,
   close_sent_at timestamptz,
   wd_lead_id uuid,

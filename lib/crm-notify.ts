@@ -20,7 +20,8 @@ export type CrmNotifyKind =
   | "linkedin_meeting_booked"
   | "discovery_started"
   | "discovery_phone_verified"
-  | "discovery_intake";
+  | "discovery_intake"
+  | "discovery_call_booked";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_submitted: "New lead - form submitted",
@@ -42,6 +43,7 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   discovery_started: "Discovery call - form submitted",
   discovery_phone_verified: "Discovery call - phone verified",
   discovery_intake: "Discovery call - brief submitted",
+  discovery_call_booked: "Discovery call - scheduled",
 };
 
 export type CrmNotifyInput = {

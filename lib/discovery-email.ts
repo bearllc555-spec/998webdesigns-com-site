@@ -60,13 +60,13 @@ export async function sendDiscoveryScheduleEmail(
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #18181b; max-width: 560px;">
       <p>Hi ${escapeHtml(fullName)},</p>
-      <p>Your phone is verified. Click below to book your discovery call - opening the link also confirms your email.</p>
-      <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Book your call</a></p>
+      <p>Your phone is verified. Use the link below to confirm your email and open scheduling. If you already picked a time, this link shows your confirmation.</p>
+      <p><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Continue to scheduling</a></p>
       <p style="font-size: 14px; color: #52525b;">This link expires in 48 hours. Questions? Reply or write hello@998webdesigns.com.</p>
     </div>
   `;
 
-  return sendResendEmail(email, "Book your discovery call - 998 web designs", html);
+  return sendResendEmail(email, "Confirm your email - 998 web designs", html);
 }
 
 export async function sendDiscoveryCloseEmail(

@@ -5,7 +5,7 @@ import {
   markDiscoveryPhoneVerified,
   saveDiscoveryIntake,
 } from "@/lib/discovery-db";
-import { sendDiscoveryScheduleEmail } from "@/lib/discovery-email";
+import { sendDiscoveryScheduleEmail, buildDiscoveryScheduleUrl } from "@/lib/discovery-email";
 import { buildMinimalDiscoveryIntake } from "@/lib/discovery-intake-stub";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import { readJsonBody } from "@/lib/read-json-body";
@@ -64,5 +64,7 @@ export async function POST(req: NextRequest) {
     message: prospect.goal ?? undefined,
   });
 
-  return NextResponse.json({ ok: true });
+  const scheduleUrl = buildDiscoveryScheduleUrl(prospectId);
+
+  return NextResponse.json({ ok: true, scheduleUrl: scheduleUrl ?? undefined });
 }

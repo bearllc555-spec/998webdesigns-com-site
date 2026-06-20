@@ -52,6 +52,8 @@ export type DiscoveryProspectRow = {
   intake: DiscoveryIntake | null;
   intake_submitted_at: string | null;
   call_booked_at: string | null;
+  calendly_event_start_at: string | null;
+  calendly_invitee_uri: string | null;
   close_draft: DiscoveryCloseDraft | null;
   close_sent_at: string | null;
   wd_lead_id: string | null;

@@ -7,7 +7,6 @@ import {
   FixedFormField,
   MessageFormField,
 } from "@/components/form-field-stack";
-import { discoveryBookCallUrl } from "@/lib/book-call";
 
 type Step = "details" | "verify" | "done";
 
@@ -20,6 +19,7 @@ export function BookDiscoveryForm() {
   const [goal, setGoal] = useState("");
   const [smsConsent, setSmsConsent] = useState(false);
   const [prospectId, setProspectId] = useState("");
+  const [scheduleUrl, setScheduleUrl] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -59,11 +59,16 @@ export function BookDiscoveryForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prospectId, code }),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        scheduleUrl?: string;
+      };
       if (!res.ok) {
         setError(data.error ?? "Invalid code.");
         return;
       }
+      if (data.scheduleUrl) setScheduleUrl(data.scheduleUrl);
       setStep("done");
     } catch {
       setError("Network error. Try again.");
@@ -77,17 +82,17 @@ export function BookDiscoveryForm() {
       <div className="mx-auto max-w-xl px-5 py-16 md:py-24">
         <h1 className="font-display text-3xl font-medium text-ink md:text-4xl">Check your email</h1>
         <p className="mt-4 text-ink-soft">
-          We sent a scheduling link to <strong>{email}</strong>. Open it to book your discovery call
-          on our calendar. The link also confirms your email.
+          We sent a link to <strong>{email}</strong> to confirm your email and open scheduling. If you
+          already booked, that same link shows your confirmation.
         </p>
-        <a
-          href={discoveryBookCallUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white"
-        >
-          Open scheduling calendar
-        </a>
+        {scheduleUrl ? (
+          <a
+            href={scheduleUrl}
+            className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white"
+          >
+            Continue to scheduling
+          </a>
+        ) : null}
         <p className="mt-6 text-sm text-slate">
           Prefer to skip the call?{" "}
           <Link href="/start" className="text-accent underline hover:text-accent-deep">

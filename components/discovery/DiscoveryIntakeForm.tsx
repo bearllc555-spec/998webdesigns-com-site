@@ -116,7 +116,7 @@ export function DiscoveryIntakeForm() {
           href={`/book/schedule?token=${encodeURIComponent(token)}`}
           className="mt-6 inline-block text-accent underline"
         >
-          Book your call
+          Continue to scheduling
         </Link>
       </div>
     );

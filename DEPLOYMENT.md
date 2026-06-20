@@ -29,8 +29,23 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 | `NEXT_PUBLIC_SUPABASE_URL` | Lead storage |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (if used client-side) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `wd_leads` inserts |
+| `CALENDLY_WEBHOOK_SIGNING_KEY` | `/api/calendly/webhook` signature verification (from Calendly webhook subscription) |
+| `TWILIO_ACCOUNT_SID` | Discovery SMS verify + CRM SMS |
 
-**Discovery Calendly:** Production should **not** set `NEXT_PUBLIC_BOOK_CALL_URL`. `/book/schedule` redirects to the canonical event in `lib/book-call.ts`: [998webdesigns/discovery-call-998-web-designs](https://calendly.com/998webdesigns/discovery-call-998-web-designs). If env-status warns about a mismatched URL, delete the var on Vercel Production and redeploy.
+**Discovery Calendly:** Production should **not** set `NEXT_PUBLIC_BOOK_CALL_URL`. `/book/schedule?token=…` embeds the canonical event in `lib/book-call.ts`: [998webdesigns/discovery-call-998-web-designs](https://calendly.com/998webdesigns/discovery-call-998-web-designs). If already booked, the same link shows a confirmation page.
+
+**Calendly webhook (required for email-link confirmation after booking):**
+
+1. Run migration `supabase/migrations/20260620120000_discovery_calendly_booking.sql` on helmet (adds `calendly_event_start_at`, `calendly_invitee_uri`).
+2. Calendly → Integrations → Webhooks → create subscription:
+   - URL: `https://998webdesigns.com/api/calendly/webhook`
+   - Events: `invitee.created`, `invitee.canceled`
+   - Scope: organization or user that owns the discovery event
+3. Copy the **signing key** into Vercel as `CALENDLY_WEBHOOK_SIGNING_KEY` and redeploy.
+
+Prospects are matched via `utm_campaign=<prospect uuid>` on the Calendly URL (set automatically) with email fallback.
+
+If env-status warns about a mismatched `NEXT_PUBLIC_BOOK_CALL_URL`, delete the var on Vercel Production and redeploy.
 
 Secrets live in workspace `.local/` (gitignored). Never commit keys.
 
