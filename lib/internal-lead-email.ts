@@ -10,6 +10,7 @@ import { hostingChoiceLabel } from "@/lib/hosting";
 import { HOSTING_MONTHLY_PRICE_MO_LABEL } from "@/lib/hosting-policy";
 import type { ValidatedLead } from "@/lib/validate-lead";
 import { stripeKeyMode } from "@/lib/stripe-env";
+import { SUPPORT_EMAIL, TRANSACTIONAL_FROM } from "@/lib/transactional-email";
 
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
@@ -22,7 +23,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
-const NOTIFY_TO = "hello@998webdesigns.com";
+const NOTIFY_TO = SUPPORT_EMAIL;
 
 function stripeDashboardBase(): string {
   return stripeKeyMode() === "live"
@@ -46,7 +47,7 @@ export async function sendInternalLeadSubmittedEmail(
   const dash = stripeDashboardBase();
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: NOTIFY_TO,
     subject: `[998] New lead - ${lead.businessName} (awaiting payment)`,
     html: `
@@ -113,7 +114,7 @@ export async function sendInternalPaymentEmail(
     : "";
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: NOTIFY_TO,
     subject: `[998] Paid in full - ${meta.businessName || email}`,
     html: `
@@ -157,7 +158,7 @@ export async function sendInternalAchFailedEmail(
   const dashboardBase = stripeDashboardBase();
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: NOTIFY_TO,
     subject: `[998] ACH payment failed - ${meta.businessName || email}`,
     html: `
@@ -211,7 +212,7 @@ export async function sendInternalLifetimeHostingPaidEmail(
     : "";
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: NOTIFY_TO,
     subject: `[998] 10-year hosting paid - ${meta.businessName || email}`,
     html: `
@@ -258,7 +259,7 @@ export async function sendInternalHostingRenewalFailedEmail(
   const dashboardBase = stripeDashboardBase();
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: NOTIFY_TO,
     subject: `[998] Hosting renewal failed - ${customerEmail}`,
     html: `
@@ -292,7 +293,7 @@ export async function sendInternalHostingCanceledEmail(
   const dashboardBase = stripeDashboardBase();
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: NOTIFY_TO,
     subject: `[998] Hosting subscription ended - ${subscription.id}`,
     html: `

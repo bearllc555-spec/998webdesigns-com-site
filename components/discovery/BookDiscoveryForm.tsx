@@ -7,7 +7,7 @@ import {
   FixedFormField,
   MessageFormField,
 } from "@/components/form-field-stack";
-import { DISCOVERY_BOOK_CALL_URL } from "@/lib/book-call";
+import { discoveryBookCallUrl } from "@/lib/book-call";
 
 type Step = "details" | "verify" | "done";
 
@@ -81,7 +81,7 @@ export function BookDiscoveryForm() {
           on our calendar. The link also confirms your email.
         </p>
         <a
-          href={DISCOVERY_BOOK_CALL_URL}
+          href={discoveryBookCallUrl()}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white"

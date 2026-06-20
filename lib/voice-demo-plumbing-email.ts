@@ -3,6 +3,7 @@ import {
   PLUMBING_DEMO_EMAIL_DISPLAY,
   PLUMBING_DEMO_PROMO_AMOUNT,
 } from "@/lib/voice-demo-plumbing-constants";
+import { SUPPORT_EMAIL } from "@/lib/transactional-email";
 
 export type PlumbingEmailTemplate =
   | "appointment"
@@ -59,7 +60,7 @@ function escapeHtml(text: string): string {
 function plumbingFromAddress(): string {
   const configured = process.env.PLUMBING_DEMO_EMAIL_FROM?.trim();
   if (configured) return configured;
-  return `${PLUMBING_DEMO_BUSINESS_NAME} <website@998webdesigns.com>`;
+  return `${PLUMBING_DEMO_BUSINESS_NAME} <${SUPPORT_EMAIL}>`;
 }
 
 async function sendPlumbingResendEmail(

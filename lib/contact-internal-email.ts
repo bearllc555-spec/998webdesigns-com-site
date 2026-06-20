@@ -1,3 +1,5 @@
+import { SUPPORT_EMAIL, TRANSACTIONAL_FROM } from "@/lib/transactional-email";
+
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     "&": "&amp;",
@@ -28,8 +30,8 @@ export async function sendContactInternalEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
-    to: "hello@998webdesigns.com",
+    from: TRANSACTIONAL_FROM,
+    to: SUPPORT_EMAIL,
     subject: `New Contact Form Submission from ${input.name}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">

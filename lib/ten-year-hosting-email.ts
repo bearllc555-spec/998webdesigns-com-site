@@ -1,6 +1,7 @@
 import { HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import { formatCheckoutUsd } from "@/lib/checkout-pricing";
 import { HOSTING_TEN_YEAR_DEFERRED_PRODUCT } from "@/lib/products";
+import { TRANSACTIONAL_FROM } from "@/lib/transactional-email";
 
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
@@ -29,7 +30,7 @@ export async function sendTenYearHostingCheckoutEmail(params: {
   const amount = formatCheckoutUsd(HOSTING_TEN_YEAR_DEFERRED_PRODUCT.priceInCents);
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: params.email,
     subject: `Your ${HOSTING_TRIAL_DAYS}-day free hosting period has ended - complete 10-year hosting`,
     html: `

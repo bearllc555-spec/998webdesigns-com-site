@@ -3,6 +3,7 @@ import {
   createDiscoveryScheduleToken,
 } from "@/lib/discovery-token";
 import { marketingSiteOrigin } from "@/lib/site-origin";
+import { TRANSACTIONAL_FROM } from "@/lib/transactional-email";
 import { sendTwilioSms } from "@/lib/twilio-sms";
 
 export function buildDiscoveryCloseUrl(prospectId: string): string | null {
@@ -36,7 +37,7 @@ async function sendResendEmail(to: string, subject: string, html: string): Promi
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to,
     subject,
     html,

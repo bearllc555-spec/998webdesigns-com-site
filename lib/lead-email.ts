@@ -7,6 +7,7 @@ import { designPromoSummary } from "@/lib/design-promo";
 import { designPaymentScheduleLines } from "@/lib/design-payment-schedule";
 import { hostingChoiceLabel } from "@/lib/hosting";
 import { HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
+import { TRANSACTIONAL_FROM } from "@/lib/transactional-email";
 import type { ValidatedLead } from "./validate-lead";
 
 function escapeHtml(text: string): string {
@@ -61,7 +62,7 @@ export async function sendLeadCheckoutEmail(
       : "";
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: lead.email,
     subject: "Complete your payment - 998 web designs",
     html: `

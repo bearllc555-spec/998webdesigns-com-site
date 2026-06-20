@@ -10,6 +10,7 @@ import {
   milestoneShortLabel,
 } from "@/lib/design-milestone-payments";
 import { sendTwilioSms } from "@/lib/twilio-sms";
+import { TRANSACTIONAL_FROM } from "@/lib/transactional-email";
 
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
@@ -30,7 +31,7 @@ async function sendResendEmail(to: string, subject: string, html: string): Promi
   const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to,
     subject,
     html,

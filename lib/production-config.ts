@@ -144,7 +144,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   const bookCallUrl = discoveryBookCallUrl();
   if (bookCallUrl !== DISCOVERY_BOOK_CALL_URL) {
     warnings.push(
-      "NEXT_PUBLIC_BOOK_CALL_URL does not match canonical 998webdesigns Calendly - /book/schedule may point at the wrong account.",
+      "NEXT_PUBLIC_BOOK_CALL_URL is set to a non-canonical Calendly URL - remove it on Production or set https://calendly.com/998webdesigns/discovery-call-998-web-designs (Preview/local override only).",
     );
   }
 

@@ -1,3 +1,5 @@
+import { TRANSACTIONAL_FROM } from "@/lib/transactional-email";
+
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     "&": "&amp;",
@@ -22,7 +24,7 @@ export async function sendHostingPortalMagicLinkEmail(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const { error } = await resend.emails.send({
-    from: "998 web designs <website@998webdesigns.com>",
+    from: TRANSACTIONAL_FROM,
     to: email,
     subject: "Manage your hosting billing - 998 web designs",
     html: `

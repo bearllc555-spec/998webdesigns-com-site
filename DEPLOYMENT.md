@@ -22,13 +22,15 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
 |----------|---------|
 | `STRIPE_SECRET_KEY` | Checkout + webhook |
 | `STRIPE_WEBHOOK_SECRET` | `/api/stripe/webhook` |
-| `RESEND_API_KEY` | Contact form + lead emails + internal lead/payment alerts |
+| `RESEND_API_KEY` | Contact form + lead emails + internal lead/payment alerts (From: `hello@998webdesigns.com` via `lib/transactional-email.ts`) |
 | `BALANCE_CAPTURE_SECRET` | Bearer token for `GET /api/admin/env-status` and admin migrate routes |
 | `CRM_ADMIN_SECRET` | **Required in Production** - `/crm` login and `/api/crm/*` (do not reuse `BALANCE_CAPTURE_SECRET`) |
 | `STRIPE_EXPECTED_MODE` | Optional `test` or `live` - must match `STRIPE_SECRET_KEY` prefix |
 | `NEXT_PUBLIC_SUPABASE_URL` | Lead storage |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (if used client-side) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `wd_leads` inserts |
+
+**Discovery Calendly:** Production should **not** set `NEXT_PUBLIC_BOOK_CALL_URL`. `/book/schedule` redirects to the canonical event in `lib/book-call.ts`: [998webdesigns/discovery-call-998-web-designs](https://calendly.com/998webdesigns/discovery-call-998-web-designs). If env-status warns about a mismatched URL, delete the var on Vercel Production and redeploy.
 
 Secrets live in workspace `.local/` (gitignored). Never commit keys.
 
@@ -75,6 +77,8 @@ All new checkouts use the **50 / 40 / 10 design fee schedule** ($5,998 total - 5
 `GET /api/admin/env-status` probes ACH + subscribed webhook events when `sk_live_` is set.
 
 ## Internal lead alerts (Resend)
+
+All transactional mail uses **From:** `998 web designs <hello@998webdesigns.com>` (`lib/transactional-email.ts`). Verify `hello@998webdesigns.com` is an allowed sender in Resend for domain `998webdesigns.com`.
 
 | When | Email to `hello@998webdesigns.com` |
 |------|-------------------------------------|
