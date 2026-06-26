@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-type CalendlyScheduledMessage = {
+type CalendlyMessage = {
   event?: string;
   payload?: {
+    height?: number;
     event?: { uri?: string; start_time?: string };
     invitee?: { uri?: string };
   };
@@ -19,10 +20,16 @@ type Props = {
 declare global {
   interface Window {
     Calendly?: {
-      initInlineWidget: (options: { url: string; parentElement: HTMLElement }) => void;
+      initInlineWidget: (options: {
+        url: string;
+        parentElement: HTMLElement;
+        resize?: boolean;
+      }) => void;
     };
   }
 }
+
+const INITIAL_EMBED_HEIGHT_PX = 700;
 
 export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
   const router = useRouter();
@@ -32,6 +39,9 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    container.style.minWidth = "320px";
+    container.style.height = `${INITIAL_EMBED_HEIGHT_PX}px`;
 
     const scriptId = "calendly-widget-js";
     const styleId = "calendly-widget-css";
@@ -47,7 +57,11 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
 
     const initWidget = () => {
       container.innerHTML = "";
-      window.Calendly?.initInlineWidget({ url: calendlyUrl, parentElement: container });
+      window.Calendly?.initInlineWidget({
+        url: calendlyUrl,
+        parentElement: container,
+        resize: true,
+      });
     };
 
     if (script) {
@@ -62,8 +76,15 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
     }
 
     async function onMessage(event: MessageEvent) {
-      const data = event.data as CalendlyScheduledMessage;
-      if (data?.event !== "calendly.event_scheduled" || reportedRef.current) return;
+      const data = event.data as CalendlyMessage;
+      if (!data?.event?.startsWith("calendly.")) return;
+
+      if (data.event === "calendly.page_height" && typeof data.payload?.height === "number") {
+        container.style.height = `${data.payload.height}px`;
+        return;
+      }
+
+      if (data.event !== "calendly.event_scheduled" || reportedRef.current) return;
 
       reportedRef.current = true;
       const eventStartAt = data.payload?.event?.start_time ?? null;
@@ -94,8 +115,9 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
       </p>
       <div
         ref={containerRef}
-        className="calendly-inline-widget mt-8 min-h-[700px] w-full overflow-hidden rounded-lg border border-ink/10 bg-white"
+        className="calendly-inline-widget mt-8 w-full rounded-lg border border-ink/10 bg-white"
         data-url={calendlyUrl}
+        data-resize="true"
       />
       <p className="mt-4 text-sm text-ink-soft">
         Calendar not loading?{" "}

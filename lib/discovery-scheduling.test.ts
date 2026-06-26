@@ -63,6 +63,7 @@ describe("buildDiscoveryBookCallUrl", () => {
       "11111111-2222-3333-4444-555555555555"
     );
     expect(parsed.searchParams.get("embed_domain")).toBe("998webdesigns.com");
+    expect(parsed.searchParams.get("embed_type")).toBe("Inline");
   });
 
   it("ignores stale NEXT_PUBLIC_BOOK_CALL_URL on production", () => {

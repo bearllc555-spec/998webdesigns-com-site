@@ -15,6 +15,7 @@ export function buildDiscoveryBookCallUrl(prefill: DiscoveryBookCallPrefill): st
   url.searchParams.set("utm_source", "998webdesigns");
   url.searchParams.set("utm_medium", "discovery");
   url.searchParams.set("embed_domain", "998webdesigns.com");
+  url.searchParams.set("embed_type", "Inline");
   return url.toString();
 }
 
