@@ -1,6 +1,8 @@
 import { createHmac } from "crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  aestheticsBrandFromVertical,
+  isAestheticsVertical,
   isPlumbingVertical,
   parseVoiceDemoVertical,
 } from "@/lib/voice-demo-vertical";
@@ -12,6 +14,8 @@ import {
 describe("voice-demo-vertical", () => {
   it("parses plumbers vertical", () => {
     expect(parseVoiceDemoVertical("plumbers")).toBe("plumbers");
+    expect(parseVoiceDemoVertical("clinical")).toBe("clinical");
+    expect(parseVoiceDemoVertical("wellness")).toBe("wellness");
     expect(parseVoiceDemoVertical("marketing")).toBe("marketing");
     expect(parseVoiceDemoVertical(undefined)).toBe("marketing");
   });
@@ -19,6 +23,15 @@ describe("voice-demo-vertical", () => {
   it("detects plumbing vertical", () => {
     expect(isPlumbingVertical("plumbers")).toBe(true);
     expect(isPlumbingVertical("marketing")).toBe(false);
+  });
+
+  it("detects aesthetics verticals", () => {
+    expect(isAestheticsVertical("clinical")).toBe(true);
+    expect(isAestheticsVertical("wellness")).toBe(true);
+    expect(isAestheticsVertical("plumbers")).toBe(false);
+    expect(aestheticsBrandFromVertical("clinical")).toBe("clinical");
+    expect(aestheticsBrandFromVertical("wellness")).toBe("wellness");
+    expect(aestheticsBrandFromVertical("plumbers")).toBeNull();
   });
 });
 

@@ -4,6 +4,8 @@ import {
   VOICE_DEMO_VOICE_NAME,
 } from "@/lib/voice-demo-constants";
 import { getVoiceDemoLead } from "@/lib/voice-demo-db";
+import { voiceDemoAestheticsSystemPrompt } from "@/lib/voice-demo-aesthetics/system-prompt";
+import { voiceDemoAestheticsToolDeclarations } from "@/lib/voice-demo-aesthetics/tools";
 import { voiceDemoPlumbingSystemPrompt } from "@/lib/voice-demo-plumbing-system-prompt";
 import {
   voiceDemoPlumbingToolDeclarations,
@@ -13,6 +15,8 @@ import {
   voiceDemoVerifySystemPrompt,
 } from "@/lib/voice-demo-system-prompt";
 import {
+  aestheticsBrandFromVertical,
+  isAestheticsVertical,
   isPlumbingVertical,
   type VoiceDemoVertical,
 } from "@/lib/voice-demo-vertical";
@@ -46,17 +50,23 @@ export async function createVoiceDemoLiveToken(
   }
 
   const plumbing = isPlumbingVertical(vertical);
+  const aestheticsBrand = aestheticsBrandFromVertical(vertical);
+  const aesthetics = isAestheticsVertical(vertical) && aestheticsBrand !== null;
   const systemInstruction =
     mode === "verify"
       ? voiceDemoVerifySystemPrompt(row)
       : plumbing
         ? voiceDemoPlumbingSystemPrompt(row)
-        : voiceDemoDemoSystemPrompt(row);
+        : aesthetics && aestheticsBrand
+          ? voiceDemoAestheticsSystemPrompt(aestheticsBrand, row)
+          : voiceDemoDemoSystemPrompt(row);
 
   const tools =
     mode === "demo" && plumbing
       ? voiceDemoPlumbingToolDeclarations()
-      : voiceDemoToolDeclarations(mode);
+      : mode === "demo" && aesthetics
+        ? voiceDemoAestheticsToolDeclarations()
+        : voiceDemoToolDeclarations(mode);
 
   const ai = new GoogleGenAI({
     apiKey,

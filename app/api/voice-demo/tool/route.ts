@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 import { readJsonBody } from "@/lib/read-json-body";
+import { executeVoiceDemoAestheticsTool } from "@/lib/voice-demo-aesthetics/tools";
 import { executeVoiceDemoPlumbingTool } from "@/lib/voice-demo-plumbing-tools";
 import { executeVoiceDemoTool, type VoiceDemoToolMode } from "@/lib/voice-demo-tools";
-import { isPlumbingVertical } from "@/lib/voice-demo-vertical";
+import {
+  aestheticsBrandFromVertical,
+  isAestheticsVertical,
+  isPlumbingVertical,
+} from "@/lib/voice-demo-vertical";
 import {
   readVoiceDemoSession,
   setVoiceDemoSessionCookie,
@@ -43,10 +48,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not verified." }, { status: 403 });
   }
 
+  const aestheticsBrand = aestheticsBrandFromVertical(session.vertical);
   const result =
     mode === "demo" && isPlumbingVertical(session.vertical)
       ? await executeVoiceDemoPlumbingTool(session.leadId, name, args)
-      : await executeVoiceDemoTool(session.leadId, mode, name, args);
+      : mode === "demo" && isAestheticsVertical(session.vertical) && aestheticsBrand
+        ? await executeVoiceDemoAestheticsTool(aestheticsBrand, session.leadId, name, args)
+        : await executeVoiceDemoTool(session.leadId, mode, name, args);
 
   const res = NextResponse.json({ ok: true, result });
   if (name === "verify_code" && result.verified === true) {

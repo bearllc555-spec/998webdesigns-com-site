@@ -62,6 +62,10 @@ import {
   voiceDemoOpeningStatus,
 } from "@/lib/voice-demo-greeting";
 import {
+  aestheticsDemoOpeningStatus,
+  triggerAestheticsDemoOpening,
+} from "@/lib/voice-demo-aesthetics/greeting";
+import {
   plumbingDemoOpeningStatus,
   triggerPlumbingDemoOpening,
 } from "@/lib/voice-demo-plumbing-greeting";
@@ -98,7 +102,12 @@ import {
   isPlumbingVisitorEndingCall,
   shouldPlumbingClientHangup,
 } from "@/lib/voice-demo-plumbing-session";
-import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
+import {
+  aestheticsBrandFromVertical,
+  isAestheticsVertical,
+  isPlumbingVertical,
+  type VoiceDemoVertical,
+} from "@/lib/voice-demo-vertical";
 import {
   buildPhonePauseNudge,
   PHONE_SILENCE_NUDGE_MS,
@@ -202,7 +211,8 @@ function liveReconnectDelayMs(
 
 export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const verticalRef = useRef<VoiceDemoVertical>(options.vertical ?? "marketing");
-  const isPlumbingDemo = verticalRef.current === "plumbers";
+  const isPlumbingDemo = isPlumbingVertical(verticalRef.current);
+  const isAestheticsDemo = isAestheticsVertical(verticalRef.current);
 
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -343,6 +353,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     try {
       if (isPlumbingDemo) {
         triggerPlumbingDemoOpening(session);
+      } else if (isAestheticsDemo) {
+        const brand = aestheticsBrandFromVertical(verticalRef.current);
+        if (brand) triggerAestheticsDemoOpening(brand, session);
       } else {
         triggerVoiceDemoOpening(session);
       }
@@ -350,7 +363,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       console.warn("[voice-demo-live] opening trigger", err);
       greetingSentRef.current = false;
     }
-  }, [isPlumbingDemo]);
+  }, [isAestheticsDemo, isPlumbingDemo]);
 
   const clearReconnectTimer = useCallback(() => {
     if (reconnectTimerRef.current) {
@@ -1553,11 +1566,11 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         toolInFlightRef.current += 1;
 
         try {
-          for (const call of calls) {
-            const name = call.name ?? "";
-            const args = (call.args ?? {}) as Record<string, unknown>;
+        for (const call of calls) {
+          const name = call.name ?? "";
+          const args = (call.args ?? {}) as Record<string, unknown>;
 
-            const result = await runTool(name, args);
+          const result = await runTool(name, args);
             syncPhoneCollectionState(name, result);
 
             if (name === "save_name" && result.ok === true) {
@@ -1574,7 +1587,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               continue;
             }
 
-            if (name === "verify_code" && result.verified === true) {
+          if (name === "verify_code" && result.verified === true) {
               queuePhaseTransition({ kind: "verified", nextMode: "demo" });
             }
 
@@ -1637,10 +1650,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       const parts = message.serverContent?.modelTurn?.parts ?? [];
       if (!suppressAssistantAudioRef.current) {
-        for (const part of parts) {
-          const data = part.inlineData?.data;
-          const mime = part.inlineData?.mimeType ?? "";
-          if (data && mime.includes("audio/pcm")) {
+      for (const part of parts) {
+        const data = part.inlineData?.data;
+        const mime = part.inlineData?.mimeType ?? "";
+        if (data && mime.includes("audio/pcm")) {
             if (postNameHoldSentRef.current) {
               playerRef.current?.hardStop();
               continue;
@@ -1665,7 +1678,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             }
             clearInputSilenceTimers();
             touchCallIdleReset();
-            playerRef.current ??= new VoiceDemoAudioPlayer();
+          playerRef.current ??= new VoiceDemoAudioPlayer();
             if (
               verticalRef.current === "plumbers" &&
               plumbingGoodbyeBeatUntilRef.current > Date.now()
@@ -1676,9 +1689,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
             }
             clearPlumbingPostOpeningTimer();
             clearPlumbingMidCallSilenceTimer();
-            playerRef.current.enqueueBase64Pcm(data);
-          }
+          playerRef.current.enqueueBase64Pcm(data);
         }
+      }
       }
 
       const inText = message.serverContent?.inputTranscription?.text;
@@ -2131,7 +2144,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       setError("");
       if (!resume) {
-        setConnecting(true);
+      setConnecting(true);
       }
       modeRef.current = mode;
       optionsRef.current.onStatus?.(resume ? "Reconnecting…" : "Connecting…");
@@ -2154,7 +2167,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (!stream || !resume) {
           stream?.getTracks().forEach((t) => t.stop());
           stream = await requestVoiceDemoMicStream();
-          micStreamRef.current = stream;
+        micStreamRef.current = stream;
         }
 
         const tokenRes = await fetch("/api/voice-demo/live-token", {
@@ -2172,10 +2185,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (!tokenRes.ok || !tokenData.token) {
           reconnectingRef.current = false;
           if (!resume) {
-            stream.getTracks().forEach((t) => t.stop());
-            micStreamRef.current = null;
-            setError(tokenData.error ?? "Could not start voice session.");
-            setConnecting(false);
+          stream.getTracks().forEach((t) => t.stop());
+          micStreamRef.current = null;
+          setError(tokenData.error ?? "Could not start voice session.");
+          setConnecting(false);
           } else {
             scheduleLiveReconnect("token_fetch_failed", {
               status: tokenRes.status,
@@ -2328,7 +2341,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                 optionsRef.current.onStatus?.("Connection refreshing - one moment…");
                 requestLiveReconnect("websocket_error", { durationMs });
               } else {
-                setError("Voice connection error.");
+              setError("Voice connection error.");
               }
             },
             onclose: () => {
@@ -2364,8 +2377,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         console.warn("[voice-demo-live] connect", err);
         reconnectingRef.current = false;
         if (!resume) {
-          micStreamRef.current?.getTracks().forEach((t) => t.stop());
-          micStreamRef.current = null;
+        micStreamRef.current?.getTracks().forEach((t) => t.stop());
+        micStreamRef.current = null;
         }
         const detail = err instanceof Error ? err.message : String(err);
         const message =
@@ -2375,7 +2388,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
               ? err.message
               : detail && detail.length < 120
                 ? detail
-                : "Could not connect to voice assistant.";
+              : "Could not connect to voice assistant.";
         logVoiceDemoOps({
           kind: "session_anomaly",
           message: "Live connect failed",
@@ -2385,8 +2398,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         if (resume) {
           scheduleLiveReconnect("connect_failed", { detail: detail.slice(0, 120) });
         } else {
-          setError(message);
-          setConnecting(false);
+        setError(message);
+        setConnecting(false);
         }
       }
     },
