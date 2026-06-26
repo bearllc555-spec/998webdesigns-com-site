@@ -35,7 +35,7 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
               {config.brandName}
               <SiteVersionPill lightText />
             </p>
-            <p className="text-sm" style={{ color: config.palette.muted }}>
+            <p className="text-sm font-medium" style={{ color: config.palette.headline }}>
               {config.tagline}
             </p>
           </div>
@@ -69,7 +69,7 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
           </p>
           <h1
             className="mt-4 text-4xl font-semibold sm:text-5xl"
-            style={{ fontFamily: config.fonts.display }}
+            style={{ fontFamily: config.fonts.display, color: config.palette.headline }}
           >
             {config.heroHeadline}
           </h1>

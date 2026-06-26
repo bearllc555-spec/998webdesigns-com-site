@@ -34,6 +34,7 @@ export const WILLOW_SAGE_CONFIG: DemoBrandConfig = {
     ink: "#4A453E",
     bg: "#F6F1E7",
     accent: "#C77B5B",
+    headline: "#A65D3F",
     muted: "#7C8A6E",
     surface: "#FFFFFF",
   },

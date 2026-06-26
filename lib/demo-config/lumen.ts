@@ -34,6 +34,7 @@ export const LUMEN_CONFIG: DemoBrandConfig = {
     ink: "#1C1B1A",
     bg: "#F4EFE9",
     accent: "#C7A98B",
+    headline: "#7A5C44",
     muted: "#9A8C7C",
     surface: "#FFFFFF",
   },

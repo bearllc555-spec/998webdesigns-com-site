@@ -52,6 +52,8 @@ export type DemoBrandConfig = {
     ink: string;
     bg: string;
     accent: string;
+    /** Hero + tagline — darker than accent so copy reads on cream backgrounds */
+    headline: string;
     muted: string;
     surface: string;
   };
