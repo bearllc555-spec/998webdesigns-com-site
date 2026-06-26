@@ -56,10 +56,30 @@ describe("buildDiscoveryBookCallUrl", () => {
 
     const parsed = new URL(url);
     expect(parsed.hostname).toBe("calendly.com");
+    expect(parsed.pathname).toContain("998webdesigns");
     expect(parsed.searchParams.get("name")).toBe("Lexxy T");
     expect(parsed.searchParams.get("email")).toBe("lex@example.com");
     expect(parsed.searchParams.get("utm_campaign")).toBe(
       "11111111-2222-3333-4444-555555555555"
     );
+    expect(parsed.searchParams.get("embed_domain")).toBe("998webdesigns.com");
+  });
+
+  it("ignores stale NEXT_PUBLIC_BOOK_CALL_URL on production", () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv(
+      "NEXT_PUBLIC_BOOK_CALL_URL",
+      "https://calendly.com/bearllc555/discovery-call-998-web-designs"
+    );
+
+    const url = buildDiscoveryBookCallUrl({
+      fullName: "Test",
+      email: "test@example.com",
+      prospectId: "abc",
+    });
+
+    expect(url).toContain("calendly.com/998webdesigns/");
+    expect(url).not.toContain("bearllc555");
+    vi.unstubAllEnvs();
   });
 });

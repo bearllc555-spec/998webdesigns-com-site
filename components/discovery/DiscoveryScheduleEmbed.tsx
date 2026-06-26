@@ -97,6 +97,18 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
         className="calendly-inline-widget mt-8 min-h-[700px] w-full overflow-hidden rounded-lg border border-ink/10 bg-white"
         data-url={calendlyUrl}
       />
+      <p className="mt-4 text-sm text-ink-soft">
+        Calendar not loading?{" "}
+        <a
+          href={calendlyUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent underline hover:text-accent-deep"
+        >
+          Open scheduling in a new tab
+        </a>
+        .
+      </p>
     </>
   );
 }

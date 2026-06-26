@@ -1,4 +1,4 @@
-import { DISCOVERY_BOOK_CALL_URL } from "@/lib/book-call";
+import { discoveryBookCallUrl } from "@/lib/book-call";
 
 export type DiscoveryBookCallPrefill = {
   fullName: string;
@@ -8,13 +8,13 @@ export type DiscoveryBookCallPrefill = {
 
 /** Calendly event URL with prefill + utm_campaign=prospect id for webhook matching. */
 export function buildDiscoveryBookCallUrl(prefill: DiscoveryBookCallPrefill): string {
-  const base = process.env.NEXT_PUBLIC_BOOK_CALL_URL?.trim() || DISCOVERY_BOOK_CALL_URL;
-  const url = new URL(base);
+  const url = new URL(discoveryBookCallUrl());
   url.searchParams.set("name", prefill.fullName.trim());
   url.searchParams.set("email", prefill.email.trim());
   url.searchParams.set("utm_campaign", prefill.prospectId);
   url.searchParams.set("utm_source", "998webdesigns");
   url.searchParams.set("utm_medium", "discovery");
+  url.searchParams.set("embed_domain", "998webdesigns.com");
   return url.toString();
 }
 
