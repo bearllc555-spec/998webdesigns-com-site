@@ -40,8 +40,9 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
     const container = containerRef.current;
     if (!container) return;
 
-    container.style.minWidth = "320px";
-    container.style.height = `${INITIAL_EMBED_HEIGHT_PX}px`;
+    const embedEl = container;
+    embedEl.style.minWidth = "320px";
+    embedEl.style.height = `${INITIAL_EMBED_HEIGHT_PX}px`;
 
     const scriptId = "calendly-widget-js";
     const styleId = "calendly-widget-css";
@@ -56,10 +57,10 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
     }
 
     const initWidget = () => {
-      container.innerHTML = "";
+      embedEl.innerHTML = "";
       window.Calendly?.initInlineWidget({
         url: calendlyUrl,
-        parentElement: container,
+        parentElement: embedEl,
         resize: true,
       });
     };
@@ -80,7 +81,7 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
       if (!data?.event?.startsWith("calendly.")) return;
 
       if (data.event === "calendly.page_height" && typeof data.payload?.height === "number") {
-        container.style.height = `${data.payload.height}px`;
+        embedEl.style.height = `${data.payload.height}px`;
         return;
       }
 
