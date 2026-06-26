@@ -4,11 +4,12 @@ import type { NextConfig } from "next";
 function productionCsp(): string {
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
-    "style-src 'self' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://assets.calendly.com",
+    "style-src 'self' 'unsafe-inline' https://assets.calendly.com",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+    "frame-src 'self' https://calendly.com",
+    "connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com https://vitals.vercel-insights.com https://va.vercel-scripts.com https://calendly.com https://assets.calendly.com",
     "frame-ancestors 'self'",
     "base-uri 'self'",
     "form-action 'self'",

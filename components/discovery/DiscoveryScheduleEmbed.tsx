@@ -34,7 +34,16 @@ export function DiscoveryScheduleEmbed({ token, calendlyUrl }: Props) {
     if (!container) return;
 
     const scriptId = "calendly-widget-js";
+    const styleId = "calendly-widget-css";
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if (!document.getElementById(styleId)) {
+      const link = document.createElement("link");
+      link.id = styleId;
+      link.rel = "stylesheet";
+      link.href = "https://assets.calendly.com/assets/external/widget.css";
+      document.head.appendChild(link);
+    }
 
     const initWidget = () => {
       container.innerHTML = "";
