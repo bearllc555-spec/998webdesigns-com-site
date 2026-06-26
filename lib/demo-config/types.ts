@@ -70,6 +70,12 @@ export type DemoBrandConfig = {
     newPatient: string;
     membershipNote: string;
   };
+  booking: {
+    eyebrow: string;
+    headlineLead: string;
+    headlineAccent: string;
+    sub: string;
+  };
   demoRoute: string;
   crmRoute: string;
   crmPassword: string;

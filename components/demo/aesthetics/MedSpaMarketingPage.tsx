@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { AestheticsDemoWidget } from "@/components/demo/aesthetics/AestheticsDemoWidget";
+import { MedSpaBookingSection } from "@/components/demo/aesthetics/MedSpaBookingSection";
 import { SiteVersionPill } from "@/components/SiteVersionPill";
+import { openMedSpaBooking } from "@/lib/aesthetics-demo-booking";
 import type { DemoBrandConfig } from "@/lib/demo-config/types";
 import type { VoiceDemoVertical } from "@/lib/voice-demo-vertical";
 
@@ -15,6 +17,10 @@ type MedSpaMarketingPageProps = {
 export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMarketingPageProps) {
   const scrollToJarvis = () => {
     document.getElementById("jarvis")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  const scrollToBook = (serviceName?: string) => {
+    openMedSpaBooking(serviceName ? { serviceName } : undefined);
   };
 
   return (
@@ -87,7 +93,7 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
             </button>
             <button
               type="button"
-              onClick={scrollToJarvis}
+              onClick={() => scrollToBook()}
               className="rounded-full border px-6 py-3 text-sm font-medium"
               style={{ borderColor: config.palette.muted, color: config.palette.ink }}
             >
@@ -131,16 +137,26 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
             {config.services.map((s) => (
               <div
                 key={s.name}
-                className="flex items-center justify-between rounded-xl border px-4 py-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-4"
                 style={{
                   borderColor: `${config.palette.muted}44`,
                   backgroundColor: config.palette.surface,
                 }}
               >
-                <span className="font-medium">{s.name}</span>
-                <span className="text-sm" style={{ color: config.palette.muted }}>
-                  {s.fromPrice}
-                </span>
+                <div>
+                  <span className="font-medium">{s.name}</span>
+                  <span className="ml-2 text-sm" style={{ color: config.palette.muted }}>
+                    {s.fromPrice}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => scrollToBook(s.name)}
+                  className="rounded-full border px-4 py-1.5 text-xs font-medium transition hover:opacity-80"
+                  style={{ borderColor: config.palette.accent, color: config.palette.accent }}
+                >
+                  Book
+                </button>
               </div>
             ))}
           </div>
@@ -255,6 +271,8 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
           </div>
         </section>
 
+        <MedSpaBookingSection config={config} />
+
         <section className="py-10">
           <h2 className="mb-6 text-2xl font-semibold" style={{ fontFamily: config.fonts.display }}>
             FAQ
@@ -313,11 +331,11 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
       >
         <button
           type="button"
-          onClick={scrollToJarvis}
+          onClick={() => scrollToBook()}
           className="flex-1 rounded-full py-3 text-sm font-medium text-white"
           style={{ backgroundColor: config.palette.accent }}
         >
-          Book Now
+          {config.heroSecondaryCta}
         </button>
         <a
           href={`tel:${config.phoneTel}`}

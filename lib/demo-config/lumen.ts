@@ -95,6 +95,12 @@ export const LUMEN_CONFIG: DemoBrandConfig = {
     newPatient: "$50 off first treatment, or complimentary consultation",
     membershipNote: "LUMEN Circle saves on every visit",
   },
+  booking: {
+    eyebrow: "Reserve",
+    headlineLead: "Reserve your",
+    headlineAccent: "consultation.",
+    sub: "Start with a question or go straight to the calendar — we answer within 4 hours, Tuesday through Saturday.",
+  },
   demoRoute: "/demo/clinical",
   crmRoute: "/demo/clinical/crm",
   crmPassword: "t3mp4781",

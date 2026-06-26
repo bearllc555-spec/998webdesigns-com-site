@@ -97,6 +97,12 @@ export const WILLOW_SAGE_CONFIG: DemoBrandConfig = {
     newPatient: "First HydraGlow facial $99, or complimentary skin consultation",
     membershipNote: "Glow Club saves on monthly care",
   },
+  booking: {
+    eyebrow: "Reserve",
+    headlineLead: "Reserve your",
+    headlineAccent: "visit.",
+    sub: "Start with a question or go straight to the calendar — we answer within 4 hours, Tuesday through Saturday.",
+  },
   demoRoute: "/demo/wellness",
   crmRoute: "/demo/wellness/crm",
   crmPassword: "t3mp4781",
