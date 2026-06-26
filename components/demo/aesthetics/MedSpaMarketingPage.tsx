@@ -33,7 +33,7 @@ export function MedSpaMarketingPage({ config, vertical, startApiPath }: MedSpaMa
               style={{ fontFamily: config.fonts.display }}
             >
               {config.brandName}
-              <SiteVersionPill />
+              <SiteVersionPill lightText />
             </p>
             <p className="text-sm" style={{ color: config.palette.muted }}>
               {config.tagline}
