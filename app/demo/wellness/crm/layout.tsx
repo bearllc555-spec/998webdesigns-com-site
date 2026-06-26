@@ -8,7 +8,10 @@ export const metadata: Metadata = {
 
 export default function WellnessCrmLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto overscroll-y-auto bg-bg text-ink">
+    <div
+      className="fixed inset-0 z-40 overflow-y-auto overscroll-y-auto"
+      style={{ backgroundColor: WILLOW_SAGE_CONFIG.palette.bg, color: WILLOW_SAGE_CONFIG.palette.ink }}
+    >
       {children}
     </div>
   );

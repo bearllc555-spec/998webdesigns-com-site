@@ -3,6 +3,7 @@ import { AestheticsCrmLoginForm } from "@/components/demo/aesthetics/AestheticsC
 import { SiteVersionPill } from "@/components/SiteVersionPill";
 import type { AestheticsDemoBrand } from "@/lib/aesthetics-demo-crm/types";
 import { getDemoBrandConfigByVertical } from "@/lib/demo-config";
+import { brandBorder } from "@/lib/demo-config/brand-field-styles";
 
 type AestheticsCrmLoginShellProps = {
   brand: AestheticsDemoBrand;
@@ -10,37 +11,63 @@ type AestheticsCrmLoginShellProps = {
 
 export function AestheticsCrmLoginShell({ brand }: AestheticsCrmLoginShellProps) {
   const config = getDemoBrandConfigByVertical(brand);
+  const line = brandBorder(config);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
-      <div className="relative border-b border-rule px-5 py-4">
-        <div className="absolute right-5 top-4 z-10">
+    <div
+      className="flex min-h-dvh flex-col"
+      style={{ backgroundColor: config.palette.bg, color: config.palette.ink, fontFamily: config.fonts.body }}
+    >
+      <header className="border-b" style={{ borderColor: line, backgroundColor: config.palette.surface }}>
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+          <div>
+            <p
+              className="flex flex-wrap items-center gap-2 text-lg font-semibold tracking-[0.18em] uppercase"
+              style={{ fontFamily: config.fonts.display, color: config.palette.headline }}
+            >
+              {config.brandName}
+              <SiteVersionPill lightText />
+            </p>
+            <p className="text-sm font-medium" style={{ color: config.palette.accent }}>
+              Demo CRM
+            </p>
+          </div>
           <Link
             href={config.demoRoute}
-            className="rounded-full border border-rule px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-accent hover:text-ink"
+            className="rounded-full px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            style={{ backgroundColor: config.palette.accent }}
           >
             Demo Jarvis
           </Link>
         </div>
-        <div className="mx-auto max-w-lg pt-10 text-center">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent">
-            {config.brandName} demo
-          </p>
-          <h1 className="mt-2 flex flex-wrap items-center justify-center gap-2 font-display text-3xl font-medium">
-            CRM sign in
-            <SiteVersionPill lightText />
-          </h1>
-          <p className="mt-2 text-sm text-ink-soft">Private demonstration — not indexed.</p>
+      </header>
+
+      <div className="mx-auto max-w-lg px-5 py-10 text-center">
+        <p className="text-xs font-medium uppercase tracking-[0.2em]" style={{ color: config.palette.muted }}>
+          Private demo · not indexed
+        </p>
+        <h1
+          className="mt-3 text-3xl font-semibold sm:text-4xl"
+          style={{ fontFamily: config.fonts.display, color: config.palette.headline }}
+        >
+          CRM sign in
+        </h1>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed" style={{ color: config.palette.muted }}>
+          Leads, appointments, texts, emails, and Jarvis conversations — fictional activity that updates live during
+          sales demos.
+        </p>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center px-5 pb-16">
+        <div
+          className="w-full max-w-sm rounded-2xl border p-6 shadow-sm sm:p-8"
+          style={{
+            borderColor: line,
+            backgroundColor: config.palette.surface,
+          }}
+        >
+          <AestheticsCrmLoginForm brand={brand} />
         </div>
-      </div>
-
-      <div className="mx-auto max-w-2xl px-5 py-6 text-center text-sm text-ink-soft">
-        Dedicated demo CRM with leads, appointments, texts, emails, and Jarvis conversations —
-        populated with fictional activity that updates live during sales demos.
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center px-5 py-10">
-        <AestheticsCrmLoginForm brand={brand} />
       </div>
     </div>
   );

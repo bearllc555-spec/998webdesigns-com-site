@@ -8,7 +8,10 @@ export const metadata: Metadata = {
 
 export default function ClinicalCrmLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto overscroll-y-auto bg-bg text-ink">
+    <div
+      className="fixed inset-0 z-40 overflow-y-auto overscroll-y-auto"
+      style={{ backgroundColor: LUMEN_CONFIG.palette.bg, color: LUMEN_CONFIG.palette.ink }}
+    >
       {children}
     </div>
   );

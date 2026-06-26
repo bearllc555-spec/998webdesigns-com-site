@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { CrmHeader } from "@/components/crm/CrmHeader";
+import { AestheticsCrmHeader } from "@/components/demo/aesthetics/AestheticsCrmHeader";
 import type { AestheticsCrmSnapshot, AestheticsDemoBrand } from "@/lib/aesthetics-demo-crm/types";
 import { CRM_PAGE_CONTAINER } from "@/lib/crm-layout";
 import { getDemoBrandConfigByVertical } from "@/lib/demo-config";
+import type { DemoBrandConfig } from "@/lib/demo-config/types";
+import { brandBorder } from "@/lib/demo-config/brand-field-styles";
 
 type Tab = "leads" | "appointments" | "sms" | "emails" | "conversations";
 
@@ -26,14 +28,6 @@ function formatAt(iso: string): string {
   });
 }
 
-function NewBadge() {
-  return (
-    <span className="ml-2 inline-flex animate-pulse rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
-      new
-    </span>
-  );
-}
-
 type AestheticsCrmDashboardProps = {
   brand: AestheticsDemoBrand;
 };
@@ -42,6 +36,7 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
   const config = getDemoBrandConfigByVertical(brand);
   const feedPath = `/api/demo/${brand === "clinical" ? "clinical" : "wellness"}/crm/feed`;
   const sessionPath = `/api/demo/${brand === "clinical" ? "clinical" : "wellness"}/crm/session`;
+  const line = brandBorder(config);
 
   const [snapshot, setSnapshot] = useState<AestheticsCrmSnapshot | null>(null);
   const [tab, setTab] = useState<Tab>("leads");
@@ -80,12 +75,14 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
   const tiles = snapshot?.tiles;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
-      <CrmHeader
+    <div
+      className="flex min-h-dvh flex-col"
+      style={{ backgroundColor: config.palette.bg, color: config.palette.ink, fontFamily: config.fonts.body }}
+    >
+      <AestheticsCrmHeader
+        config={config}
         title="Med spa demo CRM"
-        subtitle={config.brandName}
-        brandLabel={`${config.brandName} demo`}
-        hideAdmin
+        subtitle={config.tagline}
         sessionApiPath={sessionPath}
         afterLogoutPath={config.crmRoute}
         messagesHref={config.crmRoute}
@@ -93,7 +90,8 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
         actions={
           <Link
             href={config.demoRoute}
-            className="rounded-full border border-rule px-3 py-1.5 text-xs font-medium text-ink-soft transition hover:border-accent hover:text-ink"
+            className="rounded-full border px-3 py-1.5 text-xs font-medium transition hover:opacity-80"
+            style={{ borderColor: line, color: config.palette.muted }}
           >
             Demo Jarvis
           </Link>
@@ -103,7 +101,11 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
       />
 
       <main className={`${CRM_PAGE_CONTAINER} flex-1 space-y-8 py-8 pb-24`}>
-        {loading && !snapshot && <p className="text-sm text-ink-soft">Loading…</p>}
+        {loading && !snapshot && (
+          <p className="text-sm" style={{ color: config.palette.muted }}>
+            Loading…
+          </p>
+        )}
         {error && <p className="text-sm text-warn">{error}</p>}
 
         {tiles && (
@@ -117,23 +119,37 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
               ["Jarvis", `${tiles.avgJarvisResponseSec}s`],
               ["Coverage", tiles.coverage],
             ].map(([label, value]) => (
-              <div key={label as string} className="rounded-xl border border-rule bg-bg px-3 py-3">
-                <p className="text-[11px] uppercase tracking-wide text-ink-soft">{label as string}</p>
-                <p className="mt-1 font-display text-lg font-semibold">{value as string | number}</p>
+              <div
+                key={label as string}
+                className="rounded-xl border px-3 py-3"
+                style={{ borderColor: line, backgroundColor: config.palette.surface }}
+              >
+                <p className="text-[11px] uppercase tracking-wide" style={{ color: config.palette.muted }}>
+                  {label as string}
+                </p>
+                <p
+                  className="mt-1 text-lg font-semibold"
+                  style={{ fontFamily: config.fonts.display, color: config.palette.headline }}
+                >
+                  {value as string | number}
+                </p>
               </div>
             ))}
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 border-b border-rule pb-2">
+        <div className="flex flex-wrap gap-2 border-b pb-2" style={{ borderColor: line }}>
           {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium ${
-                tab === t.id ? "bg-accent text-on-accent" : "text-ink-soft hover:bg-rule-soft"
-              }`}
+              className="rounded-full px-3 py-1.5 text-sm font-medium transition"
+              style={
+                tab === t.id
+                  ? { backgroundColor: config.palette.accent, color: "#fff" }
+                  : { color: config.palette.muted, backgroundColor: `${config.palette.muted}18` }
+              }
             >
               {t.label}
             </button>
@@ -142,11 +158,12 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
 
         {snapshot && tab === "leads" && (
           <Table
+            config={config}
             headers={["Name", "Interest", "Source", "Status", "When"]}
             rows={snapshot.leads.map((l) => [
               <>
                 {l.name}
-                {l.isNew && <NewBadge />}
+                {l.isNew && <NewBadge config={config} />}
               </>,
               l.interest,
               l.source,
@@ -158,11 +175,12 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
 
         {snapshot && tab === "appointments" && (
           <Table
+            config={config}
             headers={["Service", "Provider", "Status", "Value", "When"]}
             rows={snapshot.appointments.map((a) => [
               <>
                 {a.service}
-                {a.isNew && <NewBadge />}
+                {a.isNew && <NewBadge config={config} />}
               </>,
               a.provider,
               a.status,
@@ -174,11 +192,12 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
 
         {snapshot && tab === "sms" && (
           <Table
+            config={config}
             headers={["Direction", "Type", "Body", "When"]}
             rows={snapshot.sms.map((s) => [
               <>
                 {s.direction}
-                {s.isNew && <NewBadge />}
+                {s.isNew && <NewBadge config={config} />}
               </>,
               s.type,
               s.body,
@@ -189,11 +208,12 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
 
         {snapshot && tab === "emails" && (
           <Table
+            config={config}
             headers={["Subject", "Type", "Status", "When"]}
             rows={snapshot.emails.map((e) => [
               <>
                 {e.subject}
-                {e.isNew && <NewBadge />}
+                {e.isNew && <NewBadge config={config} />}
               </>,
               e.type,
               e.status,
@@ -207,9 +227,14 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
             {snapshot.conversations.map((c) => (
               <article
                 key={c.id}
-                className={`rounded-xl border border-rule px-4 py-3 ${c.isNew ? "ring-2 ring-emerald-400/40" : ""}`}
+                className="rounded-xl border px-4 py-3"
+                style={{
+                  borderColor: line,
+                  backgroundColor: config.palette.surface,
+                  boxShadow: c.isNew ? `0 0 0 2px ${config.palette.accent}55` : undefined,
+                }}
               >
-                <div className="flex flex-wrap items-center gap-2 text-xs text-ink-soft">
+                <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: config.palette.muted }}>
                   <span className="font-medium uppercase">{c.channel}</span>
                   <span>·</span>
                   <span>{c.intent}</span>
@@ -217,9 +242,11 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
                   <span>{c.outcome}</span>
                   <span>·</span>
                   <span>{formatAt(c.at)}</span>
-                  {c.isNew && <NewBadge />}
+                  {c.isNew && <NewBadge config={config} />}
                 </div>
-                <p className="mt-2 text-sm leading-relaxed">{c.snippet}</p>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: config.palette.ink }}>
+                  {c.snippet}
+                </p>
               </article>
             ))}
           </div>
@@ -229,20 +256,41 @@ export function AestheticsCrmDashboard({ brand }: AestheticsCrmDashboardProps) {
   );
 }
 
+function NewBadge({ config }: { config: DemoBrandConfig }) {
+  return (
+    <span
+      className="ml-2 inline-flex animate-pulse rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+      style={{ backgroundColor: `${config.palette.accent}22`, color: config.palette.headline }}
+    >
+      new
+    </span>
+  );
+}
+
 function Table({
+  config,
   headers,
   rows,
 }: {
+  config: DemoBrandConfig;
   headers: string[];
   rows: React.ReactNode[][];
 }) {
+  const line = brandBorder(config);
   if (rows.length === 0) {
-    return <p className="text-sm text-ink-soft">No rows.</p>;
+    return (
+      <p className="text-sm" style={{ color: config.palette.muted }}>
+        No rows.
+      </p>
+    );
   }
   return (
-    <div className="overflow-x-auto rounded-xl border border-rule">
+    <div className="overflow-x-auto rounded-xl border" style={{ borderColor: line }}>
       <table className="min-w-full text-left text-sm">
-        <thead className="border-b border-rule bg-rule-soft/50 text-xs uppercase tracking-wide text-ink-soft">
+        <thead
+          className="border-b text-xs uppercase tracking-wide"
+          style={{ borderColor: line, backgroundColor: `${config.palette.muted}14`, color: config.palette.muted }}
+        >
           <tr>
             {headers.map((h) => (
               <th key={h} className="px-4 py-3 font-medium">
@@ -251,11 +299,11 @@ function Table({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody style={{ backgroundColor: config.palette.surface }}>
           {rows.map((row, i) => (
-            <tr key={i} className="border-b border-rule last:border-0">
+            <tr key={i} className="border-b last:border-0" style={{ borderColor: line }}>
               {row.map((cell, j) => (
-                <td key={j} className="max-w-xs truncate px-4 py-3 align-top">
+                <td key={j} className="max-w-xs truncate px-4 py-3 align-top" style={{ color: config.palette.ink }}>
                   {cell}
                 </td>
               ))}
