@@ -42,16 +42,124 @@ curl -s https://998webdesigns.com/api/admin/env-status \
 | | |
 |---|---|
 | **Project** | `998webdesigns-com-site` (archived — manual rollback only) |
+| **Dashboard** | https://vercel.com/bearllc555-6551s-projects/998webdesigns-com-site |
 | **Status** | GitHub auto-deploy **disconnected** (`vercel git disconnect`) |
 | **Crons** | Removed from `vercel.json` — use `cf-cron.yml` only |
 
-To emergency redeploy on Vercel: reconnect git in Vercel dashboard or `vercel git connect`, restore env vars from CF Worker / `.local/`, `vercel deploy --prod`. Production traffic stays on Cloudflare unless DNS is reverted.
-
-Legacy link (env var reference only):
+Legacy CLI link:
 
 ```bash
 npx vercel link --project 998webdesigns-com-site
 ```
+
+---
+
+## Emergency rollback to Vercel
+
+Use only when **Cloudflare Workers production is broken** (checkout down, 5xx on apex, bad deploy) and you need traffic on Vercel again. Webhook URLs stay `https://998webdesigns.com/api/...` — no Stripe/Calendly/Twilio reconfiguration if apex DNS moves to Vercel.
+
+**Time budget:** ~15–30 minutes. Keep CF Worker in place until Vercel is verified.
+
+### When to roll back vs fix forward
+
+| Situation | Action |
+|-----------|--------|
+| Bad code on `main` | **Fix forward** — revert commit on GitHub, let `deploy-cloudflare.yml` redeploy (~1–2 min) |
+| CF/OpenNext runtime bug, env secret typo on Worker only | **Fix forward** — patch Worker secrets or hotfix branch |
+| Apex unreachable, Worker deploy loop broken, unknown platform outage | **Rollback** — steps below |
+| Local dev broken | Not a rollback case — fix locally |
+
+### Prerequisites (have ready before DNS flip)
+
+- [ ] Vercel project still exists: `998webdesigns-com-site`
+- [ ] Production env vars on Vercel match Worker (or copy from `slatepress/.local/` via `scripts/sync-cf-worker-secrets.mjs` mapping + manual paste in Vercel dashboard)
+- [ ] `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CRM_ADMIN_SECRET`, `BALANCE_CAPTURE_SECRET` at minimum
+- [ ] Optional: pause pushes to `main` (GitHub → Actions → disable **Deploy Cloudflare**) so a CF deploy does not fight DNS during rollback
+
+### Step 1 — Redeploy Vercel (before or in parallel with DNS)
+
+**Option A — CLI (fastest if env vars already on Vercel):**
+
+```bash
+cd repos/998webdesigns-com-site
+npx vercel link --project 998webdesigns-com-site --yes
+npx vercel deploy --prod
+```
+
+Note the deployment URL (e.g. `998webdesigns-com-site-….vercel.app`). Hit `/api/admin/env-status` on that URL with `BALANCE_CAPTURE_SECRET` before cutting DNS.
+
+**Option B — Reconnect GitHub auto-deploy:**
+
+1. Vercel → **998webdesigns-com-site** → Settings → **Git** → **Connect Git Repository** → `bearllc555-spec/998webdesigns-com-site`, branch `main`.
+2. Copy all Production env vars from Cloudflare Worker dashboard (or `.local/`) into Vercel → Settings → Environment Variables → **Production**.
+3. Deployments → **Redeploy** latest Production, or push an empty commit to `main`.
+
+**Env var sync:** Vercel dashboard: https://vercel.com/bearllc555-6551s-projects/998webdesigns-com-site/settings/environment-variables
+
+Do **not** set `NEXT_PUBLIC_BOOK_CALL_URL` on Production (same rule as Worker).
+
+### Step 2 — Verify Vercel before DNS
+
+```bash
+# Replace HOST with *.vercel.app deployment URL until DNS is flipped
+curl -s "https://YOUR-DEPLOYMENT.vercel.app/api/admin/env-status" \
+  -H "Authorization: Bearer YOUR_BALANCE_CAPTURE_SECRET"
+```
+
+Expect: `readyForLiveCharges: true`, `warnings: []`, `hostPlatform` reflecting Vercel/Node (not `cloudflare-workers`).
+
+Smoke: open deployment URL → confirm lead form loads, `/crm/login` responds, version label visible.
+
+### Step 3 — Point DNS from Worker to Vercel
+
+Zone is on **Cloudflare** (account `e0f6f68f26f8a26a75eaa793385019ef`).
+
+1. **Remove Worker custom domains** (stops apex/www routing to OpenNext):
+   - Cloudflare dashboard → **Workers & Pages** → `998webdesigns-com-site` → **Settings** → **Domains and routes**
+   - Remove `998webdesigns.com` and `www.998webdesigns.com` custom domains  
+   - Or temporarily delete the `routes` block in `wrangler.jsonc` and deploy — **prefer dashboard removal for speed during an incident**
+
+2. **DNS records** (Cloudflare → **998webdesigns.com** → DNS):
+   - **`www`** — `CNAME` → `cname.vercel-dns.com` (Proxied orange cloud OK)
+   - **Apex `@`** — Vercel → Project → Settings → **Domains** → add `998webdesigns.com` + `www.998webdesigns.com`; follow Vercel’s shown records (often apex `A` `76.76.21.21` or CNAME flatten to `cname.vercel-dns.com` on Cloudflare)
+
+3. Wait for propagation (usually 1–5 min on Cloudflare). Confirm:
+   ```bash
+   curl -sI https://998webdesigns.com | head -5
+   curl -s https://998webdesigns.com/api/admin/env-status \
+     -H "Authorization: Bearer YOUR_BALANCE_CAPTURE_SECRET"
+   ```
+
+### Step 4 — Crons during Vercel rollback
+
+Production crons run via **GitHub Actions** (`.github/workflows/cf-cron.yml`), not Vercel Cron.
+
+- **No change needed** if `CRON_TARGET_URL` secret is unset (defaults to `https://998webdesigns.com`) and apex now serves Vercel — scheduled GETs hit the same routes on Vercel.
+- If crons must target a Vercel preview URL temporarily, set repo secret `CRON_TARGET_URL` to that host.
+- Do **not** re-add `vercel.json` crons unless you intentionally want duplicate schedules.
+
+Manual cron (same as incident debugging on CF):
+
+GitHub → Actions → **Cloudflare cron triggers** → **Run workflow** → pick job (`ten-year-hosting`, `publish-scheduled-blog`, `instantly-enroll`).
+
+### Step 5 — Post-rollback checklist
+
+- [ ] https://998webdesigns.com loads; nav/footer version matches expected deploy
+- [ ] `GET /api/admin/env-status` clean on apex
+- [ ] Stripe Dashboard → Webhooks → recent deliveries to `https://998webdesigns.com/api/stripe/webhook` succeeding
+- [ ] `/crm/login` works with `CRM_ADMIN_SECRET`
+- [ ] Disable or leave paused **Deploy Cloudflare** on `main` until you cut back (optional)
+
+### Return to Cloudflare (after incident)
+
+1. Fix root cause on a branch; merge to `main`.
+2. Confirm **Deploy Cloudflare** workflow green; optional smoke on `*.workers.dev` if available.
+3. Re-attach Worker custom domains (`998webdesigns.com`, `www.998webdesigns.com`) in CF dashboard or restore `routes` in `wrangler.jsonc` + deploy.
+4. Remove Vercel apex/www from Vercel **Domains** (or leave idle); run `npx vercel git disconnect` again if reconnected.
+5. Verify apex `env-status` shows `hostPlatform: cloudflare-workers`.
+6. Re-enable **Deploy Cloudflare** on `main` if paused.
+
+---
 
 ## Environment variables (reference)
 
@@ -244,5 +352,5 @@ Phases 1–5 done: OpenNext on Workers, DNS on apex + www, secrets synced, `cf-c
 | Crons (`cf-cron.yml`, GET + bearer) | **Done** |
 | Vercel decommission (git disconnect, crons removed) | **Done** |
 
-Rollback (emergency only): reconnect Vercel git, redeploy, revert DNS to Vercel — see **Vercel (decommissioned)** above.
+Full rollback runbook: **Emergency rollback to Vercel** (above).
 
