@@ -1,4 +1,3 @@
-import Stripe from "stripe";
 import { stripeKeyMode } from "@/lib/stripe-env";
 
 const PRODUCTION_WEBHOOK_URL = "https://998webdesigns.com/api/stripe/webhook";
@@ -23,6 +22,42 @@ export type StripeOpsSnapshot = {
   missingSubscriptionWebhookEvents: string[];
 };
 
+type StripeListResponse<T> = { data?: T[] };
+
+type PaymentMethodConfigurationRow = {
+  is_default?: boolean;
+  active?: boolean;
+  us_bank_account?: { available?: boolean };
+};
+
+type WebhookEndpointRow = {
+  url?: string;
+  status?: string;
+  enabled_events?: string[];
+};
+
+/** Fetch Stripe REST list endpoints (Workers-safe; no Node Stripe SDK). */
+async function stripeList<T>(secretKey: string, path: string): Promise<T[]> {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    headers: { Authorization: `Bearer ${secretKey}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Stripe GET /v1/${path} → ${res.status}`);
+  }
+  const json = (await res.json()) as StripeListResponse<T>;
+  return json.data ?? [];
+}
+
+function emptySnapshot(): StripeOpsSnapshot {
+  return {
+    achEnabled: null,
+    webhookFound: false,
+    webhookEvents: [],
+    missingWebhookEvents: [...REQUIRED_WEBHOOK_EVENTS],
+    missingSubscriptionWebhookEvents: [...RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS],
+  };
+}
+
 /** Live Stripe account probes for env-status (no secret values returned). */
 export async function probeStripeOps(): Promise<{
   snapshot: StripeOpsSnapshot | null;
@@ -35,21 +70,17 @@ export async function probeStripeOps(): Promise<{
   }
 
   const warnings: string[] = [];
-  let snapshot: StripeOpsSnapshot = {
-    achEnabled: null,
-    webhookFound: false,
-    webhookEvents: [],
-    missingWebhookEvents: [...REQUIRED_WEBHOOK_EVENTS],
-    missingSubscriptionWebhookEvents: [...RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS],
-  };
+  let snapshot: StripeOpsSnapshot = emptySnapshot();
 
   try {
-    const stripe = new Stripe(key);
-    const configs = await stripe.paymentMethodConfigurations.list({ limit: 10 });
+    const configs = await stripeList<PaymentMethodConfigurationRow>(
+      key,
+      "payment_method_configurations?limit=10"
+    );
     const pmc =
-      configs.data.find((c) => c.is_default) ??
-      configs.data.find((c) => c.active) ??
-      configs.data[0];
+      configs.find((c) => c.is_default) ??
+      configs.find((c) => c.active) ??
+      configs[0];
 
     if (pmc) {
       snapshot.achEnabled = Boolean(pmc.us_bank_account?.available);
@@ -62,25 +93,26 @@ export async function probeStripeOps(): Promise<{
       warnings.push("Stripe: could not read payment method configuration for ACH status.");
     }
 
-    const endpoints = await stripe.webhookEndpoints.list({ limit: 20 });
-    const hook = endpoints.data.find(
+    const endpoints = await stripeList<WebhookEndpointRow>(key, "webhook_endpoints?limit=20");
+    const hook = endpoints.find(
       (e) => e.url === PRODUCTION_WEBHOOK_URL && e.status === "enabled"
     );
 
     if (!hook) {
-      warnings.push(
-        `Stripe: no enabled webhook at ${PRODUCTION_WEBHOOK_URL}.`
-      );
+      warnings.push(`Stripe: no enabled webhook at ${PRODUCTION_WEBHOOK_URL}.`);
     } else {
-      snapshot.webhookFound = true;
-      snapshot.webhookEvents = hook.enabled_events;
-      snapshot.missingWebhookEvents = REQUIRED_WEBHOOK_EVENTS.filter(
-        (ev) => !hook.enabled_events.includes(ev)
-      );
-      snapshot.missingSubscriptionWebhookEvents =
-        RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS.filter(
-          (ev) => !hook.enabled_events.includes(ev)
-        );
+      const enabledEvents = hook.enabled_events ?? [];
+      snapshot = {
+        ...snapshot,
+        webhookFound: true,
+        webhookEvents: enabledEvents,
+        missingWebhookEvents: REQUIRED_WEBHOOK_EVENTS.filter(
+          (ev) => !enabledEvents.includes(ev)
+        ),
+        missingSubscriptionWebhookEvents: RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS.filter(
+          (ev) => !enabledEvents.includes(ev)
+        ),
+      };
       if (snapshot.missingWebhookEvents.length) {
         warnings.push(
           `Stripe webhook missing events: ${snapshot.missingWebhookEvents.join(", ")}.`
@@ -96,13 +128,7 @@ export async function probeStripeOps(): Promise<{
     warnings.push(
       "Stripe dashboard probe failed - verify ACH and webhook manually in Stripe."
     );
-    snapshot = {
-      achEnabled: null,
-      webhookFound: false,
-      webhookEvents: [],
-      missingWebhookEvents: [...REQUIRED_WEBHOOK_EVENTS],
-      missingSubscriptionWebhookEvents: [...RECOMMENDED_SUBSCRIPTION_WEBHOOK_EVENTS],
-    };
+    snapshot = emptySnapshot();
   }
 
   return { snapshot, warnings };
