@@ -51,10 +51,10 @@ jobs:
             *) echo "Unknown schedule: $SCHEDULE" >&2; exit 1 ;;
           esac
 
-      - name: POST cron route
+      - name: GET cron route
         env:
           CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
         run: |
           TARGET="${CRON_TARGET_URL:-https://998webdesigns.com}"
-          curl -fsS -X POST "${TARGET}${{ steps.route.outputs.path }}" \
+          curl -fsS "${TARGET}${{ steps.route.outputs.path }}" \
             -H "Authorization: Bearer ${CRON_BEARER}"
