@@ -1,4 +1,4 @@
-# Replaces vercel.json crons when hosted on Cloudflare (OpenNext has no scheduled handler).
+# Replaces former vercel.json crons (removed 2026-06 CF cutover). OpenNext has no scheduled handler.
 # Secrets: CRON_SECRET (preferred) or BALANCE_CAPTURE_SECRET; optional CRON_TARGET_URL.
 
 name: Cloudflare cron triggers

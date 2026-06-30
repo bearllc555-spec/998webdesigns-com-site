@@ -6,7 +6,9 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production - 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com (DNS cutover to **Cloudflare Workers/OpenNext** in progress on branch `fix/cf-opennext-migration`). GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`).
+**Live on Cloudflare Workers (OpenNext)** at https://998webdesigns.com. GitHub `bearllc555-spec/998webdesigns-com-site` — push `main` deploys via `.github/workflows/deploy-cloudflare.yml` (~1–2 min). Site version label in nav/footer (`lib/version.ts`).
+
+**Vercel decommissioned (2026-06-30):** Git disconnected from `998webdesigns-com-site`; `vercel.json` crons removed. Project kept for manual rollback only — see `DEPLOYMENT.md`.
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval - the pricing language is the product.**
 
@@ -21,7 +23,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **`/api/leads`** - POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert, Stripe Checkout for **design fee only** (+ 3% card surcharge on design), Resend checkout-link email. Promo codes in `lib/design-promo-codes.ts` (channel-specific; **LINKEDIN20 not on public FAQ**).
 - **`/api/contact`** - POST: honeypot, Supabase `contact_submissions` insert, Resend to hello@998webdesigns.com.
 - **`/api/stripe/webhook`** - signed webhook; design `checkout.session.completed` syncs lead + internal email; **lifetime hosting** path on day-31 Checkout + ACH pending alerts (`lib/internal-lead-email.ts`, `lib/crm-notify.ts`). Idempotency via `processed_stripe_events` + `lib/stripe-webhook-idempotency.ts`.
-- **`/api/cron/*`** - daily/scheduled jobs; **Vercel:** `vercel.json` crons; **Cloudflare:** `.github/workflows/cf-cron.yml` bearer POST (see `DEPLOYMENT.md`).
+- **`/api/cron/*`** - scheduled jobs via **GitHub Actions** `.github/workflows/cf-cron.yml` (GET + bearer auth; see `DEPLOYMENT.md`).
 - **`/api/admin/env-status`** - GET production wiring snapshot (no secret values). Bearer: `BALANCE_CAPTURE_SECRET`.
 - **`/api/admin/migrate-hosting-billing`** - POST idempotent migration for `hosting_billing_starts_at` columns. Bearer: `BALANCE_CAPTURE_SECRET`.
 - **`/hosting/manage`** - month-to-month clients request a magic link to Stripe Customer Portal (`POST /api/hosting/portal/request`, `GET /api/hosting/portal/session`).
@@ -45,8 +47,8 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 | **1** | Supabase migrations on **helmet** (`xwldbxburzqryxlzocck`) | **Verified via env-status** - `wd_leads`, `api_rate_limits`, `contact_submissions`, `stripe_subscription_id`, `crm_telegram_settings`, `processed_stripe_events` all present. **Hosting billing columns** probed by env-status after v32.93 (`hostingBillingColumns`). If missing: `POST /api/admin/migrate-hosting-billing` or `node scripts/apply-hosting-billing-migration.mjs` (needs current DB password in `slatepress/.local/`). |
 | **2** | Stripe webhook subscription events | **Done** - env-status reports `invoice.payment_failed` + `customer.subscription.deleted` on live webhook; `missingSubscriptionWebhookEvents: []`. |
 | **3** | Live checkout E2E | **Done** - $1 live smoke (`cs_live_a1md3zcykOuvz5fXJx3RaVfbaxL6fBUe76edhc6BM8sBVPnmr5vXcZqxaB`): Checkout paid, `/thanks` rendered, Resend receipt + hello@ alert, Telegram fired. Open checkout via `smoke-checkout-open.html` (URL hash required). |
-| **4** | `env-status` clean | **Done** - `GET /api/admin/env-status` with `BALANCE_CAPTURE_SECRET`: `warnings: []`, `readyForLiveCharges: true`, Stripe mode `live`, CRM `crmAdminSecretSource: dedicated`. Re-check after any Vercel env or schema change. |
-| **5** | `CRON_SECRET` on Vercel | **Optional** - cron route already accepts `BALANCE_CAPTURE_SECRET` as fallback. Set dedicated `CRON_SECRET` only if you want cron auth separate from admin bearer. |
+| **4** | `env-status` clean | **Done** - `GET /api/admin/env-status` with `BALANCE_CAPTURE_SECRET`: `warnings: []`, `readyForLiveCharges: true`, Stripe mode `live`, CRM `crmAdminSecretSource: dedicated`. Re-check after any CF Worker secret or schema change. |
+| **5** | `CRON_SECRET` for CF crons | **Done** - GitHub repo secret `CRON_SECRET`; `.github/workflows/cf-cron.yml` hits production cron routes. Falls back to `BALANCE_CAPTURE_SECRET` if unset. |
 
 Quick re-check:
 
@@ -88,8 +90,8 @@ Re-capture posters: `npm run capture-portfolio-poster -- <slug> <url>` (see `scr
 |---|---|
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
-| Vercel (rollback) | `bearllc555-6551s-projects/998webdesigns-com-site` |
-| Cloudflare Worker | `998webdesigns-com-site` (`wrangler.jsonc`, OpenNext) |
+| Vercel (rollback archive) | `bearllc555-6551s-projects/998webdesigns-com-site` — git disconnected 2026-06-30 |
+| Cloudflare Worker (production) | `998webdesigns-com-site` (`wrangler.jsonc`, OpenNext) |
 | Supabase | **supabase-998webdesigns-helmet** (ref `xwldbxburzqryxlzocck`) |
 
 ---
@@ -99,8 +101,8 @@ Re-capture posters: `npm run capture-portfolio-poster -- <slug> <url>` (see `scr
 - **Next.js 16** - App Router, TypeScript, `app/` at repo root (no `src/`), Tailwind CSS v4 (`app/globals.css` @theme)
 - **Fonts** - Inter (body) + Geist (display via `font-display`)
 - **Supabase** - Postgres on helmet; service-role for API routes
-- **Vercel** - current production host until DNS cutover; push `main` auto-deploys
-- **Cloudflare Workers** - OpenNext target (`npm run cf:build`, `.github/workflows/deploy-cloudflare.yml`)
+- **Cloudflare Workers** - production host; push `main` → GitHub Actions deploy (`deploy-cloudflare.yml`)
+- **Vercel** - decommissioned; project retained for emergency manual redeploy only
 - **Stripe** - Checkout (design fee); monthly hosting via subscription + 30-day trial; lifetime $2,996 on day 31
 - **Resend** - transactional email (`RESEND_API_KEY`)
 
@@ -157,10 +159,10 @@ scripts/
 | `RESEND_API_KEY` | Contact + lead + internal alert emails |
 | `BALANCE_CAPTURE_SECRET` | Admin bearer (`env-status`, migrate routes, cron fallback) |
 | `CRM_ADMIN_SECRET` | `/crm` login (required in production; do not reuse balance secret) |
-| `CRON_SECRET` | Optional - `/api/cron/ten-year-hosting` (falls back to balance secret) |
+| `CRON_SECRET` | GitHub Actions → `.github/workflows/cf-cron.yml` (cron routes also accept `BALANCE_CAPTURE_SECRET`) |
 | `POSTGRES_URL_NON_POOLING` / `POSTGRES_HOST` + `POSTGRES_PASSWORD` | Vercel Postgres integration - server-side DDL migrations |
 
-Set the same keys in Vercel → Project Settings → Environment Variables.
+Set production secrets on the **Cloudflare Worker** (`scripts/sync-cf-worker-secrets.mjs` or Wrangler dashboard). Vercel env vars are legacy rollback only.
 
 ---
 
@@ -181,7 +183,7 @@ Key migrations:
 
 ## Stripe
 
-**`STRIPE-SETUP.md`** - test vs live, Vercel vars, Dashboard webhook, local CLI, env-status check. **`DEPLOYMENT.md`** - production go-live checklist.
+**`STRIPE-SETUP.md`** - test vs live, CF Worker secrets, Dashboard webhook, local CLI, env-status check. **`DEPLOYMENT.md`** - production go-live checklist.
 
 ---
 
@@ -189,18 +191,18 @@ Key migrations:
 
 ```
 cd repos/998webdesigns-com-site
-git checkout -b fix/<name>   # or polish/feat - preview on Vercel branch deploy
+git checkout -b fix/<name>   # CF branch preview via deploy-cloudflare.yml
 npm run dev   # http://localhost:3000 (pinned in package.json)
 npm run build
 git commit -m "v32.x: description"   # ASCII-only
 git push -u origin fix/<name>
-# review preview, merge to main for production
+# review CF preview / workers.dev, merge to main for production
 ```
 
 Rules:
 - Bump `SITE_VERSION` in `lib/version.ts` on every deploy-visible change.
 - **Pricing copy** in `Pricing.tsx` - product; no edits without approval.
-- Merge to `main` deploys https://998webdesigns.com (~30–60s).
+- Merge to `main` deploys https://998webdesigns.com via Cloudflare Workers (~1–2 min).
 
 ---
 
@@ -227,3 +229,4 @@ npm run dev
 | 2026-06-02 | v32.94–95: `/portfolio`, `/pricing`, `/start` standalone routes + sitemap; Lighthouse/security QA pass (HSTS, CSP, admin 401, robots/sitemap); a11y contrast + heading-order fixes on add-ons + version pill. |
 | 2026-06-02 | Live checkout E2E verified (ops #3): $1 smoke paid end-to-end; smoke script launcher fix (`1dbec4c`). |
 | 2026-06-02 | v32.96: Stripe Customer Portal - `/hosting/manage` magic-link flow + FAQ entry; `scripts/configure-stripe-billing-portal.mjs`. |
+| 2026-06-30 | CF migration complete: DNS on Workers, Vercel git disconnected, vercel.json crons removed, production crons via `cf-cron.yml`. |

@@ -1,22 +1,61 @@
 # Deployment - 998webdesigns.com
 
-## Vercel project (only one)
+## Production host (Cloudflare Workers)
 
 | | |
 |---|---|
-| **Project** | `998webdesigns-com-site` |
-| **Production URL** | https://998webdesigns.com |
-| **GitHub** | `bearllc555-spec/998webdesigns-com-site` - push `main` auto-deploys |
+| **URL** | https://998webdesigns.com |
+| **Worker** | `998webdesigns-com-site` (`wrangler.jsonc`) |
+| **Deploy** | Push `main` → GitHub Actions `.github/workflows/deploy-cloudflare.yml` (~1–2 min) |
+| **Crons** | GitHub Actions `.github/workflows/cf-cron.yml` (GET + bearer; secrets `CRON_SECRET` / `CRON_TARGET_URL`) |
+| **CF account** | `e0f6f68f26f8a26a75eaa793385019ef` |
 
-Link the repo with:
+Local dev unchanged: `npm run dev` on http://localhost:3000.
+
+### Cloudflare Worker secrets
+
+Production secrets live on the Worker (Wrangler dashboard or `node scripts/sync-cf-worker-secrets.mjs`). Keys: Supabase, Stripe, Resend, Twilio, Calendly, CRM, `GEMINI_API_KEY`, Telegram, etc. See `.env.example` and `scripts/sync-cf-worker-secrets.mjs` `FILE_OVERRIDES`.
+
+Optional: `NEXT_PUBLIC_CF_BEACON_TOKEN` (Cloudflare Web Analytics). **Do not set** `NEXT_PUBLIC_BOOK_CALL_URL` on production.
+
+### GitHub secrets (repo Settings → Secrets)
+
+| Secret | Purpose |
+|--------|---------|
+| `CLOUDFLARE_API_TOKEN` | Workers deploy — **Account → Workers Scripts → Edit** |
+| `CLOUDFLARE_ACCOUNT_ID` | `e0f6f68f26f8a26a75eaa793385019ef` |
+| `CRON_SECRET` | Bearer for `cf-cron.yml` (fallback: `BALANCE_CAPTURE_SECRET`) |
+| `CRON_TARGET_URL` | Optional — defaults to `https://998webdesigns.com` |
+
+### Ops checklist
+
+```bash
+BALANCE_CAPTURE_SECRET=... node scripts/cf-ops-checklist.mjs https://998webdesigns.com
+curl -s https://998webdesigns.com/api/admin/env-status \
+  -H "Authorization: Bearer $BALANCE_CAPTURE_SECRET"
+```
+
+---
+
+## Vercel (decommissioned 2026-06-30)
+
+| | |
+|---|---|
+| **Project** | `998webdesigns-com-site` (archived — manual rollback only) |
+| **Status** | GitHub auto-deploy **disconnected** (`vercel git disconnect`) |
+| **Crons** | Removed from `vercel.json` — use `cf-cron.yml` only |
+
+To emergency redeploy on Vercel: reconnect git in Vercel dashboard or `vercel git connect`, restore env vars from CF Worker / `.local/`, `vercel deploy --prod`. Production traffic stays on Cloudflare unless DNS is reverted.
+
+Legacy link (env var reference only):
 
 ```bash
 npx vercel link --project 998webdesigns-com-site
 ```
 
-## Environment variables (Production)
+## Environment variables (reference)
 
-Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variables:
+Set on the **Cloudflare Worker** for production. Vercel copy optional for rollback only:
 
 | Variable | Purpose |
 |----------|---------|
@@ -41,11 +80,11 @@ Set on **998webdesigns-com-site** in Vercel → Settings → Environment Variabl
    - URL: `https://998webdesigns.com/api/calendly/webhook`
    - Events: `invitee.created`, `invitee.canceled`
    - Scope: organization or user that owns the discovery event
-3. Copy the **signing key** into Vercel as `CALENDLY_WEBHOOK_SIGNING_KEY` and redeploy.
+3. Copy the **signing key** to the CF Worker as `CALENDLY_WEBHOOK_SIGNING_KEY` (`node scripts/setup-calendly-webhook.mjs` or Wrangler).
 
 Prospects are matched via `utm_campaign=<prospect uuid>` on the Calendly URL (set automatically) with email fallback.
 
-If env-status warns about a mismatched `NEXT_PUBLIC_BOOK_CALL_URL`, delete the var on Vercel Production and redeploy.
+If env-status warns about a mismatched `NEXT_PUBLIC_BOOK_CALL_URL`, delete the var on the Worker and redeploy.
 
 Secrets live in workspace `.local/` (gitignored). Never commit keys.
 
@@ -59,7 +98,7 @@ Secrets live in workspace `.local/` (gitignored). Never commit keys.
 
 1. Stripe Dashboard → **Live** mode → Developers → API keys → `sk_live_...`.
 2. Webhooks → endpoint `https://998webdesigns.com/api/stripe/webhook` with events below → copy **live** `whsec_...`.
-3. Vercel Production → `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, redeploy.
+3. CF Worker → `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, redeploy.
 4. `GET /api/admin/env-status` → `readyForLiveCharges: true`, `warnings: []`.
 5. One completed live Checkout (optional proof) - **blocked until bank approves a real-card test**; see workspace `whats-next.md` item 13.
 
@@ -130,11 +169,11 @@ Indexable routes live in `lib/sitemap-config.ts`. `/thanks` and `/api/*` are exc
 
 Production must use **`supabase-998webdesigns-helmet`** (org **bearllc555-6551's projects**). Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` from that project's API settings. Helper: `slatepress/GO-FIX-SUPABASE-998-HELMET.ps1` (reads `.local/supabase-helmet-*.txt`, `supabase-project-*.txt`, or `supabase-998-helmet-notes.txt`). Do not use deleted `jxth...` or stale `xyfhj...` integration leftovers.
 
-Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or ask Cursor to fix Supabase on Vercel.
+Re-apply from workspace: `GO-FIX-SUPABASE-998.ps1` or update Worker secrets via `sync-cf-worker-secrets.mjs`.
 
 ## Supabase + GitHub
 
-**Day-to-day:** Vercel ↔ helmet integration is enough (env vars + live tables). No dashboard GitHub form required.
+**Day-to-day:** CF Worker ↔ helmet (env vars + live tables). No Vercel required.
 
 **Optional:** Supabase Integrations → GitHub → repo `998webdesigns-com-site`, working directory `.`, **Deploy to production** ON. Or ignore - Cursor can run SQL in the editor when schema changes.
 
@@ -188,64 +227,22 @@ Returns `{"ok":true,"via":"..."}` when the table exists. Also runnable via `node
 
 **Sign in:** https://998webdesigns.com/crm/login - use `CRM_ADMIN_SECRET` in production. `GET /api/admin/env-status` still uses `BALANCE_CAPTURE_SECRET` for ops checks.
 
-**Subdomain (optional):** In Vercel → **998webdesigns-com-site** → Settings → Domains → add `crm.998webdesigns.com` to the same project. In Cloudflare DNS, `CNAME crm` → `cname.vercel-dns.com`. The app route stays `/crm`; for root-on-subdomain you would add a redirect rule later.
+**Subdomain (optional):** Cloudflare DNS → `crm.998webdesigns.com` on the same Worker (custom domain in `wrangler.jsonc` or CF dashboard). The app route stays `/crm`.
 
 `robots.txt` disallows `/crm`. Not in the public sitemap.
 
 ---
 
-## Cloudflare migration (OpenNext)
+## Cloudflare migration (completed 2026-06-30)
 
-**Target host:** Cloudflare Workers via `@opennextjs/cloudflare` (same repo, branch `fix/cf-opennext-migration` for preview validation).
+Phases 1–5 done: OpenNext on Workers, DNS on apex + www, secrets synced, `cf-cron.yml` live, Vercel git disconnected.
 
-| | |
-|---|---|
-| **Worker name** | `998webdesigns-com-site` (`wrangler.jsonc`) |
-| **Build** | `npm run cf:build` → `.open-next/` |
-| **Deploy** | GitHub Actions `.github/workflows/deploy-cloudflare.yml` or `npm run cf:deploy` |
-| **Crons** | `.github/workflows/cf-cron.yml` (mirrors `vercel.json`; disable Vercel crons after cutover) |
-| **CF account** | `e0f6f68f26f8a26a75eaa793385019ef` |
+| Phase | Status |
+|-------|--------|
+| OpenNext scaffold + CF deploy | **Done** |
+| DNS cutover (`998webdesigns.com`, `www`) | **Done** |
+| Crons (`cf-cron.yml`, GET + bearer) | **Done** |
+| Vercel decommission (git disconnect, crons removed) | **Done** |
 
-### GitHub secrets (repo Settings → Secrets)
-
-| Secret | Purpose |
-|--------|---------|
-| `CLOUDFLARE_API_TOKEN` | Workers deploy token — **Account → Workers Scripts → Edit** (not Pages-only token) |
-| `CLOUDFLARE_ACCOUNT_ID` | `e0f6f68f26f8a26a75eaa793385019ef` |
-| `CRON_SECRET` | Bearer for scheduled cron workflow (or reuse `BALANCE_CAPTURE_SECRET` via fallback) |
-| `CRON_TARGET_URL` | Optional - preview URL during validation; defaults to `https://998webdesigns.com` |
-
-### Cloudflare Worker environment variables
-
-Copy **all Production vars from Vercel** into Workers & Pages → `998webdesigns-com-site` → Settings → Variables (Production + Preview). Same keys: Supabase, Stripe, Resend, Twilio, Calendly, CRM secrets.
-
-Optional analytics: `NEXT_PUBLIC_CF_BEACON_TOKEN` from Cloudflare Web Analytics.
-
-**Do not set** `NEXT_PUBLIC_BOOK_CALL_URL` on production.
-
-### Preview validation
-
-1. Push branch → Actions deploy → note `*.workers.dev` or Pages preview URL.
-2. Set preview env vars on the CF project.
-3. Run automated checks:
-
-```bash
-BALANCE_CAPTURE_SECRET=... node scripts/cf-ops-checklist.mjs https://YOUR-PREVIEW-URL
-```
-
-4. Manual: Stripe webhook (CLI or test endpoint), discovery SMS → Calendly embed, CRM login, voice demo token.
-
-### DNS cutover (Phase 4)
-
-Keep Vercel live for 48h rollback.
-
-1. CF Workers → `998webdesigns-com-site` → Triggers → Custom Domains → add `998webdesigns.com` and `www.998webdesigns.com`.
-2. Cloudflare DNS (zone already on CF): apex `998webdesigns.com` → Workers route (or CNAME to worker); remove or pause Vercel apex CNAME.
-3. Optional `crm.998webdesigns.com` → same worker (not `cname.vercel-dns.com`).
-4. Webhook URLs stay `https://998webdesigns.com/api/...` — no third-party reconfig if apex unchanged.
-5. Enable `cf-cron.yml` on `main`; disable Vercel crons in dashboard or remove `vercel.json` crons after stable.
-
-### Decommission Vercel (Phase 5)
-
-After 48h stable on CF: pause Vercel auto-deploy, archive project `998webdesigns-com-site`. Local dev unchanged (`npm run dev` on port 3000).
+Rollback (emergency only): reconnect Vercel git, redeploy, revert DNS to Vercel — see **Vercel (decommissioned)** above.
 

@@ -4,8 +4,9 @@ Marketing site and lead funnel for [998 web designs](https://998webdesigns.com) 
 
 | | |
 |---|---|
-| **Production** | https://998webdesigns.com |
-| **Vercel project** | `998webdesigns-com-site` (push `main` to deploy) |
+| **Production** | https://998webdesigns.com (Cloudflare Workers / OpenNext) |
+| **Deploy** | Push `main` → GitHub Actions `deploy-cloudflare.yml` |
+| **Vercel** | Decommissioned 2026-06-30 (rollback archive only) |
 | **Handoff / architecture** | [`CLAUDE.md`](./CLAUDE.md) |
 | **Deploy & Stripe go-live** | [`DEPLOYMENT.md`](./DEPLOYMENT.md) |
 
