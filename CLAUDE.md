@@ -90,6 +90,7 @@ Re-capture posters: `npm run capture-portfolio-poster -- <slug> <url>` (see `scr
 |---|---|
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
+| Dev (CF staging) | https://dev.998webdesigns.com — worker `998webdesigns-com-site-dev`, deploys with every `main` push |
 | Vercel (rollback archive) | `bearllc555-6551s-projects/998webdesigns-com-site` — git disconnected 2026-06-30 |
 | Cloudflare Worker (production) | `998webdesigns-com-site` (`wrangler.jsonc`, OpenNext) |
 | Supabase | **supabase-998webdesigns-helmet** (ref `xwldbxburzqryxlzocck`) |
