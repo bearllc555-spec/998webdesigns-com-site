@@ -42,8 +42,12 @@ const FILE_OVERRIDES = {
 
 function readTrim(filePath) {
   if (!fs.existsSync(filePath)) return null;
-  const value = fs.readFileSync(filePath, "utf8").trim();
-  return value || null;
+  for (const line of fs.readFileSync(filePath, "utf8").split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    return trimmed;
+  }
+  return null;
 }
 
 function parseEnvFile(filePath) {
