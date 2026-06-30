@@ -210,7 +210,7 @@ Returns `{"ok":true,"via":"..."}` when the table exists. Also runnable via `node
 
 | Secret | Purpose |
 |--------|---------|
-| `CLOUDFLARE_API_TOKEN` | Pages/Workers deploy token (Account → Workers Scripts → Edit) |
+| `CLOUDFLARE_API_TOKEN` | Workers deploy token — **Account → Workers Scripts → Edit** (not Pages-only token) |
 | `CLOUDFLARE_ACCOUNT_ID` | `e0f6f68f26f8a26a75eaa793385019ef` |
 | `CRON_SECRET` | Bearer for scheduled cron workflow (or reuse `BALANCE_CAPTURE_SECRET` via fallback) |
 | `CRON_TARGET_URL` | Optional - preview URL during validation; defaults to `https://998webdesigns.com` |
