@@ -11,17 +11,15 @@ Quick reference. Secrets live in `slatepress/.local/` (gitignored). Never commit
 | **Test (sandbox)** | `sk_test_` | `4242 4242 4242 4242` |
 | **Live** | `sk_live_` | Real cards only |
 
-**Production:** Live keys (`sk_live_...`) with `STRIPE_EXPECTED_MODE=live` on Vercel.
-
-**Sandbox:** Use test keys on Preview/local; set `STRIPE_EXPECTED_MODE=test` so `/api/admin/env-status` does not false-alarm.
+**Production:** Live keys (`sk_live_...`) with `STRIPE_EXPECTED_MODE=live` on the **Cloudflare Worker**.
 
 ---
 
-## Vercel project (only one)
+## Production secrets (Cloudflare Worker)
 
-**`998webdesigns-com-site`** → https://998webdesigns.com
+**Worker:** `998webdesigns-com-site` → https://998webdesigns.com
 
-Required Production env vars:
+Required production vars (Wrangler dashboard or `scripts/sync-cf-worker-secrets.mjs`):
 
 | Variable | Purpose |
 |----------|---------|
@@ -33,9 +31,9 @@ Required Production env vars:
 | `NEXT_PUBLIC_SUPABASE_URL` | **helmet** project `xwldbxburzqryxlzocck` |
 | `SUPABASE_SERVICE_ROLE_KEY` | `wd_leads` inserts |
 
-Dashboard: https://vercel.com/bearllc555-6551s-projects/998webdesigns-com-site/settings/environment-variables
+After any change: redeploy via push to `main` (GitHub Actions) or `npm run cf:deploy`.
 
-After any change: redeploy Production or push to `main`.
+**Vercel (decommissioned 2026-06-30):** project kept for emergency rollback only — see `DEPLOYMENT.md`.
 
 ---
 
@@ -45,8 +43,8 @@ After any change: redeploy Production or push to `main`.
 2. **Add endpoint** → `https://998webdesigns.com/api/stripe/webhook`
 3. Events: **`checkout.session.completed`**, **`checkout.session.async_payment_succeeded`**, **`checkout.session.async_payment_failed`**, plus **`invoice.payment_failed`** and **`customer.subscription.deleted`** for $98/mo hosting
 4. Enable **ACH Direct Debit** under Settings → Payment methods (US bank account)
-5. Copy **Signing secret** (`whsec_...`) → Vercel `STRIPE_WEBHOOK_SECRET` (Production)
-6. Redeploy
+5. Copy **Signing secret** (`whsec_...`) → Worker `STRIPE_WEBHOOK_SECRET`
+6. Redeploy (push `main` or `npm run cf:deploy`)
 
 **Checkout:** Lead form picks bank (ACH, list price) or card (+3% on design + in-checkout hosting). No Stripe Tax.
 
@@ -107,7 +105,7 @@ Check: `stripe.mode`, `warnings`, `readyForLiveCharges`.
 3. **Webhooks:** https://dashboard.stripe.com/webhooks → Add endpoint  
    `https://998webdesigns.com/api/stripe/webhook` → event `checkout.session.completed` → copy **Signing secret** → paste into  
    `slatepress/.local/stripe-live-webhook-secret.txt`.
-4. Double-click **`GO-LIVE-STRIPE-998.cmd`** in the slatepress workspace root (updates Vercel Production + redeploys).
+4. Double-click **`GO-LIVE-STRIPE-998.cmd`** in the slatepress workspace root (updates CF Worker secrets + redeploys).
 
 Or ask Cursor in Agent mode after the two `.local` files are filled.
 
@@ -143,7 +141,7 @@ Self-serve card updates, invoices, and cancel-at-period-end for $98/mo clients.
 1. Run (live account):  
    `node scripts/configure-stripe-billing-portal.mjs`  
    Uses `STRIPE_SECRET_KEY` or `slatepress/.local/stripe-live-secret-key.txt`.
-2. Optional: paste printed `STRIPE_BILLING_PORTAL_CONFIGURATION_ID` into Vercel Production env.
+2. Optional: paste printed `STRIPE_BILLING_PORTAL_CONFIGURATION_ID` into Worker env.
 3. Or configure manually: [Stripe Dashboard → Settings → Billing → Customer portal](https://dashboard.stripe.com/settings/billing/portal)  
    - Enable **payment method update** and **invoice history**  
    - Enable **subscription cancellation** → **At end of billing period**  

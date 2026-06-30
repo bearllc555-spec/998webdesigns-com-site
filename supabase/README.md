@@ -4,7 +4,7 @@
 
 ## You are already set up for day-to-day use
 
-- **Vercel** ↔ Supabase helmet (env vars) - connected in Integrations
+- **Cloudflare Worker** ↔ Supabase helmet (env vars) — production secrets via Wrangler / `sync-cf-worker-secrets.mjs`
 - **Tables** on production: `wd_leads`, `contact_submissions`, `api_rate_limits`
 - **App** reads/writes via API routes - no GitHub required
 

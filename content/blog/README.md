@@ -43,7 +43,7 @@ Body is standard Markdown. Internal links: `/start`, `/pricing`, `/portfolio`, `
 
 ## After publish
 
-1. Push to `main` (post goes live on Vercel).
+1. Push to `main` (post goes live on Cloudflare Workers after deploy).
 2. Run **`npm run blog:notify -- {slug}`** - adds a **Blog** row in CRM + Telegram with the post link.
 3. Use **`npm run blog:notify -- --all`** once after first deploy to backfill existing posts.
 4. **`--force`** re-sends Telegram even if the slug is already logged.
