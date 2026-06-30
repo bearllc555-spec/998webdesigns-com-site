@@ -35,6 +35,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  /** Admin DDL routes use `pg` locally only; keep out of the OpenNext worker bundle. */
+  serverExternalPackages: ["pg"],
   async redirects() {
     return [
       {
