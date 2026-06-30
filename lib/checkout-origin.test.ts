@@ -35,4 +35,13 @@ describe("resolveCheckoutOrigin", () => {
       })
     ).toBe("https://fix-cf-opennext-migration.998webdesigns-com-site.pages.dev");
   });
+
+  it("allows Cloudflare Workers preview origin", () => {
+    expect(
+      resolveCheckoutOrigin("https://998webdesigns-com-site.bearllc555.workers.dev", {
+        HOST_PLATFORM: "cloudflare-workers",
+        APP_ENV: "preview",
+      })
+    ).toBe("https://998webdesigns-com-site.bearllc555.workers.dev");
+  });
 });

@@ -13,7 +13,9 @@ function isHostedPreviewOrigin(origin: string): boolean {
     const { protocol, hostname } = new URL(origin);
     return (
       protocol === "https:" &&
-      (hostname.endsWith(".vercel.app") || hostname.endsWith(".pages.dev"))
+      (hostname.endsWith(".vercel.app") ||
+        hostname.endsWith(".pages.dev") ||
+        hostname.endsWith(".workers.dev"))
     );
   } catch {
     return false;
@@ -23,6 +25,9 @@ function isHostedPreviewOrigin(origin: string): boolean {
 function isPreviewDeployEnv(env: CheckoutOriginEnv): boolean {
   const custom = env.APP_ENV?.trim().toLowerCase();
   if (custom === "preview") return true;
+  if (env.HOST_PLATFORM === "cloudflare-workers" && env.APP_ENV !== "production") {
+    return true;
+  }
   if (env.CF_PAGES === "1" && env.CF_PAGES_BRANCH?.trim() !== "main") return true;
   if (env.VERCEL_ENV === "preview") return true;
   return false;
@@ -32,6 +37,7 @@ export type CheckoutOriginEnv = {
   VERCEL_ENV?: string;
   CF_PAGES?: string;
   CF_PAGES_BRANCH?: string;
+  HOST_PLATFORM?: string;
   APP_ENV?: string;
   NODE_ENV?: string;
 };

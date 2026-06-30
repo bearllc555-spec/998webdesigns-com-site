@@ -1,8 +1,10 @@
 import { hostPlatformLabel } from "@/lib/app-env";
 
+const CF_HOSTS = new Set(["cloudflare-pages", "cloudflare-workers"]);
+
 /** Postgres DDL migrate helpers are local/Vercel ops only — not on Cloudflare Workers. */
 export function pgMigrateSupported(): boolean {
-  return hostPlatformLabel() !== "cloudflare-pages";
+  return !CF_HOSTS.has(hostPlatformLabel());
 }
 
 export function pgMigrateUnsupportedResponse(): Response {

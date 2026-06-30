@@ -14,6 +14,8 @@ __v0_jsx-dev-runtime.ts
 .env*.local
 .env.vercel.prod
 .env.vercel.prod.live
+.env.vercel.production
+.env.cf-worker-secrets.tmp
 .env.prod
 .env.prod.*
 .env.tmp

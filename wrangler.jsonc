@@ -17,5 +17,9 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "998webdesigns-com-site"
     }
-  ]
+  ],
+  "vars": {
+    "HOST_PLATFORM": "cloudflare-workers",
+    "APP_ENV": "preview"
+  }
 }

@@ -5,6 +5,7 @@ const env = process.env;
 
 afterEach(() => {
   process.env = { ...env };
+  delete process.env.HOST_PLATFORM;
 });
 
 describe("appEnv", () => {
@@ -29,5 +30,14 @@ describe("appEnv", () => {
     process.env.CF_PAGES = "1";
     process.env.CF_PAGES_BRANCH = "fix/cf-opennext-migration";
     expect(appEnv()).toBe("preview");
+  });
+
+  it("treats Cloudflare Workers as preview unless APP_ENV overrides", () => {
+    delete process.env.APP_ENV;
+    process.env.HOST_PLATFORM = "cloudflare-workers";
+    expect(appEnv()).toBe("preview");
+    expect(hostPlatformLabel()).toBe("cloudflare-workers");
+    process.env.APP_ENV = "production";
+    expect(appEnv()).toBe("production");
   });
 });

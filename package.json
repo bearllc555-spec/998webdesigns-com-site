@@ -9,6 +9,7 @@
     "cf:build": "node scripts/patch-opennext-bundle.mjs && opennextjs-cloudflare build && node scripts/prune-cf-assets.mjs",
     "cf:preview": "npm run cf:build && opennextjs-cloudflare preview",
     "cf:deploy": "npm run cf:build && opennextjs-cloudflare deploy",
+    "cf:sync-secrets": "node scripts/sync-cf-worker-secrets.mjs",
     "lint": "eslint .",
     "test": "vitest run",
     "capture-portfolio-poster": "node scripts/capture-portfolio-poster.mjs",

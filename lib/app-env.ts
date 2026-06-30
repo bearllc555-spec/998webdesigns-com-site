@@ -15,6 +15,10 @@ export function appEnv(): AppEnvLabel {
   const custom = appEnvFromCustom();
   if (custom) return custom;
 
+  if (process.env.HOST_PLATFORM === "cloudflare-workers") {
+    return "preview";
+  }
+
   if (process.env.CF_PAGES === "1") {
     const branch = process.env.CF_PAGES_BRANCH?.trim() || "";
     return branch === "main" ? "production" : "preview";
@@ -39,6 +43,7 @@ export function isPreviewApp(): boolean {
 
 /** Label for env-status and ops dashboards. */
 export function hostPlatformLabel(): string {
+  if (process.env.HOST_PLATFORM === "cloudflare-workers") return "cloudflare-workers";
   if (process.env.CF_PAGES === "1") return "cloudflare-pages";
   if (process.env.VERCEL_ENV) return "vercel";
   return "local";
