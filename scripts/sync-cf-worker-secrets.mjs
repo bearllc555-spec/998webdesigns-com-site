@@ -35,6 +35,7 @@ const FILE_OVERRIDES = {
   BALANCE_CAPTURE_SECRET: "998-balance-capture-secret.txt",
   CRM_ADMIN_SECRET: "998-crm-admin-secret.txt",
   CRON_SECRET: "998-cron-secret.txt",
+  CALENDLY_WEBHOOK_SIGNING_KEY: "calendly-webhook-signing-key.txt",
   NEXT_PUBLIC_SUPABASE_URL: "supabase-project-url.txt",
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "supabase-publishable-key.txt",
   SUPABASE_SERVICE_ROLE_KEY: "supabase-secret-key.txt",
