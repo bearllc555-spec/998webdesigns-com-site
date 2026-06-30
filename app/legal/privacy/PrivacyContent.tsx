@@ -155,12 +155,12 @@ export function PrivacyContent() {
               >
                 Stripe&rsquo;s privacy policy
               </a>
-              . Site analytics may be collected by Vercel Analytics. Hosting and file delivery use
+              . Site analytics may be collected by Cloudflare Web Analytics when enabled. Hosting and file delivery use
               our cloud hosting vendors.
             </p>
             <p className="mt-4 text-ink-soft">
               We share data with service providers (for example Twilio, Stripe, Resend, Supabase,
-              and Vercel) only as needed to run the service - such as sending a text you requested,
+              and Cloudflare) only as needed to run the service - such as sending a text you requested,
               processing a payment, or hosting the site. Those providers process data on our behalf;
               we do not authorize them to use your information for their own marketing. We do not
               disclose your personal information to unrelated third parties for their marketing

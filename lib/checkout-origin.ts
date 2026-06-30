@@ -8,17 +8,31 @@ const PRODUCTION_ORIGINS = new Set([
 
 const LOCAL_ORIGIN_RE = /^http:\/\/localhost(:\d+)?$/;
 
-function isVercelPreviewOrigin(origin: string): boolean {
+function isHostedPreviewOrigin(origin: string): boolean {
   try {
     const { protocol, hostname } = new URL(origin);
-    return protocol === "https:" && hostname.endsWith(".vercel.app");
+    return (
+      protocol === "https:" &&
+      (hostname.endsWith(".vercel.app") || hostname.endsWith(".pages.dev"))
+    );
   } catch {
     return false;
   }
 }
 
+function isPreviewDeployEnv(env: CheckoutOriginEnv): boolean {
+  const custom = env.APP_ENV?.trim().toLowerCase();
+  if (custom === "preview") return true;
+  if (env.CF_PAGES === "1" && env.CF_PAGES_BRANCH?.trim() !== "main") return true;
+  if (env.VERCEL_ENV === "preview") return true;
+  return false;
+}
+
 export type CheckoutOriginEnv = {
   VERCEL_ENV?: string;
+  CF_PAGES?: string;
+  CF_PAGES_BRANCH?: string;
+  APP_ENV?: string;
   NODE_ENV?: string;
 };
 
@@ -36,7 +50,7 @@ export function resolveCheckoutOrigin(
     return origin;
   }
 
-  if (env.VERCEL_ENV === "preview" && isVercelPreviewOrigin(origin)) {
+  if (isPreviewDeployEnv(env) && isHostedPreviewOrigin(origin)) {
     return origin;
   }
 

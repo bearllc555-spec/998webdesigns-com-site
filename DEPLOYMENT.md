@@ -154,7 +154,7 @@ If tables are missing, leads still reach Stripe; contact email still sends; logs
 
 ## Rate limiting
 
-1. **Edge** (`proxy.ts`) - in-memory burst protection per isolate.
+1. **Edge** (`middleware.ts`) - in-memory burst protection per isolate.
 2. **API routes** - Postgres counters in `api_rate_limits` when Supabase is configured (global across regions).
 
 ## Checkout return URLs
@@ -191,3 +191,61 @@ Returns `{"ok":true,"via":"..."}` when the table exists. Also runnable via `node
 **Subdomain (optional):** In Vercel → **998webdesigns-com-site** → Settings → Domains → add `crm.998webdesigns.com` to the same project. In Cloudflare DNS, `CNAME crm` → `cname.vercel-dns.com`. The app route stays `/crm`; for root-on-subdomain you would add a redirect rule later.
 
 `robots.txt` disallows `/crm`. Not in the public sitemap.
+
+---
+
+## Cloudflare migration (OpenNext)
+
+**Target host:** Cloudflare Workers via `@opennextjs/cloudflare` (same repo, branch `fix/cf-opennext-migration` for preview validation).
+
+| | |
+|---|---|
+| **Worker name** | `998webdesigns-com-site` (`wrangler.jsonc`) |
+| **Build** | `npm run cf:build` → `.open-next/` |
+| **Deploy** | GitHub Actions `.github/workflows/deploy-cloudflare.yml` or `npm run cf:deploy` |
+| **Crons** | `.github/workflows/cf-cron.yml` (mirrors `vercel.json`; disable Vercel crons after cutover) |
+| **CF account** | `e0f6f68f26f8a26a75eaa793385019ef` |
+
+### GitHub secrets (repo Settings → Secrets)
+
+| Secret | Purpose |
+|--------|---------|
+| `CLOUDFLARE_API_TOKEN` | Pages/Workers deploy token (Account → Workers Scripts → Edit) |
+| `CLOUDFLARE_ACCOUNT_ID` | `e0f6f68f26f8a26a75eaa793385019ef` |
+| `CRON_SECRET` | Bearer for scheduled cron workflow (or reuse `BALANCE_CAPTURE_SECRET` via fallback) |
+| `CRON_TARGET_URL` | Optional - preview URL during validation; defaults to `https://998webdesigns.com` |
+
+### Cloudflare Worker environment variables
+
+Copy **all Production vars from Vercel** into Workers & Pages → `998webdesigns-com-site` → Settings → Variables (Production + Preview). Same keys: Supabase, Stripe, Resend, Twilio, Calendly, CRM secrets.
+
+Optional analytics: `NEXT_PUBLIC_CF_BEACON_TOKEN` from Cloudflare Web Analytics.
+
+**Do not set** `NEXT_PUBLIC_BOOK_CALL_URL` on production.
+
+### Preview validation
+
+1. Push branch → Actions deploy → note `*.workers.dev` or Pages preview URL.
+2. Set preview env vars on the CF project.
+3. Run automated checks:
+
+```bash
+BALANCE_CAPTURE_SECRET=... node scripts/cf-ops-checklist.mjs https://YOUR-PREVIEW-URL
+```
+
+4. Manual: Stripe webhook (CLI or test endpoint), discovery SMS → Calendly embed, CRM login, voice demo token.
+
+### DNS cutover (Phase 4)
+
+Keep Vercel live for 48h rollback.
+
+1. CF Workers → `998webdesigns-com-site` → Triggers → Custom Domains → add `998webdesigns.com` and `www.998webdesigns.com`.
+2. Cloudflare DNS (zone already on CF): apex `998webdesigns.com` → Workers route (or CNAME to worker); remove or pause Vercel apex CNAME.
+3. Optional `crm.998webdesigns.com` → same worker (not `cname.vercel-dns.com`).
+4. Webhook URLs stay `https://998webdesigns.com/api/...` — no third-party reconfig if apex unchanged.
+5. Enable `cf-cron.yml` on `main`; disable Vercel crons in dashboard or remove `vercel.json` crons after stable.
+
+### Decommission Vercel (Phase 5)
+
+After 48h stable on CF: pause Vercel auto-deploy, archive project `998webdesigns-com-site`. Local dev unchanged (`npm run dev` on port 3000).
+

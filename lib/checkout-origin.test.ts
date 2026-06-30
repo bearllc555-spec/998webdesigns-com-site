@@ -26,4 +26,13 @@ describe("resolveCheckoutOrigin", () => {
       resolveCheckoutOrigin("http://localhost:3000", { NODE_ENV: "development" })
     ).toBe("http://localhost:3000");
   });
+
+  it("allows Cloudflare Pages preview origin", () => {
+    expect(
+      resolveCheckoutOrigin("https://fix-cf-opennext-migration.998webdesigns-com-site.pages.dev", {
+        CF_PAGES: "1",
+        CF_PAGES_BRANCH: "fix-cf-opennext-migration",
+      })
+    ).toBe("https://fix-cf-opennext-migration.998webdesigns-com-site.pages.dev");
+  });
 });

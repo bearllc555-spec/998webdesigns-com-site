@@ -16,7 +16,7 @@ describe("crmAdminSecret", () => {
   });
 
   it("does not fall back to BALANCE_CAPTURE_SECRET in production", () => {
-    process.env.VERCEL_ENV = "production";
+    process.env.APP_ENV = "production";
     delete process.env.CRM_ADMIN_SECRET;
     process.env.BALANCE_CAPTURE_SECRET = "ops-secret";
     expect(crmAdminSecret()).toBeNull();
@@ -24,6 +24,8 @@ describe("crmAdminSecret", () => {
   });
 
   it("allows balance fallback outside production", () => {
+    delete process.env.APP_ENV;
+    delete process.env.CF_PAGES;
     delete process.env.VERCEL_ENV;
     delete process.env.CRM_ADMIN_SECRET;
     process.env.BALANCE_CAPTURE_SECRET = "ops-secret";

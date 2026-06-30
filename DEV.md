@@ -86,8 +86,11 @@ Bookmark bar labels should include the port: `998 :3000`, `editor :3001`, etc.
 | URL type | When to use |
 |----------|-------------|
 | `http://localhost:3000` | Editing this repo in the active Cursor window |
-| Vercel preview (branch deploy) | Review before merging to `main` |
+| Vercel preview (branch deploy) | Review before merging to `main` (until CF cutover) |
+| Cloudflare Worker preview | Branch `fix/cf-opennext-migration` + `deploy-cloudflare.yml`; see `DEPLOYMENT.md` |
 | `https://998webdesigns.com` | After push to `main`; confirm `vNN` bumped |
+
+**Cloudflare local preview:** `npm run cf:build` then `npm run cf:preview` (Wrangler). Requires WSL for best results on Windows.
 
 ---
 
@@ -114,4 +117,4 @@ Project path is under `OneDrive\Documents\Claude\...`. Pause OneDrive before lon
 ## Related docs
 
 - `CLAUDE.md` - stack, env, ship loop, pricing lock
-- `DEPLOYMENT.md` - Vercel / Stripe production wiring
+- `DEPLOYMENT.md` - Vercel / Cloudflare / Stripe production wiring

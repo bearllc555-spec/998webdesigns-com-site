@@ -6,7 +6,7 @@ Read at the start of every session that touches this repo. Stack, env, file layo
 
 ## Status (production - 2026-06)
 
-**Live on Vercel** at https://998webdesigns.com - project **`998webdesigns-com-site`**. GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`, currently v32.x).
+**Live on Vercel** at https://998webdesigns.com (DNS cutover to **Cloudflare Workers/OpenNext** in progress on branch `fix/cf-opennext-migration`). GitHub `bearllc555-spec/998webdesigns-com-site`. Site version label in nav/footer (`lib/version.ts`).
 
 Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do not change pricing wording without explicit approval - the pricing language is the product.**
 
@@ -21,7 +21,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **`/api/leads`** - POST: honeypot, full server validation (`lib/validate-lead.ts`), Supabase `wd_leads` insert, Stripe Checkout for **design fee only** (+ 3% card surcharge on design), Resend checkout-link email. Promo codes in `lib/design-promo-codes.ts` (channel-specific; **LINKEDIN20 not on public FAQ**).
 - **`/api/contact`** - POST: honeypot, Supabase `contact_submissions` insert, Resend to hello@998webdesigns.com.
 - **`/api/stripe/webhook`** - signed webhook; design `checkout.session.completed` syncs lead + internal email; **lifetime hosting** path on day-31 Checkout + ACH pending alerts (`lib/internal-lead-email.ts`, `lib/crm-notify.ts`). Idempotency via `processed_stripe_events` + `lib/stripe-webhook-idempotency.ts`.
-- **`/api/cron/ten-year-hosting`** - daily 14:00 UTC (`vercel.json`); bills **lifetime hosting $2,996** on day 31 for leads that chose `lifetime`. Auth: `CRON_SECRET` or `BALANCE_CAPTURE_SECRET` bearer.
+- **`/api/cron/*`** - daily/scheduled jobs; **Vercel:** `vercel.json` crons; **Cloudflare:** `.github/workflows/cf-cron.yml` bearer POST (see `DEPLOYMENT.md`).
 - **`/api/admin/env-status`** - GET production wiring snapshot (no secret values). Bearer: `BALANCE_CAPTURE_SECRET`.
 - **`/api/admin/migrate-hosting-billing`** - POST idempotent migration for `hosting_billing_starts_at` columns. Bearer: `BALANCE_CAPTURE_SECRET`.
 - **`/hosting/manage`** - month-to-month clients request a magic link to Stripe Customer Portal (`POST /api/hosting/portal/request`, `GET /api/hosting/portal/session`).
@@ -30,8 +30,8 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - **Stripe go-live** - `DEPLOYMENT.md` + `lib/stripe-env.ts` warns if Production still uses `sk_test_`.
 - SEO - `robots.txt`, `sitemap.xml`, `index, follow` on marketing pages; `/thanks` noindex.
 - OG image - `app/opengraph-image.tsx`.
-- Rate limiting - `proxy.ts` (in-memory) + Supabase `api_rate_limits` when table exists (`lib/api-rate-limit.ts`).
-- Analytics - `@vercel/analytics` in root layout.
+- Rate limiting - `middleware.ts` (edge) + Supabase `api_rate_limits` when table exists (`lib/api-rate-limit.ts`).
+- Analytics - Cloudflare Web Analytics when `NEXT_PUBLIC_CF_BEACON_TOKEN` is set (`components/CloudflareWebAnalytics.tsx`).
 - **CRM** - `/crm` (auth: `CRM_ADMIN_SECRET` required in production), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` for bot token + chat ids (`crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` - bump on every CRM change.
 - **Plumbing Jarvis demo** - `/demo/plumbers` (Gemini Live voice agent for Metro Plumbing & Drain). Sign-in → FAQ → booking with $50 coupon → PA-style intake → confirmation email. Canonical flow: **`docs/jarvis-plumbing-appointment-flow.md`**. Knowledge/emails: `docs/jarvis_plumbing_complete.md`. Ops: `VOICE-DEMO-OPS.md`. Real sign-ins on `/crm` under **Plumbing Jarvis demos** (`plumbing_demo`).
 - **Alerts** - Resend internal emails + Telegram via CRM notify kinds (`lifetime_hosting_paid`, `lifetime_hosting_ach_pending`, design payment, etc.). No Slack.
@@ -88,7 +88,8 @@ Re-capture posters: `npm run capture-portfolio-poster -- <slug> <url>` (see `scr
 |---|---|
 | Repo | https://github.com/bearllc555-spec/998webdesigns-com-site |
 | Production | https://998webdesigns.com |
-| Vercel project | `bearllc555-6551s-projects/998webdesigns-com-site` |
+| Vercel (rollback) | `bearllc555-6551s-projects/998webdesigns-com-site` |
+| Cloudflare Worker | `998webdesigns-com-site` (`wrangler.jsonc`, OpenNext) |
 | Supabase | **supabase-998webdesigns-helmet** (ref `xwldbxburzqryxlzocck`) |
 
 ---
@@ -98,7 +99,8 @@ Re-capture posters: `npm run capture-portfolio-poster -- <slug> <url>` (see `scr
 - **Next.js 16** - App Router, TypeScript, `app/` at repo root (no `src/`), Tailwind CSS v4 (`app/globals.css` @theme)
 - **Fonts** - Inter (body) + Geist (display via `font-display`)
 - **Supabase** - Postgres on helmet; service-role for API routes
-- **Vercel** - production host, Hobby plan, Git push to `main` auto-deploys
+- **Vercel** - current production host until DNS cutover; push `main` auto-deploys
+- **Cloudflare Workers** - OpenNext target (`npm run cf:build`, `.github/workflows/deploy-cloudflare.yml`)
 - **Stripe** - Checkout (design fee); monthly hosting via subscription + 30-day trial; lifetime $2,996 on day 31
 - **Resend** - transactional email (`RESEND_API_KEY`)
 
@@ -133,8 +135,8 @@ lib/
 ├── supabase.ts, stripe.ts, products.ts, version.ts
 ├── hosting-policy.ts, checkout-session.ts, ten-year-hosting-billing.ts
 ├── validate-lead.ts, lead-email.ts, internal-lead-email.ts, crm-notify.ts
-├── supabase-health.ts, production-config.ts, stripe-ops-check.ts
-proxy.ts
+├── supabase-health.ts, production-config.ts, stripe-ops-check.ts, app-env.ts
+middleware.ts
 public/portfolio/
 scripts/
 ├── apply-hosting-billing-migration.mjs

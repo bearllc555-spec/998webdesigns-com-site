@@ -22,6 +22,7 @@ __v0_jsx-dev-runtime.ts
 # Common ignores
 node_modules
 .next/
+.open-next/
 out/
 .DS_Store.next
 .vercel
@@ -38,3 +39,4 @@ public/portfolio/.capture-tmp/
 lighthouse-*.json
 lighthouse-*.html
 998webdesigns.com_*.report.html
+.wrangler/

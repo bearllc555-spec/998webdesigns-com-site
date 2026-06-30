@@ -8,11 +8,13 @@ export function stripeKeyMode(): StripeKeyMode {
   return "unknown";
 }
 
-/** Logs when Production Vercel still uses test Stripe keys (intentional until go-live). */
+import { isProductionApp } from "@/lib/app-env";
+
+/** Logs when production still uses test Stripe keys (intentional until go-live). */
 export function warnIfProductionStripeTestMode(context: string): void {
-  if (process.env.VERCEL_ENV !== "production") return;
+  if (!isProductionApp()) return;
   if (stripeKeyMode() !== "test") return;
   console.warn(
-    `[${context}] STRIPE_SECRET_KEY is sk_test_ on Vercel Production. Real cards will fail until you swap to sk_live_ on project 998webdesigns-com-site. See DEPLOYMENT.md.`
+    `[${context}] STRIPE_SECRET_KEY is sk_test_ on production. Real cards will fail until you swap to sk_live_. See DEPLOYMENT.md.`
   );
 }

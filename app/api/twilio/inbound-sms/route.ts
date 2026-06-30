@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isProductionApp } from "@/lib/app-env";
 import { notifyCrmActivity } from "@/lib/crm-notify";
 import {
   findDiscoveryProspectByPhone,
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
   const webhookUrl = `${marketingSiteOrigin()}/api/twilio/inbound-sms`;
 
   if (
-    process.env.VERCEL_ENV === "production" &&
+    isProductionApp() &&
     !validateTwilioWebhookSignature(creds.authToken, signature, webhookUrl, params)
   ) {
     console.warn("[twilio-inbound] invalid signature");

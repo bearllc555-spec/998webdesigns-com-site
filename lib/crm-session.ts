@@ -3,8 +3,9 @@ import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { verifyBearerSecret } from "@/lib/admin-auth";
 import { crmAdminSecret } from "@/lib/crm-admin-secret";
+import { CRM_SESSION_COOKIE } from "@/lib/crm-session-constants";
 
-export const CRM_SESSION_COOKIE = "crm_session";
+export { CRM_SESSION_COOKIE } from "@/lib/crm-session-constants";
 const SESSION_MARKER = "crm-v1";
 
 export function crmSessionToken(secret: string): string {

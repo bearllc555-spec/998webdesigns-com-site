@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react";
+import { CloudflareWebAnalytics } from "@/components/CloudflareWebAnalytics";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AddonSummaryBar } from "@/components/AddonSummaryBar";
@@ -77,7 +77,7 @@ export default function RootLayout({
           <VoiceDemoWidgetGate />
           <AddonSummaryBar />
           <Toaster />
-          <Analytics />
+          <CloudflareWebAnalytics />
         </ThemeProvider>
       </body>
     </html>

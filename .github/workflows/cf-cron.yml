@@ -1,0 +1,60 @@
+# Replaces vercel.json crons when hosted on Cloudflare (OpenNext has no scheduled handler).
+# Secrets: CRON_SECRET (preferred) or BALANCE_CAPTURE_SECRET; optional CRON_TARGET_URL.
+
+name: Cloudflare cron triggers
+
+on:
+  schedule:
+    - cron: "0 14 * * *"
+    - cron: "0 0 * * *"
+    - cron: "0 4 * * *"
+    - cron: "0 8 * * *"
+    - cron: "0 12 * * *"
+    - cron: "0 16 * * *"
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Cron route to hit
+        required: true
+        type: choice
+        options:
+          - ten-year-hosting
+          - publish-scheduled-blog
+          - instantly-enroll
+
+jobs:
+  run-cron:
+    runs-on: ubuntu-latest
+    env:
+      CRON_BEARER: ${{ secrets.CRON_SECRET || secrets.BALANCE_CAPTURE_SECRET }}
+    steps:
+      - name: Resolve cron path
+        id: route
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          MANUAL_JOB: ${{ github.event.inputs.job }}
+        run: |
+          if [ -n "$MANUAL_JOB" ]; then
+            case "$MANUAL_JOB" in
+              ten-year-hosting) echo "path=/api/cron/ten-year-hosting" >> "$GITHUB_OUTPUT" ;;
+              publish-scheduled-blog) echo "path=/api/cron/publish-scheduled-blog" >> "$GITHUB_OUTPUT" ;;
+              instantly-enroll) echo "path=/api/cron/instantly-enroll" >> "$GITHUB_OUTPUT" ;;
+            esac
+            exit 0
+          fi
+          case "$SCHEDULE" in
+            "0 14 * * *") echo "path=/api/cron/ten-year-hosting" >> "$GITHUB_OUTPUT" ;;
+            "0 0 * * *"|"0 4 * * *"|"0 8 * * *"|"0 12 * * *"|"0 16 * * *")
+              echo "path=/api/cron/publish-scheduled-blog" >> "$GITHUB_OUTPUT" ;;
+            "*/30 * * * *") echo "path=/api/cron/instantly-enroll" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unknown schedule: $SCHEDULE" >&2; exit 1 ;;
+          esac
+
+      - name: POST cron route
+        env:
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+        run: |
+          TARGET="${CRON_TARGET_URL:-https://998webdesigns.com}"
+          curl -fsS -X POST "${TARGET}${{ steps.route.outputs.path }}" \
+            -H "Authorization: Bearer ${CRON_BEARER}"

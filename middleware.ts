@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isProductionApp } from "@/lib/app-env";
 import {
   API_RATE_LIMITS,
   clientIp,
   rateLimitResponse,
 } from "@/lib/api-rate-limit";
 import { crmAdminSecret } from "@/lib/crm-admin-secret";
-import { CRM_SESSION_COOKIE, verifyCrmSessionValue } from "@/lib/crm-session";
+import { CRM_SESSION_COOKIE } from "@/lib/crm-session-constants";
+import { verifyCrmSessionValueEdge } from "@/lib/crm-session-edge";
 import { checkRateLimit, pruneRateLimitStore, type RateLimitConfig } from "@/lib/rate-limit";
 
 function resolveRateLimitConfig(path: string): RateLimitConfig | null {
@@ -49,8 +51,8 @@ function tempLoginRedirect(req: NextRequest): NextResponse {
 }
 
 /** /temp on production requires the same CRM session as /crm (CRM_ADMIN_SECRET). */
-function requireCrmForTempInProduction(req: NextRequest): NextResponse | null {
-  if (process.env.VERCEL_ENV !== "production") return null;
+async function requireCrmForTempInProduction(req: NextRequest): Promise<NextResponse | null> {
+  if (!isProductionApp()) return null;
   const path = req.nextUrl.pathname;
   if (path !== "/temp" && !path.startsWith("/temp/")) return null;
 
@@ -60,16 +62,16 @@ function requireCrmForTempInProduction(req: NextRequest): NextResponse | null {
   }
 
   const cookie = req.cookies.get(CRM_SESSION_COOKIE)?.value;
-  if (verifyCrmSessionValue(cookie, secret)) return null;
+  if (await verifyCrmSessionValueEdge(cookie, secret)) return null;
 
   return tempLoginRedirect(req);
 }
 
-/** Fast in-memory gate at the edge; API routes also enforce via Supabase when configured. */
-export function proxy(req: NextRequest) {
+/** Edge middleware (OpenNext CF). API routes also enforce via Supabase when configured. */
+export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  const tempGate = requireCrmForTempInProduction(req);
+  const tempGate = await requireCrmForTempInProduction(req);
   if (tempGate) return tempGate;
 
   if (!shouldApplyEdgeRateLimit(req)) {

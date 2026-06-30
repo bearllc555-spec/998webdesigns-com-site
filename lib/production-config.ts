@@ -1,3 +1,4 @@
+import { appEnv, hostPlatformLabel } from "@/lib/app-env";
 import { discoveryBookCallUrl, DISCOVERY_BOOK_CALL_URL } from "@/lib/book-call";
 import { crmAdminSecretSource } from "@/lib/crm-admin-secret";
 import { twilioMessagingConfigured } from "@/lib/twilio-sms";
@@ -6,7 +7,10 @@ import { probeStripeOps, type StripeOpsSnapshot } from "@/lib/stripe-ops-check";
 import { checkSupabaseHealth, type SupabaseHealth } from "@/lib/supabase-health";
 
 export type ProductionConfigStatus = {
+  /** @deprecated Use appEnv — kept for CRM/dashboard compatibility. */
   vercelEnv: string;
+  appEnv: string;
+  hostPlatform: string;
   supabase: SupabaseHealth;
   stripe: {
     mode: StripeKeyMode;
@@ -35,7 +39,8 @@ export type ProductionConfigStatus = {
  */
 export async function getProductionConfigStatus(): Promise<ProductionConfigStatus> {
   const warnings: string[] = [];
-  const vercelEnv = process.env.VERCEL_ENV ?? "local";
+  const resolvedAppEnv = appEnv();
+  const hostPlatform = hostPlatformLabel();
   const supabase = await checkSupabaseHealth();
   const mode = stripeKeyMode();
   const keyPresent = mode !== "missing";
@@ -55,12 +60,12 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
       "STRIPE_EXPECTED_MODE=test but STRIPE_SECRET_KEY is sk_live_. Sandbox cards will fail."
     );
   }
-  if (vercelEnv === "production" && mode === "test") {
+  if (resolvedAppEnv === "production" && mode === "test") {
     warnings.push(
       "Production is using sk_test_. Intentional until go-live; set STRIPE_EXPECTED_MODE=test to acknowledge."
     );
   }
-  if (vercelEnv === "production" && mode === "live" && !webhookSecretPresent) {
+  if (resolvedAppEnv === "production" && mode === "live" && !webhookSecretPresent) {
     warnings.push("STRIPE_WEBHOOK_SECRET missing on Production.");
   }
 
@@ -109,7 +114,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     );
   }
   const crmSecretSource = crmAdminSecretSource();
-  if (vercelEnv === "production" && crmSecretSource !== "dedicated") {
+  if (resolvedAppEnv === "production" && crmSecretSource !== "dedicated") {
     warnings.push(
       "CRM_ADMIN_SECRET missing on Production - /crm login disabled until set (do not reuse BALANCE_CAPTURE_SECRET)."
     );
@@ -118,7 +123,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push("BALANCE_CAPTURE_SECRET missing - env-status API returns 503.");
   }
   const cronSecretConfigured = Boolean(process.env.CRON_SECRET?.trim());
-  if (vercelEnv === "production" && !cronSecretConfigured) {
+  if (resolvedAppEnv === "production" && !cronSecretConfigured) {
     warnings.push(
       "CRON_SECRET not set - ten-year hosting cron uses BALANCE_CAPTURE_SECRET fallback."
     );
@@ -128,19 +133,19 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
       process.env.TWILIO_AUTH_TOKEN?.trim() &&
       process.env.TWILIO_VERIFY_SERVICE_SID?.trim()
   );
-  if (vercelEnv === "production" && !twilioVerifyConfigured) {
+  if (resolvedAppEnv === "production" && !twilioVerifyConfigured) {
     warnings.push(
       "Twilio Verify env missing - /book discovery SMS step disabled until TWILIO_* vars are set."
     );
   }
   const twilioMessaging = twilioMessagingConfigured();
-  if (vercelEnv === "production" && !twilioMessaging) {
+  if (resolvedAppEnv === "production" && !twilioMessaging) {
     warnings.push(
       "TWILIO_MESSAGING_FROM missing - CRM checkout SMS disabled until a Twilio sending number is set."
     );
   }
 
-  if (vercelEnv === "production" && !process.env.CALENDLY_WEBHOOK_SIGNING_KEY?.trim()) {
+  if (resolvedAppEnv === "production" && !process.env.CALENDLY_WEBHOOK_SIGNING_KEY?.trim()) {
     warnings.push(
       "CALENDLY_WEBHOOK_SIGNING_KEY missing - /api/calendly/webhook will reject events until set."
     );
@@ -169,7 +174,9 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     supabase.hostingBillingColumns;
 
   return {
-    vercelEnv,
+    vercelEnv: resolvedAppEnv,
+    appEnv: resolvedAppEnv,
+    hostPlatform,
     supabase,
     stripe: {
       mode,
