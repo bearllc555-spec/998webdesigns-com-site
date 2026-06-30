@@ -20,6 +20,16 @@
   ],
   "vars": {
     "HOST_PLATFORM": "cloudflare-workers",
-    "APP_ENV": "preview"
-  }
+    "APP_ENV": "production"
+  },
+  "routes": [
+    {
+      "pattern": "998webdesigns.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.998webdesigns.com",
+      "custom_domain": true
+    }
+  ]
 }
