@@ -1,24 +1,16 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { CrmLoginForm } from "@/components/crm/CrmLoginForm";
 import { SiteVersionPill } from "@/components/SiteVersionPill";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { isCrmAuthenticated } from "@/lib/crm-session";
-
-function safeNextPath(raw: string | undefined): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/crm/login")) {
-    return "/crm";
-  }
-  return raw;
-}
 
 type Props = { searchParams: Promise<{ next?: string }> };
 
 export default async function CrmLoginPage({ searchParams }: Props) {
   const { next } = await searchParams;
-  if (await isCrmAuthenticated()) {
-    redirect(safeNextPath(next));
-  }
+  const redirectTo =
+    next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/crm/login")
+      ? next
+      : "/crm";
 
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center bg-bg px-5 py-12">
@@ -43,7 +35,7 @@ export default async function CrmLoginPage({ searchParams }: Props) {
         </h1>
         <p className="mt-2 text-sm text-ink-soft">Private - not indexed.</p>
       </div>
-      <CrmLoginForm />
+      <CrmLoginForm redirectTo={redirectTo} />
     </div>
   );
 }

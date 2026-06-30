@@ -41,13 +41,44 @@ function shouldApplyEdgeRateLimit(req: NextRequest): boolean {
   return false;
 }
 
-function tempLoginRedirect(req: NextRequest): NextResponse {
-  const path = req.nextUrl.pathname;
+function safeCrmNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/crm/login")) {
+    return "/crm";
+  }
+  return raw;
+}
+
+function crmLoginRedirect(req: NextRequest, returnPath?: string): NextResponse {
+  const path = returnPath ?? req.nextUrl.pathname;
   const next =
-    path.startsWith("/") && !path.startsWith("//") ? path + req.nextUrl.search : "/temp";
+    path.startsWith("/") && !path.startsWith("//") ? path + req.nextUrl.search : "/crm";
   const loginUrl = new URL("/crm/login", req.url);
   loginUrl.searchParams.set("next", next);
   return NextResponse.redirect(loginUrl);
+}
+
+async function gateCrmPages(req: NextRequest): Promise<NextResponse | null> {
+  const path = req.nextUrl.pathname;
+  const isLogin = path === "/crm/login";
+  if (path !== "/crm" && !path.startsWith("/crm/")) return null;
+
+  const secret = crmAdminSecret();
+  if (!secret) {
+    if (isLogin) return null;
+    return new NextResponse("CRM auth not configured", { status: 503 });
+  }
+
+  const cookie = req.cookies.get(CRM_SESSION_COOKIE)?.value;
+  const authed = await verifyCrmSessionValueEdge(cookie, secret);
+
+  if (isLogin) {
+    if (!authed) return null;
+    const next = safeCrmNextPath(req.nextUrl.searchParams.get("next"));
+    return NextResponse.redirect(new URL(next, req.url));
+  }
+
+  if (authed) return null;
+  return crmLoginRedirect(req);
 }
 
 /** /temp on production requires the same CRM session as /crm (CRM_ADMIN_SECRET). */
@@ -64,15 +95,18 @@ async function requireCrmForTempInProduction(req: NextRequest): Promise<NextResp
   const cookie = req.cookies.get(CRM_SESSION_COOKIE)?.value;
   if (await verifyCrmSessionValueEdge(cookie, secret)) return null;
 
-  return tempLoginRedirect(req);
+  return crmLoginRedirect(req, path);
 }
 
 /** Edge middleware (OpenNext CF). API routes also enforce via Supabase when configured. */
 export async function middleware(req: NextRequest) {
-  const path = req.nextUrl.pathname;
+  const crmGate = await gateCrmPages(req);
+  if (crmGate) return crmGate;
 
   const tempGate = await requireCrmForTempInProduction(req);
   if (tempGate) return tempGate;
+
+  const path = req.nextUrl.pathname;
 
   if (!shouldApplyEdgeRateLimit(req)) {
     return NextResponse.next();
@@ -96,6 +130,8 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/crm",
+    "/crm/:path*",
     "/temp",
     "/temp/:path*",
     "/api/leads",
