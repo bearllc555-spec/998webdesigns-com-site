@@ -109,6 +109,12 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   if (!shouldApplyEdgeRateLimit(req)) {
+    const host = req.headers.get("host")?.split(":")[0]?.toLowerCase() ?? "";
+    if (host === "dev.998webdesigns.com") {
+      const res = NextResponse.next();
+      res.headers.set("X-Robots-Tag", "noindex, nofollow");
+      return res;
+    }
     return NextResponse.next();
   }
 

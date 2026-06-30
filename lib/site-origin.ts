@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 /** Canonical marketing origin (apex, non-www). */
 export const SITE_ORIGIN = "https://998webdesigns.com";
 
+/** Cloudflare Workers staging host (synced with main on every deploy). */
+export const DEV_SITE_ORIGIN = "https://dev.998webdesigns.com";
+
 /** Canonical marketing origin for links in transactional email. */
 export function marketingSiteOrigin(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim();

@@ -1,15 +1,44 @@
 #!/usr/bin/env node
 /**
- * Push production-shaped secrets to the Cloudflare Worker (OpenNext preview / pre-cutover).
+ * Push production-shaped secrets to Cloudflare Worker(s).
  * Sources: .env.local + slatepress/.local overrides (live Stripe, CRM, Supabase, etc.).
  *
- * Usage: node scripts/sync-cf-worker-secrets.mjs [--dry-run]
+ * Usage:
+ *   node scripts/sync-cf-worker-secrets.mjs              # production worker
+ *   node scripts/sync-cf-worker-secrets.mjs --env dev    # dev worker
+ *   node scripts/sync-cf-worker-secrets.mjs --all        # both
+ *   node scripts/sync-cf-worker-secrets.mjs --dry-run
  */
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const dryRun = process.argv.includes("--dry-run");
+const syncAll = process.argv.includes("--all");
+const envIndex = process.argv.indexOf("--env");
+const envName =
+  envIndex >= 0 && process.argv[envIndex + 1] ? process.argv[envIndex + 1].trim() : null;
+
+const targets = syncAll
+  ? [{ label: "production", worker: "998webdesigns-com-site", envArgs: [] }]
+  : envName
+    ? [
+        {
+          label: envName,
+          worker: envName === "dev" ? "998webdesigns-com-site-dev" : `998webdesigns-com-site-${envName}`,
+          envArgs: ["--env", envName],
+        },
+      ]
+    : [{ label: "production", worker: "998webdesigns-com-site", envArgs: [] }];
+
+if (syncAll) {
+  targets.push({
+    label: "dev",
+    worker: "998webdesigns-com-site-dev",
+    envArgs: ["--env", "dev"],
+  });
+}
+
 const repoRoot = process.cwd();
 const localDir = path.resolve(repoRoot, "..", "..", ".local");
 
@@ -80,51 +109,63 @@ function readTelegramToken() {
   return match?.[1]?.trim() || null;
 }
 
-const secrets = parseEnvFile(path.join(repoRoot, ".env.local"));
+function buildSecretLines() {
+  const secrets = parseEnvFile(path.join(repoRoot, ".env.local"));
 
-for (const [key, fileName] of Object.entries(FILE_OVERRIDES)) {
-  if (fileName === null) {
-    secrets.set(key, "live");
-    continue;
+  for (const [key, fileName] of Object.entries(FILE_OVERRIDES)) {
+    if (fileName === null) {
+      secrets.set(key, "live");
+      continue;
+    }
+    const value = readTrim(path.join(localDir, fileName));
+    if (value) secrets.set(key, value);
   }
-  const value = readTrim(path.join(localDir, fileName));
-  if (value) secrets.set(key, value);
+
+  const telegram = readTelegramToken();
+  if (telegram) secrets.set("TELEGRAM_BOT_TOKEN", telegram);
+
+  for (const key of [...secrets.keys()]) {
+    if (SKIP_KEYS.has(key)) secrets.delete(key);
+  }
+
+  secrets.delete("NEXT_PUBLIC_BOOK_CALL_URL");
+
+  if (secrets.size === 0) {
+    console.error("No secrets to upload — check .env.local and .local/ overrides.");
+    process.exit(1);
+  }
+
+  return [...secrets.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value.replace(/\n/g, "")}`);
 }
 
-const telegram = readTelegramToken();
-if (telegram) secrets.set("TELEGRAM_BOT_TOKEN", telegram);
-
-for (const key of [...secrets.keys()]) {
-  if (SKIP_KEYS.has(key)) secrets.delete(key);
-}
-
-secrets.delete("NEXT_PUBLIC_BOOK_CALL_URL");
-
-if (secrets.size === 0) {
-  console.error("No secrets to upload — check .env.local and .local/ overrides.");
-  process.exit(1);
-}
-
-const lines = [...secrets.entries()]
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([key, value]) => `${key}=${value.replace(/\n/g, "")}`);
-
+const lines = buildSecretLines();
 const tmpPath = path.join(repoRoot, ".env.cf-worker-secrets.tmp");
 fs.writeFileSync(tmpPath, `${lines.join("\n")}\n`, "utf8");
 
-console.log(`Prepared ${lines.length} secrets for Worker 998webdesigns-com-site`);
+let failed = false;
+
+for (const target of targets) {
+  console.log(`Prepared ${lines.length} secrets for Worker ${target.worker} (${target.label})`);
+  if (dryRun) continue;
+
+  const result = spawnSync("npx", ["wrangler", "secret", "bulk", tmpPath, ...target.envArgs], {
+    cwd: repoRoot,
+    stdio: "inherit",
+    shell: true,
+  });
+
+  if ((result.status ?? 1) !== 0) failed = true;
+}
+
 console.log(lines.map((l) => l.split("=")[0]).join(", "));
 
+fs.rmSync(tmpPath, { force: true });
+
 if (dryRun) {
-  console.log(`Dry run — wrote ${tmpPath} (not uploaded).`);
+  console.log(`Dry run — wrote ${tmpPath} preview (removed after dry-run).`);
   process.exit(0);
 }
 
-const result = spawnSync("npx", ["wrangler", "secret", "bulk", tmpPath], {
-  cwd: repoRoot,
-  stdio: "inherit",
-  shell: true,
-});
-
-fs.rmSync(tmpPath, { force: true });
-process.exit(result.status ?? 1);
+process.exit(failed ? 1 : 0);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveCheckoutOrigin } from "@/lib/checkout-origin";
-import { SITE_ORIGIN } from "@/lib/site-origin";
+import { DEV_SITE_ORIGIN, SITE_ORIGIN } from "@/lib/site-origin";
 
 describe("resolveCheckoutOrigin", () => {
   it("defaults to production when origin missing", () => {
@@ -34,6 +34,15 @@ describe("resolveCheckoutOrigin", () => {
         CF_PAGES_BRANCH: "fix-cf-opennext-migration",
       })
     ).toBe("https://fix-cf-opennext-migration.998webdesigns-com-site.pages.dev");
+  });
+
+  it("allows dev.998webdesigns.com when APP_ENV is preview", () => {
+    expect(
+      resolveCheckoutOrigin(DEV_SITE_ORIGIN, {
+        HOST_PLATFORM: "cloudflare-workers",
+        APP_ENV: "preview",
+      })
+    ).toBe(DEV_SITE_ORIGIN);
   });
 
   it("allows Cloudflare Workers preview origin", () => {

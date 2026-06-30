@@ -1,10 +1,12 @@
 import type { NextRequest } from "next/server";
-import { SITE_ORIGIN } from "@/lib/site-origin";
+import { DEV_SITE_ORIGIN, SITE_ORIGIN } from "@/lib/site-origin";
 
 const PRODUCTION_ORIGINS = new Set([
   SITE_ORIGIN,
   "https://www.998webdesigns.com",
 ]);
+
+const PREVIEW_ORIGINS = new Set([DEV_SITE_ORIGIN]);
 
 const LOCAL_ORIGIN_RE = /^http:\/\/localhost(:\d+)?$/;
 
@@ -53,6 +55,10 @@ export function resolveCheckoutOrigin(
 
   if (PRODUCTION_ORIGINS.has(origin)) {
     if (origin === "https://www.998webdesigns.com") return SITE_ORIGIN;
+    return origin;
+  }
+
+  if (isPreviewDeployEnv(env) && PREVIEW_ORIGINS.has(origin)) {
     return origin;
   }
 

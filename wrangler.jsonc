@@ -31,5 +31,27 @@
       "pattern": "www.998webdesigns.com",
       "custom_domain": true
     }
-  ]
+  ],
+  "env": {
+    "dev": {
+      "name": "998webdesigns-com-site-dev",
+      "vars": {
+        "HOST_PLATFORM": "cloudflare-workers",
+        "APP_ENV": "preview",
+        "NEXT_PUBLIC_SITE_URL": "https://dev.998webdesigns.com"
+      },
+      "routes": [
+        {
+          "pattern": "dev.998webdesigns.com",
+          "custom_domain": true
+        }
+      ],
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "998webdesigns-com-site-dev"
+        }
+      ]
+    }
+  }
 }

@@ -12,9 +12,46 @@
 
 Local dev unchanged: `npm run dev` on http://localhost:3000.
 
-### Cloudflare Worker secrets
+---
 
-Production secrets live on the Worker (Wrangler dashboard or `node scripts/sync-cf-worker-secrets.mjs`). Keys: Supabase, Stripe, Resend, Twilio, Calendly, CRM, `GEMINI_API_KEY`, Telegram, etc. See `.env.example` and `scripts/sync-cf-worker-secrets.mjs` `FILE_OVERRIDES`.
+## Dev host (Cloudflare Workers)
+
+| | |
+|---|---|
+| **URL** | https://dev.998webdesigns.com |
+| **Worker** | `998webdesigns-com-site-dev` (`wrangler.jsonc` → `env.dev`) |
+| **Deploy** | Same push to `main` as production (second step in `deploy-cloudflare.yml`) |
+| **Env** | `APP_ENV=preview`, `NEXT_PUBLIC_SITE_URL=https://dev.998webdesigns.com` |
+| **SEO** | `X-Robots-Tag: noindex, nofollow` on all dev responses |
+| **Data** | Same helmet Supabase + Stripe keys as prod (shared backend — treat checkout on dev as real) |
+
+**First-time / after new secret keys:** sync secrets to both workers from this machine:
+
+```bash
+npm run cf:sync-secrets:all
+# or individually:
+npm run cf:sync-secrets        # production
+npm run cf:sync-secrets:dev    # dev
+```
+
+**Manual deploy (local):**
+
+```bash
+npm run cf:deploy:all          # prod + dev
+npm run cf:deploy:dev          # dev only (after cf:build)
+```
+
+**Ops checklist on dev:**
+
+```bash
+BALANCE_CAPTURE_SECRET=... node scripts/cf-ops-checklist.mjs https://dev.998webdesigns.com
+```
+
+Crons stay on production apex only (`cf-cron.yml` → `https://998webdesigns.com`).
+
+---
+
+Production and dev workers use the same secret set (see **Dev host** above). Upload via `npm run cf:sync-secrets:all` or Wrangler dashboard. Keys: Supabase, Stripe, Resend, Twilio, Calendly, CRM, `GEMINI_API_KEY`, Telegram, etc. See `.env.example` and `scripts/sync-cf-worker-secrets.mjs` `FILE_OVERRIDES`.
 
 Optional: `NEXT_PUBLIC_CF_BEACON_TOKEN` (Cloudflare Web Analytics). **Do not set** `NEXT_PUBLIC_BOOK_CALL_URL` on production.
 

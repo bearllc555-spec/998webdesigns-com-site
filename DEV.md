@@ -11,7 +11,9 @@ Anthony often runs **multiple Cursor windows** on Windows 11. This doc keeps loc
 | **Local dev** | http://localhost:3000 |
 | **CRM (local)** | http://localhost:3000/crm |
 | **Production** | https://998webdesigns.com |
+| **Cloudflare dev** | https://dev.998webdesigns.com (synced with `main` on every deploy) |
 | **CRM (prod)** | https://998webdesigns.com/crm |
+| **CRM (dev)** | https://dev.998webdesigns.com/crm |
 
 `npm run dev` runs `next dev -p 3000` (see `package.json`). Do not rely on auto-increment to 3001/3002 for this project.
 
@@ -86,8 +88,8 @@ Bookmark bar labels should include the port: `998 :3000`, `editor :3001`, etc.
 | URL type | When to use |
 |----------|-------------|
 | `http://localhost:3000` | Editing this repo in the active Cursor window |
-| Cloudflare Worker preview | Feature branch + `deploy-cloudflare.yml`; see `DEPLOYMENT.md` |
-| `https://998webdesigns.com` | After push to `main`; confirm `vNN` bumped (~1–2 min) |
+| `https://dev.998webdesigns.com` | CF staging — same build + secrets as prod; auto-deploys on push to `main` |
+| `https://998webdesigns.com` | Production after push to `main`; confirm `vNN` bumped (~1–2 min) |
 
 **Cloudflare local preview:** `npm run cf:build` then `npm run cf:preview` (Wrangler). Requires WSL for best results on Windows.
 
@@ -109,7 +111,7 @@ Project path is under `OneDrive\Documents\Claude\...`. Pause OneDrive before lon
 
 ## Session kickoff (paste into a new Cursor chat)
 
-> Repo: `998webdesigns-com-site`. Local: http://localhost:3000. Read `CLAUDE.md` and `DEV.md`. Prod: https://998webdesigns.com.
+> Repo: `998webdesigns-com-site`. Local: http://localhost:3000. Dev: https://dev.998webdesigns.com. Prod: https://998webdesigns.com. Read `CLAUDE.md` and `DEV.md`.
 
 ---
 
