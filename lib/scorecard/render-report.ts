@@ -1,4 +1,5 @@
 import type { ScorecardReport, ScorecardSignal } from "@/lib/scorecard/types";
+import { scorecardRerunMessage } from "@/lib/scorecard/dedup";
 
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"']/g, (c) =>
@@ -67,6 +68,7 @@ export function renderScorecardReportHtml(
     day: "numeric",
     timeZone: "UTC",
   });
+  const rerunLine = scorecardRerunMessage(report);
 
   const cmp =
     report.competitor_name && report.competitor_score != null
@@ -129,6 +131,7 @@ border-radius:12px;padding:16px 20px;margin-bottom:6px}
 .src{font-size:13px;padding:4px 0}
 .src a{color:var(--info)}
 .fine{font-size:12px;color:var(--hint);margin:12px 0 0}
+.fine.rerun{margin-top:8px;color:var(--muted)}
 .cta{margin-top:24px;padding:20px;background:var(--info-bg);border-radius:12px}
 .cta h3{font-size:15px;font-weight:500;margin:0 0 6px;color:var(--info)}
 .cta p{font-size:14px;margin:0 0 14px;color:var(--info)}
@@ -157,6 +160,7 @@ color:#fff;background:var(--info);padding:10px 18px;border-radius:8px}
     <div class="src"><a href="https://www.google.com/maps">Google Business Profile</a> &mdash; review count, rating, recency</div>
     <div class="src"><a href="https://www.screamingfrog.co.uk/seo-spider">Screaming Frog / homepage crawl</a> &mdash; title, meta, headings, schema</div>
     <p class="fine">All tools above are free and public &mdash; you can run any of them on your own site, and we encourage it. Items tagged &ldquo;manual review&rdquo; are our own assessment, noted honestly as judgment rather than a tool score. Locked items are not yet assessed &mdash; we review those by hand on a call.</p>
+    ${rerunLine ? `<p class="fine rerun">${esc(rerunLine)}</p>` : ""}
   </div>
   <div class="cta">
     <h3>We can fix all of this.</h3>

@@ -20,6 +20,7 @@ export type ScorecardReport = {
   competitor_name: string | null;
   competitor_score: number | null;
   tested_on: string;
+  created_at?: string;
   source_door: string | null;
 };
 
