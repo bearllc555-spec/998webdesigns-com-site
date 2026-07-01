@@ -51,6 +51,22 @@ logging.basicConfig(
 )
 log = logging.getLogger("scorecard")
 
+PROTECTED_DOMAIN_ROOTS = ("998webdesigns.com",)
+
+
+class ProtectedDomainError(Exception):
+    """Public scorecard must not scan operator-owned domains."""
+
+
+def _is_protected_domain(domain: str) -> bool:
+    d = (domain or "").strip().lower()
+    if not d:
+        return False
+    for root in PROTECTED_DOMAIN_ROOTS:
+        if d == root or d.endswith(f".{root}"):
+            return True
+    return False
+
 STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "scorecard-shots")
 SCREENSHOT_TIMEOUT_MS = int(os.environ.get("SCREENSHOT_TIMEOUT_MS", "20000"))
 # Playwright sync API must not run on the FastAPI asyncio loop.
@@ -301,6 +317,8 @@ def _resolve_job_email(sb, job, payload: dict) -> str:
 def _process_job(sb, job):
     p = job["payload"] or {}
     domain = job["domain"]
+    if _is_protected_domain(domain):
+        raise ProtectedDomainError(domain)
     email = _resolve_job_email(sb, job, p)
     if not email:
         raise ValueError("job missing email (payload and leads row)")
@@ -361,6 +379,13 @@ def run_worker():
             sb.table("scorecard_jobs").update(
                 {"status": "done"}).eq("id", job_id).execute()
             log.info("job %s done", job_id)
+        except ProtectedDomainError as e:
+            sb.table("scorecard_jobs").update({
+                "status": "failed",
+                "attempts": 3,
+                "error": f"protected domain: {e}",
+            }).eq("id", job_id).execute()
+            log.info("job %s rejected: protected domain %s", job_id, e)
         except Exception as e:  # noqa: BLE001
             attempts = (job.get("attempts", 0) or 0) + 1
             sb.table("scorecard_jobs").update({

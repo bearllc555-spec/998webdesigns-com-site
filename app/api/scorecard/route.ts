@@ -4,6 +4,7 @@ import { checkRateLimitSupabase } from "@/lib/rate-limit-supabase";
 import { readJsonBody } from "@/lib/read-json-body";
 import { supabaseAdmin } from "@/lib/supabase";
 import { isDomain, isEmail, normDomain } from "@/lib/scorecard/validate";
+import { isProtectedScorecardDomain } from "@/lib/scorecard/protected-domains";
 import type { ScorecardFormPayload } from "@/lib/scorecard/types";
 
 export const runtime = "nodejs";
@@ -39,6 +40,15 @@ export async function POST(req: NextRequest) {
   if (!isDomain(domain)) {
     return NextResponse.json(
       { error: "Please enter a valid website (e.g. yourbusiness.com)." },
+      { status: 422 }
+    );
+  }
+  if (isProtectedScorecardDomain(domain)) {
+    return NextResponse.json(
+      {
+        error:
+          "This tool scores business websites — enter your company's site, not a web design agency.",
+      },
       { status: 422 }
     );
   }
