@@ -54,6 +54,19 @@ function signalHtml(s: ScorecardSignal): string {
     </div>`;
 }
 
+function sitePreviewHtml(report: ScorecardReport): string {
+  const url = report.site_screenshot_url?.trim() || report.screenshot_url?.trim();
+  if (!url) return "";
+  const label = report.site_screenshot_url?.trim()
+    ? "Your site today"
+    : "Your scorecard preview";
+  return `
+  <div class="site-preview">
+    <p class="site-preview-lbl">${esc(label)}</p>
+    <img src="${esc(url)}" alt="${esc(report.business_name)} website" width="640" loading="lazy" />
+  </div>`;
+}
+
 export function renderScorecardReportHtml(
   report: ScorecardReport,
   signals: ScorecardSignal[],
@@ -141,6 +154,10 @@ color:#fff;background:var(--info);padding:10px 18px;border-radius:8px}
 .c-danger{color:var(--danger)}.bg-danger{background:var(--danger-bg)}.f-danger > span{background:var(--danger)}
 .c-warn{color:var(--warn)}.bg-warn{background:var(--warn-bg)}.f-warn > span{background:var(--warn)}
 .c-ok{color:var(--ok)}.bg-ok{background:var(--ok-bg)}.f-ok > span{background:var(--ok)}
+.site-preview{margin:20px 0 0;padding-bottom:20px;border-bottom:.5px solid var(--line)}
+.site-preview-lbl{font-size:13px;color:var(--muted);margin:0 0 8px}
+.site-preview img{width:100%;max-width:100%;height:auto;border:1px solid var(--line);
+border-radius:12px;display:block}
 </style></head><body>
 <div class="wrap">
   <div class="head">
@@ -151,6 +168,7 @@ color:#fff;background:var(--info);padding:10px 18px;border-radius:8px}
     </div>
     <div class="dial bg-${v}"><span class="n c-${v}">${report.score}</span><span class="o c-${v}">out of 100</span></div>
   </div>
+  ${sitePreviewHtml(report)}
   <div class="banner bg-${v}" style="color:${ink}">${esc(verdictLine)} Every measured number below lists its source.</div>
   ${cmp}
   ${signals.map(signalHtml).join("\n")}

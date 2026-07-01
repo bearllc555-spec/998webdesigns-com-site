@@ -22,6 +22,10 @@ export type ScorecardReport = {
   tested_on: string;
   created_at?: string;
   source_door: string | null;
+  /** Client homepage capture (Supabase Storage). */
+  site_screenshot_url?: string | null;
+  /** Analysis report page capture — fallback if site shot missing. */
+  screenshot_url?: string | null;
 };
 
 export type ScorecardReportPayload = {
