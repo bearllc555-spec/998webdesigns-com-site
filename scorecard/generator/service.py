@@ -31,11 +31,13 @@ ENV (VPS, server-side only):
 """
 
 import argparse
+import asyncio
 import logging
 import os
 import sys
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 
 import scorer_core as core
 from supabase_generator import (
@@ -51,6 +53,15 @@ log = logging.getLogger("scorecard")
 
 STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "scorecard-shots")
 SCREENSHOT_TIMEOUT_MS = int(os.environ.get("SCREENSHOT_TIMEOUT_MS", "20000"))
+# Playwright sync API must not run on the FastAPI asyncio loop.
+_screenshot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="screenshot")
+
+
+async def capture_screenshot_async(target_url: str, label: str) -> str | None:
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        _screenshot_executor, capture_screenshot, target_url, label
+    )
 
 
 # =========================================================================== #
@@ -243,8 +254,10 @@ try:
         # can embed them), but does NOT send the email itself.
         sb = _client()
         try:
-            analysis = capture_screenshot(out["url"], "analysis")
-            site = capture_screenshot(f"https://{out['domain']}", "site")
+            analysis = await capture_screenshot_async(out["url"], "analysis")
+            site = await capture_screenshot_async(
+                f"https://{out['domain']}", "site"
+            )
             set_screenshots(sb, out["report_id"], analysis, site)
             out["screenshot_url"] = analysis
             out["site_screenshot_url"] = site
