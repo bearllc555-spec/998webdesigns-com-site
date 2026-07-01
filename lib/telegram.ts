@@ -11,7 +11,7 @@ async function sendTelegramHtmlToChat(
   token: string,
   chatId: string,
   html: string
-): Promise<boolean> {
+): Promise<{ ok: boolean; messageId?: number; error?: string }> {
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -22,30 +22,61 @@ async function sendTelegramHtmlToChat(
       disable_web_page_preview: true,
     }),
   });
+  const body = await res.text();
   if (!res.ok) {
-    const body = await res.text();
     console.error(`[telegram] sendMessage failed (${chatId}):`, res.status, body.slice(0, 200));
-    return false;
+    return { ok: false, error: body.slice(0, 200) };
   }
-  return true;
+  try {
+    const parsed = JSON.parse(body) as { ok?: boolean; result?: { message_id?: number } };
+    return { ok: true, messageId: parsed.result?.message_id };
+  } catch {
+    return { ok: true };
+  }
 }
+
+export type TelegramSendResult = {
+  delivered: boolean;
+  chatIds: string[];
+  failedChatIds: string[];
+};
 
 /** Telegram alert to every configured chat. Returns true if at least one send succeeded. */
 export async function sendTelegramHtml(html: string): Promise<boolean> {
+  const result = await sendTelegramHtmlDetailed(html);
+  return result.delivered;
+}
+
+export async function sendTelegramHtmlDetailed(html: string): Promise<TelegramSendResult> {
   const { botToken, chatIds } = await loadTelegramConfig();
   if (!botToken || chatIds.length === 0) {
     console.warn("[telegram] bot token or chat id(s) missing - skip notify");
-    return false;
+    return { delivered: false, chatIds: [], failedChatIds: chatIds };
   }
 
   try {
-    const results = await Promise.all(
-      chatIds.map((chatId) => sendTelegramHtmlToChat(botToken, chatId, html))
+    const outcomes = await Promise.all(
+      chatIds.map(async (chatId) => ({
+        chatId,
+        ...(await sendTelegramHtmlToChat(botToken, chatId, html)),
+      }))
     );
-    return results.some(Boolean);
+    const deliveredIds = outcomes.filter((o) => o.ok).map((o) => o.chatId);
+    const failedIds = outcomes.filter((o) => !o.ok).map((o) => o.chatId);
+    if (deliveredIds.length > 0) {
+      console.info("[telegram] delivered to", deliveredIds.join(", "));
+    }
+    if (failedIds.length > 0) {
+      console.warn("[telegram] failed for", failedIds.join(", "));
+    }
+    return {
+      delivered: deliveredIds.length > 0,
+      chatIds: deliveredIds,
+      failedChatIds: failedIds,
+    };
   } catch (err) {
     console.error("[telegram] sendMessage error:", err);
-    return false;
+    return { delivered: false, chatIds: [], failedChatIds: chatIds };
   }
 }
 

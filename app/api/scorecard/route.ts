@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse, clientIp } from "@/lib/api-rate-limit";
-import { scheduleScorecardQueuedNotify } from "@/lib/scorecard/schedule-notify";
+import { notifyCrmActivity } from "@/lib/crm-notify";
 import { checkRateLimitSupabase } from "@/lib/rate-limit-supabase";
 import { readJsonBody } from "@/lib/read-json-body";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -147,15 +147,19 @@ export async function POST(req: NextRequest) {
     internalBypass,
   });
 
-  scheduleScorecardQueuedNotify({
-    kind: "scorecard_queued",
-    fullName: name,
-    businessName: company,
-    email,
-    phone: phone || undefined,
-    domain,
-    status: "queued",
-  });
+  try {
+    await notifyCrmActivity({
+      kind: "scorecard_queued",
+      fullName: name,
+      businessName: company,
+      email,
+      phone: phone || undefined,
+      domain,
+      status: "queued",
+    });
+  } catch (err) {
+    console.warn("[scorecard] crm notify failed:", err);
+  }
 
   return NextResponse.json({
     ok: true,

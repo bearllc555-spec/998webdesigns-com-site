@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
-import { scheduleScorecardReadyNotify } from "@/lib/scorecard/schedule-notify";
+import { notifyScorecardReadyOnce } from "@/lib/scorecard/crm-ready-notify";
 import { supabaseAdmin } from "@/lib/supabase";
 import { isEmail } from "@/lib/scorecard/validate";
 
@@ -73,21 +73,25 @@ export async function GET(req: NextRequest) {
     const { data: report } = await reportQuery.maybeSingle();
 
     if (report?.token) {
-      scheduleScorecardReadyNotify({
-        reportId: report.id as string,
-        token: report.token as string,
-        domain: job.domain as string,
-        score: report.score as number,
-        verdict: (report.verdict as string) ?? undefined,
-        fullName: payload.name?.trim() || undefined,
-        businessName:
-          payload.company?.trim() ||
-          payload.business_name?.trim() ||
-          (report.business_name as string) ||
-          undefined,
-        email,
-        phone: payload.phone?.trim() || undefined,
-      });
+      try {
+        await notifyScorecardReadyOnce({
+          reportId: report.id as string,
+          token: report.token as string,
+          domain: job.domain as string,
+          score: report.score as number,
+          verdict: (report.verdict as string) ?? undefined,
+          fullName: payload.name?.trim() || undefined,
+          businessName:
+            payload.company?.trim() ||
+            payload.business_name?.trim() ||
+            (report.business_name as string) ||
+            undefined,
+          email,
+          phone: payload.phone?.trim() || undefined,
+        });
+      } catch (err) {
+        console.warn("[scorecard/status] ready notify failed:", err);
+      }
 
       return NextResponse.json({
         status: "ready" as const,

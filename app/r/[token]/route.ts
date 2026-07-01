@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { scheduleScorecardReadyNotify } from "@/lib/scorecard/schedule-notify";
+import { notifyScorecardReadyOnce } from "@/lib/scorecard/crm-ready-notify";
 import { supabasePublic } from "@/lib/supabase";
 import {
   renderScorecardReportHtml,
@@ -52,14 +52,18 @@ export async function GET(
 
   const report = payload.report;
   if (report.id) {
-    scheduleScorecardReadyNotify({
-      reportId: report.id,
-      token,
-      domain: report.domain,
-      score: report.score,
-      verdict: report.verdict,
-      businessName: report.business_name,
-    });
+    try {
+      await notifyScorecardReadyOnce({
+        reportId: report.id,
+        token,
+        domain: report.domain,
+        score: report.score,
+        verdict: report.verdict,
+        businessName: report.business_name,
+      });
+    } catch (err) {
+      console.warn("[scorecard/report] ready notify failed:", err);
+    }
   }
 
   const html = renderScorecardReportHtml(

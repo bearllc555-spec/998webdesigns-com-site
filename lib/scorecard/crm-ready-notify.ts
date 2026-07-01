@@ -12,6 +12,8 @@ export type ScorecardReadyNotifyInput = {
   email?: string;
   phone?: string;
   deduped?: boolean;
+  /** Re-send even when crm_ready_notified_at is already set (admin / test). */
+  force?: boolean;
 };
 
 const REPORT_BASE = "https://998webdesigns.com";
@@ -43,7 +45,7 @@ export async function notifyScorecardReadyOnce(
     return false;
   }
 
-  if (existing?.crm_ready_notified_at) {
+  if (existing?.crm_ready_notified_at && !input.force) {
     return false;
   }
 
@@ -71,7 +73,6 @@ export async function notifyScorecardReadyOnce(
     .from("scorecard_reports")
     .update({ crm_ready_notified_at: now })
     .eq("id", input.reportId)
-    .is("crm_ready_notified_at", null)
     .select("id")
     .maybeSingle();
 
