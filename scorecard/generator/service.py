@@ -185,6 +185,59 @@ def _prepare_page_for_screenshot(page, label: str) -> None:
     page.wait_for_timeout(400)
 
 
+def _page_is_capture_worthy(page, response, label: str) -> bool:
+    """Reject Cloudflare/host error pages so we try the next URL variant."""
+    if label != "site":
+        return True
+    try:
+        status = response.status if response else None
+        if status is not None and status >= 400:
+            log.info("site capture skip: HTTP %s", status)
+            return False
+        title = (page.title() or "").lower()
+        body_snip = (
+            page.evaluate(
+                "() => (document.body && document.body.innerText || '').slice(0, 2500)"
+            )
+            or ""
+        ).lower()
+        err_titles = (
+            "bad gateway",
+            "error 502",
+            "502 bad gateway",
+            "error 503",
+            "503 service",
+            "error 521",
+            "521 web server",
+            "error 520",
+            "520 web server",
+            "page not found",
+            "404 not found",
+            "this site can't be reached",
+            "site can't be reached",
+        )
+        if any(t in title for t in err_titles):
+            log.info("site capture skip: error title %r", title[:80])
+            return False
+        cf_body = (
+            "error code 502",
+            "error code 503",
+            "error code 521",
+            "error code 520",
+            "bad gateway",
+            "web server is down",
+            "web server is returning an unknown error",
+            "host error",
+        )
+        hits = sum(1 for m in cf_body if m in body_snip)
+        if hits >= 2 or "error code 502" in body_snip or "error code 503" in body_snip:
+            log.info("site capture skip: error body markers (%s hits)", hits)
+            return False
+    except Exception as e:  # noqa: BLE001
+        log.warning("site capture quality check failed: %s", e)
+    return True
+
+
 def _screenshot_png_bytes(target_url: str, label: str, timeout_ms: int) -> bytes | None:
     """Try domcontentloaded → commit → load; client sites vary widely."""
     from playwright.sync_api import sync_playwright
@@ -207,8 +260,12 @@ def _screenshot_png_bytes(target_url: str, label: str, timeout_ms: int) -> bytes
             page.set_default_timeout(timeout_ms)
             for wait in waits:
                 try:
-                    page.goto(target_url, wait_until=wait, timeout=timeout_ms)
+                    response = page.goto(
+                        target_url, wait_until=wait, timeout=timeout_ms
+                    )
                     page.wait_for_timeout(1500 if is_site else 800)
+                    if not _page_is_capture_worthy(page, response, label):
+                        continue
                     _prepare_page_for_screenshot(page, label)
                     png = page.screenshot(
                         full_page=False,
@@ -274,13 +331,13 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
 
 
 def capture_site_screenshot(domain: str) -> str | None:
-    """Try https/http with and without www."""
+    """Try https/http; prefer submitted host, then www, then bare apex."""
     raw = (domain or "").strip().lower()
     if not raw:
         return None
     bare = raw.removeprefix("www.")
     hosts: list[str] = []
-    for h in (bare, f"www.{bare}", raw):
+    for h in (raw, f"www.{bare}", bare):
         if h and h not in hosts:
             hosts.append(h)
     seen: set[str] = set()
@@ -294,6 +351,7 @@ def capture_site_screenshot(domain: str) -> str | None:
             if shot:
                 log.info("site screenshot ok: %s", url)
                 return shot
+            log.info("site screenshot rejected or failed: %s", url)
     return None
 
 
