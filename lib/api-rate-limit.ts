@@ -36,6 +36,7 @@ export const API_RATE_LIMITS: Record<string, RateLimitConfig> = {
   "/api/voice-demo/ops-event": { limit: 60, windowMs: 60_000 },
   "/api/scorecard": { limit: 5, windowMs: 3_600_000 },
   "/api/scorecard/status": { limit: 90, windowMs: 600_000 },
+  "/api/scorecard/site-thumbnail": { limit: 120, windowMs: 600_000 },
 };
 
 export function clientIp(req: NextRequest): string {

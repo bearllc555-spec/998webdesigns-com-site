@@ -133,6 +133,9 @@ def _maybe_backfill_internal_intel(sb, report_id: str, domain: str) -> None:
 
 STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "scorecard-shots")
 SCREENSHOT_TIMEOUT_MS = int(os.environ.get("SCREENSHOT_TIMEOUT_MS", "20000"))
+SITE_SCREENSHOT_TIMEOUT_MS = int(
+    os.environ.get("SITE_SCREENSHOT_TIMEOUT_MS", "35000")
+)
 # Playwright sync API must not run on the FastAPI asyncio loop.
 _screenshot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="screenshot")
 
@@ -154,6 +157,39 @@ async def capture_site_screenshot_async(domain: str) -> str | None:
 # =========================================================================== #
 # Screenshot — Playwright (headless Chromium) -> Supabase Storage
 # =========================================================================== #
+def _screenshot_png_bytes(target_url: str, label: str, timeout_ms: int) -> bytes | None:
+    """Try domcontentloaded → commit → load; client sites vary widely."""
+    from playwright.sync_api import sync_playwright
+
+    waits = ("domcontentloaded", "commit", "load")
+    last_err = None
+    with sync_playwright() as p:
+        browser = p.chromium.launch(args=["--no-sandbox"])
+        try:
+            page = browser.new_page(
+                viewport={"width": 700, "height": 1000},
+                device_scale_factor=2,
+            )
+            page.set_default_timeout(timeout_ms)
+            for wait in waits:
+                try:
+                    page.goto(target_url, wait_until=wait, timeout=timeout_ms)
+                    page.wait_for_timeout(1500)
+                    png = page.screenshot(full_page=False, type="png")
+                    if png:
+                        return png
+                except Exception as e:  # noqa: BLE001
+                    last_err = e
+                    log.warning(
+                        "screenshot %s %s wait=%s: %s", label, target_url, wait, e
+                    )
+        finally:
+            browser.close()
+    if last_err:
+        log.warning("screenshot capture failed (%s): %s", label, last_err)
+    return None
+
+
 def capture_screenshot(target_url: str, label: str) -> str | None:
     """Render target_url in headless Chromium, upload the PNG to Supabase
     Storage, return its public URL. Caps the wait; returns None on failure so
@@ -168,26 +204,9 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
     The client-site capture may be slow/flaky; a missing site shot must not
     block the email.
     """
-    png_bytes = None
+    timeout_ms = SITE_SCREENSHOT_TIMEOUT_MS if label == "site" else SCREENSHOT_TIMEOUT_MS
     try:
-        from playwright.sync_api import sync_playwright
-        with sync_playwright() as p:
-            browser = p.chromium.launch(args=["--no-sandbox"])
-            try:
-                page = browser.new_page(
-                    viewport={"width": 700, "height": 1000},
-                    device_scale_factor=2,
-                )
-                page.set_default_timeout(SCREENSHOT_TIMEOUT_MS)
-                page.goto(
-                    target_url,
-                    wait_until="domcontentloaded",
-                    timeout=SCREENSHOT_TIMEOUT_MS,
-                )
-                page.wait_for_timeout(1200)
-                png_bytes = page.screenshot(full_page=False, type="png")
-            finally:
-                browser.close()
+        png_bytes = _screenshot_png_bytes(target_url, label, timeout_ms)
     except Exception as e:  # noqa: BLE001
         log.warning("screenshot capture failed (%s): %s", label, e)
         return None
@@ -198,7 +217,6 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
     try:
         sb = _client()
         key = f"{label}/{uuid.uuid4().hex}.png"
-        # supabase-py storage upload; upsert in case of retry
         sb.storage.from_(STORAGE_BUCKET).upload(
             path=key,
             file=png_bytes,
@@ -212,15 +230,57 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
 
 
 def capture_site_screenshot(domain: str) -> str | None:
-    """Try https://domain and https://www.domain — client sites often hang on networkidle."""
-    domain = (domain or "").strip().lower().removeprefix("www.")
-    if not domain:
+    """Try https/http with and without www."""
+    raw = (domain or "").strip().lower()
+    if not raw:
         return None
-    urls = [f"https://{domain}", f"https://www.{domain}"]
-    for url in urls:
-        shot = capture_screenshot(url, "site")
-        if shot:
-            return shot
+    bare = raw.removeprefix("www.")
+    hosts: list[str] = []
+    for h in (bare, f"www.{bare}", raw):
+        if h and h not in hosts:
+            hosts.append(h)
+    seen: set[str] = set()
+    for host in hosts:
+        for scheme in ("https", "http"):
+            url = f"{scheme}://{host}/"
+            if url in seen:
+                continue
+            seen.add(url)
+            shot = capture_screenshot(url, "site")
+            if shot:
+                log.info("site screenshot ok: %s", url)
+                return shot
+    return None
+
+
+def backfill_missing_site_shots(sb, limit: int = 3) -> int:
+    """Retry site captures for reports missing site_screenshot_url."""
+    rows = (
+        sb.table("scorecard_reports")
+        .select("id, domain")
+        .eq("status", "active")
+        .is_("site_screenshot_url", "null")
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    ).data or []
+    filled = 0
+    for row in rows:
+        url = capture_site_screenshot(row["domain"])
+        if url:
+            set_screenshots(sb, row["id"], None, url)
+            filled += 1
+            log.info("backfilled site shot for %s", row["domain"])
+    return filled
+
+
+def _capture_site_with_retries(domain: str, attempts: int = 3) -> str | None:
+    for i in range(attempts):
+        url = capture_site_screenshot(domain)
+        if url:
+            return url
+        if i < attempts - 1:
+            time.sleep(4)
     return None
 
 
@@ -370,6 +430,24 @@ try:
             log.warning("door1 screenshot step degraded: %s", e)
         _attach_internal_intel(sb, out["report_id"], out["domain"])
         return {"report_url": out["url"], **out}
+
+    @app.post("/capture-site")
+    async def capture_site(req: Request):
+        """Backfill site_screenshot_url for one report (x-generator-key)."""
+        if not _auth_ok(req.headers):
+            raise HTTPException(401, "bad key")
+        body = await req.json()
+        report_id = body.get("report_id")
+        domain = body.get("domain")
+        if not report_id or not domain:
+            raise HTTPException(422, "report_id and domain required")
+        loop = asyncio.get_running_loop()
+        url = await loop.run_in_executor(
+            _screenshot_executor, _capture_site_with_retries, domain, 3
+        )
+        if url:
+            set_screenshots(_client(), report_id, None, url)
+        return {"site_screenshot_url": url}
 except ImportError:
     app = None  # FastAPI not installed in an analysis env; fine.
 
@@ -509,7 +587,7 @@ def _process_job(sb, job):
     )
     analysis = site = None
     try:
-        site = capture_site_screenshot(domain)
+        site = _capture_site_with_retries(domain)
     except Exception as e:  # noqa: BLE001
         log.warning("site screenshot failed (continuing): %s", e)
     try:
@@ -517,6 +595,8 @@ def _process_job(sb, job):
     except Exception as e:  # noqa: BLE001
         log.warning("analysis screenshot failed (continuing): %s", e)
     set_screenshots(sb, out["report_id"], analysis, site)
+    if not site:
+        log.warning("job %s: no site screenshot for %s — queued for backfill", job["id"], domain)
 
     res = send_report_email(email, out["url"], site, analysis,
                             out["score"], out["verdict_line"], business)
@@ -543,11 +623,21 @@ def _process_job(sb, job):
 def run_worker():
     sb = _client()
     log.info("worker: polling scorecard_jobs...")
+    idle_passes = 0
     while True:
         job = claim_one_queued_job(sb)
         if not job:
+            idle_passes += 1
+            if idle_passes % 5 == 0:
+                try:
+                    n = backfill_missing_site_shots(sb)
+                    if n:
+                        log.info("backfilled %s site screenshot(s)", n)
+                except Exception as e:  # noqa: BLE001
+                    log.warning("site shot backfill error: %s", e)
             time.sleep(2)
             continue
+        idle_passes = 0
         job_id = job["id"]
         try:
             _process_job(sb, job)

@@ -65,7 +65,8 @@ export async function GET(
   const html = renderScorecardReportHtml(
     report,
     payload.signals ?? [],
-    bookingUrl()
+    bookingUrl(),
+    report.site_screenshot_url?.trim() ? undefined : token
   );
 
   return new NextResponse(html, { headers: SCORECARD_REPORT_HEADERS });

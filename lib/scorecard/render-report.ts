@@ -64,10 +64,41 @@ function sitePreviewHtml(report: ScorecardReport): string {
   </div>`;
 }
 
+function sitePreviewPollHtml(token: string, businessName: string): string {
+  const safeToken = esc(token);
+  const safeName = esc(businessName);
+  return `
+  <div id="site-preview-mount" class="site-preview site-preview-pending" hidden></div>
+  <script>
+  (function(){
+    var mount = document.getElementById("site-preview-mount");
+    if (!mount) return;
+    var tries = 0;
+    function poll(){
+      if (tries++ > 40) return;
+      fetch("/api/scorecard/site-thumbnail?token=${safeToken}")
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (d && d.url) {
+            mount.hidden = false;
+            mount.className = "site-preview";
+            mount.innerHTML = '<p class="site-preview-lbl">Your site today</p><img src="' + d.url + '" alt="${safeName} website" width="640" loading="lazy" />';
+          } else {
+            setTimeout(poll, 5000);
+          }
+        })
+        .catch(function(){ setTimeout(poll, 5000); });
+    }
+    poll();
+  })();
+  </script>`;
+}
+
 export function renderScorecardReportHtml(
   report: ScorecardReport,
   signals: ScorecardSignal[],
-  bookingUrl: string
+  bookingUrl: string,
+  pollToken?: string
 ): string {
   const v = report.verdict;
   const verdictLine = VERDICT_TEXT[v] ?? VERDICT_TEXT.warning;
@@ -155,6 +186,7 @@ color:#fff;background:var(--info);padding:10px 18px;border-radius:8px}
 .site-preview-lbl{font-size:13px;color:var(--muted);margin:0 0 8px}
 .site-preview img{width:100%;max-width:100%;height:auto;border:1px solid var(--line);
 border-radius:12px;display:block}
+.site-preview-pending{display:none}
 </style></head><body>
 <div class="wrap">
   <div class="head">
@@ -165,7 +197,7 @@ border-radius:12px;display:block}
     </div>
     <div class="dial bg-${v}"><span class="n c-${v}">${report.score}</span><span class="o c-${v}">out of 100</span></div>
   </div>
-  ${sitePreviewHtml(report)}
+  ${sitePreviewHtml(report) || (pollToken ? sitePreviewPollHtml(pollToken, report.business_name) : "")}
   <div class="banner bg-${v}" style="color:${ink}">${esc(verdictLine)} Every measured number below lists its source.</div>
   ${cmp}
   ${signals.map(signalHtml).join("\n")}
