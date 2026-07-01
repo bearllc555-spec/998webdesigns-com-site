@@ -90,6 +90,44 @@ def _is_internal_email(email: str) -> bool:
 def _internal_unlimited_scan(email: str, domain: str) -> bool:
     return _is_protected_domain(domain) and _is_internal_email(email)
 
+
+def _attach_internal_intel(sb, report_id: str, domain: str) -> None:
+    if os.environ.get("SCORECARD_INTEL_DISABLED", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ):
+        return
+    try:
+        from design_intel import gather_internal_intel, store_internal_intel
+
+        intel = gather_internal_intel(domain)
+        store_internal_intel(sb, report_id, intel)
+        base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+        log.info(
+            "internal intel stored for report %s (brief: %s/crm/scorecard/r/<token>)",
+            report_id,
+            base,
+        )
+    except Exception as e:  # noqa: BLE001
+        log.warning("internal intel failed for %s: %s", report_id, e)
+
+
+def _maybe_backfill_internal_intel(sb, report_id: str, domain: str) -> None:
+    try:
+        row = (
+            sb.table("scorecard_reports")
+            .select("internal_intel")
+            .eq("id", report_id)
+            .limit(1)
+            .execute()
+        ).data
+        if row and row[0].get("internal_intel"):
+            return
+        _attach_internal_intel(sb, report_id, domain)
+    except Exception as e:  # noqa: BLE001
+        log.warning("internal intel backfill skipped: %s", e)
+
 STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "scorecard-shots")
 SCREENSHOT_TIMEOUT_MS = int(os.environ.get("SCREENSHOT_TIMEOUT_MS", "20000"))
 # Playwright sync API must not run on the FastAPI asyncio loop.
@@ -302,6 +340,7 @@ try:
             out["site_screenshot_url"] = site
         except Exception as e:  # noqa: BLE001
             log.warning("door1 screenshot step degraded: %s", e)
+        _attach_internal_intel(sb, out["report_id"], out["domain"])
         return {"report_url": out["url"], **out}
 except ImportError:
     app = None  # FastAPI not installed in an analysis env; fine.
@@ -364,6 +403,7 @@ def _process_job(sb, job):
                                 row.get("screenshot_url"), existing["score"],
                                 _verdict_line, business)
         set_email_status(sb, existing["id"], res["status"], res.get("bounced", False))
+        _maybe_backfill_internal_intel(sb, existing["id"], domain)
         log.info("job %s deduped to report %s", job["id"], existing["id"])
         return
 
@@ -387,6 +427,12 @@ def _process_job(sb, job):
     res = send_report_email(email, out["url"], site, analysis,
                             out["score"], out["verdict_line"], business)
     set_email_status(sb, out["report_id"], res["status"], res.get("bounced", False))
+    _attach_internal_intel(sb, out["report_id"], domain)
+    log.info(
+        "internal brief %s/crm/scorecard/r/%s",
+        os.environ.get("PUBLIC_BASE_URL", "").rstrip("/"),
+        out["token"],
+    )
 
 
 def run_worker():
