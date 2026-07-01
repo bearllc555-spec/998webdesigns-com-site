@@ -100,8 +100,9 @@ line-height:1.6;-webkit-font-smoothing:antialiased}
 .head{display:flex;align-items:center;justify-content:space-between;gap:16px;
 padding-bottom:20px;border-bottom:.5px solid var(--line)}
 .kicker{font-size:13px;color:var(--muted);margin:0 0 4px}
-.biz{font-size:20px;font-weight:500;margin:0}
-.sub{font-size:13px;color:var(--hint);margin:4px 0 0}
+.biz{font-size:20px;font-weight:500;margin:0;line-height:1.35}
+.biz-sep{color:var(--muted);font-weight:400}
+.sub{font-size:13px;color:var(--hint);margin:6px 0 0}
 .dial{flex-shrink:0;width:96px;height:96px;border-radius:50%;
 display:flex;flex-direction:column;align-items:center;justify-content:center}
 .dial .n{font-size:34px;font-weight:500;line-height:1}
@@ -145,8 +146,8 @@ color:#fff;background:var(--info);padding:10px 18px;border-radius:8px}
   <div class="head">
     <div>
       <p class="kicker">Website performance report</p>
-      <p class="biz">${esc(report.business_name)}</p>
-      <p class="sub">${esc(report.domain)} &middot; prepared by 998 Web Designs &middot; tested ${esc(tested)}</p>
+      <p class="biz">${esc(report.business_name)}<span class="biz-sep"> · </span>${esc(report.domain)}</p>
+      <p class="sub">prepared by 998 Web Designs &middot; tested ${esc(tested)}</p>
     </div>
     <div class="dial bg-${v}"><span class="n c-${v}">${report.score}</span><span class="o c-${v}">out of 100</span></div>
   </div>
