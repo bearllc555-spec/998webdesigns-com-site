@@ -331,15 +331,17 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
 
 
 def capture_site_screenshot(domain: str) -> str | None:
-    """Try https/http; prefer submitted host, then www, then bare apex."""
+    """Try https/http; prefer www; skip bare apex when domain is already www."""
     raw = (domain or "").strip().lower()
     if not raw:
         return None
     bare = raw.removeprefix("www.")
-    hosts: list[str] = []
-    for h in (raw, f"www.{bare}", bare):
-        if h and h not in hosts:
-            hosts.append(h)
+    www_host = f"www.{bare}"
+    if raw.startswith("www."):
+        # Many plumber sites 502 on bare apex — do not fall back when stored as www.
+        hosts = [raw]
+    else:
+        hosts = [www_host, bare] if www_host != bare else [bare]
     seen: set[str] = set()
     for host in hosts:
         for scheme in ("https", "http"):
