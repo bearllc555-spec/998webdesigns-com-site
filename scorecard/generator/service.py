@@ -274,13 +274,36 @@ except ImportError:
 def claim_one_queued_job(sb):
     """Atomically claim one queued job via the claim_scorecard_job RPC."""
     res = sb.rpc("claim_scorecard_job").execute()
-    return res.data if res.data else None
+    job = res.data
+    if not job or not job.get("id"):
+        return None
+    return job
+
+
+def _resolve_job_email(sb, job, payload: dict) -> str:
+    """Email from job payload, else from leads row."""
+    email = (payload.get("email") or "").strip().lower()
+    if email:
+        return email
+    lead_id = job.get("lead_id")
+    if not lead_id:
+        return ""
+    row = (
+        sb.table("leads")
+        .select("email")
+        .eq("id", lead_id)
+        .limit(1)
+        .execute()
+    ).data
+    return (row[0].get("email") or "").strip().lower() if row else ""
 
 
 def _process_job(sb, job):
     p = job["payload"] or {}
     domain = job["domain"]
-    email = p["email"]
+    email = _resolve_job_email(sb, job, p)
+    if not email:
+        raise ValueError("job missing email (payload and leads row)")
     business = p.get("business_name") or p.get("company") or core.guess_name(domain)
 
     # Dedup: reuse an active report for this domain generated within DEDUP_DAYS,
@@ -332,18 +355,19 @@ def run_worker():
         if not job:
             time.sleep(2)
             continue
+        job_id = job["id"]
         try:
             _process_job(sb, job)
             sb.table("scorecard_jobs").update(
-                {"status": "done"}).eq("id", job["id"]).execute()
-            log.info("job %s done", job["id"])
+                {"status": "done"}).eq("id", job_id).execute()
+            log.info("job %s done", job_id)
         except Exception as e:  # noqa: BLE001
             attempts = (job.get("attempts", 0) or 0) + 1
             sb.table("scorecard_jobs").update({
                 "status": "failed" if attempts >= 3 else "queued",
                 "attempts": attempts, "error": str(e)[:300],
-            }).eq("id", job["id"]).execute()
-            log.error("job %s error (attempt %s): %s", job["id"], attempts, e)
+            }).eq("id", job_id).execute()
+            log.error("job %s error (attempt %s): %s", job_id, attempts, e)
 
 
 if __name__ == "__main__":
