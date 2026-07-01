@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { notifyCrmActivity } from "@/lib/crm-notify";
+import { notifyScorecardReadyOnce } from "@/lib/scorecard/crm-ready-notify";
 import { verifyScorecardGeneratorKey } from "@/lib/scorecard/generator-auth";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,23 +42,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "token and domain required" }, { status: 422 });
   }
 
-  const base = "https://998webdesigns.com";
   const score =
     typeof body.score === "number" && Number.isFinite(body.score) ? body.score : undefined;
+  if (score == null) {
+    return NextResponse.json({ error: "score required" }, { status: 422 });
+  }
 
-  await notifyCrmActivity({
-    kind: "scorecard_ready",
+  const supa = supabaseAdmin();
+  if (!supa) {
+    return NextResponse.json({ error: "Unavailable" }, { status: 503 });
+  }
+
+  const { data: report } = await supa
+    .from("scorecard_reports")
+    .select("id")
+    .eq("token", token)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!report?.id) {
+    return NextResponse.json({ error: "Report not found" }, { status: 404 });
+  }
+
+  const sent = await notifyScorecardReadyOnce({
+    reportId: report.id,
+    token,
+    domain,
+    score,
+    verdict: body.verdict?.trim() || undefined,
     fullName: body.fullName?.trim() || undefined,
     businessName: body.businessName?.trim() || undefined,
     email: body.email?.trim() || undefined,
     phone: body.phone?.trim() || undefined,
-    domain,
-    score,
-    verdict: body.verdict?.trim() || undefined,
     deduped: Boolean(body.deduped),
-    reportUrl: `${base}/r/${token}`,
-    internalReportUrl: `${base}/crm/scorecard/r/${token}`,
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, sent });
 }

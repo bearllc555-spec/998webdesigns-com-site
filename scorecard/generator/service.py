@@ -368,6 +368,11 @@ def _notify_crm_report_ready(
     base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
     key = os.environ.get("GENERATOR_API_KEY", "").strip()
     if not base or not key:
+        log.warning(
+            "crm notify skipped: PUBLIC_BASE_URL=%s GENERATOR_API_KEY=%s",
+            "set" if base else "MISSING",
+            "set" if key else "MISSING",
+        )
         return
     payload = {
         "event": "ready",
@@ -394,6 +399,8 @@ def _notify_crm_report_ready(
         with urlopen(req, timeout=20) as resp:
             if resp.status >= 300:
                 log.warning("crm notify HTTP %s", resp.status)
+            else:
+                log.info("crm notify ok domain=%s token=%s", domain, token)
     except URLError as e:
         log.warning("crm notify failed: %s", e)
     except Exception as e:  # noqa: BLE001

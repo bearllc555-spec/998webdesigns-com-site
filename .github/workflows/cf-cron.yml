@@ -12,6 +12,7 @@ on:
     - cron: "0 12 * * *"
     - cron: "0 16 * * *"
     - cron: "*/30 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       job:
@@ -22,6 +23,7 @@ on:
           - ten-year-hosting
           - publish-scheduled-blog
           - instantly-enroll
+          - scorecard-notify
 
 jobs:
   run-cron:
@@ -40,6 +42,7 @@ jobs:
               ten-year-hosting) echo "path=/api/cron/ten-year-hosting" >> "$GITHUB_OUTPUT" ;;
               publish-scheduled-blog) echo "path=/api/cron/publish-scheduled-blog" >> "$GITHUB_OUTPUT" ;;
               instantly-enroll) echo "path=/api/cron/instantly-enroll" >> "$GITHUB_OUTPUT" ;;
+              scorecard-notify) echo "path=/api/cron/scorecard-notify" >> "$GITHUB_OUTPUT" ;;
             esac
             exit 0
           fi
@@ -48,6 +51,7 @@ jobs:
             "0 0 * * *"|"0 4 * * *"|"0 8 * * *"|"0 12 * * *"|"0 16 * * *")
               echo "path=/api/cron/publish-scheduled-blog" >> "$GITHUB_OUTPUT" ;;
             "*/30 * * * *") echo "path=/api/cron/instantly-enroll" >> "$GITHUB_OUTPUT" ;;
+            "*/5 * * * *") echo "path=/api/cron/scorecard-notify" >> "$GITHUB_OUTPUT" ;;
             *) echo "Unknown schedule: $SCHEDULE" >&2; exit 1 ;;
           esac
 
