@@ -149,6 +149,9 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
     Storage, return its public URL. Caps the wait; returns None on failure so
     the email still sends with the text fallback.
 
+    Viewport-only (above-the-fold) — not full_page. Long client sites can be
+    10+ screens; full-page PNGs blow up email size and capture time.
+
     Called TWICE per report (same machinery, two targets):
       - the analysis report page  -> stored as screenshot_url
       - the client's OWN website   -> stored as site_screenshot_url
@@ -168,7 +171,7 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
                 page.set_default_timeout(SCREENSHOT_TIMEOUT_MS)
                 page.goto(target_url, wait_until="networkidle",
                           timeout=SCREENSHOT_TIMEOUT_MS)
-                png_bytes = page.screenshot(full_page=True, type="png")
+                png_bytes = page.screenshot(full_page=False, type="png")
             finally:
                 browser.close()
     except Exception as e:  # noqa: BLE001
