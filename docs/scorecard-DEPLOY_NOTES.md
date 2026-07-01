@@ -107,6 +107,32 @@ sudo systemctl status scorecard-api scorecard-worker
 journalctl -u scorecard-worker -f      # watch jobs process
 ```
 
+### Instant Telegram when a report finishes (recommended)
+
+After each Door 2 job, the worker calls `POST https://998webdesigns.com/api/scorecard/notify`
+(`scorecard_ready` Telegram). Requires **`GENERATOR_API_KEY`** in `/opt/scorecard/.env`
+(must match the Cloudflare Worker secret — `slatepress/.local/scorecard-generator-api-key.txt`).
+
+**On your PC:** double-click `scripts/SETUP-VPS-SCORECARD-TELEGRAM.cmd` — copies the key and
+prints the VPS one-liner.
+
+**On the VPS (root):**
+
+```bash
+curl -fsSL -o /tmp/vps-enable-instant-telegram.sh \
+  "https://raw.githubusercontent.com/bearllc555-spec/998webdesigns-com-site/main/scorecard/generator/vps-enable-instant-telegram.sh"
+bash /tmp/vps-enable-instant-telegram.sh 'PASTE_GENERATOR_API_KEY_HERE'
+```
+
+Also sync the same key to the Cloudflare Worker (from the repo on your PC):
+
+```bash
+node scripts/sync-cf-worker-secrets.mjs
+```
+
+After a test scorecard, worker logs should show `crm notify ok domain=...`. If you see
+`crm notify skipped: ... GENERATOR_API_KEY=MISSING`, the VPS `.env` line is missing.
+
 ### Networking — do NOT expose a raw open port
 The `/generate` endpoint must be reachable by Door 1's send-script but not the
 public internet. Bind uvicorn to `127.0.0.1` (above) and front it with **one**
