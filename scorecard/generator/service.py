@@ -69,7 +69,7 @@ def _is_protected_domain(domain: str) -> bool:
 
 
 def _internal_email_allowlist() -> set[str]:
-    emails = {"bearllc555@gmail.com"}
+    emails = {"bearllc555@gmail.com", "demeos@gmail.com"}
     raw = os.environ.get("SCORECARD_INTERNAL_EMAILS", "")
     for part in raw.replace(";", ",").split(","):
         e = part.strip().lower()

@@ -2,7 +2,7 @@ import { isProtectedScorecardDomain } from "@/lib/scorecard/protected-domains";
 import { isEmail } from "@/lib/scorecard/validate";
 
 /** Always allowed without SCORECARD_INTERNAL_EMAILS env (operator inbox). */
-const DEFAULT_INTERNAL_EMAILS = ["bearllc555@gmail.com"] as const;
+const DEFAULT_INTERNAL_EMAILS = ["bearllc555@gmail.com", "demeos@gmail.com"] as const;
 
 function internalEmailSet(): Set<string> {
   const fromEnv = (process.env.SCORECARD_INTERNAL_EMAILS ?? "")
