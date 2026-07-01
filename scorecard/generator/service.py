@@ -616,13 +616,29 @@ def _notify_crm_report_ready(
             },
             method="POST",
         )
-        with urlopen(req, timeout=20) as resp:
-            if resp.status >= 300:
-                log.warning("crm notify HTTP %s", resp.status)
-            else:
-                log.info("crm notify ok domain=%s token=%s", domain, token)
-    except URLError as e:
-        log.warning("crm notify failed: %s", e)
+        for attempt in (1, 2):
+            try:
+                with urlopen(req, timeout=20) as resp:
+                    body = resp.read().decode("utf-8", errors="replace")[:200]
+                    if resp.status >= 300:
+                        log.warning(
+                            "crm notify HTTP %s attempt=%s body=%s",
+                            resp.status,
+                            attempt,
+                            body,
+                        )
+                    else:
+                        log.info(
+                            "crm notify ok domain=%s token=%s body=%s",
+                            domain,
+                            token,
+                            body,
+                        )
+                        return
+            except URLError as e:
+                log.warning("crm notify attempt %s failed: %s", attempt, e)
+            if attempt == 1:
+                time.sleep(2)
     except Exception as e:  # noqa: BLE001
         log.warning("crm notify failed: %s", e)
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
-import { notifyScorecardReadyOnce } from "@/lib/scorecard/crm-ready-notify";
+import { scheduleScorecardReadyNotify } from "@/lib/scorecard/schedule-notify";
 import { supabaseAdmin } from "@/lib/supabase";
 import { isEmail } from "@/lib/scorecard/validate";
 
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
     const { data: report } = await reportQuery.maybeSingle();
 
     if (report?.token) {
-      void notifyScorecardReadyOnce({
+      scheduleScorecardReadyNotify({
         reportId: report.id as string,
         token: report.token as string,
         domain: job.domain as string,
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
           undefined,
         email,
         phone: payload.phone?.trim() || undefined,
-      }).catch((err) => console.warn("[scorecard/status] ready notify failed:", err));
+      });
 
       return NextResponse.json({
         status: "ready" as const,

@@ -88,7 +88,7 @@ export async function backfillScorecardReadyTelegram(limit = 15): Promise<number
   const supa = supabaseAdmin();
   if (!supa) return 0;
 
-  const cutoff = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+  const cutoff = new Date(Date.now() - 45 * 1000).toISOString();
 
   const { data: rows, error } = await supa
     .from("scorecard_reports")
