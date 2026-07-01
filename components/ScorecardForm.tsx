@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { ScorecardSuccess } from "@/components/ScorecardSuccess";
+import { SCORECARD_ESTIMATE_SEC } from "@/lib/scorecard/estimate";
 
 export function ScorecardForm() {
   const searchParams = useSearchParams();
@@ -12,7 +14,7 @@ export function ScorecardForm() {
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [pendingJob, setPendingJob] = useState<{ jobId: string; email: string } | null>(null);
 
   useEffect(() => {
     const prefill = searchParams.get("d");
@@ -23,6 +25,7 @@ export function ScorecardForm() {
     e.preventDefault();
     setSubmitting(true);
     setMessage(null);
+    setPendingJob(null);
 
     try {
       const res = await fetch("/api/scorecard", {
@@ -30,15 +33,22 @@ export function ScorecardForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, company, email, phone, domain }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-      if (res.ok) {
-        setSubmitted(true);
-        setMessage({
-          kind: "ok",
-          text:
-            data.message ??
-            "Check your inbox — your scorecard is on its way (usually under a minute).",
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        jobId?: string;
+        email?: string;
+      };
+      if (res.ok && data.jobId) {
+        setPendingJob({
+          jobId: data.jobId,
+          email: data.email ?? email.trim().toLowerCase(),
         });
+      } else if (res.ok) {
+        setMessage({
+          kind: "err",
+          text: "Report queued but we lost track of it — check your email in a minute.",
+        });
+        setSubmitting(false);
       } else {
         setMessage({
           kind: "err",
@@ -64,7 +74,7 @@ export function ScorecardForm() {
           email you the report.
         </p>
 
-        {!submitted ? (
+        {!pendingJob ? (
           <form className="mt-6 space-y-4" onSubmit={onSubmit}>
             <Field label="Name" required>
               <input
@@ -126,7 +136,13 @@ export function ScorecardForm() {
               {submitting ? "Sending…" : "Get my free scorecard"}
             </button>
           </form>
-        ) : null}
+        ) : (
+          <ScorecardSuccess
+            jobId={pendingJob.jobId}
+            email={pendingJob.email}
+            estimateSec={SCORECARD_ESTIMATE_SEC}
+          />
+        )}
 
         {message ? (
           <p
@@ -140,7 +156,7 @@ export function ScorecardForm() {
           </p>
         ) : null}
 
-        {!submitted ? (
+        {!pendingJob ? (
           <p className="mt-4 text-center text-xs text-[#6b6b66]">
             We&apos;ll email your report. No spam — one report, then it&apos;s up to you.
           </p>

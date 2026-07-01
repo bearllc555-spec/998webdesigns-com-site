@@ -117,15 +117,19 @@ export async function POST(req: NextRequest) {
     console.warn("[scorecard] lead upsert failed:", err);
   }
 
-  const { error: jobError } = await supa.from("scorecard_jobs").insert({
-    lead_id: leadId,
-    domain,
-    status: "queued",
-    payload: { name, company, email, phone, business_name: company },
-  });
+  const { data: insertedJob, error: jobError } = await supa
+    .from("scorecard_jobs")
+    .insert({
+      lead_id: leadId,
+      domain,
+      status: "queued",
+      payload: { name, company, email, phone, business_name: company },
+    })
+    .select("id")
+    .single();
 
-  if (jobError) {
-    console.error("[scorecard] job enqueue failed:", jobError.message);
+  if (jobError || !insertedJob?.id) {
+    console.error("[scorecard] job enqueue failed:", jobError?.message);
     return NextResponse.json(
       { error: "Couldn't queue your report. Please try again." },
       { status: 502 }
@@ -135,13 +139,15 @@ export async function POST(req: NextRequest) {
   console.info("[scorecard] queued", {
     domain,
     email,
+    jobId: insertedJob.id,
     ip: clientIp(req),
     internalBypass,
   });
 
   return NextResponse.json({
     ok: true,
-    message: "Check your inbox — your scorecard is on its way.",
+    jobId: insertedJob.id,
+    email,
   });
 }
 
