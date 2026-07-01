@@ -139,6 +139,14 @@ SITE_SCREENSHOT_TIMEOUT_MS = int(
 # Playwright sync API must not run on the FastAPI asyncio loop.
 _screenshot_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="screenshot")
 
+# Site hero captures: desktop width so plumber sites render like a normal browser tab.
+_SITE_VIEWPORT = {"width": 1280, "height": 800}
+_REPORT_VIEWPORT = {"width": 720, "height": 960}
+_DESKTOP_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+)
+
 
 async def capture_screenshot_async(target_url: str, label: str) -> str | None:
     loop = asyncio.get_running_loop()
@@ -157,9 +165,34 @@ async def capture_site_screenshot_async(domain: str) -> str | None:
 # =========================================================================== #
 # Screenshot — Playwright (headless Chromium) -> Supabase Storage
 # =========================================================================== #
+def _prepare_page_for_screenshot(page, label: str) -> None:
+    """Reset scroll and clip overflow so viewport shots start at top-left."""
+    page.evaluate(
+        """() => {
+          window.scrollTo(0, 0);
+          document.documentElement.scrollLeft = 0;
+          document.body.scrollLeft = 0;
+        }"""
+    )
+    if label == "site":
+        page.evaluate(
+            """() => {
+              document.documentElement.style.overflow = 'hidden';
+              document.body.style.overflow = 'hidden';
+              document.body.style.margin = '0';
+            }"""
+        )
+    page.wait_for_timeout(400)
+
+
 def _screenshot_png_bytes(target_url: str, label: str, timeout_ms: int) -> bytes | None:
     """Try domcontentloaded → commit → load; client sites vary widely."""
     from playwright.sync_api import sync_playwright
+
+    is_site = label == "site"
+    viewport = _SITE_VIEWPORT if is_site else _REPORT_VIEWPORT
+    scale = 1 if is_site else 2
+    clip_h = min(viewport["height"], 720 if is_site else viewport["height"])
 
     waits = ("domcontentloaded", "commit", "load")
     last_err = None
@@ -167,15 +200,26 @@ def _screenshot_png_bytes(target_url: str, label: str, timeout_ms: int) -> bytes
         browser = p.chromium.launch(args=["--no-sandbox"])
         try:
             page = browser.new_page(
-                viewport={"width": 700, "height": 1000},
-                device_scale_factor=2,
+                viewport=viewport,
+                device_scale_factor=scale,
+                user_agent=_DESKTOP_UA if is_site else None,
             )
             page.set_default_timeout(timeout_ms)
             for wait in waits:
                 try:
                     page.goto(target_url, wait_until=wait, timeout=timeout_ms)
-                    page.wait_for_timeout(1500)
-                    png = page.screenshot(full_page=False, type="png")
+                    page.wait_for_timeout(1500 if is_site else 800)
+                    _prepare_page_for_screenshot(page, label)
+                    png = page.screenshot(
+                        full_page=False,
+                        type="png",
+                        clip={
+                            "x": 0,
+                            "y": 0,
+                            "width": viewport["width"],
+                            "height": clip_h,
+                        },
+                    )
                     if png:
                         return png
                 except Exception as e:  # noqa: BLE001
@@ -264,6 +308,24 @@ def backfill_missing_site_shots(sb, limit: int = 3) -> int:
         .limit(limit)
         .execute()
     ).data or []
+    return _backfill_site_shot_rows(sb, rows)
+
+
+def recapture_recent_site_shots(sb, limit: int = 2) -> int:
+    """Re-capture site thumbnails for recent reports (fixes bad mobile-width shots)."""
+    rows = (
+        sb.table("scorecard_reports")
+        .select("id, domain")
+        .eq("status", "active")
+        .not_.is_("site_screenshot_url", "null")
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    ).data or []
+    return _backfill_site_shot_rows(sb, rows)
+
+
+def _backfill_site_shot_rows(sb, rows: list) -> int:
     filled = 0
     for row in rows:
         url = capture_site_screenshot(row["domain"])
@@ -631,6 +693,8 @@ def run_worker():
             if idle_passes % 5 == 0:
                 try:
                     n = backfill_missing_site_shots(sb)
+                    if os.environ.get("SCORECARD_RECAPTURE_SITE_SHOTS") == "1":
+                        n += recapture_recent_site_shots(sb, limit=2)
                     if n:
                         log.info("backfilled %s site screenshot(s)", n)
                 except Exception as e:  # noqa: BLE001
