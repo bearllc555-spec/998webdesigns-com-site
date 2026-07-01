@@ -13,6 +13,7 @@ export type ScorecardSignal = {
 };
 
 export type ScorecardReport = {
+  id?: string;
   domain: string;
   business_name: string;
   score: number;

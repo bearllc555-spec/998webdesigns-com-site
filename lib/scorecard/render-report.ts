@@ -55,14 +55,11 @@ function signalHtml(s: ScorecardSignal): string {
 }
 
 function sitePreviewHtml(report: ScorecardReport): string {
-  const url = report.site_screenshot_url?.trim() || report.screenshot_url?.trim();
+  const url = report.site_screenshot_url?.trim();
   if (!url) return "";
-  const label = report.site_screenshot_url?.trim()
-    ? "Your site today"
-    : "Your scorecard preview";
   return `
   <div class="site-preview">
-    <p class="site-preview-lbl">${esc(label)}</p>
+    <p class="site-preview-lbl">Your site today</p>
     <img src="${esc(url)}" alt="${esc(report.business_name)} website" width="640" loading="lazy" />
   </div>`;
 }

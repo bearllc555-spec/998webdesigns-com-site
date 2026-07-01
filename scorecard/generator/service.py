@@ -144,6 +144,13 @@ async def capture_screenshot_async(target_url: str, label: str) -> str | None:
     )
 
 
+async def capture_site_screenshot_async(domain: str) -> str | None:
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        _screenshot_executor, capture_site_screenshot, domain
+    )
+
+
 # =========================================================================== #
 # Screenshot — Playwright (headless Chromium) -> Supabase Storage
 # =========================================================================== #
@@ -172,8 +179,12 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
                     device_scale_factor=2,
                 )
                 page.set_default_timeout(SCREENSHOT_TIMEOUT_MS)
-                page.goto(target_url, wait_until="networkidle",
-                          timeout=SCREENSHOT_TIMEOUT_MS)
+                page.goto(
+                    target_url,
+                    wait_until="domcontentloaded",
+                    timeout=SCREENSHOT_TIMEOUT_MS,
+                )
+                page.wait_for_timeout(1200)
                 png_bytes = page.screenshot(full_page=False, type="png")
             finally:
                 browser.close()
@@ -198,6 +209,19 @@ def capture_screenshot(target_url: str, label: str) -> str | None:
     except Exception as e:  # noqa: BLE001
         log.warning("screenshot upload failed (%s): %s", label, e)
         return None
+
+
+def capture_site_screenshot(domain: str) -> str | None:
+    """Try https://domain and https://www.domain — client sites often hang on networkidle."""
+    domain = (domain or "").strip().lower().removeprefix("www.")
+    if not domain:
+        return None
+    urls = [f"https://{domain}", f"https://www.{domain}"]
+    for url in urls:
+        shot = capture_screenshot(url, "site")
+        if shot:
+            return shot
+    return None
 
 
 # =========================================================================== #
@@ -337,10 +361,8 @@ try:
         # can embed them), but does NOT send the email itself.
         sb = _client()
         try:
+            site = await capture_site_screenshot_async(out["domain"])
             analysis = await capture_screenshot_async(out["url"], "analysis")
-            site = await capture_screenshot_async(
-                f"https://{out['domain']}", "site"
-            )
             set_screenshots(sb, out["report_id"], analysis, site)
             out["screenshot_url"] = analysis
             out["site_screenshot_url"] = site
@@ -487,13 +509,13 @@ def _process_job(sb, job):
     )
     analysis = site = None
     try:
+        site = capture_site_screenshot(domain)
+    except Exception as e:  # noqa: BLE001
+        log.warning("site screenshot failed (continuing): %s", e)
+    try:
         analysis = capture_screenshot(out["url"], "analysis")
     except Exception as e:  # noqa: BLE001
         log.warning("analysis screenshot failed (continuing): %s", e)
-    try:
-        site = capture_screenshot(f"https://{domain}", "site")
-    except Exception as e:  # noqa: BLE001
-        log.warning("site screenshot failed (continuing): %s", e)
     set_screenshots(sb, out["report_id"], analysis, site)
 
     res = send_report_email(email, out["url"], site, analysis,

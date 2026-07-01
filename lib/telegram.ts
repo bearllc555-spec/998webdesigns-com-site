@@ -11,7 +11,7 @@ async function sendTelegramHtmlToChat(
   token: string,
   chatId: string,
   html: string
-): Promise<void> {
+): Promise<boolean> {
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -25,23 +25,27 @@ async function sendTelegramHtmlToChat(
   if (!res.ok) {
     const body = await res.text();
     console.error(`[telegram] sendMessage failed (${chatId}):`, res.status, body.slice(0, 200));
+    return false;
   }
+  return true;
 }
 
-/** Fire-and-forget Telegram alert to every configured chat. Never throws to callers. */
-export async function sendTelegramHtml(html: string): Promise<void> {
+/** Telegram alert to every configured chat. Returns true if at least one send succeeded. */
+export async function sendTelegramHtml(html: string): Promise<boolean> {
   const { botToken, chatIds } = await loadTelegramConfig();
   if (!botToken || chatIds.length === 0) {
     console.warn("[telegram] bot token or chat id(s) missing - skip notify");
-    return;
+    return false;
   }
 
   try {
-    await Promise.allSettled(
+    const results = await Promise.all(
       chatIds.map((chatId) => sendTelegramHtmlToChat(botToken, chatId, html))
     );
+    return results.some(Boolean);
   } catch (err) {
     console.error("[telegram] sendMessage error:", err);
+    return false;
   }
 }
 

@@ -83,8 +83,8 @@ function crmUrl(): string {
   return "https://998webdesigns.com/crm";
 }
 
-/** Push activity to Telegram (and log). Does not block checkout on failure. */
-export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
+/** Push activity to Telegram (and log). Returns true if at least one chat received it. */
+export async function notifyCrmActivity(input: CrmNotifyInput): Promise<boolean> {
   const lines: string[] = [
     `<b>${KIND_LABEL[input.kind]}</b>`,
     telegramLine("Site", "998webdesigns.com"),
@@ -136,5 +136,5 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
 
   const html = lines.join("\n");
   console.info(`[crm-notify] ${input.kind}`, input.email ?? input.businessName ?? "");
-  await sendTelegramHtml(html);
+  return sendTelegramHtml(html);
 }
