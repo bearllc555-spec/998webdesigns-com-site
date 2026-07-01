@@ -11,7 +11,8 @@ export async function setCrmItemReadState(
     | "sms"
     | "voice_demo"
     | "plumbing_demo"
-    | "blog",
+    | "blog"
+    | "report",
   id: string,
   read: boolean
 ): Promise<boolean> {
@@ -30,7 +31,9 @@ export async function setCrmItemReadState(
             ? voiceDemoTable
             : source === "blog"
               ? "blog_posts"
-              : source === "linkedin"
+              : source === "report"
+                ? "scorecard_reports"
+                : source === "linkedin"
                 ? "linkedin_prospects"
                 : "discovery_prospects";
   const read_at = read ? new Date().toISOString() : null;

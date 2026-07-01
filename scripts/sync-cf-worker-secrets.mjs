@@ -66,6 +66,7 @@ const FILE_OVERRIDES = {
   CRON_SECRET: "998-cron-secret.txt",
   CALENDLY_WEBHOOK_SIGNING_KEY: "calendly-webhook-signing-key.txt",
   GEMINI_API_KEY: "gemini-api-key-998webdesigns.txt",
+  GENERATOR_API_KEY: "scorecard-generator-api-key.txt",
   NEXT_PUBLIC_SUPABASE_URL: "supabase-project-url.txt",
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "supabase-publishable-key.txt",
   SUPABASE_SERVICE_ROLE_KEY: "supabase-secret-key.txt",

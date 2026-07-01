@@ -40,6 +40,7 @@ function sourceLabel(source: CrmFeedItem["source"]): string {
   if (source === "voice_demo") return "998web Jarvis";
   if (source === "plumbing_demo") return "Plumbing Jarvis";
   if (source === "blog") return "Blog";
+  if (source === "report") return "Report";
   return "Contact";
 }
 
@@ -125,6 +126,7 @@ type CrmActivityInboxProps = {
   linkedinItems?: CrmFeedItem[];
   smsItems: CrmFeedItem[];
   blogItems: CrmFeedItem[];
+  reportItems?: CrmFeedItem[];
   voiceDemoItems?: CrmFeedItem[];
   plumbingDemoItems?: CrmFeedItem[];
   onItemsChange: (updater: (prev: CrmFeedItem[]) => CrmFeedItem[]) => void;
@@ -320,7 +322,7 @@ function InboxRow({
               >
                 {isCrmFeedItemUnread(item) ? "Mark read" : "Mark unread"}
               </button>
-              {!isDeleting && (
+              {!isDeleting && item.source !== "report" && (
                 <button
                   type="button"
                   onClick={() => onStartDelete(item)}
@@ -470,6 +472,31 @@ function InboxRow({
                 Open post
               </a>
             </p>
+          )}
+
+          {item.source === "report" && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {typeof item.payload?.reportUrl === "string" && (
+                <a
+                  href={item.payload.reportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-on-accent transition hover:bg-accent-deep"
+                >
+                  Customer report
+                </a>
+              )}
+              {typeof item.payload?.internalReportUrl === "string" && (
+                <a
+                  href={item.payload.internalReportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-rule px-5 py-2.5 text-sm font-medium text-ink transition hover:border-accent/50"
+                >
+                  Internal brief
+                </a>
+              )}
+            </div>
           )}
 
           {item.source === "discovery" && !isDeleting && (
@@ -679,6 +706,7 @@ export function CrmActivityInbox({
   linkedinItems = [],
   smsItems,
   blogItems,
+  reportItems = [],
   voiceDemoItems = [],
   plumbingDemoItems = [],
   onItemsChange,
@@ -852,6 +880,7 @@ export function CrmActivityInbox({
     onNotesDraftChange: setNotesDraft,
     onSetReadState: setReadState,
     onStartDelete: (item: CrmFeedItem) => {
+      if (item.source === "report") return;
       setEditingNotes(false);
       setPendingDelete({
         source: item.source,
@@ -920,6 +949,13 @@ export function CrmActivityInbox({
         selectedKey={selectedKey}
         rowProps={sharedRowProps}
         emptyLabel="No contacts yet."
+      />
+      <InboxSection
+        title="Reports"
+        items={reportItems}
+        selectedKey={selectedKey}
+        rowProps={sharedRowProps}
+        emptyLabel="No scorecard reports yet."
       />
       <InboxSection
         title="Leads"

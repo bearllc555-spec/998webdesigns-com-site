@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceApiRateLimit, rateLimitResponse, clientIp } from "@/lib/api-rate-limit";
+import { notifyCrmActivity } from "@/lib/crm-notify";
 import { checkRateLimitSupabase } from "@/lib/rate-limit-supabase";
 import { readJsonBody } from "@/lib/read-json-body";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
         .from("leads")
         .update({
           business_name: company,
+          full_name: name,
           domain,
           phone: phone || null,
           source: "form",
@@ -103,6 +105,7 @@ export async function POST(req: NextRequest) {
         .from("leads")
         .insert({
           business_name: company,
+          full_name: name,
           domain,
           email,
           phone: phone || null,
@@ -143,6 +146,16 @@ export async function POST(req: NextRequest) {
     ip: clientIp(req),
     internalBypass,
   });
+
+  void notifyCrmActivity({
+    kind: "scorecard_queued",
+    fullName: name,
+    businessName: company,
+    email,
+    phone: phone || undefined,
+    domain,
+    status: "queued",
+  }).catch((err) => console.warn("[scorecard] crm notify failed:", err));
 
   return NextResponse.json({
     ok: true,

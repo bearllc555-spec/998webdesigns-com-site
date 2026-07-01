@@ -44,6 +44,10 @@ export function CrmDashboard() {
     () => items.filter((i) => i.source === "contact"),
     [items]
   );
+  const reportItems = useMemo(
+    () => items.filter((i) => i.source === "report"),
+    [items]
+  );
   const leadItems = useMemo(() => items.filter((i) => i.source === "lead"), [items]);
   const clientItems = useMemo(() => items.filter((i) => i.source === "client"), [items]);
   const discoveryItems = useMemo(
@@ -97,6 +101,7 @@ export function CrmDashboard() {
         {!loading && !error && items.length > 0 && (
           <CrmActivityInbox
             contactItems={contactItems}
+            reportItems={reportItems}
             leadItems={leadItems}
             clientItems={clientItems}
             discoveryItems={discoveryItems}

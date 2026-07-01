@@ -26,7 +26,8 @@ export type CrmFeedSource =
   | "sms"
   | "voice_demo"
   | "plumbing_demo"
-  | "blog";
+  | "blog"
+  | "report";
 
 export type CrmFeedItem = {
   id: string;
@@ -84,6 +85,7 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
     inboundRes,
     inboundLinkedRes,
     inboundLeadLinkedRes,
+    scorecardRes,
   ] = await Promise.all([
     supa
       .from("wd_leads")
@@ -143,6 +145,14 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       .not("wd_lead_id", "is", null)
       .order("created_at", { ascending: false })
       .limit(200),
+    supa
+      .from("scorecard_reports")
+      .select(
+        "id, token, domain, business_name, score, verdict, created_at, source_door, email_status, read_at, inbox_flag, lead_id, leads ( full_name, email, phone )"
+      )
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(limit),
   ]);
 
   const errors: string[] = [];
@@ -176,6 +186,19 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
   }
   if (inboundLeadLinkedRes.error && !isMissingTable(inboundLeadLinkedRes.error)) {
     console.warn("[crm-feed] inbound_sms wd_lead:", inboundLeadLinkedRes.error.message);
+  }
+  if (scorecardRes.error) {
+    const msg = scorecardRes.error.message ?? "";
+    if (
+      isMissingTable(scorecardRes.error) ||
+      /read_at|inbox_flag|full_name|does not exist/i.test(msg)
+    ) {
+      console.warn(
+        "[crm-feed] scorecard_reports CRM columns missing - run supabase/migrations/20260702120000_scorecard_crm.sql"
+      );
+    } else {
+      console.warn("[crm-feed] scorecard_reports:", msg);
+    }
   }
   if (errors.length) {
     const hint = /inbox_flag|read_at|does not exist|wd_lead_id/i.test(errors.join(" "))
@@ -432,6 +455,45 @@ export async function fetchCrmFeed(limit = 80): Promise<CrmFeedResult> {
       phone: row.from_phone,
       contact: { cellPhone: row.from_phone ?? null },
       payload: null,
+      readAt: (row as { read_at?: string | null }).read_at ?? null,
+      inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
+    });
+  }
+
+  for (const row of scorecardRes.data ?? []) {
+    const leadRaw = row.leads as
+      | { full_name?: string | null; email?: string | null; phone?: string | null }
+      | { full_name?: string | null; email?: string | null; phone?: string | null }[]
+      | null;
+    const lead = Array.isArray(leadRaw) ? leadRaw[0] : leadRaw;
+    const score = row.score as number;
+    const verdict = row.verdict as string;
+    const token = row.token as string;
+    const reportUrl = `https://998webdesigns.com/r/${token}`;
+    items.push({
+      id: row.id as string,
+      source: "report",
+      at: row.created_at as string,
+      title: (lead?.full_name as string)?.trim() || (row.business_name as string) || row.domain,
+      email: (lead?.email as string) ?? "",
+      businessName: (row.business_name as string) ?? "",
+      status: `${score}/100 · ${verdict}`,
+      notes: null,
+      stripeSessionId: null,
+      stripeSubscriptionId: null,
+      message: `${row.domain} — scorecard ${score}/100`,
+      phone: (lead?.phone as string) ?? null,
+      contact: { cellPhone: (lead?.phone as string) ?? null },
+      payload: {
+        token,
+        domain: row.domain,
+        score,
+        verdict,
+        sourceDoor: row.source_door,
+        emailStatus: row.email_status,
+        reportUrl,
+        internalReportUrl: `https://998webdesigns.com/crm/scorecard/r/${token}`,
+      },
       readAt: (row as { read_at?: string | null }).read_at ?? null,
       inboxFlag: parseInboxFlag((row as { inbox_flag?: unknown }).inbox_flag),
     });

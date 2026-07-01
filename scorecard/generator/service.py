@@ -32,12 +32,15 @@ ENV (VPS, server-side only):
 
 import argparse
 import asyncio
+import json
 import logging
 import os
 import sys
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 import scorer_core as core
 from supabase_generator import (
@@ -349,6 +352,54 @@ except ImportError:
     app = None  # FastAPI not installed in an analysis env; fine.
 
 
+def _notify_crm_report_ready(
+    *,
+    full_name: str,
+    business_name: str,
+    email: str,
+    phone: str,
+    domain: str,
+    score: int,
+    verdict: str,
+    token: str,
+    deduped: bool = False,
+) -> None:
+    """Ping production CRM Telegram hook after a report is emailed."""
+    base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+    key = os.environ.get("GENERATOR_API_KEY", "").strip()
+    if not base or not key:
+        return
+    payload = {
+        "event": "ready",
+        "fullName": full_name,
+        "businessName": business_name,
+        "email": email,
+        "phone": phone or None,
+        "domain": domain,
+        "score": score,
+        "verdict": verdict,
+        "token": token,
+        "deduped": deduped,
+    }
+    try:
+        req = Request(
+            f"{base}/api/scorecard/notify",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "x-generator-key": key,
+            },
+            method="POST",
+        )
+        with urlopen(req, timeout=20) as resp:
+            if resp.status >= 300:
+                log.warning("crm notify HTTP %s", resp.status)
+    except URLError as e:
+        log.warning("crm notify failed: %s", e)
+    except Exception as e:  # noqa: BLE001
+        log.warning("crm notify failed: %s", e)
+
+
 # --------------------------------------------------------------------------- #
 # Queue worker (Door 2) — generates AND emails.
 # --------------------------------------------------------------------------- #
@@ -408,6 +459,17 @@ def _process_job(sb, job):
         set_email_status(sb, existing["id"], res["status"], res.get("bounced", False))
         _maybe_backfill_internal_intel(sb, existing["id"], domain)
         log.info("job %s deduped to report %s", job["id"], existing["id"])
+        _notify_crm_report_ready(
+            full_name=(p.get("name") or "").strip(),
+            business_name=business,
+            email=email,
+            phone=(p.get("phone") or "").strip(),
+            domain=domain,
+            score=int(existing["score"]),
+            verdict=_verdict_line,
+            token=existing["token"],
+            deduped=True,
+        )
         return
 
     # Fresh generation (Door 2 shape: automated reviews + locked conv/design).
@@ -435,6 +497,17 @@ def _process_job(sb, job):
         "internal brief %s/crm/scorecard/r/%s",
         os.environ.get("PUBLIC_BASE_URL", "").rstrip("/"),
         out["token"],
+    )
+    _notify_crm_report_ready(
+        full_name=(p.get("name") or "").strip(),
+        business_name=business,
+        email=email,
+        phone=(p.get("phone") or "").strip(),
+        domain=domain,
+        score=int(out["score"]),
+        verdict=out["verdict_line"],
+        token=out["token"],
+        deduped=False,
     )
 
 

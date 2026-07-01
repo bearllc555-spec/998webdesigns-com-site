@@ -33,6 +33,14 @@ export async function DELETE(
   }
 
   const { source, id } = await params;
+
+  if (source === "report") {
+    return NextResponse.json(
+      { error: "Scorecard reports cannot be deleted from CRM" },
+      { status: 400 }
+    );
+  }
+
   if (
     source !== "lead" &&
     source !== "client" &&
@@ -93,7 +101,8 @@ export async function PATCH(
     source !== "sms" &&
     source !== "voice_demo" &&
     source !== "plumbing_demo" &&
-    source !== "blog"
+    source !== "blog" &&
+    source !== "report"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
@@ -124,7 +133,11 @@ export async function PATCH(
   };
 
   if (hasRead) {
-    const ok = await setCrmItemReadState(source, id, body.read as boolean);
+    const ok = await setCrmItemReadState(
+      source as Parameters<typeof setCrmItemReadState>[0],
+      id,
+      body.read as boolean
+    );
     if (!ok) {
       return NextResponse.json({ error: "Could not update read state" }, { status: 500 });
     }
@@ -134,7 +147,11 @@ export async function PATCH(
   if (hasFlag) {
     const flag: CrmInboxFlag | null =
       body.flag === null ? null : (body.flag as CrmInboxFlag);
-    const ok = await setCrmItemInboxFlag(source, id, flag);
+    const ok = await setCrmItemInboxFlag(
+      source as Parameters<typeof setCrmItemInboxFlag>[0],
+      id,
+      flag
+    );
     if (!ok) {
       return NextResponse.json({ error: "Could not update flag" }, { status: 500 });
     }

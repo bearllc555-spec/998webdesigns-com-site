@@ -32,7 +32,8 @@ export async function setCrmItemInboxFlag(
     | "sms"
     | "voice_demo"
     | "plumbing_demo"
-    | "blog",
+    | "blog"
+    | "report",
   id: string,
   flag: CrmInboxFlag | null
 ): Promise<boolean> {
@@ -51,7 +52,9 @@ export async function setCrmItemInboxFlag(
             ? voiceDemoTable
             : source === "blog"
               ? "blog_posts"
-              : source === "linkedin"
+              : source === "report"
+                ? "scorecard_reports"
+                : source === "linkedin"
                 ? "linkedin_prospects"
                 : "discovery_prospects";
   const inbox_flag = flag;

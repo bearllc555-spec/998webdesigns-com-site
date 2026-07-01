@@ -21,7 +21,9 @@ export type CrmNotifyKind =
   | "discovery_started"
   | "discovery_phone_verified"
   | "discovery_intake"
-  | "discovery_call_booked";
+  | "discovery_call_booked"
+  | "scorecard_queued"
+  | "scorecard_ready";
 
 const KIND_LABEL: Record<CrmNotifyKind, string> = {
   lead_submitted: "New lead - form submitted",
@@ -44,6 +46,8 @@ const KIND_LABEL: Record<CrmNotifyKind, string> = {
   discovery_phone_verified: "Discovery call - phone verified",
   discovery_intake: "Discovery call - brief submitted",
   discovery_call_booked: "Discovery call - scheduled",
+  scorecard_queued: "Scorecard - report queued",
+  scorecard_ready: "Scorecard - report ready",
 };
 
 export type CrmNotifyInput = {
@@ -61,6 +65,12 @@ export type CrmNotifyInput = {
   checkoutUrl?: string;
   postUrl?: string;
   phone?: string;
+  domain?: string;
+  score?: number;
+  verdict?: string;
+  deduped?: boolean;
+  reportUrl?: string;
+  internalReportUrl?: string;
 };
 
 function stripeDashBase(): string {
@@ -84,6 +94,10 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
   lines.push(telegramLine("Company", input.businessName?.trim() || "-"));
   if (input.email) lines.push(telegramLine("Email", input.email));
   if (input.phone) lines.push(telegramLine("Phone", input.phone));
+  if (input.domain) lines.push(telegramLine("Website", input.domain));
+  if (input.score != null) lines.push(telegramLine("Score", `${input.score}/100`));
+  if (input.verdict) lines.push(telegramLine("Verdict", input.verdict));
+  if (input.deduped) lines.push(telegramLine("Note", "Reused recent report (deduped)"));
   if (input.status) lines.push(telegramLine("Status", input.status));
   if (input.hostingChoice) lines.push(telegramLine("Hosting", input.hostingChoice));
   if (input.paymentChannel) lines.push(telegramLine("Pay", input.paymentChannel));
@@ -98,6 +112,12 @@ export async function notifyCrmActivity(input: CrmNotifyInput): Promise<void> {
   }
   if (input.postUrl) {
     lines.push(`<a href="${input.postUrl}">Read post</a>`);
+  }
+  if (input.reportUrl) {
+    lines.push(`<a href="${input.reportUrl}">Customer report</a>`);
+  }
+  if (input.internalReportUrl) {
+    lines.push(`<a href="${input.internalReportUrl}">Internal brief (CRM)</a>`);
   }
   if (input.stripeSessionId) {
     const dash = stripeDashBase();
