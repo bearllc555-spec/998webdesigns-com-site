@@ -148,8 +148,9 @@ export function ScorecardSuccess({
           : "Almost ready…"}
       </p>
       <p className="mt-3 text-xs text-[#6b6b66]">
-        We&apos;ll email a copy to <span className="font-medium text-[#1a1a1a]">{email}</span> when
-        it&apos;s ready.
+        We&apos;ll email a copy to{" "}
+        <span className="font-medium text-[#1a1a1a]">{email}</span>
+        {" when it's ready."}
       </p>
     </div>
   );
