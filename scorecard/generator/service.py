@@ -67,6 +67,29 @@ def _is_protected_domain(domain: str) -> bool:
             return True
     return False
 
+
+def _internal_email_allowlist() -> set[str]:
+    emails = {"bearllc555@gmail.com"}
+    raw = os.environ.get("SCORECARD_INTERNAL_EMAILS", "")
+    for part in raw.replace(";", ",").split(","):
+        e = part.strip().lower()
+        if e:
+            emails.add(e)
+    return emails
+
+
+def _is_internal_email(email: str) -> bool:
+    e = (email or "").strip().lower()
+    if not e:
+        return False
+    if e.endswith("@998webdesigns.com"):
+        return True
+    return e in _internal_email_allowlist()
+
+
+def _internal_unlimited_scan(email: str, domain: str) -> bool:
+    return _is_protected_domain(domain) and _is_internal_email(email)
+
 STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "scorecard-shots")
 SCREENSHOT_TIMEOUT_MS = int(os.environ.get("SCREENSHOT_TIMEOUT_MS", "20000"))
 # Playwright sync API must not run on the FastAPI asyncio loop.
@@ -317,18 +340,19 @@ def _resolve_job_email(sb, job, payload: dict) -> str:
 def _process_job(sb, job):
     p = job["payload"] or {}
     domain = job["domain"]
-    if _is_protected_domain(domain):
-        raise ProtectedDomainError(domain)
     email = _resolve_job_email(sb, job, p)
+    if _is_protected_domain(domain) and not _is_internal_email(email):
+        raise ProtectedDomainError(domain)
     if not email:
         raise ValueError("job missing email (payload and leads row)")
     business = p.get("business_name") or p.get("company") or core.guess_name(domain)
+    internal_unlimited = _internal_unlimited_scan(email, domain)
 
     # Dedup: reuse an active report for this domain generated within DEDUP_DAYS,
     # instead of re-running PageSpeed + a browser. Re-send the email to the new
-    # requester.
+    # requester. Internal operator scans of our own site skip dedup (unlimited).
     existing = find_recent_report(sb, domain)
-    if existing:
+    if existing and not internal_unlimited:
         base = os.environ["PUBLIC_BASE_URL"].rstrip("/")
         url = f"{base}/r/{existing['token']}"
         # fetch stored shots for the embed

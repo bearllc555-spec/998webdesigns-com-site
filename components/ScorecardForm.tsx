@@ -2,8 +2,6 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { isProtectedScorecardDomain } from "@/lib/scorecard/protected-domains";
-import { normDomain } from "@/lib/scorecard/validate";
 
 export function ScorecardForm() {
   const searchParams = useSearchParams();
@@ -25,15 +23,6 @@ export function ScorecardForm() {
     e.preventDefault();
     setSubmitting(true);
     setMessage(null);
-
-    if (isProtectedScorecardDomain(normDomain(domain))) {
-      setMessage({
-        kind: "err",
-        text: "This tool scores business websites — enter your company's site, not a web design agency.",
-      });
-      setSubmitting(false);
-      return;
-    }
 
     try {
       const res = await fetch("/api/scorecard", {
