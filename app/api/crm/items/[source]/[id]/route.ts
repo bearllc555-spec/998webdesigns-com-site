@@ -12,6 +12,7 @@ import { deleteDiscoveryProspect } from "@/lib/discovery-db";
 import { deleteLinkedinProspect } from "@/lib/linkedin-prospect";
 import { deleteVoiceDemoLead } from "@/lib/voice-demo-db";
 import { deleteWdLead } from "@/lib/leads-db";
+import { deleteScorecardReport } from "@/lib/scorecard-report-db";
 import { isCrmRequestAuthorized } from "@/lib/crm-session";
 import { enforceApiRateLimit, rateLimitResponse } from "@/lib/api-rate-limit";
 
@@ -34,13 +35,6 @@ export async function DELETE(
 
   const { source, id } = await params;
 
-  if (source === "report") {
-    return NextResponse.json(
-      { error: "Scorecard reports cannot be deleted from CRM" },
-      { status: 400 }
-    );
-  }
-
   if (
     source !== "lead" &&
     source !== "client" &&
@@ -50,7 +44,8 @@ export async function DELETE(
     source !== "sms" &&
     source !== "voice_demo" &&
     source !== "plumbing_demo" &&
-    source !== "blog"
+    source !== "blog" &&
+    source !== "report"
   ) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
   }
@@ -60,7 +55,9 @@ export async function DELETE(
       ? await deleteWdLead(id)
       : source === "contact"
         ? await deleteContactSubmission(id)
-        : source === "sms"
+        : source === "report"
+          ? await deleteScorecardReport(id)
+          : source === "sms"
           ? await deleteInboundSms(id)
           : source === "voice_demo" || source === "plumbing_demo"
             ? await deleteVoiceDemoLead(id)

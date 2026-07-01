@@ -25,7 +25,8 @@ type PendingDelete = {
     | "sms"
     | "voice_demo"
     | "plumbing_demo"
-    | "blog";
+    | "blog"
+    | "report";
   id: string;
   label: string;
   step: 1 | 2;
@@ -322,7 +323,7 @@ function InboxRow({
               >
                 {isCrmFeedItemUnread(item) ? "Mark read" : "Mark unread"}
               </button>
-              {!isDeleting && item.source !== "report" && (
+              {!isDeleting && (
                 <button
                   type="button"
                   onClick={() => onStartDelete(item)}
@@ -880,7 +881,6 @@ export function CrmActivityInbox({
     onNotesDraftChange: setNotesDraft,
     onSetReadState: setReadState,
     onStartDelete: (item: CrmFeedItem) => {
-      if (item.source === "report") return;
       setEditingNotes(false);
       setPendingDelete({
         source: item.source,
