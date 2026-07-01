@@ -338,6 +338,16 @@ html.dark .crm-inbox-row-read-badge {
   display: none;
 }
 
+/* Scorecard form — always light inputs (site dark mode must not bleed through) */
+.scorecard-form input:-webkit-autofill,
+.scorecard-form input:-webkit-autofill:hover,
+.scorecard-form input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: #1a1a1a;
+  caret-color: #1a1a1a;
+  transition: background-color 99999s ease-out 0s;
+}
+
 /* Portfolio carousel - transform marquee (seamless infinite loop) */
 @keyframes portfolio-marquee {
   from {

@@ -53,11 +53,11 @@ export function ScorecardForm() {
   }
 
   const inputClass =
-    "mt-1 w-full rounded-lg border border-black/15 px-3.5 py-3 text-[15px] focus:border-transparent focus:outline focus:outline-2 focus:outline-[#0c447c]";
+    "mt-1 w-full rounded-lg border border-black/15 bg-white px-3.5 py-3 text-[15px] text-[#1a1a1a] caret-[#1a1a1a] placeholder:text-[#6b6b66] [color-scheme:light] focus:border-transparent focus:outline focus:outline-2 focus:outline-[#0c447c] autofill:bg-white autofill:text-[#1a1a1a]";
 
   return (
     <main className="min-h-[70vh] bg-[#f7f6f2] px-5 py-12">
-      <div className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-sm">
+      <div className="scorecard-form mx-auto max-w-md rounded-2xl bg-white p-8 text-[#1a1a1a] shadow-sm [color-scheme:light]">
         <h1 className="text-2xl font-semibold text-[#1a1a1a]">How does your website score?</h1>
         <p className="mt-2 text-[15px] text-[#6b6b66]">
           A free, sourced scorecard — mobile speed, security, SEO, and your Google reviews. We
