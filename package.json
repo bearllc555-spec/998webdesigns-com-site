@@ -20,7 +20,7 @@
     "capture-logo-png": "node scripts/capture-logo-png.mjs",
     "blog:notify": "node scripts/notify-blog-post.mjs",
     "blog:setup": "node scripts/setup-blog-db.mjs",
-    "scorecard:migrate-intel": "node scripts/migrate-scorecard-intel.mjs",
+    "scorecard:migrate-intel": "node scripts/apply-scorecard-internal-intel.mjs",
     "cf:ops-checklist": "node scripts/cf-ops-checklist.mjs",
     "voice-demo:ops-report": "node --env-file=.env.local scripts/voice-demo-ops-report.mjs"
   },
