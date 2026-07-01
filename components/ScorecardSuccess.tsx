@@ -100,12 +100,38 @@ export function ScorecardSuccess({
             Your score: <span className="font-semibold text-[#1a1a1a]">{score}/100</span>
           </p>
         ) : null}
-        <a
-          href={reportUrl}
-          className="mt-4 inline-flex items-center rounded-lg bg-[#0c447c] px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-[#0a3766]"
-        >
-          View your report &rarr;
-        </a>
+        <div className="mt-4 flex items-center gap-3">
+          <a
+            href={reportUrl}
+            className="inline-flex items-center rounded-lg bg-[#0c447c] px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-[#0a3766]"
+          >
+            View your report &rarr;
+          </a>
+          <span
+            className="inline-flex shrink-0 items-center justify-center text-[#0f6e56]"
+            aria-hidden
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="block"
+            >
+              <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.15" />
+              <path
+                d="M8.5 12.5l2.5 2.5 5-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.75" />
+            </svg>
+          </span>
+          <span className="sr-only">Report ready</span>
+        </div>
       </div>
     );
   }
