@@ -28,12 +28,29 @@ function formatIntelError(err: string | null | undefined): string | null {
   return err;
 }
 
-function intelSection(intel: ScorecardInternalIntel | null | undefined): string {
+/** Pre-filled WebsiteRating audit for the prospect domain. */
+export function websiteratingManualAuditUrl(domain: string): string {
+  const bare = domain
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .replace(/\/.*$/, "");
+  return `https://www.websiterating.com/audit/?d=${encodeURIComponent(bare)}`;
+}
+
+function intelSection(
+  intel: ScorecardInternalIntel | null | undefined,
+  domain: string
+): string {
+  const wrManualUrl = websiteratingManualAuditUrl(domain);
+
   if (!intel) {
     return `<section class="intel-wrap">
     <h2>Design intelligence (internal)</h2>
     <div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">Not fetched yet.</p></div>
-    <div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">Not fetched yet.</p></div>
+    <div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">Not fetched yet.</p>
+      <p class="intel-meta"><a href="${esc(wrManualUrl)}" target="_blank" rel="noopener">Run manual audit</a></p>
+    </div>
     <p class="intel-meta">${INTEL_MISSING_HINT}</p>
   </section>`;
   }
@@ -66,15 +83,17 @@ function intelSection(intel: ScorecardInternalIntel | null | undefined): string 
 
   const wrBlock = wr
     ? `<div class="intel-card">
-        <h3>WebsiteRating <a href="https://www.websiterating.com/" target="_blank" rel="noopener">websiterating.com</a></h3>
+        <h3>WebsiteRating <a href="${esc(wrManualUrl)}" target="_blank" rel="noopener">websiterating.com</a></h3>
         ${wr.overall_score != null ? `<p class="intel-score">Overall: <strong>${esc(wr.overall_score)}</strong></p>` : ""}
         ${wr.visitor_reaction ? `<p><span class="lbl">Visitor reaction</span> ${esc(wr.visitor_reaction)}</p>` : ""}
         ${wr.top_fix ? `<p><span class="lbl">Top fix</span> ${esc(wr.top_fix)}</p>` : ""}
         ${wrCats}
         ${wr.error && !wr.ok ? `<p class="intel-err">${esc(formatIntelError(wr.error))}</p>` : ""}
-        <p class="intel-meta"><a href="https://www.websiterating.com/" target="_blank" rel="noopener">Run manual audit</a></p>
+        <p class="intel-meta"><a href="${esc(wrManualUrl)}" target="_blank" rel="noopener">Run manual audit</a></p>
       </div>`
-    : `<div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">No data in snapshot.</p></div>`;
+    : `<div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">No data in snapshot.</p>
+        <p class="intel-meta"><a href="${esc(wrManualUrl)}" target="_blank" rel="noopener">Run manual audit</a></p>
+      </div>`;
 
   return `<section class="intel-wrap">
     <h2>Design intelligence (internal)</h2>
@@ -193,7 +212,7 @@ background:#1a2332;border:1px solid #2a3544}
 <div class="shell">
   <div class="banner">Internal only — includes unlocked conversion/design placeholders plus Awwwards &amp; WebsiteRating intel. Do not share this URL with prospects.</div>
   ${contactBlock(bundle)}
-  ${intelSection(bundle.report.internal_intel)}
+  ${intelSection(bundle.report.internal_intel, bundle.report.domain)}
   ${shotsBlock(bundle.report)}
   <div class="panel">
     <h2>Scorecard with unlocked signals</h2>
