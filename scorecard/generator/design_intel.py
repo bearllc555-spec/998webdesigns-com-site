@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import time
 from datetime import datetime, timezone
 from urllib.parse import quote
 
@@ -20,10 +21,11 @@ log = logging.getLogger("scorecard.intel")
 
 UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 )
 REQUEST_TIMEOUT = int(os.environ.get("SCORECARD_INTEL_TIMEOUT_SEC", "25"))
-PLAYWRIGHT_TIMEOUT_MS = int(os.environ.get("SCORECARD_INTEL_PLAYWRIGHT_MS", "90000"))
+PLAYWRIGHT_TIMEOUT_MS = int(os.environ.get("SCORECARD_INTEL_PLAYWRIGHT_MS", "120000"))
+CHROME_ARGS = ["--no-sandbox", "--disable-blink-features=AutomationControlled"]
 
 
 def _site_url(domain: str) -> str:
@@ -33,9 +35,23 @@ def _site_url(domain: str) -> str:
     return f"https://{d}"
 
 
+def _domain_needles(domain: str) -> list[str]:
+    bare = domain.strip().lower().replace("www.", "")
+    parts = [bare]
+    if "." in bare:
+        parts.append(bare.split(".")[0])
+    return [p for p in parts if len(p) >= 4]
+
+
+def _html_near_match(html: str, idx: int, needles: list[str], radius: int = 500) -> bool:
+    chunk = html[max(0, idx - radius) : idx + radius].lower()
+    return any(n in chunk for n in needles)
+
+
 def fetch_awwwards(domain: str) -> dict:
     """Search Awwwards for the domain. Most local-trade sites are not listed."""
     domain = domain.strip().lower().replace("www.", "")
+    needles = _domain_needles(domain)
     search_url = f"https://www.awwwards.com/websites/search/?text={quote(domain)}"
     out: dict = {
         "ok": False,
@@ -54,23 +70,25 @@ def fetch_awwwards(domain: str) -> dict:
         )
         r.raise_for_status()
         html = r.text
-        needle = domain.split(".")[0]
-        listed = domain in html.lower() or (needle and needle in html.lower())
-        out["listed"] = listed
 
-        m = re.search(
+        for m in re.finditer(
             r'href="(https://www\.awwwards\.com/sites/[^"]+|/sites/[^"]+)"',
             html,
             re.I,
-        )
-        if m:
+        ):
+            if not _html_near_match(html, m.start(), needles):
+                continue
             href = m.group(1)
             profile = href if href.startswith("http") else f"https://www.awwwards.com{href}"
             out["profile_url"] = profile
             out["listed"] = True
-            title_m = re.search(r'class="[^"]*title[^"]*"[^>]*>([^<]+)<', html, re.I)
+            window = html[m.start() : m.start() + 800]
+            title_m = re.search(
+                r'class="[^"]*(?:title|name)[^"]*"[^>]*>([^<]+)<', window, re.I
+            )
             if title_m:
                 out["title"] = title_m.group(1).strip()
+            break
 
         if out["listed"]:
             out["ok"] = True
@@ -147,6 +165,55 @@ def _parse_websiterating_payload(data: dict) -> dict:
     return out
 
 
+def _wait_past_cloudflare(page, timeout_ms: int) -> bool:
+    """Wait until WebsiteRating is past the CF interstitial."""
+    deadline = time.time() + timeout_ms / 1000
+    while time.time() < deadline:
+        title = (page.title() or "").lower()
+        if "just a moment" not in title and "attention required" not in title:
+            try:
+                page.wait_for_selector(
+                    'input[type="url"], input[placeholder*="http"], input[placeholder*="URL"]',
+                    timeout=3000,
+                )
+                return True
+            except Exception:  # noqa: BLE001
+                if "websiterating" in title or "website audit" in title:
+                    return True
+        page.wait_for_timeout(1000)
+    return False
+
+
+def _audit_via_api_request(page, site_url: str) -> tuple[int, str]:
+    """POST /api/audit using Playwright request context (inherits CF cookies)."""
+    resp = page.request.post(
+        "https://www.websiterating.com/api/audit",
+        data=json.dumps({"url": site_url}),
+        headers={"Content-Type": "application/json"},
+    )
+    return resp.status, resp.text()
+
+
+def _audit_via_ui(page, site_url: str) -> tuple[int, str]:
+    """Fill the homepage form and capture the audit API response."""
+    inp = page.locator(
+        'input[type="url"], input[placeholder*="http"], input[placeholder*="URL"]'
+    ).first
+    inp.wait_for(state="visible", timeout=15000)
+    inp.fill(site_url)
+    with page.expect_response(
+        lambda r: "/api/audit" in r.url and r.request.method == "POST",
+        timeout=PLAYWRIGHT_TIMEOUT_MS,
+    ) as resp_info:
+        page.get_by_role("button", name=re.compile(r"audit", re.I)).first.click()
+    resp = resp_info.value
+    try:
+        text = resp.text()
+    except Exception as e:  # noqa: BLE001
+        return resp.status, str(e)
+    return resp.status, text
+
+
 def fetch_websiterating(domain: str) -> dict:
     """Call WebsiteRating audit API from a real browser context (Cloudflare)."""
     site_url = _site_url(domain)
@@ -168,37 +235,40 @@ def fetch_websiterating(domain: str) -> dict:
         from playwright.sync_api import sync_playwright
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+            browser = p.chromium.launch(headless=True, args=CHROME_ARGS)
             try:
-                ctx = browser.new_context(user_agent=UA, viewport={"width": 1280, "height": 900})
+                ctx = browser.new_context(
+                    user_agent=UA,
+                    viewport={"width": 1280, "height": 900},
+                    locale="en-US",
+                )
                 page = ctx.new_page()
                 page.set_default_timeout(PLAYWRIGHT_TIMEOUT_MS)
-                page.goto("https://www.websiterating.com/", wait_until="domcontentloaded")
-                page.wait_for_timeout(4000)
-
-                result = page.evaluate(
-                    """async (targetUrl) => {
-                      try {
-                        const r = await fetch('/api/audit', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ url: targetUrl })
-                        });
-                        const text = await r.text();
-                        return { status: r.status, text };
-                      } catch (e) {
-                        return { status: 0, text: String(e) };
-                      }
-                    }""",
-                    site_url,
+                page.goto(
+                    "https://www.websiterating.com/",
+                    wait_until="domcontentloaded",
+                    timeout=PLAYWRIGHT_TIMEOUT_MS,
                 )
+                if not _wait_past_cloudflare(page, min(PLAYWRIGHT_TIMEOUT_MS, 60000)):
+                    out["error"] = "Cloudflare challenge did not complete on WebsiteRating"
+                    return out
+
+                page.wait_for_timeout(1500)
+                status, text = _audit_via_api_request(page, site_url)
+                if status == 403 or (status != 200 and "just a moment" in text.lower()):
+                    log.info("websiterating API blocked (%s) — trying UI audit flow", status)
+                    status, text = _audit_via_ui(page, site_url)
             finally:
                 browser.close()
 
-        status = int(result.get("status") or 0)
-        text = str(result.get("text") or "")
         if status != 200:
-            out["error"] = f"HTTP {status}: {text[:300]}"
+            if "just a moment" in text.lower():
+                out["error"] = (
+                    "Cloudflare blocked automated audit — open websiterating.com "
+                    "and run a manual audit for this URL."
+                )
+            else:
+                out["error"] = f"HTTP {status}: {text[:300]}"
             return out
 
         try:
@@ -207,7 +277,9 @@ def fetch_websiterating(domain: str) -> dict:
             out["error"] = f"Non-JSON response: {text[:300]}"
             return out
 
-        parsed = _parse_websiterating_payload(payload if isinstance(payload, dict) else {"raw": payload})
+        parsed = _parse_websiterating_payload(
+            payload if isinstance(payload, dict) else {"raw": payload}
+        )
         parsed["ok"] = True
         return parsed
     except Exception as e:  # noqa: BLE001
