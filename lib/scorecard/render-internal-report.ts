@@ -13,9 +13,21 @@ const esc = (s: unknown) =>
     ] as string)
   );
 
+const INTEL_MISSING_HINT =
+  "Sync <code>design_intel.py</code> on the VPS (<code>bash vps-sync-generator.sh</code>), then refresh — worker backfills on idle.";
+
 function intelSection(intel: ScorecardInternalIntel | null | undefined): string {
-  const aw = intel?.awwwards;
-  const wr = intel?.websiterating;
+  if (!intel) {
+    return `<section class="intel-wrap">
+    <h2>Design intelligence (internal)</h2>
+    <div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">Not fetched yet.</p></div>
+    <div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">Not fetched yet.</p></div>
+    <p class="intel-meta">${INTEL_MISSING_HINT}</p>
+  </section>`;
+  }
+
+  const aw = intel.awwwards;
+  const wr = intel.websiterating;
   const fetched = intel?.fetched_at
     ? new Date(intel.fetched_at).toLocaleString("en-US", { timeZone: "America/New_York" })
     : null;
@@ -28,7 +40,7 @@ function intelSection(intel: ScorecardInternalIntel | null | undefined): string 
         ${aw.search_url ? `<p class="intel-meta"><a href="${esc(aw.search_url)}" target="_blank" rel="noopener">Search on Awwwards</a></p>` : ""}
         ${aw.error && !aw.ok ? `<p class="intel-err">${esc(aw.error)}</p>` : ""}
       </div>`
-    : `<div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">Not fetched yet — re-run worker on VPS or submit a fresh report.</p></div>`;
+    : `<div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">No data in snapshot.</p></div>`;
 
   const wrCats =
     wr?.categories?.length ?
@@ -50,7 +62,7 @@ function intelSection(intel: ScorecardInternalIntel | null | undefined): string 
         ${wr.error && !wr.ok ? `<p class="intel-err">${esc(wr.error)}</p>` : ""}
         <p class="intel-meta"><a href="https://www.websiterating.com/" target="_blank" rel="noopener">Run manual audit</a></p>
       </div>`
-    : `<div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">Not fetched yet.</p></div>`;
+    : `<div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">No data in snapshot.</p></div>`;
 
   return `<section class="intel-wrap">
     <h2>Design intelligence (internal)</h2>

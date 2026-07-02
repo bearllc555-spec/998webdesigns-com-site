@@ -103,7 +103,13 @@ def _attach_internal_intel(sb, report_id: str, domain: str) -> None:
         return
     try:
         from design_intel import gather_internal_intel, store_internal_intel
-
+    except ImportError as e:
+        log.error(
+            "design_intel.py missing on VPS — run scorecard/generator/vps-sync-generator.sh: %s",
+            e,
+        )
+        return
+    try:
         intel = gather_internal_intel(domain)
         store_internal_intel(sb, report_id, intel)
         base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
@@ -396,6 +402,28 @@ def _backfill_site_shot_rows(sb, rows: list) -> int:
     return filled
 
 
+def backfill_missing_internal_intel(sb, limit: int = 2) -> int:
+    """Fetch Awwwards + WebsiteRating for reports missing internal_intel."""
+    if os.environ.get("SCORECARD_INTEL_DISABLED", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    ):
+        return 0
+    rows = (
+        sb.table("scorecard_reports")
+        .select("id, domain")
+        .eq("status", "active")
+        .is_("internal_intel", "null")
+        .order("created_at", desc=True)
+        .limit(limit)
+        .execute()
+    ).data or []
+    for row in rows:
+        _attach_internal_intel(sb, row["id"], row["domain"])
+    return len(rows)
+
+
 def _capture_site_with_retries(domain: str, attempts: int = 3) -> str | None:
     for i in range(attempts):
         url = capture_site_screenshot(domain)
@@ -570,6 +598,35 @@ try:
         if url:
             set_screenshots(_client(), report_id, None, url)
         return {"site_screenshot_url": url}
+
+    @app.post("/fetch-intel")
+    async def fetch_intel(req: Request):
+        """Backfill internal_intel (Awwwards + WebsiteRating) for one report."""
+        if not _auth_ok(req.headers):
+            raise HTTPException(401, "bad key")
+        body = await req.json()
+        report_id = body.get("report_id")
+        domain = body.get("domain")
+        if not report_id or not domain:
+            raise HTTPException(422, "report_id and domain required")
+        sb = _client()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(
+            _screenshot_executor,
+            _attach_internal_intel,
+            sb,
+            report_id,
+            domain,
+        )
+        row = (
+            sb.table("scorecard_reports")
+            .select("internal_intel")
+            .eq("id", report_id)
+            .limit(1)
+            .execute()
+        ).data
+        intel = row[0].get("internal_intel") if row else None
+        return {"ok": True, "internal_intel": intel}
 except ImportError:
     app = None  # FastAPI not installed in an analysis env; fine.
 
@@ -771,10 +828,13 @@ def run_worker():
                     n = backfill_missing_site_shots(sb)
                     if os.environ.get("SCORECARD_RECAPTURE_SITE_SHOTS") == "1":
                         n += recapture_recent_site_shots(sb, limit=2)
+                    n_intel = backfill_missing_internal_intel(sb, limit=2)
                     if n:
                         log.info("backfilled %s site screenshot(s)", n)
+                    if n_intel:
+                        log.info("backfilled internal intel for %s report(s)", n_intel)
                 except Exception as e:  # noqa: BLE001
-                    log.warning("site shot backfill error: %s", e)
+                    log.warning("idle backfill error: %s", e)
             time.sleep(2)
             continue
         idle_passes = 0

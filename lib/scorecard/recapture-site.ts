@@ -1,12 +1,10 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { scorecardGeneratorBaseUrl } from "@/lib/scorecard/fetch-internal-intel";
 
 const DEFAULT_GENERATOR_URL = "https://generator.998webdesigns.com";
 
 function generatorBaseUrl(): string {
-  return (
-    process.env.SCORECARD_GENERATOR_URL?.trim().replace(/\/$/, "") ||
-    DEFAULT_GENERATOR_URL
-  );
+  return scorecardGeneratorBaseUrl() || DEFAULT_GENERATOR_URL;
 }
 
 /** Ask VPS Playwright to re-shoot a report's site thumbnail. */

@@ -133,6 +133,23 @@ node scripts/sync-cf-worker-secrets.mjs
 After a test scorecard, worker logs should show `crm notify ok domain=...`. If you see
 `crm notify skipped: ... GENERATOR_API_KEY=MISSING`, the VPS `.env` line is missing.
 
+### Design intelligence (Awwwards + WebsiteRating)
+
+CRM internal briefs read `scorecard_reports.internal_intel`. The worker module
+**`design_intel.py`** must exist on the VPS (not just `service.py`).
+
+**Full generator sync on VPS:**
+
+```bash
+curl -fsSL -o /tmp/vps-sync-generator.sh \
+  "https://raw.githubusercontent.com/bearllc555-spec/998webdesigns-com-site/main/scorecard/generator/vps-sync-generator.sh"
+bash /tmp/vps-sync-generator.sh
+```
+
+The worker backfills missing intel on idle (~10s, 2 reports per cycle). One report now:
+`POST https://generator.998webdesigns.com/fetch-intel` with `report_id`, `domain`,
+`x-generator-key`.
+
 ### Networking — do NOT expose a raw open port
 The `/generate` endpoint must be reachable by Door 1's send-script but not the
 public internet. Bind uvicorn to `127.0.0.1` (above) and front it with **one**
