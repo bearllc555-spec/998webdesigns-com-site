@@ -25,6 +25,7 @@ UA = (
 )
 REQUEST_TIMEOUT = int(os.environ.get("SCORECARD_INTEL_TIMEOUT_SEC", "25"))
 PLAYWRIGHT_TIMEOUT_MS = int(os.environ.get("SCORECARD_INTEL_PLAYWRIGHT_MS", "120000"))
+WEBSITERATING_UI_TIMEOUT_MS = int(os.environ.get("SCORECARD_INTEL_WR_UI_MS", "45000"))
 CHROME_ARGS = ["--no-sandbox", "--disable-blink-features=AutomationControlled"]
 
 
@@ -165,6 +166,27 @@ def _parse_websiterating_payload(data: dict) -> dict:
     return out
 
 
+def _friendly_websiterating_error(raw: str) -> str:
+    """Operator-facing message — hide Playwright/HTTP noise."""
+    low = raw.lower()
+    if "just a moment" in low or "cloudflare" in low:
+        return (
+            "WebsiteRating blocked the automated check — open the link below "
+            "and run a manual audit for this URL."
+        )
+    if "timeout" in low or "exceeded while waiting" in low:
+        return (
+            "Automated audit timed out on the server — open WebsiteRating "
+            "below and paste the client URL for a manual run."
+        )
+    if low.startswith("http 403"):
+        return (
+            "WebsiteRating blocked the automated check — open the link below "
+            "and run a manual audit for this URL."
+        )
+    return raw[:400]
+
+
 def _wait_past_cloudflare(page, timeout_ms: int) -> bool:
     """Wait until WebsiteRating is past the CF interstitial."""
     deadline = time.time() + timeout_ms / 1000
@@ -203,7 +225,7 @@ def _audit_via_ui(page, site_url: str) -> tuple[int, str]:
     inp.fill(site_url)
     with page.expect_response(
         lambda r: "/api/audit" in r.url and r.request.method == "POST",
-        timeout=PLAYWRIGHT_TIMEOUT_MS,
+        timeout=WEBSITERATING_UI_TIMEOUT_MS,
     ) as resp_info:
         page.get_by_role("button", name=re.compile(r"audit", re.I)).first.click()
     resp = resp_info.value
@@ -263,12 +285,11 @@ def fetch_websiterating(domain: str) -> dict:
 
         if status != 200:
             if "just a moment" in text.lower():
-                out["error"] = (
-                    "Cloudflare blocked automated audit — open websiterating.com "
-                    "and run a manual audit for this URL."
-                )
+                out["error"] = _friendly_websiterating_error(text)
             else:
-                out["error"] = f"HTTP {status}: {text[:300]}"
+                out["error"] = _friendly_websiterating_error(
+                    f"HTTP {status}: {text[:300]}"
+                )
             return out
 
         try:
@@ -284,7 +305,7 @@ def fetch_websiterating(domain: str) -> dict:
         return parsed
     except Exception as e:  # noqa: BLE001
         log.warning("websiterating intel failed: %s", e)
-        out["error"] = str(e)[:400]
+        out["error"] = _friendly_websiterating_error(str(e))
         return out
 
 

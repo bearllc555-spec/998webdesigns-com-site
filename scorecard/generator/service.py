@@ -417,6 +417,8 @@ def _intel_needs_refresh(intel: dict | None) -> bool:
     err = str(wr.get("error") or "").lower()
     if err.startswith("http 403") or "just a moment" in err:
         return True
+    if "timeout" in err or "exceeded while waiting" in err:
+        return True
     return False
 
 

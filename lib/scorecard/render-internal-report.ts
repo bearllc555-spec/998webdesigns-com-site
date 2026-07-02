@@ -16,6 +16,18 @@ const esc = (s: unknown) =>
 const INTEL_MISSING_HINT =
   "Sync <code>design_intel.py</code> on the VPS (<code>bash vps-sync-generator.sh</code>), then refresh — worker backfills on idle.";
 
+function formatIntelError(err: string | null | undefined): string | null {
+  if (!err) return null;
+  const low = err.toLowerCase();
+  if (low.includes("timeout") || low.includes("exceeded while waiting")) {
+    return "Automated audit timed out on the server — use the link below to run it manually in your browser.";
+  }
+  if (low.includes("just a moment") || low.includes("cloudflare") || low.startsWith("http 403")) {
+    return "WebsiteRating blocked the automated check — use the link below for a manual audit.";
+  }
+  return err;
+}
+
 function intelSection(intel: ScorecardInternalIntel | null | undefined): string {
   if (!intel) {
     return `<section class="intel-wrap">
@@ -59,7 +71,7 @@ function intelSection(intel: ScorecardInternalIntel | null | undefined): string 
         ${wr.visitor_reaction ? `<p><span class="lbl">Visitor reaction</span> ${esc(wr.visitor_reaction)}</p>` : ""}
         ${wr.top_fix ? `<p><span class="lbl">Top fix</span> ${esc(wr.top_fix)}</p>` : ""}
         ${wrCats}
-        ${wr.error && !wr.ok ? `<p class="intel-err">${esc(wr.error)}</p>` : ""}
+        ${wr.error && !wr.ok ? `<p class="intel-err">${esc(formatIntelError(wr.error))}</p>` : ""}
         <p class="intel-meta"><a href="https://www.websiterating.com/" target="_blank" rel="noopener">Run manual audit</a></p>
       </div>`
     : `<div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">No data in snapshot.</p></div>`;
