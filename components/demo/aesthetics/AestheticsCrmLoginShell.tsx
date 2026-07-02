@@ -26,7 +26,7 @@ export function AestheticsCrmLoginShell({ brand }: AestheticsCrmLoginShellProps)
               style={{ fontFamily: config.fonts.display, color: config.palette.headline }}
             >
               {config.brandName}
-              <SiteVersionPill lightText />
+              <SiteVersionPill />
             </p>
             <p className="text-sm font-medium" style={{ color: config.palette.accent }}>
               Demo CRM

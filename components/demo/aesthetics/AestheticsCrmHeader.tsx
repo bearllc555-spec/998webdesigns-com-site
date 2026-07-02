@@ -60,7 +60,7 @@ export function AestheticsCrmHeader({
               style={{ fontFamily: config.fonts.display, color: config.palette.headline }}
             >
               {title}
-              <SiteVersionPill lightText />
+              <SiteVersionPill />
             </h1>
             {subtitle ? (
               <p className="mt-1 text-sm" style={{ color: config.palette.muted }}>
