@@ -1,6 +1,6 @@
 import { renderScorecardReportHtml } from "@/lib/scorecard/render-report";
 import type { ScorecardInternalIntel } from "@/lib/scorecard/internal-intel-types";
-import type { ScorecardReport, ScorecardSignal } from "@/lib/scorecard/types";
+import type { ScorecardReport } from "@/lib/scorecard/types";
 import {
   signalsForInternalBrief,
   type InternalScorecardBundle,
@@ -136,8 +136,8 @@ function contactBlock(bundle: InternalScorecardBundle): string {
     bundle.report.business_name;
 
   const industryLabel = scorecardIndustryLabel(
-    jobPayload?.industry as string | undefined,
-    jobPayload?.industry_other as string | undefined
+    bundle.jobPayload?.industry as string | undefined,
+    bundle.jobPayload?.industry_other as string | undefined
   );
 
   return `<div class="contact">
