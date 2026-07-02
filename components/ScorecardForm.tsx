@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ScorecardSuccess } from "@/components/ScorecardSuccess";
-import { SCORECARD_ESTIMATE_SEC } from "@/lib/scorecard/estimate";
+import { SCORECARD_ESTIMATE_SEC, SCORECARD_MAX_WAIT_MIN } from "@/lib/scorecard/estimate";
 import {
   SCORECARD_INDUSTRY_OPTIONS,
   type ScorecardIndustryValue,
@@ -81,7 +81,8 @@ export function ScorecardForm() {
         <h1 className="text-2xl font-semibold text-[#1a1a1a]">How does your website score?</h1>
         <p className="mt-2 text-[15px] text-[#6b6b66]">
           A free, sourced scorecard — mobile speed, security, SEO, and your Google reviews. We
-          email you the report.
+          email you the report. Your report can take up to {SCORECARD_MAX_WAIT_MIN} minutes to
+          build.
         </p>
 
         {!pendingJob ? (

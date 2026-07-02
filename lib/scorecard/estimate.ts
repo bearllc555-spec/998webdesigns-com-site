@@ -4,3 +4,6 @@ export const SCORECARD_ESTIMATE_SEC =
 
 export const SCORECARD_POLL_MAX_SEC =
   Math.max(SCORECARD_ESTIMATE_SEC, Number(process.env.SCORECARD_POLL_MAX_SEC ?? "180") || 180);
+
+/** User-facing max wait (matches browser poll timeout). */
+export const SCORECARD_MAX_WAIT_MIN = Math.ceil(SCORECARD_POLL_MAX_SEC / 60);
