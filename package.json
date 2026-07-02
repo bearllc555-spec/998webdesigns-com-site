@@ -22,6 +22,7 @@
     "blog:setup": "node scripts/setup-blog-db.mjs",
     "scorecard:migrate-intel": "node scripts/apply-scorecard-internal-intel.mjs",
     "cf:ops-checklist": "node scripts/cf-ops-checklist.mjs",
+    "favicon:generate": "node scripts/generate-site-favicon.mjs",
     "voice-demo:ops-report": "node --env-file=.env.local scripts/voice-demo-ops-report.mjs"
   },
   "dependencies": {
