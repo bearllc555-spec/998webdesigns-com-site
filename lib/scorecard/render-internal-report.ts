@@ -1,4 +1,4 @@
-import { renderScorecardReportHtml } from "@/lib/scorecard/render-report";
+import { renderScorecardReportHtml, SCORECARD_REPORT_FAVICON_HEAD } from "@/lib/scorecard/render-report";
 import type { ScorecardInternalIntel } from "@/lib/scorecard/internal-intel-types";
 import type { ScorecardReport } from "@/lib/scorecard/types";
 import {
@@ -199,6 +199,7 @@ export function renderInternalScorecardBriefHtml(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+${SCORECARD_REPORT_FAVICON_HEAD}
 <title>Internal brief — ${esc(bundle.report.business_name)}</title>
 <style>
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;

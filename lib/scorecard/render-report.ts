@@ -8,6 +8,11 @@ const esc = (s: unknown) =>
     ] as string)
   );
 
+/** Favicon links for standalone scorecard HTML (matches app/layout.tsx icons). */
+export const SCORECARD_REPORT_FAVICON_HEAD = `<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="shortcut icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png">`;
+
 const VERDICT_TEXT: Record<string, string> = {
   danger: "This site is actively costing you jobs every week. Here's exactly where.",
   warning: "Your site is functional but leaking calls. Here's exactly where.",
@@ -128,6 +133,7 @@ export function renderScorecardReportHtml(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+${SCORECARD_REPORT_FAVICON_HEAD}
 <title>Website report — ${esc(report.business_name)}</title>
 <style>
 :root{--ink:#1a1a1a;--muted:#6b6b66;--hint:#9a9a93;--line:rgba(0,0,0,.12);
@@ -220,8 +226,11 @@ border-radius:12px;object-fit:cover;object-position:top center}
 }
 
 export function scorecardNotFoundHtml(): string {
-  return `<!doctype html><meta name="robots" content="noindex,nofollow">
+  return `<!doctype html><head>
+<meta name="robots" content="noindex,nofollow">
+${SCORECARD_REPORT_FAVICON_HEAD}
 <title>Report not found</title>
+</head>
 <body style="font-family:-apple-system,Arial;max-width:520px;margin:80px auto;
 padding:0 20px;color:#1a1a1a">
 <h1 style="font-weight:500">Report not found</h1>
