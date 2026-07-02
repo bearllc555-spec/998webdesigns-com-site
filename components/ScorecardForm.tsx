@@ -8,6 +8,7 @@ import {
   SCORECARD_INDUSTRY_OPTIONS,
   type ScorecardIndustryValue,
 } from "@/lib/scorecard/industries";
+import { SiteVersionPill } from "@/components/SiteVersionPill";
 
 export function ScorecardForm() {
   const searchParams = useSearchParams();
@@ -205,6 +206,9 @@ export function ScorecardForm() {
           </p>
         ) : null}
       </div>
+      <p className="mt-6 flex justify-center">
+        <SiteVersionPill />
+      </p>
     </main>
   );
 }
