@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ScorecardSuccess } from "@/components/ScorecardSuccess";
 import { SCORECARD_ESTIMATE_SEC } from "@/lib/scorecard/estimate";
@@ -11,7 +11,7 @@ import {
 
 export function ScorecardForm() {
   const searchParams = useSearchParams();
-  const [domain, setDomain] = useState("");
+  const [domain, setDomain] = useState(() => searchParams.get("d") ?? "");
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
@@ -21,11 +21,6 @@ export function ScorecardForm() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [pendingJob, setPendingJob] = useState<{ jobId: string; email: string } | null>(null);
-
-  useEffect(() => {
-    const prefill = searchParams.get("d");
-    if (prefill) setDomain(prefill);
-  }, [searchParams]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

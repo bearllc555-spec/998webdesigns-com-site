@@ -28,9 +28,10 @@ export function ScorecardSuccess({
   const [reportUrl, setReportUrl] = useState<string | null>(null);
   const [score, setScore] = useState<number | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
-  const startedAt = useRef(Date.now());
+  const startedAt = useRef(0);
 
   useEffect(() => {
+    startedAt.current = Date.now();
     const tick = window.setInterval(() => {
       setElapsedSec(Math.floor((Date.now() - startedAt.current) / 1000));
     }, 250);
