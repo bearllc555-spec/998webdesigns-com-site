@@ -402,8 +402,26 @@ def _backfill_site_shot_rows(sb, rows: list) -> int:
     return filled
 
 
+def _intel_needs_refresh(intel: dict | None) -> bool:
+    """Re-fetch known bad snapshots (false Awwwards match, CF-blocked WebsiteRating)."""
+    if not intel:
+        return True
+    aw = intel.get("awwwards") if isinstance(intel.get("awwwards"), dict) else {}
+    wr = intel.get("websiterating") if isinstance(intel.get("websiterating"), dict) else {}
+    aw_text = " ".join(
+        str(aw.get(k) or "")
+        for k in ("title", "summary", "profile_url")
+    ).lower()
+    if "visual cinnamon" in aw_text or "searching-for-birds" in aw_text:
+        return True
+    err = str(wr.get("error") or "").lower()
+    if err.startswith("http 403") or "just a moment" in err:
+        return True
+    return False
+
+
 def backfill_missing_internal_intel(sb, limit: int = 2) -> int:
-    """Fetch Awwwards + WebsiteRating for reports missing internal_intel."""
+    """Fetch Awwwards + WebsiteRating for reports missing or stale internal_intel."""
     if os.environ.get("SCORECARD_INTEL_DISABLED", "").strip().lower() in (
         "1",
         "true",
@@ -419,6 +437,21 @@ def backfill_missing_internal_intel(sb, limit: int = 2) -> int:
         .limit(limit)
         .execute()
     ).data or []
+    if len(rows) < limit:
+        candidates = (
+            sb.table("scorecard_reports")
+            .select("id, domain, internal_intel")
+            .eq("status", "active")
+            .not_.is_("internal_intel", "null")
+            .order("created_at", desc=True)
+            .limit(20)
+            .execute()
+        ).data or []
+        for row in candidates:
+            if _intel_needs_refresh(row.get("internal_intel")):
+                rows.append({"id": row["id"], "domain": row["domain"]})
+                if len(rows) >= limit:
+                    break
     for row in rows:
         _attach_internal_intel(sb, row["id"], row["domain"])
     return len(rows)
