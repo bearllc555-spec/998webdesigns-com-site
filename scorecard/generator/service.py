@@ -109,8 +109,21 @@ def _attach_internal_intel(sb, report_id: str, domain: str) -> None:
             e,
         )
         return
+    business_name = ""
     try:
-        intel = gather_internal_intel(domain)
+        row = (
+            sb.table("scorecard_reports")
+            .select("business_name")
+            .eq("id", report_id)
+            .limit(1)
+            .execute()
+        ).data
+        if row:
+            business_name = (row[0].get("business_name") or "").strip()
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        intel = gather_internal_intel(domain, business_name)
         store_internal_intel(sb, report_id, intel)
         base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
         log.info(

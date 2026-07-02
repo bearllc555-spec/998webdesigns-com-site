@@ -1,6 +1,7 @@
 export type AwwwardsIntel = {
   ok: boolean;
   listed?: boolean;
+  trade?: string;
   search_url?: string;
   profile_url?: string | null;
   title?: string | null;

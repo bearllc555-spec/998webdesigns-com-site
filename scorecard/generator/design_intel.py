@@ -49,23 +49,41 @@ def _html_near_match(html: str, idx: int, needles: list[str], radius: int = 500)
     return any(n in chunk for n in needles)
 
 
-def fetch_awwwards(domain: str) -> dict:
-    """Search Awwwards for the domain. Most local-trade sites are not listed."""
+def _infer_trade(business_name: str, domain: str) -> str:
+    hay = f"{business_name} {domain}".lower()
+    rules = (
+        (("plumb", "drain", "sewer", "pipe", "water heater"), "Plumbing"),
+        (("hvac", "heating", "cooling", "air condition"), "HVAC"),
+        (("electric",), "Electrician"),
+        (("roof",), "Roofing"),
+        (("landscap", "lawn", "mower"), "Landscaping"),
+    )
+    for keys, trade in rules:
+        if any(k in hay for k in keys):
+            return trade
+    return "Plumbing"
+
+
+def fetch_awwwards(domain: str, business_name: str = "") -> dict:
+    """Check if the prospect domain is listed; trade search link for benchmarks."""
     domain = domain.strip().lower().replace("www.", "")
+    trade = _infer_trade(business_name, domain)
     needles = _domain_needles(domain)
-    search_url = f"https://www.awwwards.com/websites/search/?text={quote(domain)}"
+    domain_search_url = f"https://www.awwwards.com/websites/search/?text={quote(domain)}"
+    search_url = f"https://www.awwwards.com/websites/search/?text={quote(trade)}"
     out: dict = {
         "ok": False,
         "listed": False,
+        "trade": trade,
         "search_url": search_url,
         "profile_url": None,
         "title": None,
-        "summary": f"Not found on Awwwards — search: {search_url}",
+        "summary": None,
         "error": None,
     }
     try:
         r = requests.get(
-            search_url,
+            domain_search_url,
             headers={"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"},
             timeout=REQUEST_TIMEOUT,
         )
@@ -100,10 +118,7 @@ def fetch_awwwards(domain: str) -> dict:
             )
         else:
             out["ok"] = True
-            out["summary"] = (
-                "No Awwwards listing for this domain — expected for most local "
-                "service sites. Award benchmarks target agency/creative work."
-            )
+            out["summary"] = None
     except Exception as e:  # noqa: BLE001
         out["error"] = str(e)[:400]
         out["summary"] = f"Awwwards lookup failed — open {search_url} manually."
@@ -309,10 +324,10 @@ def fetch_websiterating(domain: str) -> dict:
         return out
 
 
-def gather_internal_intel(domain: str) -> dict:
+def gather_internal_intel(domain: str, business_name: str = "") -> dict:
     return {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "awwwards": fetch_awwwards(domain),
+        "awwwards": fetch_awwwards(domain, business_name),
         "websiterating": fetch_websiterating(domain),
     }
 

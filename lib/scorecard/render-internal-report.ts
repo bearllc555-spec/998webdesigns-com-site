@@ -5,6 +5,10 @@ import {
   signalsForInternalBrief,
   type InternalScorecardBundle,
 } from "@/lib/scorecard/fetch-internal-report";
+import {
+  awwwardsTradeSearchUrl,
+  inferScorecardTrade,
+} from "@/lib/scorecard/infer-trade";
 
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"']/g, (c) =>
@@ -40,14 +44,19 @@ export function websiteratingManualAuditUrl(domain: string): string {
 
 function intelSection(
   intel: ScorecardInternalIntel | null | undefined,
-  domain: string
+  domain: string,
+  businessName: string
 ): string {
   const wrManualUrl = websiteratingManualAuditUrl(domain);
+  const trade = inferScorecardTrade(businessName, domain);
+  const awSearchUrl = awwwardsTradeSearchUrl(trade);
 
   if (!intel) {
     return `<section class="intel-wrap">
     <h2>Design intelligence (internal)</h2>
-    <div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">Not fetched yet.</p></div>
+    <div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">Not fetched yet.</p>
+      <p class="intel-meta"><a href="${esc(awSearchUrl)}" target="_blank" rel="noopener">Search on Awwwards</a></p>
+    </div>
     <div class="intel-card"><h3>WebsiteRating</h3><p class="intel-muted">Not fetched yet.</p>
       <p class="intel-meta"><a href="${esc(wrManualUrl)}" target="_blank" rel="noopener">Run manual audit</a></p>
     </div>
@@ -61,15 +70,20 @@ function intelSection(
     ? new Date(intel.fetched_at).toLocaleString("en-US", { timeZone: "America/New_York" })
     : null;
 
+  const awSummary =
+    aw?.listed ? (aw.summary ?? aw.error ?? null) : (aw?.error ?? null);
+
   const awBlock = aw
     ? `<div class="intel-card">
         <h3>Awwwards <a href="https://www.awwwards.com/" target="_blank" rel="noopener">awwwards.com</a></h3>
         <p class="intel-meta">${aw.listed ? "Listed" : "Not listed"}${aw.profile_url ? ` · <a href="${esc(aw.profile_url)}" target="_blank" rel="noopener">profile</a>` : ""}</p>
-        <p>${esc(aw.summary ?? aw.error ?? "No data")}</p>
-        ${aw.search_url ? `<p class="intel-meta"><a href="${esc(aw.search_url)}" target="_blank" rel="noopener">Search on Awwwards</a></p>` : ""}
+        ${awSummary ? `<p>${esc(awSummary)}</p>` : ""}
+        <p class="intel-meta"><a href="${esc(awSearchUrl)}" target="_blank" rel="noopener">Search on Awwwards</a></p>
         ${aw.error && !aw.ok ? `<p class="intel-err">${esc(aw.error)}</p>` : ""}
       </div>`
-    : `<div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">No data in snapshot.</p></div>`;
+    : `<div class="intel-card"><h3>Awwwards</h3><p class="intel-muted">No data in snapshot.</p>
+        <p class="intel-meta"><a href="${esc(awSearchUrl)}" target="_blank" rel="noopener">Search on Awwwards</a></p>
+      </div>`;
 
   const wrCats =
     wr?.categories?.length ?
@@ -212,7 +226,7 @@ background:#1a2332;border:1px solid #2a3544}
 <div class="shell">
   <div class="banner">Internal only — includes unlocked conversion/design placeholders plus Awwwards &amp; WebsiteRating intel. Do not share this URL with prospects.</div>
   ${contactBlock(bundle)}
-  ${intelSection(bundle.report.internal_intel, bundle.report.domain)}
+  ${intelSection(bundle.report.internal_intel, bundle.report.domain, bundle.report.business_name)}
   ${shotsBlock(bundle.report)}
   <div class="panel">
     <h2>Scorecard with unlocked signals</h2>
