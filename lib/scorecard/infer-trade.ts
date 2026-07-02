@@ -16,5 +16,5 @@ export function inferScorecardTrade(businessName: string, domain: string): strin
 }
 
 export function awwwardsTradeSearchUrl(trade: string): string {
-  return `https://www.awwwards.com/websites/search/?text=${encodeURIComponent(trade)}`;
+  return `https://www.awwwards.com/websites/?text=${encodeURIComponent(trade.toLowerCase())}`;
 }

@@ -69,8 +69,8 @@ def fetch_awwwards(domain: str, business_name: str = "") -> dict:
     domain = domain.strip().lower().replace("www.", "")
     trade = _infer_trade(business_name, domain)
     needles = _domain_needles(domain)
-    domain_search_url = f"https://www.awwwards.com/websites/search/?text={quote(domain)}"
-    search_url = f"https://www.awwwards.com/websites/search/?text={quote(trade)}"
+    domain_search_url = f"https://www.awwwards.com/websites/?text={quote(domain)}"
+    search_url = f"https://www.awwwards.com/websites/?text={quote(trade.lower())}"
     out: dict = {
         "ok": False,
         "listed": False,
