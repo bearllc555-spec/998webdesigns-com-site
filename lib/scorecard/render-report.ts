@@ -201,6 +201,11 @@ border-radius:12px;object-fit:cover;object-position:top center}
   <div class="banner bg-${v}" style="color:${ink}">${esc(verdictLine)} Every measured number below lists its source.</div>
   ${cmp}
   ${signals.map(signalHtml).join("\n")}
+  <div class="cta">
+    <h3>We can fix all of this.</h3>
+    <p>A modern, fast, mobile-first site with click-to-call, your reviews front and center, and the local SEO Google needs to rank you. Flat design fee, free hosting to start, and a love-it-or-don't-pay-the-balance guarantee.</p>
+    <a href="${esc(bookingUrl)}">Book a 15-minute call &rarr;</a>
+  </div>
   <div class="sources">
     <h3>How we measured this</h3>
     <div class="src"><a href="https://pagespeed.web.dev">Google PageSpeed Insights</a> &mdash; mobile speed &amp; load time</div>
@@ -209,11 +214,6 @@ border-radius:12px;object-fit:cover;object-position:top center}
     <div class="src"><a href="https://www.screamingfrog.co.uk/seo-spider">Screaming Frog / homepage crawl</a> &mdash; title, meta, headings, schema</div>
     <p class="fine">All tools above are free and public &mdash; you can run any of them on your own site, and we encourage it. Items tagged &ldquo;manual review&rdquo; are our own assessment, noted honestly as judgment rather than a tool score. Locked items are not yet assessed &mdash; we review those by hand on a call.</p>
     ${rerunLine ? `<p class="fine rerun">${esc(rerunLine)}</p>` : ""}
-  </div>
-  <div class="cta">
-    <h3>We can fix all of this.</h3>
-    <p>A modern, fast, mobile-first site with click-to-call, your reviews front and center, and the local SEO Google needs to rank you. Flat design fee, free hosting to start, and a love-it-or-don't-pay-the-balance guarantee.</p>
-    <a href="${esc(bookingUrl)}">Book a 15-minute call &rarr;</a>
   </div>
 </div>
 </body></html>`;
