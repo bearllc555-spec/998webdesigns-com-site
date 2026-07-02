@@ -102,7 +102,11 @@ def _attach_internal_intel(sb, report_id: str, domain: str) -> None:
     ):
         return
     try:
-        from design_intel import gather_internal_intel, store_internal_intel
+        from design_intel import (
+            gather_internal_intel,
+            resolve_industry_search,
+            store_internal_intel,
+        )
     except ImportError as e:
         log.error(
             "design_intel.py missing on VPS — run scorecard/generator/vps-sync-generator.sh: %s",
@@ -110,20 +114,39 @@ def _attach_internal_intel(sb, report_id: str, domain: str) -> None:
         )
         return
     business_name = ""
+    industry_search = None
     try:
         row = (
             sb.table("scorecard_reports")
-            .select("business_name")
+            .select("business_name, lead_id")
             .eq("id", report_id)
             .limit(1)
             .execute()
         ).data
         if row:
             business_name = (row[0].get("business_name") or "").strip()
+            lead_id = row[0].get("lead_id")
+            if lead_id:
+                job = (
+                    sb.table("scorecard_jobs")
+                    .select("payload")
+                    .eq("lead_id", lead_id)
+                    .order("created_at", desc=True)
+                    .limit(1)
+                    .execute()
+                ).data
+                if job:
+                    payload = job[0].get("payload") or {}
+                    industry_search = resolve_industry_search(
+                        payload.get("industry"),
+                        payload.get("industry_other"),
+                        business_name,
+                        domain,
+                    )
     except Exception:  # noqa: BLE001
         pass
     try:
-        intel = gather_internal_intel(domain, business_name)
+        intel = gather_internal_intel(domain, business_name, industry_search)
         store_internal_intel(sb, report_id, intel)
         base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
         log.info(

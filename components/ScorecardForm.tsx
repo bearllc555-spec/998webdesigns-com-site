@@ -4,6 +4,10 @@ import { FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ScorecardSuccess } from "@/components/ScorecardSuccess";
 import { SCORECARD_ESTIMATE_SEC } from "@/lib/scorecard/estimate";
+import {
+  SCORECARD_INDUSTRY_OPTIONS,
+  type ScorecardIndustryValue,
+} from "@/lib/scorecard/industries";
 
 export function ScorecardForm() {
   const searchParams = useSearchParams();
@@ -12,6 +16,8 @@ export function ScorecardForm() {
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [industry, setIndustry] = useState<ScorecardIndustryValue | "">("");
+  const [industryOther, setIndustryOther] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [pendingJob, setPendingJob] = useState<{ jobId: string; email: string } | null>(null);
@@ -31,7 +37,15 @@ export function ScorecardForm() {
       const res = await fetch("/api/scorecard", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, company, email, phone, domain }),
+        body: JSON.stringify({
+          name,
+          company,
+          email,
+          phone,
+          domain,
+          industry,
+          industryOther: industry === "other" ? industryOther : undefined,
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -117,6 +131,40 @@ export function ScorecardForm() {
                 onChange={(e) => setPhone(e.target.value)}
               />
             </Field>
+            <Field label="Industry" required>
+              <select
+                className={inputClass}
+                name="industry"
+                required
+                value={industry}
+                onChange={(e) => {
+                  const next = e.target.value as ScorecardIndustryValue | "";
+                  setIndustry(next);
+                  if (next !== "other") setIndustryOther("");
+                }}
+              >
+                <option value="" disabled>
+                  Select your industry…
+                </option>
+                {SCORECARD_INDUSTRY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {industry === "other" ? (
+              <Field label="Describe your industry" required>
+                <input
+                  className={inputClass}
+                  name="industryOther"
+                  required
+                  placeholder="e.g. garage door, dental, law firm"
+                  value={industryOther}
+                  onChange={(e) => setIndustryOther(e.target.value)}
+                />
+              </Field>
+            ) : null}
             <Field label="Your website" required>
               <input
                 className={inputClass}

@@ -7,6 +7,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { isInternalProtectedScorecardBypass } from "@/lib/scorecard/internal-access";
 import { isProtectedScorecardDomain } from "@/lib/scorecard/protected-domains";
 import { isDomain, isEmail, normDomain } from "@/lib/scorecard/validate";
+import { validateScorecardIndustryInput } from "@/lib/scorecard/industries";
 import type { ScorecardFormPayload } from "@/lib/scorecard/types";
 
 export const runtime = "nodejs";
@@ -40,6 +41,13 @@ export async function POST(req: NextRequest) {
       { status: 422 }
     );
   }
+
+  const industryCheck = validateScorecardIndustryInput(body.industry, body.industryOther);
+  if (!industryCheck.ok) {
+    return NextResponse.json({ error: industryCheck.error }, { status: 422 });
+  }
+  const { industry, industryOther } = industryCheck;
+
   if (isProtectedScorecardDomain(domain) && !internalBypass) {
     return NextResponse.json(
       {
@@ -126,7 +134,15 @@ export async function POST(req: NextRequest) {
       lead_id: leadId,
       domain,
       status: "queued",
-      payload: { name, company, email, phone, business_name: company },
+      payload: {
+        name,
+        company,
+        email,
+        phone,
+        business_name: company,
+        industry,
+        industry_other: industryOther,
+      },
     })
     .select("id")
     .single();

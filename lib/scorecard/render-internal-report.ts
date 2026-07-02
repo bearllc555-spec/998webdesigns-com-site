@@ -7,8 +7,9 @@ import {
 } from "@/lib/scorecard/fetch-internal-report";
 import {
   awwwardsTradeSearchUrl,
-  inferScorecardTrade,
-} from "@/lib/scorecard/infer-trade";
+  resolveScorecardIndustrySearch,
+  scorecardIndustryLabel,
+} from "@/lib/scorecard/industries";
 
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"']/g, (c) =>
@@ -45,11 +46,17 @@ export function websiteratingManualAuditUrl(domain: string): string {
 function intelSection(
   intel: ScorecardInternalIntel | null | undefined,
   domain: string,
-  businessName: string
+  businessName: string,
+  jobPayload: Record<string, unknown> | null
 ): string {
   const wrManualUrl = websiteratingManualAuditUrl(domain);
-  const trade = inferScorecardTrade(businessName, domain);
-  const awSearchUrl = awwwardsTradeSearchUrl(trade);
+  const industrySearch = resolveScorecardIndustrySearch({
+    industry: jobPayload?.industry as string | undefined,
+    industryOther: jobPayload?.industry_other as string | undefined,
+    businessName,
+    domain,
+  });
+  const awSearchUrl = awwwardsTradeSearchUrl(industrySearch);
 
   if (!intel) {
     return `<section class="intel-wrap">
@@ -128,11 +135,17 @@ function contactBlock(bundle: InternalScorecardBundle): string {
     (typeof bundle.jobPayload?.name === "string" ? bundle.jobPayload.name : null) ??
     bundle.report.business_name;
 
+  const industryLabel = scorecardIndustryLabel(
+    jobPayload?.industry as string | undefined,
+    jobPayload?.industry_other as string | undefined
+  );
+
   return `<div class="contact">
     <h2>Lead</h2>
     <p><span class="lbl">Name</span> ${esc(name)}</p>
     <p><span class="lbl">Email</span> ${email ? `<a href="mailto:${esc(email)}">${esc(email)}</a>` : "—"}</p>
     <p><span class="lbl">Phone</span> ${phone ? `<a href="tel:${esc(phone)}">${esc(phone)}</a>` : "—"}</p>
+    ${industryLabel ? `<p><span class="lbl">Industry</span> ${esc(industryLabel)}</p>` : ""}
     <p><span class="lbl">Source</span> ${esc(bundle.lead?.source ?? bundle.report.source_door ?? "—")}</p>
     <p><span class="lbl">Email status</span> ${esc(bundle.report.email_status ?? "—")}</p>
   </div>`;
@@ -226,7 +239,12 @@ background:#1a2332;border:1px solid #2a3544}
 <div class="shell">
   <div class="banner">Internal only — includes unlocked conversion/design placeholders plus Awwwards &amp; WebsiteRating intel. Do not share this URL with prospects.</div>
   ${contactBlock(bundle)}
-  ${intelSection(bundle.report.internal_intel, bundle.report.domain, bundle.report.business_name)}
+  ${intelSection(
+    bundle.report.internal_intel,
+    bundle.report.domain,
+    bundle.report.business_name,
+    bundle.jobPayload
+  )}
   ${shotsBlock(bundle.report)}
   <div class="panel">
     <h2>Scorecard with unlocked signals</h2>

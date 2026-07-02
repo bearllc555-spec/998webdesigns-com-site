@@ -40,4 +40,6 @@ export type ScorecardFormPayload = {
   email?: string;
   phone?: string;
   domain?: string;
+  industry?: string;
+  industryOther?: string;
 };

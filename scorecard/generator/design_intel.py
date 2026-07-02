@@ -64,13 +64,41 @@ def _infer_trade(business_name: str, domain: str) -> str:
     return "Plumbing"
 
 
-def fetch_awwwards(domain: str, business_name: str = "") -> dict:
+INDUSTRY_SEARCH = {
+    "plumbing": "plumbing",
+    "electrician": "electrician",
+    "roofing": "roofing",
+    "landscaping": "landscaping",
+    "hvac": "hvac",
+    "cleaning": "cleaning",
+}
+
+
+def resolve_industry_search(
+    industry: str | None,
+    industry_other: str | None,
+    business_name: str = "",
+    domain: str = "",
+) -> str:
+    ind = (industry or "").strip()
+    if ind and ind != "other" and ind in INDUSTRY_SEARCH:
+        return INDUSTRY_SEARCH[ind]
+    if ind == "other" and industry_other and industry_other.strip():
+        return industry_other.strip().lower()
+    return _infer_trade(business_name, domain).lower()
+
+
+def fetch_awwwards(
+    domain: str,
+    business_name: str = "",
+    industry_search: str | None = None,
+) -> dict:
     """Check if the prospect domain is listed; trade search link for benchmarks."""
     domain = domain.strip().lower().replace("www.", "")
-    trade = _infer_trade(business_name, domain)
+    trade = industry_search or _infer_trade(business_name, domain).lower()
     needles = _domain_needles(domain)
     domain_search_url = f"https://www.awwwards.com/websites/?text={quote(domain)}"
-    search_url = f"https://www.awwwards.com/websites/?text={quote(trade.lower())}"
+    search_url = f"https://www.awwwards.com/websites/?text={quote(trade)}"
     out: dict = {
         "ok": False,
         "listed": False,
@@ -324,10 +352,14 @@ def fetch_websiterating(domain: str) -> dict:
         return out
 
 
-def gather_internal_intel(domain: str, business_name: str = "") -> dict:
+def gather_internal_intel(
+    domain: str,
+    business_name: str = "",
+    industry_search: str | None = None,
+) -> dict:
     return {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "awwwards": fetch_awwwards(domain, business_name),
+        "awwwards": fetch_awwwards(domain, business_name, industry_search),
         "websiterating": fetch_websiterating(domain),
     }
 
