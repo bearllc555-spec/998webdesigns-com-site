@@ -1,7 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { CrmHeader } from "@/components/crm/CrmHeader";
+
+const TELEGRAM_CRM_ICON = "/crm-telegram-icon.svg";
+
+function useTelegramCrmFavicon() {
+  useEffect(() => {
+    const links = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']");
+    links.forEach((link) => link.remove());
+
+    for (const rel of ["icon", "shortcut icon", "apple-touch-icon"]) {
+      const link = document.createElement("link");
+      link.rel = rel;
+      link.type = "image/svg+xml";
+      link.href = TELEGRAM_CRM_ICON;
+      document.head.appendChild(link);
+    }
+  }, []);
+}
 
 type CrmTelegramShellProps = {
   title: string;
@@ -28,6 +46,8 @@ export function CrmTelegramShell({
   message,
   children,
 }: CrmTelegramShellProps) {
+  useTelegramCrmFavicon();
+
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <CrmHeader
