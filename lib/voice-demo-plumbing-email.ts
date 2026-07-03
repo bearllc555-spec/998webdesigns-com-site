@@ -210,6 +210,7 @@ export async function sendPlumbingDemoEmail(
   payload: PlumbingEmailPayload
 ): Promise<boolean> {
   const { subject, html } = buildPlumbingEmail(template, payload);
-  const cc = template === "emergency" ? [SUPPORT_EMAIL] : undefined;
+  const cc =
+    template === "emergency" || template === "appointment" ? [SUPPORT_EMAIL] : undefined;
   return sendPlumbingResendEmail(payload.to, subject, html, cc);
 }
