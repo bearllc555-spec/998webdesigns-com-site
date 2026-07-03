@@ -275,6 +275,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const wrapUpCueLeakRecoverySentRef = useRef(false);
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
+  const sessionTranscriptRef = useRef<Array<{ role: "user" | "assistant"; text: string }>>([]);
   const greetingSentRef = useRef(false);
   const nameSavedRef = useRef(false);
   const savedNameRef = useRef("");
@@ -732,6 +733,52 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     sendPostNameGreetingNudge();
   }, [clearPostNameGreetingTimer, sendPostNameGreetingNudge]);
 
+  const appendSessionTranscript = useCallback((role: VoiceDemoCaptionRole, text: string) => {
+    if (verticalRef.current !== "plumbers") return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const lines = sessionTranscriptRef.current;
+    const last = lines[lines.length - 1];
+    if (last?.role === role) {
+      last.text = mergeTranscriptChunk(last.text, trimmed);
+      return;
+    }
+    lines.push({ role, text: trimmed });
+    if (lines.length > 80) {
+      sessionTranscriptRef.current = lines.slice(-80);
+    }
+  }, []);
+
+  const snapshotPlumbingTranscript = useCallback(() => {
+    appendSessionTranscript("user", captionTextRef.current);
+    appendSessionTranscript("assistant", lastAssistantTextRef.current);
+    return [...sessionTranscriptRef.current];
+  }, [appendSessionTranscript]);
+
+  const requestPlumbingFinalize = useCallback(async () => {
+    if (verticalRef.current !== "plumbers") return null;
+    const transcript = snapshotPlumbingTranscript();
+    try {
+      const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript }),
+      });
+      if (!res.ok) return null;
+      const body = (await res.json()) as { result?: Record<string, unknown> };
+      logVoiceDemoOps({
+        kind: "plumbing_booking_finalize",
+        message: "Pre-hangup finalize-booking",
+        meta: { result: body.result, transcriptLines: transcript.length },
+      });
+      return body.result ?? null;
+    } catch (err) {
+      console.warn("[voice-demo-live] plumbing finalize-booking", err);
+      return null;
+    }
+  }, [snapshotPlumbingTranscript]);
+
   const emitCaption = useCallback((role: VoiceDemoCaptionRole, chunk: string) => {
     const trimmed = chunk.trim();
     if (!trimmed) return;
@@ -754,6 +801,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const resetCaption = useCallback(() => {
     captionRoleRef.current = null;
     captionTextRef.current = "";
+    sessionTranscriptRef.current = [];
   }, []);
 
   const clearPendingFallback = useCallback(() => {
@@ -1314,24 +1362,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     farewellDisconnectingRef.current = true;
     try {
       await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
-      if (verticalRef.current === "plumbers") {
-        try {
-          const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
-            method: "POST",
-            credentials: "include",
-          });
-          if (res.ok) {
-            const body = (await res.json()) as { result?: Record<string, unknown> };
-            logVoiceDemoOps({
-              kind: "plumbing_booking_finalize",
-              message: "Pre-hangup finalize-booking",
-              meta: { result: body.result },
-            });
-          }
-        } catch (err) {
-          console.warn("[voice-demo-live] plumbing finalize-booking", err);
-        }
-      }
+      await requestPlumbingFinalize();
       latchFarewellClosing();
       await sleep(PHASE_TAIL_MS);
       optionsRef.current.onConversationEnd?.();
@@ -1341,7 +1372,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       farewellDisconnectingRef.current = false;
       lastAssistantTextRef.current = "";
     }
-  }, [disconnect, latchFarewellClosing]);
+  }, [disconnect, latchFarewellClosing, requestPlumbingFinalize]);
 
   const scheduleCallIdleHangup = useCallback(() => {
     if (!callWindingDownRef.current) return;
@@ -1393,24 +1424,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         message: "Visitor farewell echo - immediate hangup",
         meta: { phase: getSessionPhase(), hangupReason: reason },
       });
-      if (verticalRef.current === "plumbers") {
-        try {
-          const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
-            method: "POST",
-            credentials: "include",
-          });
-          if (res.ok) {
-            const body = (await res.json()) as { result?: Record<string, unknown> };
-            logVoiceDemoOps({
-              kind: "plumbing_booking_finalize",
-              message: "Pre-hangup finalize-booking",
-              meta: { result: body.result },
-            });
-          }
-        } catch (err) {
-          console.warn("[voice-demo-live] plumbing finalize-booking", err);
-        }
-      }
+      await requestPlumbingFinalize();
       latchFarewellClosing();
       clearCallIdleTimer();
       clearPostFarewellTimer();
@@ -1430,6 +1444,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       disconnect,
       getSessionPhase,
       latchFarewellClosing,
+      requestPlumbingFinalize,
     ]
   );
 
@@ -1862,6 +1877,17 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
       if (message.serverContent?.turnComplete) {
         const assistantSnapshot = lastAssistantTextRef.current;
+        if (verticalRef.current === "plumbers") {
+          appendSessionTranscript("user", captionTextRef.current);
+          appendSessionTranscript("assistant", assistantSnapshot);
+          if (
+            /confirmation email|confirmation text|you'?re (all )?set|appointment is (confirmed|booked)|scheduled for|see you (then|on)|coupon.+email/i.test(
+              assistantSnapshot
+            )
+          ) {
+            void requestPlumbingFinalize();
+          }
+        }
         if (
           verticalRef.current !== "plumbers" &&
           modeRef.current === "demo" &&

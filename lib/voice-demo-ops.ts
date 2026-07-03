@@ -136,6 +136,8 @@ export function coerceVoiceDemoOpsInput(body: Record<string, unknown>): VoiceDem
     "end_conversation_early_blocked",
     "client_hangup_scheduled",
     "model_end_conversation_blocked",
+    "plumbing_booking_finalize",
+    "plumbing_tool_call",
   ];
   if (!allowed.includes(kind as VoiceDemoOpsKind)) return null;
 

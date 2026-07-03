@@ -30,6 +30,11 @@ import {
   isPlumbingBookingReady,
   plumbingBookingMissingLabels,
 } from "@/lib/voice-demo-plumbing-booking-readiness";
+import {
+  extractPlumbingBookingFromTranscript,
+  extractedPlumbingBookingIsActionable,
+  type PlumbingTranscriptLine,
+} from "@/lib/voice-demo-plumbing-transcript-book";
 import type { PlumbingResumeJob } from "@/lib/voice-demo-plumbing-resume";
 import {
   sendPlumbingAfterHoursSms,
@@ -219,9 +224,9 @@ function plumbingJobToResumeJob(job: PlumbingJobRow | null): PlumbingResumeJob |
 }
 
 export type PlumbingFinalizeBookingResult =
-  | { ok: true; booked: true; alreadyBooked?: boolean; status: string }
-  | { ok: true; booked: false; notReady: true; missing: string[] }
-  | { ok: false; error: string };
+  | { ok: true; booked: true; alreadyBooked?: boolean; status: string; source?: "db" | "transcript" }
+  | { ok: true; booked: false; notReady: true; missing: string[]; source?: "db" | "transcript" }
+  | { ok: false; error: string; source?: "db" | "transcript" };
 
 /** Book from DB when all intake fields are on file - idempotent if already booked. */
 export async function finalizePlumbingBookingIfReady(
@@ -293,6 +298,57 @@ export async function finalizePlumbingBookingIfReady(
   scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
 
   return { ok: true, booked: true, status };
+}
+
+/** DB finalize first; if not ready, extract booking from call transcript and book. */
+export async function finalizePlumbingBookingWithTranscript(
+  leadId: string,
+  transcript?: PlumbingTranscriptLine[]
+): Promise<PlumbingFinalizeBookingResult> {
+  const fromDb = await finalizePlumbingBookingIfReady(leadId);
+  if (fromDb.ok && fromDb.booked) {
+    return { ...fromDb, source: "db" };
+  }
+  if (!transcript?.length) return fromDb;
+
+  const row = await getVoiceDemoLead(leadId);
+  if (!row) return { ok: false, error: "Lead not found." };
+
+  const extracted = await extractPlumbingBookingFromTranscript(transcript, {
+    email: row.email,
+    fullName: row.full_name,
+    phone: row.phone,
+  });
+  if (!extracted || !extractedPlumbingBookingIsActionable(extracted, row)) {
+    return fromDb;
+  }
+
+  const visitorName = (extracted.fullName?.trim() || row.full_name?.trim())!;
+  const email = (extracted.email?.trim() || row.email?.trim())!.toLowerCase();
+  const phone = extracted.phone?.trim() || row.phone?.trim() || "";
+
+  await updateVoiceDemoLead(leadId, {
+    full_name: visitorName,
+    email,
+    phone,
+  });
+
+  const saved = await upsertPlumbingJob({
+    leadId,
+    status: "draft",
+    serviceType: extracted.serviceType!.trim(),
+    serviceAddress: extracted.serviceAddress!.trim(),
+    appointmentDate: extracted.appointmentDate?.trim() || null,
+    timeWindow: extracted.timeWindow?.trim() || null,
+    customerEmail: email,
+    isEmergency: extracted.isEmergency === true,
+  });
+  if (!saved.ok) {
+    return { ok: false, error: saved.error, source: "transcript" };
+  }
+
+  const booked = await finalizePlumbingBookingIfReady(leadId);
+  return { ...booked, source: "transcript" };
 }
 
 function plumbingAutoBookSuccessMessage(grantPromo: boolean): string {
