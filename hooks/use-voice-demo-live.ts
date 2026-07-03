@@ -762,11 +762,27 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
         method: "POST",
         credentials: "include",
+        keepalive: true,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript }),
       });
-      if (!res.ok) return null;
-      const body = (await res.json()) as { result?: Record<string, unknown> };
+      const body = (await res.json().catch(() => ({}))) as {
+        result?: Record<string, unknown>;
+        error?: string;
+      };
+      if (!res.ok) {
+        logVoiceDemoOps({
+          kind: "plumbing_booking_finalize",
+          message: `Finalize-booking HTTP ${res.status}`,
+          severity: "warn",
+          meta: {
+            status: res.status,
+            error: body.error,
+            transcriptLines: transcript.length,
+          },
+        });
+        return null;
+      }
       logVoiceDemoOps({
         kind: "plumbing_booking_finalize",
         message: "Pre-hangup finalize-booking",
@@ -774,6 +790,13 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       });
       return body.result ?? null;
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      logVoiceDemoOps({
+        kind: "plumbing_booking_finalize",
+        message: "Finalize-booking fetch failed",
+        severity: "warn",
+        meta: { error: message, transcriptLines: transcript.length },
+      });
       console.warn("[voice-demo-live] plumbing finalize-booking", err);
       return null;
     }
@@ -1458,7 +1481,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       message: "Caller tapped End call",
       meta: { phase: getSessionPhase(), hangupReason: "user_disconnect" },
     });
-    endCallNow("user_disconnect");
+    void endCallNow("user_disconnect");
   }, [endCallNow, getSessionPhase]);
 
   const runPostFarewellHangupTick = useCallback(() => {
@@ -1493,7 +1516,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         vertical: verticalRef.current,
       },
     });
-    endCallNow(reason);
+    void endCallNow(reason);
   }, [endCallNow, getSessionPhase]);
 
   const schedulePostFarewellHangup = useCallback(
