@@ -55,6 +55,13 @@ describe("voice-demo-plumbing-system-prompt", () => {
     expect(prompt).toMatch(/BEFORE collecting name, address, phone, or email/i);
   });
 
+  it("requires listen-first before coupon or booking pitch", () => {
+    const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
+    expect(prompt).toMatch(/LISTEN FIRST/i);
+    expect(prompt).toMatch(/NEVER mention the \$50 coupon/i);
+    expect(prompt).toMatch(/same turn as a question/i);
+  });
+
   it("requires dispatch consent before emergency book", () => {
     const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
     expect(prompt).toMatch(/EMERGENCY DISPATCH/i);
