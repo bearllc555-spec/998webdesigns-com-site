@@ -110,7 +110,7 @@ async function scheduleEmailsForBookedJob(
     },
   });
 
-  const payload = bookingEmailPayloadFromJob(latest, email, visitorName);
+  const payload = bookingEmailPayloadFromJob(latest, email, visitorName, phone);
   const template: PlumbingEmailTemplate = latest.is_emergency ? "emergency" : "appointment";
   schedulePlumbingBookingComms(leadId, template, payload, phone, latest.is_emergency);
   return true;
@@ -119,12 +119,15 @@ async function scheduleEmailsForBookedJob(
 function bookingEmailPayloadFromJob(
   job: PlumbingJobRow,
   email: string,
-  visitorName: string
+  visitorName: string,
+  phone: string
 ): PlumbingEmailPayload {
   const isEmergency = job.is_emergency;
   return {
     to: email,
     firstName: firstName(visitorName),
+    customerName: visitorName.trim() || undefined,
+    phone: phone.trim() || undefined,
     serviceType: job.service_type ?? undefined,
     appointmentDate: job.appointment_date ?? (isEmergency ? "Emergency dispatch" : undefined),
     timeWindow: job.time_window ?? (isEmergency ? "Within 2 hours" : undefined),

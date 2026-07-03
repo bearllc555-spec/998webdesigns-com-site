@@ -14,19 +14,26 @@ describe("voice-demo-plumbing-sms", () => {
       "2026-06-10",
       "Morning",
       "123 Main St, Little Falls NJ",
-      true
+      true,
+      { customerName: "Alex Rivera", phone: "9734496700" }
     );
     expect(body).toContain("Alex");
     expect(body).toContain("Water heater replacement");
     expect(body).toContain("Wednesday, June 10, 2026");
     expect(body).toContain("$50 coupon");
+    expect(body).toContain("Contact on file");
+    expect(body).toContain("(973) 449-6700");
   });
 
   it("builds emergency dispatch SMS", () => {
-    const body = buildPlumbingEmergencySms("Sam", "45 Oak Ave", "burst pipe");
+    const body = buildPlumbingEmergencySms("Sam", "45 Oak Ave", "burst pipe", {
+      customerName: "Sam Lee",
+      phone: "2015551234",
+    });
     expect(body).toContain("emergency dispatch");
     expect(body).toContain("burst pipe");
     expect(body).toContain("45 Oak Ave");
+    expect(body).toContain("(201) 555-1234");
   });
 
   it("builds after-hours SMS", () => {

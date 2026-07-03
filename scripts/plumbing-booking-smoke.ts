@@ -158,6 +158,8 @@ async function main() {
   const payload = {
     to: email,
     firstName: firstName(visitorName),
+    customerName: visitorName,
+    phone,
     serviceType: job.service_type ?? serviceType,
     appointmentDate: job.appointment_date ?? appointmentDate,
     timeWindow: job.time_window ?? timeWindow,

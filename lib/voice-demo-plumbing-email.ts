@@ -3,6 +3,7 @@ import {
   PLUMBING_DEMO_EMAIL_DISPLAY,
   PLUMBING_DEMO_PROMO_AMOUNT,
 } from "@/lib/voice-demo-plumbing-constants";
+import { normalizePhoneE164 } from "@/lib/twilio-verify";
 import { SUPPORT_EMAIL } from "@/lib/transactional-email";
 
 export type PlumbingEmailTemplate =
@@ -15,6 +16,10 @@ export type PlumbingEmailTemplate =
 export type PlumbingEmailPayload = {
   to: string;
   firstName: string;
+  /** Full name on file — shown on booking confirmations. */
+  customerName?: string;
+  /** Callback / SMS number on file — shown on booking confirmations. */
+  phone?: string;
   serviceType?: string;
   appointmentDate?: string;
   timeWindow?: string;
@@ -44,6 +49,32 @@ export function formatPlumbingAppointmentDateForEmail(raw: string): string {
     year: "numeric",
     timeZone: "America/New_York",
   });
+}
+
+/** US-friendly display for confirmation email/SMS — (973) 449-6700 when possible. */
+export function formatPlumbingPhoneForDisplay(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  const e164 = normalizePhoneE164(trimmed);
+  const digits = (e164 ?? trimmed).replace(/\D/g, "");
+  const local = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  if (local.length === 10) {
+    return `(${local.slice(0, 3)}) ${local.slice(3, 6)}-${local.slice(6)}`;
+  }
+  return e164 ?? trimmed;
+}
+
+function bookingContactName(payload: PlumbingEmailPayload): string {
+  return payload.customerName?.trim() || payload.firstName.trim() || "Customer";
+}
+
+function bookingContactHtml(payload: PlumbingEmailPayload): string {
+  const name = escapeHtml(bookingContactName(payload));
+  const phone = payload.phone?.trim();
+  if (!phone) {
+    return `<strong>Contact:</strong> ${name}<br />`;
+  }
+  return `<strong>Contact:</strong> ${name} · ${escapeHtml(formatPlumbingPhoneForDisplay(phone))}<br />`;
 }
 
 function escapeHtml(text: string): string {
@@ -141,7 +172,7 @@ export function buildPlumbingEmail(
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>Your appointment with ${escapeHtml(PLUMBING_DEMO_BUSINESS_NAME)} is confirmed.</p>
-          <p><strong>Service:</strong> ${service}<br />
+          <p>${bookingContactHtml(payload)}<strong>Service:</strong> ${service}<br />
           <strong>Date:</strong> ${date}<br />
           <strong>Time window:</strong> ${window}<br />
           <strong>Address:</strong> ${address}<br />
@@ -156,7 +187,7 @@ export function buildPlumbingEmail(
         html: wrapBody(`
           <p>Hi ${name},</p>
           <p>We've received your emergency request and a technician has been dispatched.</p>
-          <p><strong>Address:</strong> ${address}<br />
+          <p>${bookingContactHtml(payload)}<strong>Address:</strong> ${address}<br />
           <strong>Issue:</strong> ${escapeHtml(payload.issueDescription ?? service)}<br />
           <strong>Estimated arrival:</strong> Within 2 hours</p>
           <p><strong>While you wait:</strong> If water is actively flowing, shut off your main water valve (near meter, basement, or foundation). Move valuables away from wet areas. Do not touch electrical switches near standing water.</p>

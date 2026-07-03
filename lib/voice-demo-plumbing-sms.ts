@@ -4,6 +4,7 @@ import {
 } from "@/lib/voice-demo-plumbing-constants";
 import {
   formatPlumbingAppointmentDateForEmail,
+  formatPlumbingPhoneForDisplay,
   type PlumbingEmailPayload,
 } from "@/lib/voice-demo-plumbing-email";
 import {
@@ -25,7 +26,8 @@ export function buildPlumbingConfirmationSms(
   appointmentDate: string,
   timeWindow: string,
   serviceAddress: string,
-  promoApplied: boolean
+  promoApplied: boolean,
+  contact?: Pick<PlumbingEmailPayload, "customerName" | "phone">
 ): string {
   const date = formatPlumbingAppointmentDateForEmail(appointmentDate || "TBD");
   const window = timeWindow.trim() || "TBD";
@@ -33,17 +35,33 @@ export function buildPlumbingConfirmationSms(
   const promoNote = promoApplied
     ? ` Your $${PLUMBING_DEMO_PROMO_AMOUNT} coupon is in the confirmation email.`
     : "";
-  return `${PLUMBING_DEMO_BUSINESS_NAME}: Hi ${firstName}, you're confirmed for ${serviceType} on ${date} (${window}) at ${address}.${promoNote} We'll call or text ~30 min before arrival.`;
+  const contactNote = contact
+    ? ` ${formatPlumbingContactSmsSnippet({ firstName, ...contact })}`
+    : "";
+  return `${PLUMBING_DEMO_BUSINESS_NAME}: Hi ${firstName}, you're confirmed for ${serviceType} on ${date} (${window}) at ${address}.${contactNote}${promoNote} We'll call or text ~30 min before arrival.`;
 }
 
 export function buildPlumbingEmergencySms(
   firstName: string,
   serviceAddress: string,
-  issueDescription: string
+  issueDescription: string,
+  contact?: Pick<PlumbingEmailPayload, "customerName" | "phone">
 ): string {
   const address = serviceAddress.trim() || "on file";
   const issue = issueDescription.trim() || "your emergency";
-  return `${PLUMBING_DEMO_BUSINESS_NAME}: Hi ${firstName}, emergency dispatch is confirmed for ${issue} at ${address}. A tech is en route within 2 hours. Shut off your main water valve if water is still flowing.`;
+  const contactNote = contact
+    ? ` ${formatPlumbingContactSmsSnippet({ firstName, ...contact })}`
+    : "";
+  return `${PLUMBING_DEMO_BUSINESS_NAME}: Hi ${firstName}, emergency dispatch is confirmed for ${issue} at ${address}.${contactNote} A tech is en route within 2 hours. Shut off your main water valve if water is still flowing.`;
+}
+
+function formatPlumbingContactSmsSnippet(
+  payload: Pick<PlumbingEmailPayload, "firstName" | "customerName" | "phone">
+): string {
+  const name = payload.customerName?.trim() || payload.firstName.trim() || "Customer";
+  const phone = payload.phone?.trim();
+  if (!phone) return `Contact: ${name}.`;
+  return `Contact on file: ${name} ${formatPlumbingPhoneForDisplay(phone)}.`;
 }
 
 export function buildPlumbingAfterHoursSms(firstName: string): string {
@@ -88,11 +106,16 @@ export async function sendPlumbingBookingSms(
   }
 
   const firstName = payload.firstName.trim() || "there";
+  const contact = {
+    customerName: payload.customerName,
+    phone: payload.phone,
+  };
   const body = payload.isEmergency
     ? buildPlumbingEmergencySms(
         firstName,
         payload.serviceAddress ?? "",
-        payload.issueDescription ?? payload.serviceType ?? ""
+        payload.issueDescription ?? payload.serviceType ?? "",
+        contact
       )
     : buildPlumbingConfirmationSms(
         firstName,
@@ -100,7 +123,8 @@ export async function sendPlumbingBookingSms(
         payload.appointmentDate ?? "TBD",
         payload.timeWindow ?? "TBD",
         payload.serviceAddress ?? "",
-        Boolean(payload.promoApplied || payload.promoCode)
+        Boolean(payload.promoApplied || payload.promoCode),
+        contact
       );
 
   let sentCount = 0;
