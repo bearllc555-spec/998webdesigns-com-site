@@ -15,12 +15,13 @@ describe("voice-demo-plumbing-sms", () => {
       "Morning",
       "123 Main St, Little Falls NJ",
       true,
-      { customerName: "Alex Rivera", phone: "9734496700" }
+      { customerName: "Alex Rivera", phone: "9734496700" },
+      "MPD-K7N2P4"
     );
     expect(body).toContain("Alex");
     expect(body).toContain("Water heater replacement");
     expect(body).toContain("Wednesday, June 10, 2026");
-    expect(body).toContain("$50 coupon");
+    expect(body).toContain("$50 coupon code: MPD-K7N2P4");
     expect(body).toContain("Contact on file");
     expect(body).toContain("(973) 449-6700");
   });

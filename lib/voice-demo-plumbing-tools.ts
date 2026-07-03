@@ -166,7 +166,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "book_plumbing_appointment",
           description:
-            "Book or dispatch appointment when you have name, address, email, service type, and date/time (standard) or dispatch consent (emergency). Sends confirmation SMS + email (unique $50 coupon in email for standard bookings only).",
+            "Book or dispatch appointment when you have name, address, email, service type, and date/time (standard) or dispatch consent (emergency). Sends confirmation SMS + email (unique $50 coupon code in both for standard bookings only).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -434,7 +434,7 @@ export async function finalizePlumbingBookingWithTranscript(
 
 function plumbingAutoBookSuccessMessage(grantPromo: boolean): string {
   return grantPromo
-    ? "Appointment booked. Confirmation email (with $50 coupon inside) and a confirmation text are sending - tell the caller to check inbox, spam, and texts. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line."
+    ? "Appointment booked. Confirmation email and text (with $50 coupon code in both) are sending - tell the caller to check inbox, spam, and texts. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line."
     : "Appointment booked. Confirmation email and text are sending - recap address, date, and time warmly with the caller and stay on the line.";
 }
 
@@ -570,7 +570,7 @@ export async function executeVoiceDemoPlumbingTool(
           );
         }
         emailMessage =
-          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) and a confirmation text are sending - after reconfirming the new email aloud, tell the caller to check inbox, spam, and texts.";
+          "Contact saved. Confirmation email and text (with unique $50 coupon code in both) are sending - after reconfirming the new email aloud, tell the caller to check inbox, spam, and texts.";
       }
     }
 
@@ -835,7 +835,7 @@ export async function executeVoiceDemoPlumbingTool(
       smsSent: true,
       status,
       message: grantPromo
-        ? "Appointment booked. Confirmation email (with $50 coupon inside) and a confirmation text are sending - tell the caller to check inbox, spam, and texts. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
+        ? "Appointment booked. Confirmation email and text (with $50 coupon code in both) are sending - tell the caller to check inbox, spam, and texts. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
         : "Appointment booked. Confirmation email and text are sending - recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
     };
   }

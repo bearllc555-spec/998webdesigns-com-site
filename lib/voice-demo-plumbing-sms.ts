@@ -27,13 +27,17 @@ export function buildPlumbingConfirmationSms(
   timeWindow: string,
   serviceAddress: string,
   promoApplied: boolean,
-  contact?: Pick<PlumbingEmailPayload, "customerName" | "phone">
+  contact?: Pick<PlumbingEmailPayload, "customerName" | "phone">,
+  promoCode?: string
 ): string {
   const date = formatPlumbingAppointmentDateForEmail(appointmentDate || "TBD");
   const window = timeWindow.trim() || "TBD";
   const address = serviceAddress.trim() || "on file";
+  const code = promoCode?.trim().toUpperCase();
   const promoNote = promoApplied
-    ? ` Your $${PLUMBING_DEMO_PROMO_AMOUNT} coupon is in the confirmation email.`
+    ? code
+      ? ` Your $${PLUMBING_DEMO_PROMO_AMOUNT} coupon code: ${code} (also in your confirmation email).`
+      : ` Your $${PLUMBING_DEMO_PROMO_AMOUNT} coupon is in your confirmation email and text.`
     : "";
   const contactNote = contact
     ? ` ${formatPlumbingContactSmsSnippet({ firstName, ...contact })}`
@@ -124,7 +128,8 @@ export async function sendPlumbingBookingSms(
         payload.timeWindow ?? "TBD",
         payload.serviceAddress ?? "",
         Boolean(payload.promoApplied || payload.promoCode),
-        contact
+        contact,
+        payload.promoCode
       );
 
   let sentCount = 0;
