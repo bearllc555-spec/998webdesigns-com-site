@@ -1,6 +1,7 @@
 import { appEnv, hostPlatformLabel } from "@/lib/app-env";
 import { discoveryBookCallUrl, DISCOVERY_BOOK_CALL_URL } from "@/lib/book-call";
 import { crmAdminSecretSource } from "@/lib/crm-admin-secret";
+import { plumbingDemoSmsCcCount } from "@/lib/voice-demo-plumbing-sms-recipients";
 import { twilioMessagingConfigured } from "@/lib/twilio-sms";
 import { stripeKeyMode, type StripeKeyMode } from "@/lib/stripe-env";
 import { probeStripeOps, type StripeOpsSnapshot } from "@/lib/stripe-ops-check";
@@ -26,6 +27,8 @@ export type ProductionConfigStatus = {
   cronSecretConfigured: boolean;
   twilioVerifyConfigured: boolean;
   twilioMessagingConfigured: boolean;
+  /** Ops copy numbers in PLUMBING_DEMO_SMS_CC (values not returned). */
+  plumbingDemoSmsCcCount: number;
   bookCallUrl: string;
   bookCallUrlFromEnv: boolean;
   stripeOps: StripeOpsSnapshot | null;
@@ -196,6 +199,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     cronSecretConfigured,
     twilioVerifyConfigured,
     twilioMessagingConfigured: twilioMessaging,
+    plumbingDemoSmsCcCount: plumbingDemoSmsCcCount(),
     bookCallUrl,
     bookCallUrlFromEnv,
     stripeOps,

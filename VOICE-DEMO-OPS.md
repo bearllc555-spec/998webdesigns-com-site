@@ -34,6 +34,8 @@ npm run plumbing:smoke -- --dry-run   # env preflight only
 
 Inserts a labeled `jarvis_plumbing_jobs` row (`notes.smokeTest=true`) with address columns, marks it `booked`, then sends the same Resend email + Twilio SMS as a real booking. `SMOKE PASS` means DB schema + comms are all healthy. Reads the Resend key from `slatepress/.local/resend-api-key.txt` if `.env.local` is stale.
 
+**Multi-SMS (testing):** set `PLUMBING_DEMO_SMS_CC` to comma-separated US numbers (e.g. `9734496700,2015551234`). Standard and emergency booking confirmations SMS the caller plus up to three ops copies (4 total). Also CC `hello@998webdesigns.com` on appointment + emergency emails during testing.
+
 ## What to look for
 
 | Log message | Meaning |

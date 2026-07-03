@@ -69,7 +69,16 @@ function schedulePlumbingBookingComms(
       console.warn("[voice-demo-plumbing-sms] booking SMS failed", {
         leadId,
         phone,
+        sentCount: sms.sentCount,
+        recipientCount: sms.recipientCount,
         error: sms.error,
+      });
+    } else if (sms.sentCount < sms.recipientCount) {
+      console.warn("[voice-demo-plumbing-sms] booking SMS partially delivered", {
+        leadId,
+        phone,
+        sentCount: sms.sentCount,
+        recipientCount: sms.recipientCount,
       });
     }
   });

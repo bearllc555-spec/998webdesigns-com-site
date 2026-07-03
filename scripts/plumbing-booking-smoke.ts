@@ -181,7 +181,14 @@ async function main() {
     console.error("FAIL - Twilio SMS:", sms.error ?? "unknown");
     process.exit(1);
   }
-  console.log("OK - confirmation SMS delivered via Twilio to", phone);
+  console.log(
+    "OK - confirmation SMS delivered via Twilio",
+    sms.sentCount,
+    "of",
+    sms.recipientCount,
+    "recipient(s); primary",
+    phone
+  );
 
   await upsertPlumbingJob({
     leadId,

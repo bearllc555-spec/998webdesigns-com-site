@@ -6,8 +6,18 @@ import {
   formatPlumbingAppointmentDateForEmail,
   type PlumbingEmailPayload,
 } from "@/lib/voice-demo-plumbing-email";
+import {
+  resolvePlumbingBookingSmsRecipients,
+} from "@/lib/voice-demo-plumbing-sms-recipients";
 import { normalizePhoneE164 } from "@/lib/twilio-verify";
 import { sendTwilioSms, twilioMessagingConfigured } from "@/lib/twilio-sms";
+
+export {
+  PLUMBING_BOOKING_SMS_MAX_RECIPIENTS,
+  parsePlumbingDemoSmsCcNumbers,
+  plumbingDemoSmsCcCount,
+  resolvePlumbingBookingSmsRecipients,
+} from "@/lib/voice-demo-plumbing-sms-recipients";
 
 export function buildPlumbingConfirmationSms(
   firstName: string,
@@ -44,16 +54,37 @@ function normalizeSmsPhone(raw: string): string | null {
   return normalizePhoneE164(raw.trim());
 }
 
+export type PlumbingBookingSmsResult = {
+  ok: boolean;
+  smsSent: boolean;
+  sentCount: number;
+  recipientCount: number;
+  error?: string;
+};
+
 export async function sendPlumbingBookingSms(
   payload: PlumbingEmailPayload & { phone: string; isEmergency: boolean }
-): Promise<{ ok: boolean; smsSent: boolean; error?: string }> {
+): Promise<PlumbingBookingSmsResult> {
   if (!twilioMessagingConfigured()) {
-    return { ok: false, smsSent: false, error: "SMS not configured" };
+    return {
+      ok: false,
+      smsSent: false,
+      sentCount: 0,
+      recipientCount: 0,
+      error: "SMS not configured",
+    };
   }
 
-  const to = normalizeSmsPhone(payload.phone);
-  if (!to) {
-    return { ok: false, smsSent: false, error: "Invalid callback phone for SMS" };
+  const callerE164 = normalizeSmsPhone(payload.phone);
+  const recipients = resolvePlumbingBookingSmsRecipients(payload.phone);
+  if (recipients.length === 0) {
+    return {
+      ok: false,
+      smsSent: false,
+      sentCount: 0,
+      recipientCount: 0,
+      error: "Invalid callback phone for SMS",
+    };
   }
 
   const firstName = payload.firstName.trim() || "there";
@@ -72,11 +103,30 @@ export async function sendPlumbingBookingSms(
         Boolean(payload.promoApplied || payload.promoCode)
       );
 
-  const result = await sendTwilioSms(to, body);
-  if (!result.ok) {
-    return { ok: false, smsSent: false, error: result.error };
+  let sentCount = 0;
+  let primarySent = false;
+  let firstError: string | undefined;
+
+  for (const to of recipients) {
+    const result = await sendTwilioSms(to, body);
+    if (result.ok) {
+      sentCount += 1;
+      if (callerE164 && to === callerE164) primarySent = true;
+    } else if (!firstError) {
+      firstError = result.error;
+    }
   }
-  return { ok: true, smsSent: true };
+
+  const callerRequired = Boolean(callerE164);
+  const ok = callerRequired ? primarySent : sentCount > 0;
+
+  return {
+    ok,
+    smsSent: sentCount > 0,
+    sentCount,
+    recipientCount: recipients.length,
+    error: ok ? undefined : firstError ?? "Could not send booking SMS",
+  };
 }
 
 export async function sendPlumbingAfterHoursSms(
