@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PlumbingDemoBrandTitle } from "@/components/demo/PlumbingDemoBrandTitle";
 import { PlumbingDemoCapabilities } from "@/components/demo/PlumbingDemoCapabilities";
 import { PlumbingDemoHeaderActions } from "@/components/demo/PlumbingDemoHeaderActions";
 import { SiteVersionPill } from "@/components/SiteVersionPill";
@@ -8,8 +9,6 @@ import {
   PLUMBING_DEMO_BUSINESS_NAME,
   PLUMBING_DEMO_TAGLINE,
 } from "@/lib/voice-demo-plumbing-constants";
-
-const PLUMBING_DEMO_DISPLAY_NAME = `${PLUMBING_DEMO_BUSINESS_NAME} (fictitious company)`;
 
 export const metadata: Metadata = {
   title: `${PLUMBING_DEMO_BUSINESS_NAME} - Jarvis voice demo`,
@@ -24,8 +23,8 @@ export default function PlumbersDemoPage() {
       <header className="border-b border-rule">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <div>
-            <p className="flex flex-wrap items-center gap-2 font-display text-lg font-semibold text-ink">
-              {PLUMBING_DEMO_DISPLAY_NAME}
+            <p className="flex flex-wrap items-center gap-2 text-ink">
+              <PlumbingDemoBrandTitle size="page" />
               <SiteVersionPill />
             </p>
             <p className="text-sm text-ink-soft">{PLUMBING_DEMO_TAGLINE}</p>

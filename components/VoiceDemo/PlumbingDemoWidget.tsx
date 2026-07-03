@@ -5,18 +5,14 @@ import { Mic, MicOff, PhoneOff } from "lucide-react";
 import { useVoiceDemoLive } from "@/hooks/use-voice-demo-live";
 import { VoiceDemoLiveOpsTrace } from "@/components/demo/VoiceDemoLiveOpsTrace";
 import { VoiceCaptionBar } from "@/components/VoiceDemo/VoiceCaptionBar";
+import { PlumbingDemoBrandTitle } from "@/components/demo/PlumbingDemoBrandTitle";
 import { PlumbingDemoPostCta } from "@/components/demo/PlumbingDemoPostCta";
 import { PlumbingJarvisOrb } from "@/components/VoiceDemo/PlumbingJarvisOrb";
 import { FIXED_INPUT_CLASS } from "@/components/form-field-stack";
-import {
-  PLUMBING_DEMO_BUSINESS_NAME,
-  PLUMBING_DEMO_TAGLINE,
-} from "@/lib/voice-demo-plumbing-constants";
+import { PLUMBING_DEMO_TAGLINE } from "@/lib/voice-demo-plumbing-constants";
 import type { VoiceDemoCaption } from "@/lib/voice-demo-caption";
 
 type Phase = "gate" | "demo";
-
-const PLUMBING_DEMO_DISPLAY_NAME = `${PLUMBING_DEMO_BUSINESS_NAME} (fictitious company)`;
 
 export function PlumbingDemoWidget() {
   const [phase, setPhase] = useState<Phase>("gate");
@@ -143,7 +139,7 @@ export function PlumbingDemoWidget() {
     <div className="rounded-2xl border border-rule bg-bg shadow-lg">
       <div className="flex items-center justify-between border-b border-rule px-4 py-3">
         <div>
-          <p className="font-display text-sm font-semibold text-ink">{PLUMBING_DEMO_DISPLAY_NAME}</p>
+          <PlumbingDemoBrandTitle size="widget" />
           <p className="text-xs text-ink-soft">{PLUMBING_DEMO_TAGLINE}</p>
         </div>
         {phase === "demo" && (

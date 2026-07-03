@@ -3,6 +3,9 @@ import { VOICE_DEMO_CALL_IDLE_HANGUP_MS } from "@/lib/voice-demo-constants";
 /** Metro Plumbing & Drain - demo business (docs/jarvis_plumbing_complete.md). */
 export const PLUMBING_DEMO_BUSINESS_NAME = "Metro Plumbing & Drain";
 
+/** Shown beside the demo brand mark on /demo/plumbers (not used in Jarvis comms). */
+export const PLUMBING_DEMO_FICTITIOUS_SUFFIX = "(fictitious company)";
+
 export const PLUMBING_DEMO_TAGLINE = "Licensed & insured · Tri-State (NJ, NY, CT)";
 
 export const PLUMBING_DEMO_EMAIL_DISPLAY = "demo@metroplumbingdrain.com";
