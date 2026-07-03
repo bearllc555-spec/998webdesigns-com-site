@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
         error: !result.ok ? result.error : undefined,
         source: result.source,
         transcriptLines: transcript?.length ?? 0,
+        extractDebug: "extractDebug" in result ? result.extractDebug : undefined,
       }
     )
   );

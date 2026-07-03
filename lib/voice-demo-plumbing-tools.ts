@@ -31,8 +31,9 @@ import {
   plumbingBookingMissingLabels,
 } from "@/lib/voice-demo-plumbing-booking-readiness";
 import {
-  extractPlumbingBookingFromTranscript,
+  type ExtractedPlumbingBooking,
   extractedPlumbingBookingIsActionable,
+  resolvePlumbingBookingFromTranscript,
   type PlumbingTranscriptLine,
 } from "@/lib/voice-demo-plumbing-transcript-book";
 import type { PlumbingResumeJob } from "@/lib/voice-demo-plumbing-resume";
@@ -224,9 +225,23 @@ function plumbingJobToResumeJob(job: PlumbingJobRow | null): PlumbingResumeJob |
 }
 
 export type PlumbingFinalizeBookingResult =
-  | { ok: true; booked: true; alreadyBooked?: boolean; status: string; source?: "db" | "transcript" }
-  | { ok: true; booked: false; notReady: true; missing: string[]; source?: "db" | "transcript" }
-  | { ok: false; error: string; source?: "db" | "transcript" };
+  | {
+      ok: true;
+      booked: true;
+      alreadyBooked?: boolean;
+      status: string;
+      source?: "db" | "transcript";
+      extractDebug?: ExtractedPlumbingBooking;
+    }
+  | {
+      ok: true;
+      booked: false;
+      notReady: true;
+      missing: string[];
+      source?: "db" | "transcript";
+      extractDebug?: ExtractedPlumbingBooking;
+    }
+  | { ok: false; error: string; source?: "db" | "transcript"; extractDebug?: ExtractedPlumbingBooking };
 
 /** Book from DB when all intake fields are on file - idempotent if already booked. */
 export async function finalizePlumbingBookingIfReady(
@@ -314,13 +329,14 @@ export async function finalizePlumbingBookingWithTranscript(
   const row = await getVoiceDemoLead(leadId);
   if (!row) return { ok: false, error: "Lead not found." };
 
-  const extracted = await extractPlumbingBookingFromTranscript(transcript, {
+  const { merged: extracted } = await resolvePlumbingBookingFromTranscript(transcript, {
     email: row.email,
     fullName: row.full_name,
     phone: row.phone,
   });
-  if (!extracted || !extractedPlumbingBookingIsActionable(extracted, row)) {
-    return fromDb;
+
+  if (!extractedPlumbingBookingIsActionable(extracted, row)) {
+    return { ...fromDb, extractDebug: extracted };
   }
 
   const visitorName = (extracted.fullName?.trim() || row.full_name?.trim())!;

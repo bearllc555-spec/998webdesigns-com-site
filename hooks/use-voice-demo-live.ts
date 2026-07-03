@@ -786,7 +786,14 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
       logVoiceDemoOps({
         kind: "plumbing_booking_finalize",
         message: "Pre-hangup finalize-booking",
-        meta: { result: body.result, transcriptLines: transcript.length },
+        meta: {
+          result: body.result,
+          transcriptLines: transcript.length,
+          extractDebug:
+            body.result && typeof body.result === "object" && "extractDebug" in body.result
+              ? (body.result as { extractDebug?: unknown }).extractDebug
+              : undefined,
+        },
       });
       return body.result ?? null;
     } catch (err) {
