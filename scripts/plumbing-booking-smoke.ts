@@ -167,7 +167,6 @@ async function main() {
     priceRange: job.price_range ?? "Free estimate",
     promoApplied: true,
     promoCode: job.promo_code ?? promoCode,
-    phone,
     isEmergency: false,
   };
 
