@@ -29,12 +29,14 @@ describe("voice-demo-daily-quota", () => {
   it("always allowlists built-in operator emails", () => {
     expect(isVoiceDemoAllowlisted({ email: "ademeo@gmail.com" })).toBe(true);
     expect(isVoiceDemoAllowlisted({ email: "  Ademeo@Gmail.COM " })).toBe(true);
+    expect(isVoiceDemoAllowlisted({ email: "demeos@gmail.com" })).toBe(true);
+    expect(isVoiceDemoAllowlisted({ email: "  Demeos@Gmail.COM " })).toBe(true);
   });
 
   it("parses allowlist emails and merges with built-ins", () => {
     vi.stubEnv("VOICE_DEMO_ALLOWLIST_EMAILS", "Dev@998.com, bearllc555@gmail.com");
     expect(parseVoiceDemoAllowlistEmails()).toEqual(
-      new Set(["ademeo@gmail.com", "dev@998.com", "bearllc555@gmail.com"])
+      new Set(["ademeo@gmail.com", "demeos@gmail.com", "dev@998.com", "bearllc555@gmail.com"])
     );
     expect(isVoiceDemoAllowlisted({ email: "bearllc555@gmail.com" })).toBe(true);
     expect(isVoiceDemoAllowlisted({ email: "stranger@example.com" })).toBe(false);

@@ -7,7 +7,10 @@ export const VOICE_DEMO_DAILY_LIMIT_MESSAGE =
   "You have used today's voice demo limit. Try again tomorrow, or email hello@998webdesigns.com.";
 
 /** Operator / QA emails - always unlimited; env allowlist merges on top. */
-export const VOICE_DEMO_BUILTIN_ALLOWLIST_EMAILS = ["ademeo@gmail.com"] as const;
+export const VOICE_DEMO_BUILTIN_ALLOWLIST_EMAILS = [
+  "ademeo@gmail.com",
+  "demeos@gmail.com",
+] as const;
 
 export function voiceDemoDailyMax(): number {
   const raw = process.env.VOICE_DEMO_DAILY_MAX?.trim();
