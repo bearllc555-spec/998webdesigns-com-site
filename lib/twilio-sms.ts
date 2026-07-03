@@ -4,8 +4,24 @@ export function twilioMessagingFrom(): string | null {
   return process.env.TWILIO_MESSAGING_FROM?.trim() || null;
 }
 
+export function twilioMessagingServiceSid(): string | null {
+  return process.env.TWILIO_MESSAGING_SERVICE_SID?.trim() || null;
+}
+
+/** A2P 10DLC footer - appended to outbound SMS when missing. */
+export const TWILIO_SMS_COMPLIANCE_SUFFIX =
+  " Reply HELP for help, STOP to cancel. Msg & data rates may apply.";
+
+export function withSmsComplianceFooter(body: string): string {
+  const trimmed = body.trim();
+  if (/reply help|stop to cancel/i.test(trimmed)) return trimmed;
+  return `${trimmed}${TWILIO_SMS_COMPLIANCE_SUFFIX}`;
+}
+
 export function twilioMessagingConfigured(): boolean {
-  return Boolean(twilioCredentials() && twilioMessagingFrom());
+  return Boolean(
+    twilioCredentials() && (twilioMessagingFrom() || twilioMessagingServiceSid())
+  );
 }
 
 type TwilioMessageRecord = {
@@ -49,11 +65,23 @@ export async function sendTwilioSms(
 ): Promise<{ ok: true; messageSid: string } | { ok: false; error: string }> {
   const creds = twilioCredentials();
   const from = twilioMessagingFrom();
-  if (!creds || !from) {
-    return { ok: false, error: "SMS messaging is not configured (TWILIO_MESSAGING_FROM)" };
+  const messagingServiceSid = twilioMessagingServiceSid();
+  if (!creds || (!from && !messagingServiceSid)) {
+    return {
+      ok: false,
+      error: "SMS messaging is not configured (TWILIO_MESSAGING_FROM or TWILIO_MESSAGING_SERVICE_SID)",
+    };
   }
 
-  const params = new URLSearchParams({ To: toE164, From: from, Body: body });
+  const params = new URLSearchParams({
+    To: toE164,
+    Body: withSmsComplianceFooter(body),
+  });
+  if (messagingServiceSid) {
+    params.set("MessagingServiceSid", messagingServiceSid);
+  } else if (from) {
+    params.set("From", from);
+  }
   const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${creds.accountSid}/Messages.json`, {
     method: "POST",
     headers: {
@@ -88,7 +116,13 @@ export async function sendTwilioSms(
   const status = final?.status ?? created.status;
   if (status === "undelivered" || status === "failed") {
     const error = twilioDeliveryError(final ?? created);
-    console.warn("[twilio-sms] delivery failed", { messageSid, status, error, to: toE164, from });
+    console.warn("[twilio-sms] delivery failed", {
+      messageSid,
+      status,
+      error,
+      to: toE164,
+      from: from ?? messagingServiceSid,
+    });
     return { ok: false, error };
   }
 

@@ -26,13 +26,18 @@ import {
   type PlumbingEmailTemplate,
 } from "@/lib/voice-demo-plumbing-email";
 import { resolvePlumbingPromoCodeForLead } from "@/lib/voice-demo-plumbing-promo-code";
+import {
+  sendPlumbingAfterHoursSms,
+  sendPlumbingBookingSms,
+} from "@/lib/voice-demo-plumbing-sms";
 import { isValidEmail } from "@/lib/validate-email";
 
-/** Return tool response immediately; Resend runs after the HTTP response (keeps live WS responsive). */
-function schedulePlumbingBookingEmail(
+function schedulePlumbingBookingComms(
   leadId: string,
   template: PlumbingEmailTemplate,
-  payload: PlumbingEmailPayload
+  payload: PlumbingEmailPayload,
+  phone: string,
+  isEmergency: boolean
 ): void {
   after(async () => {
     const sent = await sendPlumbingDemoEmail(template, payload);
@@ -40,6 +45,19 @@ function schedulePlumbingBookingEmail(
       await upsertPlumbingJob({
         leadId,
         confirmationEmailSentAt: new Date().toISOString(),
+      });
+    }
+
+    const sms = await sendPlumbingBookingSms({
+      ...payload,
+      phone,
+      isEmergency,
+    });
+    if (!sms.ok && sms.error) {
+      console.warn("[voice-demo-plumbing-sms] booking SMS failed", {
+        leadId,
+        phone,
+        error: sms.error,
       });
     }
   });
@@ -72,11 +90,12 @@ function scheduleEmailsForBookedJob(
   leadId: string,
   job: PlumbingJobRow,
   email: string,
-  visitorName: string
+  visitorName: string,
+  phone: string
 ): void {
   const payload = bookingEmailPayloadFromJob(job, email, visitorName);
   const template: PlumbingEmailTemplate = job.is_emergency ? "emergency" : "appointment";
-  schedulePlumbingBookingEmail(leadId, template, payload);
+  schedulePlumbingBookingComms(leadId, template, payload, phone, job.is_emergency);
 }
 
 export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
@@ -103,7 +122,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "book_plumbing_appointment",
           description:
-            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends one confirmation email with a unique $50 coupon code enclosed (standard bookings).",
+            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends confirmation SMS + email (unique $50 coupon in email for standard bookings).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -142,7 +161,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "send_plumbing_email",
           description:
-            "Send quote follow-up, promo, or after-hours email. Templates: quote_followup, promo, after_hours.",
+            "Send quote follow-up, promo, or after-hours email. after_hours also texts the caller when phone is on file. Templates: quote_followup, promo, after_hours.",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -302,10 +321,16 @@ export async function executeVoiceDemoPlumbingTool(
             });
             refreshedJob = (await getLatestPlumbingJobForLead(leadId)) ?? refreshedJob;
           }
-          scheduleEmailsForBookedJob(leadId, refreshedJob, email, nameForEmail);
+          scheduleEmailsForBookedJob(
+            leadId,
+            refreshedJob,
+            email,
+            nameForEmail,
+            (phone || row.phone || "").trim()
+          );
         }
         emailMessage =
-          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) is sending to the updated address - after reconfirming the new email aloud, tell the caller to check inbox and spam.";
+          "Contact saved. Confirmation email (with unique $50 coupon code enclosed) and a confirmation text are sending - after reconfirming the new email aloud, tell the caller to check inbox, spam, and texts.";
       }
     }
 
@@ -510,16 +535,17 @@ export async function executeVoiceDemoPlumbingTool(
       confirmation_email_sent_at: null,
       reminder_email_sent_at: null,
     };
-    scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName);
+    scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
 
     return {
       ok: true,
       booked: true,
       emailSent: true,
+      smsSent: true,
       status,
       message: grantPromo
-        ? "Appointment booked. One confirmation email is sending with their $50 coupon inside - tell the caller to check inbox and spam for that email. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
-        : "Appointment booked. Confirmation email is sending - recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
+        ? "Appointment booked. Confirmation email (with $50 coupon inside) and a confirmation text are sending - tell the caller to check inbox, spam, and texts. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line. Do NOT re-confirm name or re-call save_plumbing_contact for fields already collected."
+        : "Appointment booked. Confirmation email and text are sending - recap address, date, and time warmly with the caller and stay on the line. Do NOT re-confirm name or contact fields already on file.",
     };
   }
 
@@ -575,12 +601,27 @@ export async function executeVoiceDemoPlumbingTool(
           customerEmail: email,
         });
       }
+      if (template === "after_hours") {
+        const callbackPhone = (row.phone || "").trim();
+        if (callbackPhone) {
+          const sms = await sendPlumbingAfterHoursSms(callbackPhone, firstName(visitorName));
+          if (!sms.ok && sms.error) {
+            console.warn("[voice-demo-plumbing-sms] after-hours SMS failed", {
+              leadId,
+              error: sms.error,
+            });
+          }
+        }
+      }
     });
 
     return {
       ok: true,
       emailSent: true,
-      message: "Email sent. Tell the caller briefly it's on its way.",
+      message:
+        template === "after_hours" && row.phone?.trim()
+          ? "Email and text sent. Tell the caller briefly both are on their way."
+          : "Email sent. Tell the caller briefly it's on its way.",
     };
   }
 

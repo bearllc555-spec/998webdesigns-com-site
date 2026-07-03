@@ -141,7 +141,7 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
   const twilioMessaging = twilioMessagingConfigured();
   if (resolvedAppEnv === "production" && !twilioMessaging) {
     warnings.push(
-      "TWILIO_MESSAGING_FROM missing - CRM checkout SMS disabled until a Twilio sending number is set."
+      "TWILIO_MESSAGING_FROM or TWILIO_MESSAGING_SERVICE_SID missing - Jarvis SMS, CRM checkout SMS, and discovery close texts disabled until Twilio messaging is set."
     );
   }
 
