@@ -54,4 +54,11 @@ describe("voice-demo-plumbing-system-prompt", () => {
     expect(prompt).toMatch(/\$50 coupon off any service/i);
     expect(prompt).toMatch(/BEFORE collecting name, address, phone, or email/i);
   });
+
+  it("requires dispatch consent before emergency book", () => {
+    const prompt = voiceDemoPlumbingSystemPrompt(plumbingRow("ademeo@gmail.com"));
+    expect(prompt).toMatch(/EMERGENCY DISPATCH/i);
+    expect(prompt).toMatch(/emergencyDispatchConfirmed true/i);
+    expect(prompt).toMatch(/\$150 dispatch fee/i);
+  });
 });

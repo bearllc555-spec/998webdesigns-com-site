@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { geminiApiKey } from "@/lib/voice-demo-live-token";
+import { transcriptEmergencyDispatchConfirmed } from "@/lib/voice-demo-plumbing-emergency";
 import { isValidEmail } from "@/lib/validate-email";
 import { hasFullPersonName } from "@/lib/voice-demo-plumbing-contact-confirm";
 
@@ -129,7 +130,7 @@ export function heuristicPlumbingFieldsFromTranscript(
     serviceAddress,
     appointmentDate,
     timeWindow,
-    isEmergency: callerIndicatesPlumbingEmergency(transcript),
+    isEmergency: transcriptEmergencyDispatchConfirmed(transcript),
   };
 }
 
@@ -145,9 +146,7 @@ export function mergePlumbingExtraction(
       extracted?.bookingAttempted === true ||
       heuristics.bookingAttempted === true ||
       confirmed,
-    isEmergency:
-      heuristics.isEmergency === true ||
-      (extracted?.isEmergency === true && callerIndicatesPlumbingEmergency(transcript)),
+    isEmergency: transcriptEmergencyDispatchConfirmed(transcript),
     fullName: extracted?.fullName?.trim() || lead.fullName?.trim() || null,
     email: extracted?.email?.trim() || lead.email?.trim() || null,
     phone: extracted?.phone?.trim() || lead.phone?.trim() || null,
@@ -194,7 +193,7 @@ Return JSON only:
 
 Rules:
 - bookingAttempted=true when Jarvis and the caller treated the visit as scheduled/confirmed — including when Jarvis mentions confirmation email/text, recaps address+date+time, or says "you're all set".
-- isEmergency=true ONLY when the caller reported an active emergency needing immediate dispatch (flooding, burst pipe, sewage backup). Jarvis FAQ or upsell mentions of emergency service do NOT count.
+- isEmergency=true ONLY when Jarvis offered emergency dispatch (fee + within two hours) AND the caller clearly agreed to send someone out now. Caller saying "emergency" or FAQ mentions do NOT count.
 - Infer serviceType from the plumbing problem discussed (e.g. water heater, drain, leak, estimate) even if not labeled "service type".
 - Extract serviceAddress from read-backs ("I have 25 Hughes Place…") or caller statements with street number + name.
 - appointmentDate may be relative ("Thursday", "tomorrow"). timeWindow may be "Morning", "Afternoon", "10am", etc.
@@ -213,7 +212,8 @@ Rules:
     const parsed = JSON.parse(text) as Record<string, unknown>;
     return {
       bookingAttempted: parsed.bookingAttempted === true,
-      isEmergency: parsed.isEmergency === true,
+      isEmergency:
+        parsed.isEmergency === true && transcriptEmergencyDispatchConfirmed(transcript),
       fullName: trimOrNull(parsed.fullName),
       email: trimOrNull(parsed.email)?.toLowerCase() ?? null,
       phone: trimOrNull(parsed.phone),

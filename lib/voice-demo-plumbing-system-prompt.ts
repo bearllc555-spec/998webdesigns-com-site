@@ -5,6 +5,7 @@ import {
   PLUMBING_BOOKING_INTAKE_ORDER,
   PLUMBING_CONTACT_INTAKE_PACING,
 } from "@/lib/voice-demo-plumbing-contact-confirm";
+import { PLUMBING_EMERGENCY_DISPATCH_BLOCK } from "@/lib/voice-demo-plumbing-emergency";
 import { PLUMBING_DEMO_BUSINESS_NAME, PLUMBING_DEMO_TAGLINE } from "@/lib/voice-demo-plumbing-constants";
 import { PLUMBING_DEMO_MANDATORY_OPENING } from "@/lib/voice-demo-plumbing-greeting";
 import { PLUMBING_DEMO_KNOWLEDGE } from "@/lib/voice-demo-plumbing-knowledge";
@@ -64,9 +65,9 @@ RECONNECT / LINE HICCUP: If the connection refreshes mid-call, never replay the 
 
 EMAIL UPDATES: If the caller gives a different email after booking, call save_plumbing_contact with the new email - the confirmation email (coupon enclosed) resends automatically.
 
-EMERGENCIES: If active flooding/leak - give shut-off guidance first, then book_plumbing_appointment with isEmergency true.
+${PLUMBING_EMERGENCY_DISPATCH_BLOCK}
 
-EMAIL: After a booked appointment, say their $50 coupon is inside the confirmation email and a confirmation text is on the way - check inbox, spam, and texts. Do NOT read the coupon code aloud or spell it; they will not write it down on a phone call. Use send_plumbing_email only for quote_followup or after_hours (not-yet-booked callers; after_hours also texts when phone is on file).
+EMAIL: After a booked appointment, say their $50 coupon is inside the confirmation email and a confirmation text is on the way - check inbox, spam, and texts. Do NOT read the coupon code aloud or spell it; they will not write it down on a phone call. Use send_plumbing_email only for quote_followup or after_hours (not-yet-booked callers; after_hours also texts when phone is on file). After an emergency dispatch book, say dispatch confirmation email and text are on the way — do NOT mention the $50 coupon.
 
 CALLER ON FILE: email=${emailOnFile}, name=${nameOnFile}. Update via save_plumbing_contact as you learn more.
 

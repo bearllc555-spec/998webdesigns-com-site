@@ -42,6 +42,7 @@ import {
   sendPlumbingBookingSms,
 } from "@/lib/voice-demo-plumbing-sms";
 import { isValidEmail } from "@/lib/validate-email";
+import { PLUMBING_EMERGENCY_DISPATCH_CONSENT_PROMPT } from "@/lib/voice-demo-plumbing-emergency";
 
 function schedulePlumbingBookingComms(
   leadId: string,
@@ -153,7 +154,7 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
         {
           name: "book_plumbing_appointment",
           description:
-            "Book or dispatch appointment when you have name, address, email, service type, and date/time. Sends confirmation SMS + email (unique $50 coupon in email for standard bookings).",
+            "Book or dispatch appointment when you have name, address, email, service type, and date/time (standard) or dispatch consent (emergency). Sends confirmation SMS + email (unique $50 coupon in email for standard bookings only).",
           parameters: {
             type: Type.OBJECT,
             properties: {
@@ -165,7 +166,16 @@ export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
               timeWindow: { type: Type.STRING },
               priceRange: { type: Type.STRING },
               flowName: { type: Type.STRING },
-              isEmergency: { type: Type.BOOLEAN },
+              isEmergency: {
+                type: Type.BOOLEAN,
+                description:
+                  "True only for active emergency dispatch after caller agreed to $150 dispatch fee and within-2-hours response.",
+              },
+              emergencyDispatchConfirmed: {
+                type: Type.BOOLEAN,
+                description:
+                  "Required true when isEmergency is true — caller explicitly agreed to emergency dispatch after you explained fee and timeline.",
+              },
               promoApplied: { type: Type.BOOLEAN },
               issueDescription: { type: Type.STRING },
             },
@@ -398,6 +408,9 @@ export async function finalizePlumbingBookingWithTranscript(
     timeWindow: extracted.timeWindow?.trim() || null,
     customerEmail: email,
     isEmergency: extracted.isEmergency === true,
+    notes: extracted.isEmergency
+      ? { emergencyDispatchConfirmedAt: new Date().toISOString() }
+      : undefined,
   });
   if (!saved.ok) {
     return { ok: false, error: saved.error, source: "transcript" };
@@ -708,11 +721,23 @@ export async function executeVoiceDemoPlumbingTool(
     const issueDescription =
       typeof args.issueDescription === "string" ? args.issueDescription.trim() : "";
     const isEmergency = args.isEmergency === true;
+    const emergencyDispatchConfirmed = args.emergencyDispatchConfirmed === true;
     /** Every standard booking gets the $50 promo email - do not rely on the model flag. */
     const grantPromo = !isEmergency;
 
     if (!visitorName || !email || !isValidEmail(email) || !serviceAddress || !serviceType) {
       return { ok: false, error: "Need name, valid email, address, and service type." };
+    }
+
+    if (isEmergency && !emergencyDispatchConfirmed) {
+      return { ok: false, error: PLUMBING_EMERGENCY_DISPATCH_CONSENT_PROMPT };
+    }
+
+    if (!isEmergency && (!appointmentDate || !timeWindow)) {
+      return {
+        ok: false,
+        error: "Need appointment date and time window for standard bookings.",
+      };
     }
 
     if (!hasFullPersonName(visitorName)) {
@@ -747,7 +772,12 @@ export async function executeVoiceDemoPlumbingTool(
       promoApplied: grantPromo,
       promoCode: promoCode ?? null,
       customerEmail: email,
-      notes: issueDescription ? { issueDescription } : undefined,
+      notes: {
+        ...(issueDescription ? { issueDescription } : {}),
+        ...(isEmergency && emergencyDispatchConfirmed
+          ? { emergencyDispatchConfirmedAt: new Date().toISOString() }
+          : {}),
+      },
     });
 
     if (!saved.ok) {
@@ -775,7 +805,12 @@ export async function executeVoiceDemoPlumbingTool(
       promo_applied: grantPromo,
       promo_code: promoCode,
       customer_email: email,
-      notes: issueDescription ? { issueDescription } : {},
+      notes: {
+        ...(issueDescription ? { issueDescription } : {}),
+        ...(isEmergency && emergencyDispatchConfirmed
+          ? { emergencyDispatchConfirmedAt: new Date().toISOString() }
+          : {}),
+      },
       confirmation_email_sent_at: null,
       reminder_email_sent_at: null,
     };

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  callerIndicatesPlumbingEmergency,
   extractedPlumbingBookingIsActionable,
   heuristicPlumbingFieldsFromTranscript,
   mergePlumbingExtraction,
@@ -78,7 +77,6 @@ describe("voice-demo-plumbing-transcript-book", () => {
         text: "You're all set. If it becomes urgent, call back and say it's an emergency.",
       },
     ];
-    expect(callerIndicatesPlumbingEmergency(transcript)).toBe(false);
     expect(heuristicPlumbingFieldsFromTranscript(transcript).isEmergency).toBe(false);
     const merged = mergePlumbingExtraction(
       {
@@ -99,12 +97,15 @@ describe("voice-demo-plumbing-transcript-book", () => {
     expect(merged.isEmergency).not.toBe(true);
   });
 
-  it("flags emergency when caller reports an active emergency", () => {
+  it("flags emergency only after dispatch offer and caller consent", () => {
     const transcript = [
-      { role: "user" as const, text: "It's an emergency - burst pipe flooding the basement" },
-      { role: "assistant" as const, text: "Dispatching a technician now." },
+      { role: "user" as const, text: "Burst pipe - water everywhere" },
+      {
+        role: "assistant" as const,
+        text: "I can dispatch a tech within two hours. The $150 dispatch fee applies toward repair. Do you want me to send someone out now?",
+      },
+      { role: "user" as const, text: "Yes please" },
     ];
-    expect(callerIndicatesPlumbingEmergency(transcript)).toBe(true);
     expect(heuristicPlumbingFieldsFromTranscript(transcript).isEmergency).toBe(true);
   });
 });
