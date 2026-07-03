@@ -1314,6 +1314,24 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
     farewellDisconnectingRef.current = true;
     try {
       await playerRef.current?.whenPlaybackIdle(FAREWELL_PLAYBACK_MAX_WAIT_MS);
+      if (verticalRef.current === "plumbers") {
+        try {
+          const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
+            method: "POST",
+            credentials: "include",
+          });
+          if (res.ok) {
+            const body = (await res.json()) as { result?: Record<string, unknown> };
+            logVoiceDemoOps({
+              kind: "plumbing_booking_finalize",
+              message: "Pre-hangup finalize-booking",
+              meta: { result: body.result },
+            });
+          }
+        } catch (err) {
+          console.warn("[voice-demo-live] plumbing finalize-booking", err);
+        }
+      }
       latchFarewellClosing();
       await sleep(PHASE_TAIL_MS);
       optionsRef.current.onConversationEnd?.();
@@ -1366,7 +1384,7 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   );
 
   const endCallNow = useCallback(
-    (reason: VoiceDemoHangupReason = "visitor_farewell_echo") => {
+    async (reason: VoiceDemoHangupReason = "visitor_farewell_echo") => {
       if (farewellDisconnectingRef.current) return;
       farewellDisconnectingRef.current = true;
       hangupReasonRef.current = reason;
@@ -1375,6 +1393,24 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         message: "Visitor farewell echo - immediate hangup",
         meta: { phase: getSessionPhase(), hangupReason: reason },
       });
+      if (verticalRef.current === "plumbers") {
+        try {
+          const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
+            method: "POST",
+            credentials: "include",
+          });
+          if (res.ok) {
+            const body = (await res.json()) as { result?: Record<string, unknown> };
+            logVoiceDemoOps({
+              kind: "plumbing_booking_finalize",
+              message: "Pre-hangup finalize-booking",
+              meta: { result: body.result },
+            });
+          }
+        } catch (err) {
+          console.warn("[voice-demo-live] plumbing finalize-booking", err);
+        }
+      }
       latchFarewellClosing();
       clearCallIdleTimer();
       clearPostFarewellTimer();
@@ -1601,6 +1637,10 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
                   field === "phone"
                 ) {
                   plumbingContactPauseFieldRef.current = field;
+                }
+                if (result.booked === true) {
+                  clearPlumbingContactPause();
+                  clearCallIdleTimer();
                 }
               }
               if (name === "book_plumbing_appointment" && result.booked === true) {

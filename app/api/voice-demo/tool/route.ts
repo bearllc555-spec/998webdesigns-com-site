@@ -5,6 +5,10 @@ import { executeVoiceDemoAestheticsTool } from "@/lib/voice-demo-aesthetics/tool
 import { executeVoiceDemoPlumbingTool } from "@/lib/voice-demo-plumbing-tools";
 import { executeVoiceDemoTool, type VoiceDemoToolMode } from "@/lib/voice-demo-tools";
 import {
+  appendVoiceDemoOpsEvent,
+  buildVoiceDemoOpsEvent,
+} from "@/lib/voice-demo-ops";
+import {
   aestheticsBrandFromVertical,
   isAestheticsVertical,
   isPlumbingVertical,
@@ -49,12 +53,28 @@ export async function POST(req: NextRequest) {
   }
 
   const aestheticsBrand = aestheticsBrandFromVertical(session.vertical);
-  const result =
-    mode === "demo" && isPlumbingVertical(session.vertical)
+  const isPlumbing = mode === "demo" && isPlumbingVertical(session.vertical);
+  const result = isPlumbing
       ? await executeVoiceDemoPlumbingTool(session.leadId, name, args)
       : mode === "demo" && isAestheticsVertical(session.vertical) && aestheticsBrand
         ? await executeVoiceDemoAestheticsTool(aestheticsBrand, session.leadId, name, args)
         : await executeVoiceDemoTool(session.leadId, mode, name, args);
+
+  if (isPlumbing) {
+    void appendVoiceDemoOpsEvent(
+      session.leadId,
+      buildVoiceDemoOpsEvent(
+        "plumbing_tool_call",
+        `Tool ${name}: ${result.ok === false ? `error - ${result.error}` : result.booked ? "booked" : "ok"}`,
+        {
+          tool: name,
+          ok: result.ok !== false,
+          booked: result.booked === true,
+          error: typeof result.error === "string" ? result.error : undefined,
+        }
+      )
+    );
+  }
 
   const res = NextResponse.json({ ok: true, result });
   if (name === "verify_code" && result.verified === true) {

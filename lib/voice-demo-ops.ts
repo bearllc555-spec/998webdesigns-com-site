@@ -12,7 +12,9 @@ export type VoiceDemoOpsKind =
   | "session_resumption"
   | "end_conversation_early_blocked"
   | "client_hangup_scheduled"
-  | "model_end_conversation_blocked";
+  | "model_end_conversation_blocked"
+  | "plumbing_booking_finalize"
+  | "plumbing_tool_call";
 
 export type VoiceDemoOpsEvent = {
   at: string;

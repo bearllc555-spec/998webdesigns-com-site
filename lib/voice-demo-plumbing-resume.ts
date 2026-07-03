@@ -17,6 +17,7 @@ export type PlumbingResumeJob = {
 export function buildPlumbingSessionResumeNudge(opts: {
   nameOnFile?: string;
   phoneOnFile?: string;
+  leadEmailOnFile?: string;
   job?: PlumbingResumeJob | null;
 }): string {
   const name = opts.nameOnFile?.trim();
@@ -51,8 +52,9 @@ export function buildPlumbingSessionResumeNudge(opts: {
   if (job?.appointmentDate) parts.push(`date: ${job.appointmentDate}`);
   if (job?.timeWindow) parts.push(`time: ${job.timeWindow}`);
 
-  const missing = plumbingBookingMissingLabels({ fullName: name, phone, job });
-  const ready = isPlumbingBookingReady({ fullName: name, phone, job });
+  const leadEmail = opts.leadEmailOnFile?.trim();
+  const missing = plumbingBookingMissingLabels({ fullName: name, phone, leadEmail, job });
+  const ready = isPlumbingBookingReady({ fullName: name, phone, leadEmail, job });
 
   if (ready) {
     msg +=

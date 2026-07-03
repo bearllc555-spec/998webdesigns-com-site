@@ -36,4 +36,21 @@ describe("voice-demo-plumbing-booking-readiness", () => {
       })
     ).toBe(true);
   });
+
+  it("accepts demo gate email on the lead when job email is unset", () => {
+    expect(
+      isPlumbingBookingReady({
+        fullName: "Anthony DeMeo",
+        phone: "2015551234",
+        leadEmail: "gate@example.com",
+        job: {
+          serviceType: "Estimate",
+          serviceAddress: "25 Hughes Place",
+          appointmentDate: "Thursday",
+          timeWindow: "Morning",
+          customerEmail: null,
+        },
+      })
+    ).toBe(true);
+  });
 });

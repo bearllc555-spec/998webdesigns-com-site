@@ -16,6 +16,8 @@ const FIELD_LABELS: Record<string, string> = {
 export function plumbingBookingMissingFields(opts: {
   fullName?: string | null;
   phone?: string | null;
+  /** Demo gate email on the lead row when job.customerEmail is not set yet. */
+  leadEmail?: string | null;
   job?: PlumbingResumeJob | null;
 }): string[] {
   const missing: string[] = [];
@@ -25,7 +27,8 @@ export function plumbingBookingMissingFields(opts: {
   const job = opts.job;
   if (!job?.serviceAddress?.trim()) missing.push("serviceAddress");
   if (!opts.phone?.trim()) missing.push("phone");
-  if (!job?.customerEmail?.trim()) missing.push("email");
+  const email = job?.customerEmail?.trim() || opts.leadEmail?.trim();
+  if (!email) missing.push("email");
   if (!job?.serviceType?.trim()) missing.push("serviceType");
   if (!job?.appointmentDate?.trim()) missing.push("appointmentDate");
   if (!job?.timeWindow?.trim()) missing.push("timeWindow");
@@ -35,6 +38,7 @@ export function plumbingBookingMissingFields(opts: {
 export function plumbingBookingMissingLabels(opts: {
   fullName?: string | null;
   phone?: string | null;
+  leadEmail?: string | null;
   job?: PlumbingResumeJob | null;
 }): string[] {
   return plumbingBookingMissingFields(opts).map((key) => FIELD_LABELS[key] ?? key);
@@ -43,6 +47,7 @@ export function plumbingBookingMissingLabels(opts: {
 export function isPlumbingBookingReady(opts: {
   fullName?: string | null;
   phone?: string | null;
+  leadEmail?: string | null;
   job?: PlumbingResumeJob | null;
 }): boolean {
   return plumbingBookingMissingFields(opts).length === 0;

@@ -27,6 +27,11 @@ import {
 } from "@/lib/voice-demo-plumbing-email";
 import { resolvePlumbingPromoCodeForLead } from "@/lib/voice-demo-plumbing-promo-code";
 import {
+  isPlumbingBookingReady,
+  plumbingBookingMissingLabels,
+} from "@/lib/voice-demo-plumbing-booking-readiness";
+import type { PlumbingResumeJob } from "@/lib/voice-demo-plumbing-resume";
+import {
   sendPlumbingAfterHoursSms,
   sendPlumbingBookingSms,
 } from "@/lib/voice-demo-plumbing-sms";
@@ -201,6 +206,101 @@ const VALID_TEMPLATES = new Set<PlumbingEmailTemplate>([
   "after_hours",
 ]);
 
+function plumbingJobToResumeJob(job: PlumbingJobRow | null): PlumbingResumeJob | null {
+  if (!job) return null;
+  return {
+    status: job.status,
+    serviceType: job.service_type,
+    serviceAddress: job.service_address,
+    customerEmail: job.customer_email,
+    appointmentDate: job.appointment_date,
+    timeWindow: job.time_window,
+  };
+}
+
+export type PlumbingFinalizeBookingResult =
+  | { ok: true; booked: true; alreadyBooked?: boolean; status: string }
+  | { ok: true; booked: false; notReady: true; missing: string[] }
+  | { ok: false; error: string };
+
+/** Book from DB when all intake fields are on file - idempotent if already booked. */
+export async function finalizePlumbingBookingIfReady(
+  leadId: string
+): Promise<PlumbingFinalizeBookingResult> {
+  const row = await getVoiceDemoLead(leadId);
+  if (!row) return { ok: false, error: "Lead not found." };
+
+  const job = await getLatestPlumbingJobForLead(leadId);
+  if (job?.status === "booked" || job?.status === "emergency") {
+    return { ok: true, booked: true, alreadyBooked: true, status: job.status };
+  }
+  if (job?.status === "callback_requested") {
+    return { ok: true, booked: false, notReady: true, missing: ["callback flow"] };
+  }
+
+  const resumeJob = plumbingJobToResumeJob(job);
+  const readiness = {
+    fullName: row.full_name,
+    phone: row.phone,
+    leadEmail: row.email,
+    job: resumeJob,
+  };
+
+  if (!isPlumbingBookingReady(readiness)) {
+    return {
+      ok: true,
+      booked: false,
+      notReady: true,
+      missing: plumbingBookingMissingLabels(readiness),
+    };
+  }
+
+  const visitorName = row.full_name!.trim();
+  const email = (job!.customer_email?.trim() || row.email!.trim()).toLowerCase();
+  if (!isValidEmail(email)) {
+    return { ok: false, error: "Valid email required before booking." };
+  }
+  if (!row.phone?.trim()) {
+    return { ok: false, error: "Callback phone required before booking." };
+  }
+
+  const isEmergency = job!.is_emergency;
+  const grantPromo = !isEmergency;
+  const status = isEmergency ? "emergency" : "booked";
+  const promoCode = await resolvePlumbingPromoCodeForLead(leadId, grantPromo);
+
+  await updateVoiceDemoLead(leadId, { full_name: visitorName, email });
+
+  const saved = await upsertPlumbingJob({
+    leadId,
+    status,
+    flowName: job!.flow_name,
+    serviceType: job!.service_type!,
+    serviceAddress: job!.service_address!,
+    appointmentDate: job!.appointment_date,
+    timeWindow: job!.time_window,
+    priceRange: job!.price_range,
+    isEmergency,
+    promoApplied: grantPromo,
+    promoCode: promoCode ?? null,
+    customerEmail: email,
+    notes: job!.notes,
+  });
+
+  if (!saved.ok) return { ok: false, error: saved.error };
+
+  const bookedJob = (await getLatestPlumbingJobForLead(leadId)) ?? job!;
+  scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
+
+  return { ok: true, booked: true, status };
+}
+
+function plumbingAutoBookSuccessMessage(grantPromo: boolean): string {
+  return grantPromo
+    ? "Appointment booked. Confirmation email (with $50 coupon inside) and a confirmation text are sending - tell the caller to check inbox, spam, and texts. Do NOT read or spell the coupon code aloud. Recap address, date, and time warmly and stay on the line."
+    : "Appointment booked. Confirmation email and text are sending - recap address, date, and time warmly with the caller and stay on the line.";
+}
+
 export async function executeVoiceDemoPlumbingTool(
   leadId: string,
   name: string,
@@ -292,7 +392,10 @@ export async function executeVoiceDemoPlumbingTool(
       hasJobPatch = true;
     }
     if (hasJobPatch) {
-      await upsertPlumbingJob(jobPatch);
+      const saved = await upsertPlumbingJob(jobPatch);
+      if (!saved.ok) {
+        return { ok: false, error: `Could not save appointment details: ${saved.error}` };
+      }
     }
 
     let emailMessage = "Contact saved. Continue the conversation naturally.";
@@ -391,9 +494,38 @@ export async function executeVoiceDemoPlumbingTool(
         ? " Contact updated - value already on file; do NOT read back again. Continue to the next question."
         : "";
 
-    const message = reconfirmMessage
+    let message = reconfirmMessage
       ? `${reconfirmMessage}${emailMessage.includes("Confirmation email") ? ` Also: ${emailMessage.replace("Contact saved. ", "")}` : ""}`
       : `${emailMessage}${unchangedNote}`;
+
+    const autoBook = await finalizePlumbingBookingIfReady(leadId);
+    if (autoBook.ok && autoBook.booked && !autoBook.alreadyBooked) {
+      const grantPromo = autoBook.status !== "emergency";
+      return {
+        ok: true,
+        booked: true,
+        emailSent: true,
+        smsSent: true,
+        message: plumbingAutoBookSuccessMessage(grantPromo),
+        ...(Object.keys(spoken).length > 0 ? { spoken } : {}),
+      };
+    }
+
+    const refreshedRow = await getVoiceDemoLead(leadId);
+    const refreshedJob = await getLatestPlumbingJobForLead(leadId);
+    if (
+      refreshedRow &&
+      isPlumbingBookingReady({
+        fullName: refreshedRow.full_name,
+        phone: refreshedRow.phone,
+        leadEmail: refreshedRow.email,
+        job: plumbingJobToResumeJob(refreshedJob),
+      }) &&
+      refreshedJob?.status === "draft"
+    ) {
+      message +=
+        " CRITICAL: All booking fields are on file - call book_plumbing_appointment immediately before continuing or saying goodbye.";
+    }
 
     return {
       ok: true,
