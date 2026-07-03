@@ -66,7 +66,8 @@ function plumbingFromAddress(): string {
 async function sendPlumbingResendEmail(
   to: string,
   subject: string,
-  html: string
+  html: string,
+  cc?: string[]
 ): Promise<boolean> {
   if (!process.env.RESEND_API_KEY) {
     console.warn("[voice-demo-plumbing-email] RESEND_API_KEY not set");
@@ -77,6 +78,7 @@ async function sendPlumbingResendEmail(
   const { error } = await resend.emails.send({
     from: plumbingFromAddress(),
     to,
+    ...(cc?.length ? { cc } : {}),
     subject,
     html,
   });
@@ -208,5 +210,6 @@ export async function sendPlumbingDemoEmail(
   payload: PlumbingEmailPayload
 ): Promise<boolean> {
   const { subject, html } = buildPlumbingEmail(template, payload);
-  return sendPlumbingResendEmail(payload.to, subject, html);
+  const cc = template === "emergency" ? [SUPPORT_EMAIL] : undefined;
+  return sendPlumbingResendEmail(payload.to, subject, html, cc);
 }
