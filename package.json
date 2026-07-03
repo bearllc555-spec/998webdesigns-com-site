@@ -23,7 +23,8 @@
     "scorecard:migrate-intel": "node scripts/apply-scorecard-internal-intel.mjs",
     "cf:ops-checklist": "node scripts/cf-ops-checklist.mjs",
     "favicon:generate": "node scripts/generate-site-favicon.mjs",
-    "voice-demo:ops-report": "node --env-file=.env.local scripts/voice-demo-ops-report.mjs"
+    "voice-demo:ops-report": "node --env-file=.env.local scripts/voice-demo-ops-report.mjs",
+    "plumbing:smoke": "npx tsx --env-file=.env.local scripts/plumbing-booking-smoke.ts"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
