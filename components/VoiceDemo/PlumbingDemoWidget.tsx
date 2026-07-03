@@ -16,6 +16,8 @@ import type { VoiceDemoCaption } from "@/lib/voice-demo-caption";
 
 type Phase = "gate" | "demo";
 
+const PLUMBING_DEMO_DISPLAY_NAME = `${PLUMBING_DEMO_BUSINESS_NAME} (fictitious company)`;
+
 export function PlumbingDemoWidget() {
   const [phase, setPhase] = useState<Phase>("gate");
   const [email, setEmail] = useState("");
@@ -141,7 +143,7 @@ export function PlumbingDemoWidget() {
     <div className="rounded-2xl border border-rule bg-bg shadow-lg">
       <div className="flex items-center justify-between border-b border-rule px-4 py-3">
         <div>
-          <p className="font-display text-sm font-semibold text-ink">{PLUMBING_DEMO_BUSINESS_NAME}</p>
+          <p className="font-display text-sm font-semibold text-ink">{PLUMBING_DEMO_DISPLAY_NAME}</p>
           <p className="text-xs text-ink-soft">{PLUMBING_DEMO_TAGLINE}</p>
         </div>
         {phase === "demo" && (
