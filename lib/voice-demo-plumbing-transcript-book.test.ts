@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  callerIndicatesPlumbingEmergency,
   extractedPlumbingBookingIsActionable,
   heuristicPlumbingFieldsFromTranscript,
   mergePlumbingExtraction,
@@ -67,5 +68,43 @@ describe("voice-demo-plumbing-transcript-book", () => {
     expect(merged.bookingAttempted).toBe(true);
     expect(merged.email).toBe("test@example.com");
     expect(merged.serviceType).toBe("Drain cleaning");
+  });
+
+  it("does not flag emergency when only Jarvis mentions emergency service in FAQ", () => {
+    const transcript = [
+      { role: "user" as const, text: "I need a water heater estimate Thursday morning" },
+      {
+        role: "assistant" as const,
+        text: "You're all set. If it becomes urgent, call back and say it's an emergency.",
+      },
+    ];
+    expect(callerIndicatesPlumbingEmergency(transcript)).toBe(false);
+    expect(heuristicPlumbingFieldsFromTranscript(transcript).isEmergency).toBe(false);
+    const merged = mergePlumbingExtraction(
+      {
+        bookingAttempted: true,
+        isEmergency: true,
+        fullName: "Dave Demeo",
+        email: "test@example.com",
+        phone: "9734496700",
+        serviceAddress: "25 Hughes Place",
+        serviceType: "Water heater estimate",
+        appointmentDate: "Thursday",
+        timeWindow: "Morning",
+      },
+      heuristicPlumbingFieldsFromTranscript(transcript),
+      { email: "test@example.com", fullName: "Dave Demeo", phone: "9734496700" },
+      transcript
+    );
+    expect(merged.isEmergency).not.toBe(true);
+  });
+
+  it("flags emergency when caller reports an active emergency", () => {
+    const transcript = [
+      { role: "user" as const, text: "It's an emergency - burst pipe flooding the basement" },
+      { role: "assistant" as const, text: "Dispatching a technician now." },
+    ];
+    expect(callerIndicatesPlumbingEmergency(transcript)).toBe(true);
+    expect(heuristicPlumbingFieldsFromTranscript(transcript).isEmergency).toBe(true);
   });
 });

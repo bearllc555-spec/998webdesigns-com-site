@@ -276,6 +276,8 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
   const captionRoleRef = useRef<VoiceDemoCaptionRole | null>(null);
   const captionTextRef = useRef("");
   const sessionTranscriptRef = useRef<Array<{ role: "user" | "assistant"; text: string }>>([]);
+  const plumbingFinalizeInFlightRef = useRef<Promise<Record<string, unknown> | null> | null>(null);
+  const plumbingFinalizeBookedRef = useRef(false);
   const greetingSentRef = useRef(false);
   const nameSavedRef = useRef(false);
   const savedNameRef = useRef("");
@@ -757,55 +759,73 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
 
   const requestPlumbingFinalize = useCallback(async () => {
     if (verticalRef.current !== "plumbers") return null;
-    const transcript = snapshotPlumbingTranscript();
-    try {
-      const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
-        method: "POST",
-        credentials: "include",
-        keepalive: true,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        result?: Record<string, unknown>;
-        error?: string;
-      };
-      if (!res.ok) {
+    if (plumbingFinalizeBookedRef.current) return null;
+    if (plumbingFinalizeInFlightRef.current) {
+      return plumbingFinalizeInFlightRef.current;
+    }
+
+    const run = (async (): Promise<Record<string, unknown> | null> => {
+      const transcript = snapshotPlumbingTranscript();
+      try {
+        const res = await fetch("/api/voice-demo/plumbing/finalize-booking", {
+          method: "POST",
+          credentials: "include",
+          keepalive: true,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transcript }),
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          result?: Record<string, unknown>;
+          error?: string;
+        };
+        if (!res.ok) {
+          logVoiceDemoOps({
+            kind: "plumbing_booking_finalize",
+            message: `Finalize-booking HTTP ${res.status}`,
+            severity: "warn",
+            meta: {
+              status: res.status,
+              error: body.error,
+              transcriptLines: transcript.length,
+            },
+          });
+          return null;
+        }
+        const result = body.result ?? null;
+        if (result && result.ok === true && result.booked === true) {
+          plumbingFinalizeBookedRef.current = true;
+        }
         logVoiceDemoOps({
           kind: "plumbing_booking_finalize",
-          message: `Finalize-booking HTTP ${res.status}`,
-          severity: "warn",
+          message: "Pre-hangup finalize-booking",
           meta: {
-            status: res.status,
-            error: body.error,
+            result,
             transcriptLines: transcript.length,
+            extractDebug:
+              result && typeof result === "object" && "extractDebug" in result
+                ? (result as { extractDebug?: unknown }).extractDebug
+                : undefined,
           },
         });
+        return result;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        logVoiceDemoOps({
+          kind: "plumbing_booking_finalize",
+          message: "Finalize-booking fetch failed",
+          severity: "warn",
+          meta: { error: message, transcriptLines: transcript.length },
+        });
+        console.warn("[voice-demo-live] plumbing finalize-booking", err);
         return null;
       }
-      logVoiceDemoOps({
-        kind: "plumbing_booking_finalize",
-        message: "Pre-hangup finalize-booking",
-        meta: {
-          result: body.result,
-          transcriptLines: transcript.length,
-          extractDebug:
-            body.result && typeof body.result === "object" && "extractDebug" in body.result
-              ? (body.result as { extractDebug?: unknown }).extractDebug
-              : undefined,
-        },
-      });
-      return body.result ?? null;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      logVoiceDemoOps({
-        kind: "plumbing_booking_finalize",
-        message: "Finalize-booking fetch failed",
-        severity: "warn",
-        meta: { error: message, transcriptLines: transcript.length },
-      });
-      console.warn("[voice-demo-live] plumbing finalize-booking", err);
-      return null;
+    })();
+
+    plumbingFinalizeInFlightRef.current = run;
+    try {
+      return await run;
+    } finally {
+      plumbingFinalizeInFlightRef.current = null;
     }
   }, [snapshotPlumbingTranscript]);
 
@@ -2157,6 +2177,9 @@ export function useVoiceDemoLive(options: UseVoiceDemoLiveOptions = {}) {
         pendingClientHangupRef.current = false;
         hangupReasonRef.current = null;
         lastAssistantTextRef.current = "";
+        sessionTranscriptRef.current = [];
+        plumbingFinalizeInFlightRef.current = null;
+        plumbingFinalizeBookedRef.current = false;
         greetingSentRef.current = false;
         nameSavedRef.current = false;
         savedNameRef.current = "";

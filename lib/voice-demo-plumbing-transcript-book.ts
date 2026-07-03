@@ -31,7 +31,7 @@ const SERVICE_TYPE_RULES: Array<[RegExp, string]> = [
   [/\bleak|leaking\b/i, "Leak detection and repair"],
   [/\btoilet\b/i, "Toilet repair"],
   [/\bsewer\b/i, "Sewer line service"],
-  [/\bflood|emergency|burst pipe\b/i, "Emergency plumbing"],
+  [/\bflood|burst pipe\b/i, "Emergency plumbing"],
   [/\bestimate|quote\b/i, "Plumbing estimate"],
   [/\bfaucet|sink\b/i, "Faucet or sink repair"],
   [/\bgarbage disposal\b/i, "Garbage disposal repair"],
@@ -66,6 +66,22 @@ function assistantText(transcript: PlumbingTranscriptLine[]): string {
 /** Jarvis recap / confirmation language at end of call. */
 export function transcriptIndicatesBookingConfirmed(transcript: PlumbingTranscriptLine[]): boolean {
   return BOOKING_CONFIRMED_RE.test(assistantText(transcript));
+}
+
+function userTranscriptText(transcript: PlumbingTranscriptLine[]): string {
+  return transcript
+    .filter((line) => line.role === "user")
+    .map((line) => line.text)
+    .join("\n");
+}
+
+/** Caller reported an active emergency — not Jarvis FAQ mentions of emergency service. */
+export function callerIndicatesPlumbingEmergency(transcript: PlumbingTranscriptLine[]): boolean {
+  const user = userTranscriptText(transcript);
+  if (!user.trim()) return false;
+  return /\b(it'?s an?\s+)?emergency\b|\bburst pipe\b|\bflooding\b|\bactive leak\b|\bsewage backup\b|\bwater everywhere\b/i.test(
+    user
+  );
 }
 
 /** Regex fallback when Gemini extraction misses STT-noisy booking fields. */
@@ -113,7 +129,7 @@ export function heuristicPlumbingFieldsFromTranscript(
     serviceAddress,
     appointmentDate,
     timeWindow,
-    isEmergency: /\bemergency|flooding|burst pipe|active leak\b/i.test(all),
+    isEmergency: callerIndicatesPlumbingEmergency(transcript),
   };
 }
 
@@ -129,7 +145,9 @@ export function mergePlumbingExtraction(
       extracted?.bookingAttempted === true ||
       heuristics.bookingAttempted === true ||
       confirmed,
-    isEmergency: extracted?.isEmergency === true || heuristics.isEmergency === true,
+    isEmergency:
+      heuristics.isEmergency === true ||
+      (extracted?.isEmergency === true && callerIndicatesPlumbingEmergency(transcript)),
     fullName: extracted?.fullName?.trim() || lead.fullName?.trim() || null,
     email: extracted?.email?.trim() || lead.email?.trim() || null,
     phone: extracted?.phone?.trim() || lead.phone?.trim() || null,
@@ -176,6 +194,7 @@ Return JSON only:
 
 Rules:
 - bookingAttempted=true when Jarvis and the caller treated the visit as scheduled/confirmed — including when Jarvis mentions confirmation email/text, recaps address+date+time, or says "you're all set".
+- isEmergency=true ONLY when the caller reported an active emergency needing immediate dispatch (flooding, burst pipe, sewage backup). Jarvis FAQ or upsell mentions of emergency service do NOT count.
 - Infer serviceType from the plumbing problem discussed (e.g. water heater, drain, leak, estimate) even if not labeled "service type".
 - Extract serviceAddress from read-backs ("I have 25 Hughes Place…") or caller statements with street number + name.
 - appointmentDate may be relative ("Thursday", "tomorrow"). timeWindow may be "Morning", "Afternoon", "10am", etc.

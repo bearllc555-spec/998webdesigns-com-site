@@ -74,6 +74,38 @@ function schedulePlumbingBookingComms(
   });
 }
 
+function plumbingCommsAlreadyScheduled(job: PlumbingJobRow | null): boolean {
+  if (!job) return false;
+  if (job.confirmation_email_sent_at) return true;
+  const notes = job.notes ?? {};
+  return typeof notes.bookingCommsScheduledAt === "string" && notes.bookingCommsScheduledAt.length > 0;
+}
+
+/** Idempotent — skips when confirmation email/SMS already scheduled for this job. */
+async function scheduleEmailsForBookedJob(
+  leadId: string,
+  job: PlumbingJobRow,
+  email: string,
+  visitorName: string,
+  phone: string
+): Promise<boolean> {
+  const latest = (await getLatestPlumbingJobForLead(leadId)) ?? job;
+  if (plumbingCommsAlreadyScheduled(latest)) return false;
+
+  await upsertPlumbingJob({
+    leadId,
+    notes: {
+      ...(latest.notes ?? {}),
+      bookingCommsScheduledAt: new Date().toISOString(),
+    },
+  });
+
+  const payload = bookingEmailPayloadFromJob(latest, email, visitorName);
+  const template: PlumbingEmailTemplate = latest.is_emergency ? "emergency" : "appointment";
+  schedulePlumbingBookingComms(leadId, template, payload, phone, latest.is_emergency);
+  return true;
+}
+
 function bookingEmailPayloadFromJob(
   job: PlumbingJobRow,
   email: string,
@@ -95,18 +127,6 @@ function bookingEmailPayloadFromJob(
     promoApplied: job.promo_applied,
     promoCode: job.promo_code ?? undefined,
   };
-}
-
-function scheduleEmailsForBookedJob(
-  leadId: string,
-  job: PlumbingJobRow,
-  email: string,
-  visitorName: string,
-  phone: string
-): void {
-  const payload = bookingEmailPayloadFromJob(job, email, visitorName);
-  const template: PlumbingEmailTemplate = job.is_emergency ? "emergency" : "appointment";
-  schedulePlumbingBookingComms(leadId, template, payload, phone, job.is_emergency);
 }
 
 export function voiceDemoPlumbingToolDeclarations(): ToolListUnion {
@@ -310,7 +330,7 @@ export async function finalizePlumbingBookingIfReady(
   if (!saved.ok) return { ok: false, error: saved.error };
 
   const bookedJob = (await getLatestPlumbingJobForLead(leadId)) ?? job!;
-  scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
+  await scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
 
   return { ok: true, booked: true, status };
 }
@@ -328,6 +348,26 @@ export async function finalizePlumbingBookingWithTranscript(
 
   const row = await getVoiceDemoLead(leadId);
   if (!row) return { ok: false, error: "Lead not found." };
+
+  const jobBeforeTranscript = await getLatestPlumbingJobForLead(leadId);
+  if (jobBeforeTranscript?.status === "booked" || jobBeforeTranscript?.status === "emergency") {
+    return {
+      ok: true,
+      booked: true,
+      alreadyBooked: true,
+      status: jobBeforeTranscript.status,
+      source: "db",
+    };
+  }
+  if (plumbingCommsAlreadyScheduled(jobBeforeTranscript)) {
+    return {
+      ok: true,
+      booked: true,
+      alreadyBooked: true,
+      status: jobBeforeTranscript?.is_emergency ? "emergency" : "booked",
+      source: "db",
+    };
+  }
 
   const { merged: extracted } = await resolvePlumbingBookingFromTranscript(transcript, {
     email: row.email,
@@ -496,7 +536,7 @@ export async function executeVoiceDemoPlumbingTool(
             });
             refreshedJob = (await getLatestPlumbingJobForLead(leadId)) ?? refreshedJob;
           }
-          scheduleEmailsForBookedJob(
+          await scheduleEmailsForBookedJob(
             leadId,
             refreshedJob,
             email,
@@ -739,7 +779,7 @@ export async function executeVoiceDemoPlumbingTool(
       confirmation_email_sent_at: null,
       reminder_email_sent_at: null,
     };
-    scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
+    await scheduleEmailsForBookedJob(leadId, bookedJob, email, visitorName, row.phone.trim());
 
     return {
       ok: true,
