@@ -35,7 +35,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 - Rate limiting - `middleware.ts` (edge) + Supabase `api_rate_limits` when table exists (`lib/api-rate-limit.ts`).
 - Analytics - Cloudflare Web Analytics when `NEXT_PUBLIC_CF_BEACON_TOKEN` is set (`components/CloudflareWebAnalytics.tsx`).
 - **CRM** - `/crm` (auth: `CRM_ADMIN_SECRET` required in production), feed from `wd_leads` + `contact_submissions`, `/crm/telegram` for bot token + chat ids (`crm_telegram_settings`; env vars are fallback). CRM version: `lib/crm-version.ts` - bump on every CRM change.
-- **Plumbing Jarvis demo** - `/demo/plumbers` (Gemini Live voice agent for Metro Plumbing & Drain). Sign-in → FAQ → booking with $50 coupon → PA-style intake → confirmation email. Canonical flow: **`docs/jarvis-plumbing-appointment-flow.md`**. Knowledge/emails: `docs/jarvis_plumbing_complete.md`. Ops: `VOICE-DEMO-OPS.md`. Real sign-ins on `/crm` under **Plumbing Jarvis demos** (`plumbing_demo`).
+- **Plumbing Jarvis demo** - `/demo/plumbers` (Gemini Live voice agent for Metro Plumbing & Drain). Sign-in → FAQ → booking with $50 coupon → PA-style intake → confirmation email + SMS. Canonical flow: **`docs/jarvis-plumbing-appointment-flow.md`**. Knowledge/emails: `docs/jarvis_plumbing_complete.md`. Ops: `VOICE-DEMO-OPS.md`. Real sign-ins on `/crm` under **Plumbing Jarvis demos** (`plumbing_demo`). Booking comms smoke test (no voice call): `npm run plumbing:smoke` - inserts a labeled job with address columns + sends the real Resend email and Twilio SMS (`scripts/plumbing-booking-smoke.ts`).
 - **Alerts** - Resend internal emails + Telegram via CRM notify kinds (`lifetime_hosting_paid`, `lifetime_hosting_ach_pending`, design payment, etc.). No Slack.
 
 ---
@@ -49,6 +49,7 @@ Pricing copy in `components/Pricing.tsx` is from the locked product brief. **Do 
 | **3** | Live checkout E2E | **Done** - $1 live smoke (`cs_live_a1md3zcykOuvz5fXJx3RaVfbaxL6fBUe76edhc6BM8sBVPnmr5vXcZqxaB`): Checkout paid, `/thanks` rendered, Resend receipt + hello@ alert, Telegram fired. Open checkout via `smoke-checkout-open.html` (URL hash required). |
 | **4** | `env-status` clean | **Done** - `GET /api/admin/env-status` with `BALANCE_CAPTURE_SECRET`: `warnings: []`, `readyForLiveCharges: true`, Stripe mode `live`, CRM `crmAdminSecretSource: dedicated`. Re-check after any CF Worker secret or schema change. |
 | **5** | `CRON_SECRET` for CF crons | **Done** - GitHub repo secret `CRON_SECRET`; `.github/workflows/cf-cron.yml` hits production cron routes. Falls back to `BALANCE_CAPTURE_SECRET` if unset. |
+| **6** | `jarvis_plumbing_jobs` schema (plumbing Jarvis booking) | **Done (2026-07-03)** - address-part columns applied on helmet (`service_street/line2/city/state/zip`) via `node scripts/apply-jarvis-plumbing-address-parts-migration.mjs` (auto-runs `notify pgrst, 'reload schema'`). env-status now probes `jarvisPlumbingAddressColumns`. If missing, it warns + booking finalize fails with `Could not find the 'service_city' column`. Also applied: `promo_code`, `callback_requested` status migrations. |
 
 Quick re-check:
 
@@ -231,3 +232,5 @@ npm run dev
 | 2026-06-02 | Live checkout E2E verified (ops #3): $1 smoke paid end-to-end; smoke script launcher fix (`1dbec4c`). |
 | 2026-06-02 | v32.96: Stripe Customer Portal - `/hosting/manage` magic-link flow + FAQ entry; `scripts/configure-stripe-billing-portal.mjs`. |
 | 2026-06-30 | CF migration complete: DNS on Workers, Vercel git disconnected, vercel.json crons removed, production crons via `cf-cron.yml`. |
+| 2026-07-03 | v40.34: fixed plumbing Jarvis booking finalize failing with `Could not find the 'service_city' column` - applied address-part columns on helmet + PostgREST schema reload; env-status probes `jarvisPlumbingAddressColumns`. |
+| 2026-07-03 | v40.35: `npm run plumbing:smoke` (`scripts/plumbing-booking-smoke.ts`) - booking comms smoke test. Verified end-to-end: DB job with address columns, Resend confirmation email, Twilio SMS (both received). Falls back to `slatepress/.local/resend-api-key.txt` when `.env.local` key is stale. |

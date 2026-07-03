@@ -22,6 +22,18 @@ npm run voice-demo:ops-report -- --id <lead-uuid>
 npm run voice-demo:ops-report -- --plumbers --limit 10
 ```
 
+## Booking comms smoke test (no voice call)
+
+Verify the plumbing booking DB write + confirmation email + SMS without making a live call:
+
+```bash
+npm run plumbing:smoke
+npm run plumbing:smoke -- --email you@example.com --phone 9735551234
+npm run plumbing:smoke -- --dry-run   # env preflight only
+```
+
+Inserts a labeled `jarvis_plumbing_jobs` row (`notes.smokeTest=true`) with address columns, marks it `booked`, then sends the same Resend email + Twilio SMS as a real booking. `SMOKE PASS` means DB schema + comms are all healthy. Reads the Resend key from `slatepress/.local/resend-api-key.txt` if `.env.local` is stale.
+
 ## What to look for
 
 | Log message | Meaning |
@@ -34,6 +46,8 @@ npm run voice-demo:ops-report -- --plumbers --limit 10
 | `Deferred live reconnect until session resumable` | goAway held until Gemini `resumable=true` (context-loss fix). |
 | `Session not resumable` | Tool or generation in flight on server - normal during booking. |
 | `Plumbing mid-call silence - listen nudge sent` | Caller spoke mid-call; Jarvis idle ~3.5s - client nudged model to respond. |
+| `Finalize: appointment booked via transcript/db + comms scheduled` | Pre-hangup finalize succeeded - email + SMS sending. |
+| `Could not find the 'service_city' column of 'jarvis_plumbing_jobs'` | Helmet missing address columns. Run `node scripts/apply-jarvis-plumbing-address-parts-migration.mjs` (fixed 2026-07-03). |
 | `Cleared stuck suppressAssistantAudio after interrupt timeout` | Barge-in muted assistant audio; 4s safety valve cleared mute. |
 | `token_fetch_failed` | Env/API issue, not caller behavior. |
 
@@ -45,5 +59,7 @@ npm run voice-demo:ops-report -- --plumbers --limit 10
 | `lib/voice-demo-ops-client.ts` | Browser → `POST /api/voice-demo/ops-event` |
 | `lib/voice-demo-ops-diagnose.ts` | Rule-based summary for CRM / CLI |
 | `scripts/voice-demo-ops-report.mjs` | Pull timelines from Supabase |
+| `scripts/plumbing-booking-smoke.ts` | Booking comms smoke test (`npm run plumbing:smoke`) |
+| `scripts/apply-jarvis-plumbing-address-parts-migration.mjs` | Apply `jarvis_plumbing_jobs` address columns on helmet + reload PostgREST |
 | `components/demo/VoiceDemoOpsTimeline.tsx` | CRM + copy button |
 | `components/demo/VoiceDemoLiveOpsTrace.tsx` | Live tail on plumbing widget |

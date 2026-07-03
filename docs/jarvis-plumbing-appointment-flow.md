@@ -96,7 +96,7 @@ Source: `lib/voice-demo-plumbing-session.ts`, `hooks/use-voice-demo-live.ts`
 
 ---
 
-## Emails (after book)
+## Emails + SMS (after book)
 
 | Template | Trigger |
 |----------|---------|
@@ -104,6 +104,10 @@ Source: `lib/voice-demo-plumbing-session.ts`, `hooks/use-voice-demo-live.ts`
 | `emergency` | `isEmergency: true` on book |
 
 Confirmation includes date, time window, address, service type, and **unique $50 promo code** when applied. Sent from `demo@metroplumbingdrain.com`. Full copy: `jarvis_plumbing_complete.md` + `lib/voice-demo-plumbing-email.ts`.
+
+A **confirmation SMS** to the caller's phone fires alongside the email (`lib/voice-demo-plumbing-sms.ts`, Twilio via `lib/twilio-sms.ts`). Booking persists structured address columns on `jarvis_plumbing_jobs` (`service_street/line2/city/state/zip`) - these must exist on helmet or finalize fails with `Could not find the 'service_city' column` (apply: `node scripts/apply-jarvis-plumbing-address-parts-migration.mjs`).
+
+**Verify email + SMS without a voice call:** `npm run plumbing:smoke` (`scripts/plumbing-booking-smoke.ts`). See `VOICE-DEMO-OPS.md`.
 
 ---
 
@@ -139,7 +143,10 @@ Session ops timeline: expand caller → **Session event log** or live **Live ses
 | Exit / continuation | `lib/voice-demo-plumbing-session.ts` |
 | Opening + post-opening nudge | `lib/voice-demo-plumbing-opening.ts` |
 | Mid-call silence | `lib/voice-demo-plumbing-mid-call-silence.ts` |
-| Tools + email schedule | `lib/voice-demo-plumbing-tools.ts` |
+| Tools + email/SMS schedule | `lib/voice-demo-plumbing-tools.ts` |
+| Confirmation SMS | `lib/voice-demo-plumbing-sms.ts`, `lib/twilio-sms.ts` |
+| Booking DB (address columns) | `lib/voice-demo-plumbing-db.ts` |
+| Booking comms smoke test | `scripts/plumbing-booking-smoke.ts` (`npm run plumbing:smoke`) |
 | Knowledge (spoken answers) | `lib/voice-demo-plumbing-knowledge.ts` |
 | Constants / opening line | `lib/voice-demo-plumbing-constants.ts` |
 | Demo page | `app/demo/plumbers/` |
