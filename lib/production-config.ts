@@ -96,6 +96,10 @@ export async function getProductionConfigStatus(): Promise<ProductionConfigStatu
     warnings.push(
       "wd_leads hosting billing columns missing - POST /api/admin/migrate-hosting-billing with BALANCE_CAPTURE_SECRET."
     );
+  } else if (!supabase.jarvisPlumbingAddressColumns) {
+    warnings.push(
+      "jarvis_plumbing_jobs address columns missing - run scripts/apply-jarvis-plumbing-address-parts-migration.mjs on helmet."
+    );
   } else if (!supabase.crmTelegramSettingsTable) {
     warnings.push(
       "crm_telegram_settings table missing - POST /api/admin/migrate-crm-telegram with BALANCE_CAPTURE_SECRET."

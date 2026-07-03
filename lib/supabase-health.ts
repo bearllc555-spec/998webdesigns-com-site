@@ -7,6 +7,7 @@ export type SupabaseHealth = {
   contactSubmissionsTable: boolean;
   stripeSubscriptionColumn: boolean;
   hostingBillingColumns: boolean;
+  jarvisPlumbingAddressColumns: boolean;
   crmTelegramSettingsTable: boolean;
   processedStripeEventsTable: boolean;
   discoveryProspectsTable: boolean;
@@ -24,6 +25,7 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
       contactSubmissionsTable: false,
       stripeSubscriptionColumn: false,
       hostingBillingColumns: false,
+      jarvisPlumbingAddressColumns: false,
       crmTelegramSettingsTable: false,
       processedStripeEventsTable: false,
       discoveryProspectsTable: false,
@@ -31,7 +33,7 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     };
   }
 
-  const [leads, limits, contacts, subscriptionCol, hostingBillingCol, crmTelegram, stripeEvents, discovery, discoveryCompanyName] =
+  const [leads, limits, contacts, subscriptionCol, hostingBillingCol, plumbingAddressCol, crmTelegram, stripeEvents, discovery, discoveryCompanyName] =
     await Promise.all([
     supa.from("wd_leads").select("id", { head: true, count: "exact" }).limit(0),
     supa
@@ -49,6 +51,10 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     supa
       .from("wd_leads")
       .select("hosting_billing_starts_at", { head: true, count: "exact" })
+      .limit(0),
+    supa
+      .from("jarvis_plumbing_jobs")
+      .select("service_city", { head: true, count: "exact" })
       .limit(0),
     supa
       .from("crm_telegram_settings")
@@ -75,6 +81,8 @@ export async function checkSupabaseHealth(): Promise<SupabaseHealth> {
     contactSubmissionsTable: !isMissingTable(contacts.error),
     stripeSubscriptionColumn: !isMissingColumn(subscriptionCol.error),
     hostingBillingColumns: !isMissingColumn(hostingBillingCol.error),
+    jarvisPlumbingAddressColumns: !isMissingTable(plumbingAddressCol.error) &&
+      !isMissingColumn(plumbingAddressCol.error),
     crmTelegramSettingsTable: !isMissingTable(crmTelegram.error),
     processedStripeEventsTable: !isMissingTable(stripeEvents.error),
     discoveryProspectsTable: !isMissingTable(discovery.error),
@@ -97,5 +105,8 @@ function isMissingTable(error: { code?: string; message?: string } | null): bool
 function isMissingColumn(error: { code?: string; message?: string } | null): boolean {
   if (!error) return false;
   const msg = error.message ?? "";
-  return /column/i.test(msg) && /does not exist/i.test(msg);
+  return (
+    (/column/i.test(msg) && /does not exist/i.test(msg)) ||
+    /schema cache/i.test(msg)
+  );
 }

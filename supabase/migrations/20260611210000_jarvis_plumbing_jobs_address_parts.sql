@@ -5,3 +5,6 @@ alter table public.jarvis_plumbing_jobs
   add column if not exists service_city text,
   add column if not exists service_state text,
   add column if not exists service_zip text;
+
+-- Refresh PostgREST's schema cache so new columns are queryable immediately.
+notify pgrst, 'reload schema';
