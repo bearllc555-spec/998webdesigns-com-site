@@ -63,11 +63,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geist.variable} h-full antialiased`}
+      className={`${inter.variable} ${geist.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
       <body className="min-h-full bg-bg text-ink">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <SkipLink />
           {children}
           <VoiceDemoWidgetGate />
