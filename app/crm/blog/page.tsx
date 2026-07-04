@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BlogAdminList } from "@/components/crm/blog/BlogAdminList";
 
 export const metadata: Metadata = {
-  title: { absolute: "Blog CRM" },
+  title: { absolute: "998 Blogs" },
 };
 
 export default function CrmBlogPage() {

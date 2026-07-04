@@ -196,7 +196,7 @@ export function BlogAdminList() {
   return (
     <>
       <CrmHeader
-        title="Blog"
+        title="998 Blogs"
         subtitle="Stage, schedule, publish and track Field notes"
         onRefresh={load}
         refreshDisabled={loading}
