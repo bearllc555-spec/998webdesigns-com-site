@@ -44,7 +44,7 @@ The useful question is not "what does a website cost," it is "what am I buying, 
 
 ## How we price it
 
-We use a flat $5,998 design fee, the first 90 days of hosting free, and delivery in about 7 business days after payment clears. We picked a flat number on purpose: a contractor should know the cost up front, not discover it through a stack of change orders.
+We use a flat $7,998 design fee, the first 90 days of hosting free, and delivery in about 7 business days after payment clears. We picked a flat number on purpose: a contractor should know the cost up front, not discover it through a stack of change orders.
 
 That model is not right for everyone. If you have time to learn a DIY builder, do that. If you need an enterprise platform, hire an agency. But if you run a plumbing or roofing company and want a credible, fast, mobile-first site without guessing what it will cost, a flat fee removes the part that makes owners nervous.
 
@@ -58,6 +58,6 @@ That model is not right for everyone. If you have time to learn a DIY builder, d
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

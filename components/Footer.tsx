@@ -28,7 +28,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-2 text-sm text-slate">
-              A handcrafted website for $5,998.
+              A handcrafted website for $7,998.
             </p>
           </div>
 

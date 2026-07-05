@@ -35,7 +35,7 @@ export const PRICING_WHEN_ASKED_RULES = `PRICING (critical - do not volunteer):
 - Do not mention /pricing or /start in feature answers - only when they ask about cost or say they are ready to buy.`;
 
 export const VOICE_DEMO_PRICE_REFERENCE = `PRICING REFERENCE (internal - speak only when visitor asks about price or cost):
-- Design fee: $5,998 (custom website - up to 6 pages, 7 business days from cleared deposit).
+- Design fee: $7,998 (custom website - up to 6 pages, 7 business days from cleared deposit).
 - Hosting after ${HOSTING_TRIAL_DAYS}-day free trial: ${HOSTING_MONTHLY_PRICE_MO_LABEL} month-to-month, or $2,996 one-time 10-year hosting (domain .com/.net/.org included on 10-year).
 - AI Agent Chatbot: $299 setup, $79/mo.
 - Jarvis AI Voice Chatbot: $499 setup, $149/mo.

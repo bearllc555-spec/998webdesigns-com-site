@@ -33,7 +33,7 @@ export function TermsContent() {
               2. What you are buying
             </h2>
             <p className="text-ink-soft">
-              The core offer is a handcrafted custom website for a flat $5,998 design fee, delivered
+              The core offer is a handcrafted custom website for a flat $7,998 design fee, delivered
               in 7 business days after your payment clears. Add-on timelines begin when all
               required client materials are received. Add-ons are typically delivered within 1–3
               business days of site delivery. Full-stack builds (three or more add-ons) are delivered
@@ -43,7 +43,7 @@ export function TermsContent() {
             </p>
             <ul className="mt-4 list-inside list-disc space-y-2 text-ink-soft">
               <li>
-                <strong>Design fee:</strong> $5,998 total, paid on a 50 / 40 / 10 schedule - 50% at
+                <strong>Design fee:</strong> $7,998 total, paid on a 50 / 40 / 10 schedule - 50% at
                 checkout before your project enters the queue, 40% after design approval or
                 development start, and 10% at launch and handover. Channel-specific promo codes
                 reduce the design fee only - not hosting or card-processing fees - when entered on

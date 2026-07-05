@@ -7,12 +7,12 @@ import { withSiteSeo } from "@/lib/site-origin";
 export const metadata: Metadata = withSiteSeo("/start", {
   title: "Start your site - 998 web designs",
   description:
-    "Tell us about your business in five short steps. Custom website from $5,998, delivered in 7 business days.",
+    "Tell us about your business in five short steps. Custom website from $7,998, delivered in 7 business days.",
   robots: { index: true, follow: true },
   openGraph: {
     title: "Start your site - 998 web designs",
     description:
-      "Tell us about your business in five short steps. Custom website from $5,998, delivered in 7 business days.",
+      "Tell us about your business in five short steps. Custom website from $7,998, delivered in 7 business days.",
   },
 });
 

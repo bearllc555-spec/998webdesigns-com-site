@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { validateLeadPayload } from "@/lib/validate-lead";
 
 const validBase = {
@@ -111,11 +111,16 @@ describe("validateLeadPayload", () => {
   });
 
   it("accepts LAUNCHPADJUNE26 on monthly hosting", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
     const result = validateLeadPayload({ ...validBase, promoCode: "LAUNCHPADJUNE26" });
     expect(result.ok).toBe(true);
+    vi.useRealTimers();
   });
 
   it("rejects GROWTHSYSTEMJUNE26 without ten_year hosting", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
     const result = validateLeadPayload({
       ...validBase,
       hostingChoice: "monthly",
@@ -123,15 +128,19 @@ describe("validateLeadPayload", () => {
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/10-year hosting/i);
+    vi.useRealTimers();
   });
 
   it("accepts GROWTHSYSTEMJUNE26 with ten_year hosting", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
     const result = validateLeadPayload({
       ...validBase,
       hostingChoice: "ten_year",
       promoCode: "GROWTHSYSTEMJUNE26",
     });
     expect(result.ok).toBe(true);
+    vi.useRealTimers();
   });
 
   it("requires phone when contactPref is phone", () => {

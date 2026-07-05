@@ -26,7 +26,7 @@ The site is step one. Customers stack SEO, chatbot, email automation, content, a
 
 ---
 
-## The design service — $5,998 flat
+## The design service — $7,998 flat
 
 ### What it is
 
@@ -56,15 +56,15 @@ A handcrafted custom site (not a template) designed around the customer's busine
 
 ## Pricing
 
-### Design fee — $5,998
+### Design fee — $7,998
 
 Flat. Paid on a 50/40/10 schedule:
 
 | Milestone | % | Amount |
 |---|---|---|
-| Checkout (enter the queue) | 50% | $2,999.00 |
-| After design approval / dev start | 40% | $2,399.20 |
-| Launch and handover | 10% | $599.80 |
+| Checkout (enter the queue) | 50% | $3,999.00 |
+| After design approval / dev start | 40% | $3,199.20 |
+| Launch and handover | 10% | $799.80 |
 
 The design clock starts when the 50% deposit clears (bank transfers may take a few business days).
 
@@ -117,7 +117,7 @@ Five short steps, marketed as **"Detailed by design. The better the brief, the b
 4. **Add-ons**
 5. **Logistics**
 
-The form is positioned as both the qualifier (gating who can reasonably buy at $5,998) and the design brief (the input the designer works from). The depth is part of the value proposition — better brief, better site.
+The form is positioned as both the qualifier (gating who can reasonably buy at $7,998) and the design brief (the input the designer works from). The depth is part of the value proposition — better brief, better site.
 
 ---
 
@@ -174,7 +174,7 @@ Lives at `/blog` under the title **"Field notes."** Tag line: *"Practical advice
 
 Current posts (oldest first):
 - 2026-06-05 — **Google Business Profile checklist for local service businesses.** Tags: google-business, local-seo. 15-minute pass + what moves the needle + common mistakes.
-- 2026-06-06 — **What $5,998 buys for a local business website (and what it does not).** Tags: pricing, websites. The flat-fee model, what it includes/excludes, the DIY/flat-fee/agency comparison.
+- 2026-06-06 — **What $7,998 buys for a local business website (and what it does not).** Tags: pricing, websites. The flat-fee model, what it includes/excludes, the DIY/flat-fee/agency comparison.
 - 2026-06-07 — **Booking-first website design for a spa: what Serenity Spa prioritized.** Tags: case-study, design. Walkthrough of the Serenity Spa build.
 
 Voice across posts: direct, no-fluff, ASCII-only punctuation (no em-dashes, no curly quotes), blunt about trade-offs, specific examples. Reads close to the repo's `CLAUDE.md` voice rules.
@@ -185,8 +185,8 @@ Voice across posts: direct, no-fluff, ASCII-only punctuation (no em-dashes, no c
 
 The live FAQ at `/#faq` covers (15 questions; answers visible on-site):
 
-- What's actually included for $5,998?
-- How is the $5,998 design fee paid?
+- What's actually included for $7,998?
+- How is the $7,998 design fee paid?
 - Can I pay by card or bank?
 - What happens if I go quiet during the design or approval process?
 - How is this so much cheaper than an agency?

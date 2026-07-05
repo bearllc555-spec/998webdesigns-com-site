@@ -45,7 +45,7 @@ Ask any candidate: "How will this site get me more calls?" A designer focused on
 
 ## Why we built our model the way we did
 
-We use a flat $5,998 fee, a fixed roughly-7-business-day timeline, and full ownership for you, specifically because the vague-price-vague-timeline model is where trade owners get burned. You should know what you are paying, when you get it, and that it is yours. Whoever you hire, hold them to that standard.
+We use a flat $7,998 fee, a fixed roughly-7-business-day timeline, and full ownership for you, specifically because the vague-price-vague-timeline model is where trade owners get burned. You should know what you are paying, when you get it, and that it is yours. Whoever you hire, hold them to that standard.
 
 **Related reading**
 
@@ -57,6 +57,6 @@ We use a flat $5,998 fee, a fixed roughly-7-business-day timeline, and full owne
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

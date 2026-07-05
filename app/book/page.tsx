@@ -7,7 +7,7 @@ import { withSiteSeo } from "@/lib/site-origin";
 export const metadata: Metadata = withSiteSeo("/book", {
   title: "Book a discovery call - 998 web designs",
   description:
-    "Verify your phone, book a discovery call, then get a personalized checkout link. Custom websites from $5,998.",
+    "Verify your phone, book a discovery call, then get a personalized checkout link. Custom websites from $7,998.",
   robots: { index: true, follow: true },
   openGraph: {
     title: "Book a discovery call - 998 web designs",

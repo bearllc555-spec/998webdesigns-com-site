@@ -41,7 +41,7 @@ Here is the core structure, in priority order.
 
 Every page should map to a thing a homeowner searches and a job you want. Service pages catch "what's wrong." Town pages catch "near me." The About and Reviews pages convert the visitor a referral or the map sent your way. That is the whole machine - five to eight pages, each with a job.
 
-When we build a plumbing site, we start from this skeleton and shape it to the jobs and towns that pay best for that specific business. Flat $5,998, first 90 days hosting free, about 7 business days. You bring the jobs and the towns; we build the structure that ranks for them.
+When we build a plumbing site, we start from this skeleton and shape it to the jobs and towns that pay best for that specific business. Flat $7,998, first 90 days hosting free, about 7 business days. You bring the jobs and the towns; we build the structure that ranks for them.
 
 **Related reading**
 
@@ -53,6 +53,6 @@ When we build a plumbing site, we start from this skeleton and shape it to the j
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

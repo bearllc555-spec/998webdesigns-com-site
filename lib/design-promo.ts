@@ -128,10 +128,10 @@ export function designPromoSummary(
     return `${promo.percentOff}% off design fee only`;
   }
   if (promo.code === "LAUNCHPADJUNE26") {
-    return "$2,000 off design fee - $3,998 design total (expires June 30)";
+    return "$2,000 off design fee - $5,998 design total (expires June 30)";
   }
   if (promo.code === "GROWTHSYSTEMJUNE26") {
-    return "$2,996 off bundle - $3,998 design + $2,000 10-year hosting = $5,998 total (expires June 30)";
+    return "$2,996 off bundle - $5,998 design + $2,000 10-year hosting = $7,998 total (expires June 30)";
   }
   if (promo.fixedDesignOffCents != null) {
     return `$${(promo.fixedDesignOffCents / 100).toLocaleString()} off design fee`;

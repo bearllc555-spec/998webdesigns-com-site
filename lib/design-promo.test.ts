@@ -27,17 +27,22 @@ describe("design promo", () => {
   });
 
   it("applies 20% off design fee only for channel promos", () => {
-    expect(designFeeCents()).toBe(599800);
-    expect(designFeeCents("LINKEDIN20")).toBe(479840);
+    expect(designFeeCents()).toBe(799800);
+    expect(designFeeCents("LINKEDIN20")).toBe(639840);
     expect(resolveDesignPromo("LINKEDIN20")?.percentOff).toBe(20);
   });
 
-  it("LAUNCHPADJUNE26 takes $2,000 off design to $3,998", () => {
-    expect(designFeeCents("LAUNCHPADJUNE26")).toBe(399800);
+  it("LAUNCHPADJUNE26 takes $2,000 off design to $5,998", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+    expect(designFeeCents("LAUNCHPADJUNE26")).toBe(599800);
     expect(tenYearHostingFeeCents("LAUNCHPADJUNE26")).toBe(299600);
+    vi.useRealTimers();
   });
 
-  it("GROWTHSYSTEMJUNE26 requires ten_year hosting and discounts bundle to $5,998", () => {
+  it("GROWTHSYSTEMJUNE26 requires ten_year hosting and discounts bundle to $7,998", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
     expect(isValidDesignPromoCode("GROWTHSYSTEMJUNE26", { hostingChoice: "monthly" })).toBe(
       false
     );
@@ -46,9 +51,10 @@ describe("design promo", () => {
     expect(isValidDesignPromoCode("GROWTHSYSTEMJUNE26", { hostingChoice: "ten_year" })).toBe(
       true
     );
-    expect(designFeeCents("GROWTHSYSTEMJUNE26", "ten_year")).toBe(399800);
+    expect(designFeeCents("GROWTHSYSTEMJUNE26", "ten_year")).toBe(599800);
     expect(tenYearHostingFeeCents("GROWTHSYSTEMJUNE26")).toBe(200000);
-    expect(bundleTotalCents("GROWTHSYSTEMJUNE26", "ten_year")).toBe(599800);
+    expect(bundleTotalCents("GROWTHSYSTEMJUNE26", "ten_year")).toBe(799800);
+    vi.useRealTimers();
   });
 
   it("rejects expired June codes after June 30, 2026 ET", () => {

@@ -32,8 +32,8 @@ describe("design milestone payments", () => {
   });
 
   it("adds 3% card fee on milestone checkout totals", () => {
-    expect(milestoneCheckoutTotalCents("milestone2", "ach")).toBe(239920);
-    expect(milestoneCheckoutTotalCents("milestone2", "card")).toBe(247118);
+    expect(milestoneCheckoutTotalCents("milestone2", "ach")).toBe(319920);
+    expect(milestoneCheckoutTotalCents("milestone2", "card")).toBe(329518);
   });
 });
 
@@ -54,6 +54,6 @@ describe("buildMilestoneCheckoutSessionParams", () => {
     expect(params.mode).toBe("payment");
     expect(params.metadata?.paymentType).toBe("milestone_2");
     expect(params.metadata?.wdLeadId).toBe("lead-1");
-    expect(params.line_items?.[0].price_data?.unit_amount).toBe(239920);
+    expect(params.line_items?.[0].price_data?.unit_amount).toBe(319920);
   });
 });

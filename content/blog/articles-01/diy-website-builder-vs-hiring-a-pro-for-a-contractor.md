@@ -40,7 +40,7 @@ If your hourly value is $75 and it takes you 30 hours, you have spent $2,250 of 
 
 ## The middle path most contractors miss
 
-It is not DIY-cheap or agency-expensive only. A flat-fee specialist build sits in between: professional result, fixed price, fast turnaround, and you own it. We do it for a flat $5,998, first 90 days of hosting free, delivered in about 7 business days. You hand over what makes your business specific - your jobs, your towns, your photos - and skip the 40 hours.
+It is not DIY-cheap or agency-expensive only. A flat-fee specialist build sits in between: professional result, fixed price, fast turnaround, and you own it. We do it for a flat $7,998, first 90 days of hosting free, delivered in about 7 business days. You hand over what makes your business specific - your jobs, your towns, your photos - and skip the 40 hours.
 
 The right answer depends on your time and your goals. If you have hours to spare and just want a presence, DIY. If you want a lead source and your hours belong on the job, hire it out.
 
@@ -54,6 +54,6 @@ The right answer depends on your time and your goals. If you have hours to spare
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

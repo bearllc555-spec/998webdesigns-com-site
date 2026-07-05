@@ -11,7 +11,7 @@ export function BlogCta() {
         Need a site built for local leads?
       </h2>
       <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-soft">
-        Flat $5,998 design fee. First {HOSTING_TRIAL_DAYS} days of hosting free. Delivered in about 7
+        Flat $7,998 design fee. First {HOSTING_TRIAL_DAYS} days of hosting free. Delivered in about 7
         business days after payment clears.
       </p>
       <div className="mt-6 flex flex-wrap gap-3">

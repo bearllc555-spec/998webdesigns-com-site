@@ -38,7 +38,7 @@ Speed is a ranking signal, and Google evaluates the mobile version of your site 
 
 Some of this you can do yourself - compress your photos before uploading, drop the auto-play video. But a slow site is often slow at the foundation, and tuning a bad build is more work than building it right. A site built mobile-first, on solid hosting, with images handled properly, is fast by default - you are not fighting the platform later.
 
-That is how we build every site: mobile-first, fast, with the phone number one tap away. Flat $5,998, first 90 days of hosting free, about 7 business days. The point of speed is simple - it is the difference between the call connecting and the homeowner dialing the next guy.
+That is how we build every site: mobile-first, fast, with the phone number one tap away. Flat $7,998, first 90 days of hosting free, about 7 business days. The point of speed is simple - it is the difference between the call connecting and the homeowner dialing the next guy.
 
 **Related reading**
 
@@ -50,6 +50,6 @@ That is how we build every site: mobile-first, fast, with the phone number one t
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

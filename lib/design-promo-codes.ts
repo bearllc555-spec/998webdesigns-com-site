@@ -4,9 +4,9 @@
  */
 export type DesignPromoEntry = {
   code: string;
-  /** Percent off list design fee ($5,998). */
+  /** Percent off list design fee ($7,998). */
   percentOff?: number;
-  /** Cents off list design fee ($5,998). */
+  /** Cents off list design fee ($7,998). */
   fixedDesignOffCents?: number;
   /** Only valid when lead selects 10-year hosting. */
   requiresTenYearHosting?: boolean;
@@ -16,7 +16,7 @@ export type DesignPromoEntry = {
   expiresOn?: string;
 };
 
-export const DESIGN_LIST_CENTS = 599_800;
+export const DESIGN_LIST_CENTS = 799_800;
 export const TEN_YEAR_HOSTING_LIST_CENTS = 299_600;
 
 export const DESIGN_PROMO_CODES: DesignPromoEntry[] = [

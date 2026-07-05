@@ -7,7 +7,7 @@ const ORGANIZATION = {
   name: "998 web designs",
   url: SITE_ORIGIN,
   description:
-    "Growth systems for local service businesses - handcrafted websites from $5,998, optional SEO, automation, and AI add-ons.",
+    "Growth systems for local service businesses - handcrafted websites from $7,998, optional SEO, automation, and AI add-ons.",
   email: "hello@998webdesigns.com",
 };
 

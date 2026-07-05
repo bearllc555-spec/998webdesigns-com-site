@@ -97,7 +97,7 @@ export const VOICE_DEMO_PRICE_VOICE_EXAMPLES: ReadonlyArray<{
   amount: number;
   label: string;
 }> = [
-  { amount: 5998, label: "custom website design" },
+  { amount: 7998, label: "custom website design" },
   { amount: 98, label: "monthly hosting after the free trial" },
   { amount: 2996, label: "ten-year hosting" },
   { amount: 499, label: "Jarvis AI Voice Chatbot setup" },

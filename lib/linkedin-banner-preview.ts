@@ -41,7 +41,7 @@ export const LINKEDIN_ARTBOARD_CONTENT_PAD_LEFT = Math.ceil(
 /** Offer panel copy - keep in sync across /temp banner artboards. */
 export const LINKEDIN_BANNER_OFFER_KICKER = "20% off";
 export const LINKEDIN_BANNER_OFFER_CODE = "use code LINKEDIN20";
-export const LINKEDIN_BANNER_LIST_PRICE = "$5,998";
+export const LINKEDIN_BANNER_LIST_PRICE = "$7,998";
 export const LINKEDIN_BANNER_PROMO_PRICE = "$4,798";
 
 export const BANNER_DESIGN_ROUTES = [

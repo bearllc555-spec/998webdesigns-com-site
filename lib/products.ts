@@ -1,9 +1,12 @@
+import { DESIGN_LIST_CENTS } from "@/lib/design-promo-codes";
 import {
   HOSTING_BILLING_START_DAY,
   HOSTING_MONTHLY_PRICE_CENTS,
   HOSTING_MONTHLY_PRICE_MO_LABEL,
   HOSTING_TRIAL_DAYS,
 } from "@/lib/hosting-policy";
+
+const designListLabel = `$${(DESIGN_LIST_CENTS / 100).toLocaleString("en-US")}`;
 
 export interface Product {
   id: string
@@ -16,8 +19,8 @@ export const PRODUCTS: Product[] = [
   {
     id: 'website-full',
     name: 'Website Design',
-    description: 'Custom website design ($5,998 total - 50% deposit at checkout).',
-    priceInCents: 599800, // $5,998.00
+    description: `Custom website design (${designListLabel} total - 50% deposit at checkout).`,
+    priceInCents: DESIGN_LIST_CENTS,
   },
 ]
 

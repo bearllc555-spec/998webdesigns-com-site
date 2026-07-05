@@ -4,8 +4,8 @@ import { speakUsdDollars } from "@/lib/voice-demo-speak-money";
 describe("voice-demo-speak-money", () => {
   it("speaks common 998 prices in full words", () => {
     expect(speakUsdDollars(499)).toBe("four hundred and ninety nine dollars");
-    expect(speakUsdDollars(5998)).toBe(
-      "five thousand, nine hundred and ninety eight dollars"
+    expect(speakUsdDollars(7998)).toBe(
+      "seven thousand, nine hundred and ninety eight dollars"
     );
     expect(speakUsdDollars(98)).toBe("ninety eight dollars");
     expect(speakUsdDollars(2996)).toBe(

@@ -28,7 +28,7 @@ Now the only unknown is how many extra calls a good site brings - and even a con
 
 Say your average job is $400 and you close half the calls. Two extra qualified calls a week is one booked job - about $400 a week, or roughly $20,000 a year in new revenue from two calls a week you were not getting before.
 
-A flat $5,998 site pays for itself in the first few months at that rate, and keeps producing after. For a roofer, where a single job can run several thousand dollars, the math is even more lopsided - one extra job can cover the entire build.
+A flat $7,998 site pays for itself in the first few months at that rate, and keeps producing after. For a roofer, where a single job can run several thousand dollars, the math is even more lopsided - one extra job can cover the entire build.
 
 ## Why the calls were not happening
 
@@ -50,6 +50,6 @@ Run your own numbers. For most plumbers and roofers, the break-even is a handful
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

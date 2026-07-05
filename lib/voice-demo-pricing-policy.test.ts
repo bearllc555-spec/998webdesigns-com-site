@@ -17,10 +17,10 @@ describe("voice-demo-pricing-policy", () => {
   });
 
   it("strips dollar amounts from FAQ copy", () => {
-    expect(stripFaqPrices("Design fee is $5,998 with $98/mo hosting.")).toBe(
+    expect(stripFaqPrices("Design fee is $7,998 with $98/mo hosting.")).toBe(
       "Design fee is with hosting."
     );
-    expect(stripFaqPrices("What's included for $5,998?")).toBe("What's included?");
+    expect(stripFaqPrices("What's included for $7,998?")).toBe("What's included?");
   });
 
   it("requires feature-first answers in demo prompt", () => {

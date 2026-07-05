@@ -6,6 +6,15 @@ import {
   HOSTING_MONTHLY_PRICE_MO_LABEL,
   HOSTING_TRIAL_DAYS,
 } from "@/lib/hosting-policy";
+import { formatCheckoutUsd } from "@/lib/checkout-pricing";
+import {
+  designDepositCents,
+  designMilestone2Cents,
+  designMilestone3Cents,
+} from "@/lib/design-payment-schedule";
+import { DESIGN_LIST_CENTS } from "@/lib/design-promo-codes";
+
+const designListLabel = formatCheckoutUsd(DESIGN_LIST_CENTS);
 
 const DESIGN_INCLUDED_HOSTING_MONTHS = 3;
 const DESIGN_INCLUDED_HOSTING_VALUE =
@@ -29,7 +38,7 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
             simple, transparent pricing.
           </h2>
           <p className="mt-4 max-w-prose text-lg leading-relaxed text-ink-soft">
-            Every site starts at a flat $5,998 design fee. Your first {HOSTING_TRIAL_DAYS} days of hosting are free -
+            Every site starts at a flat {designListLabel} design fee. Your first {HOSTING_TRIAL_DAYS} days of hosting are free -
             monthly or 10-year billing starts on day {HOSTING_BILLING_START_DAY}. The pricing below is the whole list - no
             tiers, no add-ons we don&apos;t tell you about, no &ldquo;starting at.&rdquo;
           </p>
@@ -42,7 +51,7 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
               Design fee
             </p>
             <p className="mt-2 font-display text-5xl font-medium tracking-tight">
-              $5,998{" "}
+              {designListLabel}{" "}
               <span className="text-2xl text-ink-soft">
                 50% deposit to start{" "}
                 <span className="text-[24px]">
@@ -56,8 +65,8 @@ export function Pricing({ standalone = false }: { standalone?: boolean }) {
               business days from the moment your deposit clears. Yours to keep.
             </p>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">
-              Every project uses the same payment schedule: 50% ($2,999) at checkout to enter the
-              queue, 40% ($2,399.20) after design approval or development start, and 10% ($599.80) at
+              Every project uses the same payment schedule: 50% ({formatCheckoutUsd(designDepositCents())}) at checkout to enter the
+              queue, 40% ({formatCheckoutUsd(designMilestone2Cents())}) after design approval or development start, and 10% ({formatCheckoutUsd(designMilestone3Cents())}) at
               launch and handover. No surprise invoices - the milestones are fixed up front.
               Channel-specific promo codes take a percentage off the design fee only - not hosting
               or other services. Enter yours on the lead form if you have one.

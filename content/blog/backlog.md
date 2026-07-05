@@ -11,7 +11,7 @@ After each publish: run `npm run blog:notify -- <slug>` (records in CRM + Telegr
 | Publish date | Status | Slug (planned) | Bucket | Title |
 |---|---|---|---|---|
 | 2026-06-05 | **Live** | `google-business-profile-checklist` | Local search / GBP | Google Business Profile checklist for local service businesses |
-| 2026-06-06 | **Live** | `what-you-get-for-5998` | Website decisions | What $5,998 buys for a local business website (and what it does not) |
+| 2026-06-06 | **Live** | `what-you-get-for-5998` | Website decisions | What $7,998 buys for a local business website (and what it does not) |
 | 2026-06-07 | **Live** | `serenity-spa-booking-first-site` | Portfolio / proof | Booking-first website design for a spa: what Serenity Spa prioritized |
 | 2026-06-18 Wed | Draft | `contractor-site-pages` | Website decisions | 5 pages every contractor site needs (and 3 you can skip) |
 | 2026-07-02 Wed | Planned | `review-request-script` | Local search / GBP | How to ask for Google reviews without sounding desperate |

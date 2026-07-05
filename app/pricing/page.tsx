@@ -6,7 +6,7 @@ import { Pricing } from "@/components/Pricing";
 import { HOSTING_MONTHLY_PRICE_MO_LABEL, HOSTING_TRIAL_DAYS } from "@/lib/hosting-policy";
 import { withSiteSeo } from "@/lib/site-origin";
 
-const pricingDescription = `Flat $5,998 design fee. First ${HOSTING_TRIAL_DAYS} days of hosting free - then ${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 10-year. No tiers, no hidden fees.`;
+const pricingDescription = `Flat $7,998 design fee. First ${HOSTING_TRIAL_DAYS} days of hosting free - then ${HOSTING_MONTHLY_PRICE_MO_LABEL} or $2,996 10-year. No tiers, no hidden fees.`;
 
 export const metadata: Metadata = withSiteSeo("/pricing", {
   title: "Pricing - 998 web designs",

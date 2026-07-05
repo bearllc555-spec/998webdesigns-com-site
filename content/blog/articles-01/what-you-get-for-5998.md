@@ -1,5 +1,5 @@
 ---
-title: "What $5,998 buys for a local business website (and what it does not)"
+title: "What $7,998 buys for a local business website (and what it does not)"
 description: "A flat design fee, a fixed delivery window, and clear boundaries. Here is how to evaluate whether that model fits your business."
 publishedAt: "2026-06-06"
 tags: ["pricing", "websites"]
@@ -10,7 +10,7 @@ When you shop for a website, you get three very different products that all get 
 
 A DIY builder subscription. A freelance custom build quoted hourly. A flat-fee package with a countdown clock. The price tags overlap; the outcomes do not.
 
-This post unpacks the flat-fee model at **$5,998** - what that number is supposed to cover, what it explicitly does not, and when it makes sense for a local service business.
+This post unpacks the flat-fee model at **$7,998** - what that number is supposed to cover, what it explicitly does not, and when it makes sense for a local service business.
 
 ## What the design fee is for
 

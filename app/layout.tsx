@@ -22,14 +22,14 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "998 web designs - growth systems for local businesses. Sites from $5,998.",
+  title: "998 web designs - growth systems for local businesses. Sites from $7,998.",
   description:
-    "We build growth systems for local service businesses - handcrafted websites from $5,998, delivered in 7 business days. Stack SEO, automation, and AI add-ons.",
+    "We build growth systems for local service businesses - handcrafted websites from $7,998, delivered in 7 business days. Stack SEO, automation, and AI add-ons.",
   metadataBase: new URL(SITE_ORIGIN),
   openGraph: {
     title: "998 web designs - growth systems for local businesses",
     description:
-      "Handcrafted websites from $5,998. Delivered in 7 business days. Stack SEO, chatbot, email automation, and content add-ons as you grow.",
+      "Handcrafted websites from $7,998. Delivered in 7 business days. Stack SEO, chatbot, email automation, and content add-ons as you grow.",
     url: siteUrl(),
     siteName: "998 web designs",
     type: "website",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "998 web designs - growth systems for local businesses",
     description:
-      "Handcrafted websites from $5,998. Delivered in 7 business days. Stack SEO, automation, and AI add-ons as you grow.",
+      "Handcrafted websites from $7,998. Delivered in 7 business days. Stack SEO, automation, and AI add-ons as you grow.",
     images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },

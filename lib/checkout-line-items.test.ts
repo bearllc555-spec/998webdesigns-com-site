@@ -40,13 +40,13 @@ describe("buildCheckoutLineItems", () => {
   it("charges design fee only for ten_year at signup (ACH)", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "ach");
     expect(items).toHaveLength(1);
-    expect(items[0].price_data?.unit_amount).toBe(599800);
+    expect(items[0].price_data?.unit_amount).toBe(799800);
   });
 
   it("adds monthly subscription line with trial (ACH, no card fee)", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "monthly" }), "ach");
     expect(items).toHaveLength(2);
-    expect(items[0].price_data?.unit_amount).toBe(599800);
+    expect(items[0].price_data?.unit_amount).toBe(799800);
     expect(items[1].price_data?.unit_amount).toBe(9800);
     expect(items[1].price_data?.recurring?.interval).toBe("month");
   });
@@ -54,13 +54,13 @@ describe("buildCheckoutLineItems", () => {
   it("card fee applies to design only for monthly", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "monthly" }), "card");
     expect(items).toHaveLength(3);
-    expect(items[2].price_data?.unit_amount).toBe(17994);
+    expect(items[2].price_data?.unit_amount).toBe(23994);
   });
 
   it("card fee applies to design only for ten_year", () => {
     const items = buildCheckoutLineItems(lead({ hostingChoice: "ten_year" }), "card");
     expect(items).toHaveLength(2);
-    expect(items[1].price_data?.unit_amount).toBe(17994);
+    expect(items[1].price_data?.unit_amount).toBe(23994);
   });
 
   it("LINKEDIN20 discounts design line only", () => {
@@ -68,12 +68,12 @@ describe("buildCheckoutLineItems", () => {
       lead({ hostingChoice: "ten_year", promoCode: LINKEDIN20 }),
       "ach"
     );
-    expect(items[0].price_data?.unit_amount).toBe(479840);
+    expect(items[0].price_data?.unit_amount).toBe(639840);
   });
 
   it("deposit charges 50% on the design line", () => {
     const items = buildCheckoutLineItems(lead({ paymentOption: "deposit" }), "ach");
-    expect(items[0].price_data?.unit_amount).toBe(299900);
+    expect(items[0].price_data?.unit_amount).toBe(399900);
     expect(items[0].price_data?.product_data?.name).toContain("50% deposit");
   });
 });

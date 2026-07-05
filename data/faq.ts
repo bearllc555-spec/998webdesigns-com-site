@@ -19,12 +19,12 @@ export function faqPlainAnswer(a: string): string {
 
 export const faq: FAQItem[] = [
   {
-    q: "What's actually included for $5,998?",
+    q: "What's actually included for $7,998?",
     a: "A handcrafted custom site (not a template) of up to 6 pages, mobile-optimized, with click-to-call, click-to-map, and a contact form. Designed around your business in 7 business days from the moment payment clears.",
   },
   {
-    q: "How is the $5,998 design fee paid?",
-    a: `On a 50 / 40 / 10 schedule - the same structure for every project. You pay 50% ($2,999) at checkout to enter the queue. The remaining 40% ($2,399.20) is due after design approval or when development starts. The final 10% ($599.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only - not hosting or the card fee). Hosting is not charged at signup: your first ${HOSTING_TRIAL_DAYS} days of hosting are free. After ${HOSTING_TRIAL_DAYS} days from your cleared deposit, month-to-month hosting is ${HOSTING_MONTHLY_PRICE_MO_LABEL} (cancel before day ${HOSTING_BILLING_START_DAY} and you won't be charged), or 10-year hosting is a one-time $2,996 (we email a secure payment link on day ${HOSTING_BILLING_START_DAY}; domain registration for .com, .net, or .org is included). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.`,
+    q: "How is the $7,998 design fee paid?",
+    a: `On a 50 / 40 / 10 schedule - the same structure for every project. You pay 50% ($3,999) at checkout to enter the queue. The remaining 40% ($3,199.20) is due after design approval or when development starts. The final 10% ($799.80) is due at launch and handover. Promo codes reduce each milestone proportionally (design fee only - not hosting or the card fee). Hosting is not charged at signup: your first ${HOSTING_TRIAL_DAYS} days of hosting are free. After ${HOSTING_TRIAL_DAYS} days from your cleared deposit, month-to-month hosting is ${HOSTING_MONTHLY_PRICE_MO_LABEL} (cancel before day ${HOSTING_BILLING_START_DAY} and you won't be charged), or 10-year hosting is a one-time $2,996 (we email a secure payment link on day ${HOSTING_BILLING_START_DAY}; domain registration for .com, .net, or .org is included). Checkout defaults to card; bank transfer is list price with no 3% processing fee on the design portion due today. The design clock starts when your 50% deposit clears. Bank transfers may take a few business days to settle.`,
   },
   {
     q: "Can I pay by card or bank?",
@@ -36,7 +36,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "How is this so much cheaper than an agency?",
-    a: "We keep scope tight on purpose. We do one thing - design and host a great-looking, fast small-business website - and we do it without account managers, retainers, or a slide deck full of jargon. The $5,998 covers exactly what's listed; anything beyond it is priced clearly upfront.",
+    a: "We keep scope tight on purpose. We do one thing - design and host a great-looking, fast small-business website - and we do it without account managers, retainers, or a slide deck full of jargon. The $7,998 covers exactly what's listed; anything beyond it is priced clearly upfront.",
   },
   {
     q: "Who owns the site?",
@@ -64,7 +64,7 @@ export const faq: FAQItem[] = [
   },
   {
     q: "Do you do logos, copywriting, or SEO?",
-    a: "Logos and full copywriting are not part of the $5,998 design fee - we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional - priced clearly if you want them.",
+    a: "Logos and full copywriting are not part of the $7,998 design fee - we design around what you already have, or we quote creative separately. Every site includes technical SEO basics (meta titles, speed, mobile, clean structure). Hyper-local SEO, Google Profile Optimization, blogging strategies, and the other growth add-ons on the home page are optional - priced clearly if you want them.",
   },
   {
     q: "What is Jarvis, and where does it run?",

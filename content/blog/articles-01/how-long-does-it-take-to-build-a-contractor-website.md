@@ -38,7 +38,7 @@ canonical: https://998webdesigns.com/blog/how-long-does-it-take-to-build-a-contr
 
 ## Our timeline
 
-We deliver in about 7 business days after payment clears. That is possible because the scope is fixed and the process is the same every time - we are not reinventing it for each project. The flat $5,998 fee includes the first 90 days of hosting free. The part that depends on you is the content; the faster you hand it over, the faster you are live and taking calls.
+We deliver in about 7 business days after payment clears. That is possible because the scope is fixed and the process is the same every time - we are not reinventing it for each project. The flat $7,998 fee includes the first 90 days of hosting free. The part that depends on you is the content; the faster you hand it over, the faster you are live and taking calls.
 
 **Related reading**
 
@@ -50,6 +50,6 @@ We deliver in about 7 business days after payment clears. That is possible becau
 
 **Need a site built for local leads?**
 
-Flat $5,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
+Flat $7,998 design fee. First 90 days of hosting free. Delivered in about 7 business days after payment clears.
 
 [Get started](https://998webdesigns.com/start) · [See pricing](https://998webdesigns.com/pricing)

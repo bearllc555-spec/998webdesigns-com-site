@@ -269,7 +269,7 @@ Returns JSON: Stripe mode (`test`/`live`), which env vars are set, `warnings[]`,
   - `invoice.payment_failed` → hello@ + lead status `hosting_payment_failed`
   - `customer.subscription.deleted` → hello@ + lead status `hosting_canceled`
 
-All new checkouts use the **50 / 40 / 10 design fee schedule** ($5,998 total - 50% deposit at Checkout, 40% and 10% invoiced from CRM at milestones). Promo codes in `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design fee only).
+All new checkouts use the **50 / 40 / 10 design fee schedule** ($7,998 total - 50% deposit at Checkout, 40% and 10% invoiced from CRM at milestones). Promo codes in `lib/design-promo-codes.ts` (e.g. **LINKEDIN20** = 20% off design fee only).
 
 **Legacy:** Older pay-in-full Stripe sessions still complete the webhook and sync as `paid_in_full`.
 
@@ -294,7 +294,7 @@ Uses `RESEND_API_KEY`.
 
 Stripe Checkout charges (separate sessions by payment channel):
 
-- Design: **$5,998 pay-in-full** (required; promo codes in `lib/design-promo-codes.ts`)
+- Design: **$7,998 pay-in-full** (required; promo codes in `lib/design-promo-codes.ts`)
 - **Lifetime hosting:** $2,996 on day 31 (not at signup)
 - **Card only:** +3% processing on the design fee at initial Checkout
 - **Bank (ACH):** list price; settlement async - webhook `checkout.session.async_payment_succeeded` marks paid

@@ -50,7 +50,7 @@ async function ensurePromotionCode(couponId, code) {
 async function main() {
   const product = await stripe.products.create({
     name: "Website Design (998)",
-    description: "$5,998 design fee - promo codes discount design line only in app checkout",
+    description: "$7,998 design fee - promo codes discount design line only in app checkout",
     metadata: { site: "998webdesigns.com", line: "design_fee" },
   });
   console.log("Product:", product.id);
@@ -58,8 +58,8 @@ async function main() {
   await stripe.prices.create({
     product: product.id,
     currency: "usd",
-    unit_amount: 599800,
-    metadata: { list_price: "5998" },
+    unit_amount: 799800,
+    metadata: { list_price: "7998" },
   });
 
   for (const entry of DESIGN_PROMO_CODES) {
