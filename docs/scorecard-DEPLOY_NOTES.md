@@ -60,7 +60,15 @@ Verify RLS (the gate):
 
 ---
 
-## 2. VPS generator service (Hostinger KVM box)
+## 2. VPS generator service (Oracle Cloud — `hermes-agent`)
+
+**Production host (2026-08-29):** Oracle Cloud VM `hermes-agent` (`157.151.236.136`).
+SSH: `ssh -i ~/.ssh/hermes-oracle ubuntu@157.151.236.136` (sudo for systemd).
+
+**Retired:** Hostinger KVM `srv1796872` (`2.24.70.149`) — scorecard units disabled.
+
+**Port note:** uvicorn binds **`127.0.0.1:8081`** (not 8080 — `temporal-ui` Docker uses 8080).
+Cloudflare Tunnel ingress in `/etc/cloudflared/config.yml` must match (`http://127.0.0.1:8081`).
 
 ```bash
 sudo mkdir -p /opt/scorecard && cd /opt/scorecard
@@ -82,7 +90,7 @@ After=network.target
 [Service]
 WorkingDirectory=/opt/scorecard/generator
 EnvironmentFile=/opt/scorecard/.env
-ExecStart=/opt/scorecard/venv/bin/uvicorn service:app --host 127.0.0.1 --port 8080
+ExecStart=/opt/scorecard/venv/bin/uvicorn service:app --host 127.0.0.1 --port 8081
 Restart=always
 [Install]
 WantedBy=multi-user.target
@@ -157,7 +165,7 @@ of:
 - A **Cloudflare Tunnel** (`cloudflared`) → a hostname like
   `https://generator.998webdesigns.com`, protected by Cloudflare Access (service
   token) + the `GENERATOR_API_KEY` header. (Cleanest; no open inbound port.)
-- Or a firewall allowlist (ufw) limiting `:8080` to known caller IPs, plus the
+- Or a firewall allowlist (ufw) limiting `:8081` to known caller IPs, plus the
   `GENERATOR_API_KEY` header. Always require the key regardless.
 
 Test Door 1:
@@ -169,11 +177,14 @@ curl -s -X POST https://generator.998webdesigns.com/generate \
 # -> {"report_url":"https://998webdesigns.com/r/..."}
 ```
 
-### Optional: host the generator on Oracle Cloud (OCI) free Arm instead
-The generator is portable (Python + Chrome). OCI's Always-Free Arm (up to 4
-cores / 24 GB) runs it fine. If you ever move off Hostinger, the only changes
-are the host and the tunnel/firewall config — the DB stays Supabase, so no code
-changes. Parked decision; noted for later.
+**Oracle ops quick-check:**
+```bash
+sudo systemctl status scorecard-api scorecard-worker cloudflared
+curl -sf http://127.0.0.1:8081/docs && echo ok
+journalctl -u scorecard-worker -f
+```
+
+**Code sync on Oracle:** same as before — `bash vps-sync-generator.sh` (from repo).
 
 ---
 
