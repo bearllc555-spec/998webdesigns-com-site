@@ -25,7 +25,7 @@ export default function IntakePage() {
             Free mockup
           </p>
           <h1 className="mt-4 font-display text-3xl font-medium leading-tight text-ink md:text-4xl">
-            Get a free website design preview
+            Start your free website design
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-ink-soft">
             Tell us about your business. We&apos;ll build a draft preview and email it to you —
