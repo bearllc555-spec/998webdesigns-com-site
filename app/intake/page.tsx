@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { SiteForgeFilloutEmbed } from "@/components/intake/SiteForgeFilloutEmbed";
@@ -32,7 +33,15 @@ export default function IntakePage() {
             no card, no call required.
           </p>
           <div className="mt-10 overflow-hidden rounded-md border border-rule bg-bg">
-            <SiteForgeFilloutEmbed />
+            <Suspense
+              fallback={
+                <div className="flex min-h-[820px] items-center justify-center text-sm text-ink-soft">
+                  Loading form…
+                </div>
+              }
+            >
+              <SiteForgeFilloutEmbed />
+            </Suspense>
           </div>
           <p className="mt-8 text-sm text-slate">
             Ready to start a paid project instead?{" "}
