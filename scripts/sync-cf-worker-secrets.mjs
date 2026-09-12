@@ -70,6 +70,11 @@ const FILE_OVERRIDES = {
   NEXT_PUBLIC_SUPABASE_URL: "supabase-project-url.txt",
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "supabase-publishable-key.txt",
   SUPABASE_SERVICE_ROLE_KEY: "supabase-secret-key.txt",
+  SITEFORGE_SUPABASE_URL: "siteforge-supabase-url.txt",
+  SITEFORGE_SUPABASE_ANON_KEY: "siteforge-supabase-anon-key.txt",
+  SITEFORGE_WEBHOOK_SECRET: "siteforge-webhook-secret.txt",
+  // Same HMAC secret as BALANCE_CAPTURE_SECRET (approval tokens)
+  SITEFORGE_APPROVAL_SECRET: "998-balance-capture-secret.txt",
 };
 
 function readTrim(filePath) {

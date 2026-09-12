@@ -35,6 +35,7 @@ import {
   markStripeWebhookProcessedInMemory,
   releaseStripeWebhookClaim,
 } from "@/lib/stripe-webhook-idempotency";
+import { siteforgeMarkPaid } from "@/lib/siteforge-api";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -58,8 +59,33 @@ function isLifetimeAchPending(session: Stripe.Checkout.Session): boolean {
   );
 }
 
+async function syncSiteforgePaid(session: Stripe.Checkout.Session): Promise<void> {
+  const jobId = session.metadata?.siteforgeJobId?.trim();
+  if (!jobId) return;
+  if (session.payment_status !== "paid") return;
+  try {
+    await siteforgeMarkPaid(jobId, session.id);
+    console.log(`[webhook] siteforge marked paid job=${jobId} session=${session.id}`);
+  } catch (err) {
+    console.error(`[webhook] siteforge mark paid failed job=${jobId}`, err);
+    throw err;
+  }
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const paymentType = session.metadata?.paymentType;
+  const isSiteforge = Boolean(session.metadata?.siteforgeJobId?.trim());
+
+  if (isSiteforge) {
+    if (session.payment_status === "paid") {
+      await syncSiteforgePaid(session);
+      await sendInternalPaymentEmail(session);
+    } else if (isDesignAchPending(session)) {
+      notifyLeadAchPending(session);
+    }
+    return;
+  }
+
   const isMilestone =
     paymentType === "milestone_2" || paymentType === "milestone_3";
 
@@ -127,6 +153,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
 async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
   const paymentType = session.metadata?.paymentType;
+
+  if (session.metadata?.siteforgeJobId?.trim()) {
+    await syncSiteforgePaid(session);
+    await sendInternalPaymentEmail(session, { settledAfterAch: true });
+    return;
+  }
 
   if (paymentType === "milestone_2") {
     await syncWdLeadMilestone2Paid(session);
