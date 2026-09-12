@@ -5,20 +5,33 @@ import { useState, type FormEvent } from "react";
 type Props = {
   token: string;
   businessName: string;
+  conceptImageUrl: string | null;
   previewUrl: string | null;
   status: string;
 };
 
-export function ChangesClient({ token, businessName, previewUrl, status }: Props) {
+export function ChangesClient({
+  token,
+  businessName,
+  conceptImageUrl,
+  previewUrl,
+  status,
+}: Props) {
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(status === "changes_requested");
   const [error, setError] = useState<string | null>(null);
+  const visual = conceptImageUrl || previewUrl;
 
-  if (status === "paid" || status === "delivered") {
+  if (
+    status === "paid" ||
+    status === "build_queued" ||
+    status === "mockup_ready" ||
+    status === "delivered"
+  ) {
     return (
       <p className="text-ink/80">
-        This project is already paid. Email us if you need post-payment revisions.
+        This project is already past concept approval. Email us if you need revisions.
       </p>
     );
   }
@@ -28,17 +41,15 @@ export function ChangesClient({ token, businessName, previewUrl, status }: Props
       <div className="space-y-4">
         <p className="text-ink/80">
           Got it — we recorded your change request for <strong>{businessName}</strong>.
-          We&apos;ll revise the mockup and email you again.
+          We&apos;ll revise the concept and email you again.
         </p>
-        {previewUrl ? (
-          <a
-            href={previewUrl}
-            className="inline-flex text-accent underline underline-offset-4"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open current preview
-          </a>
+        {visual ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={visual}
+            alt={`${businessName} concept`}
+            className="w-full rounded-md border border-ink/10"
+          />
         ) : null}
       </div>
     );
@@ -70,19 +81,17 @@ export function ChangesClient({ token, businessName, previewUrl, status }: Props
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <p className="text-ink/80 leading-relaxed">
-        Tell us what to change on the <strong>{businessName}</strong> mockup. We&apos;ll
-        revise and send a fresh preview.
+        Tell us what to change on the <strong>{businessName}</strong> concept. We&apos;ll
+        revise the image and send a fresh link.
       </p>
 
-      {previewUrl ? (
-        <a
-          href={previewUrl}
-          className="inline-flex text-sm font-medium text-accent underline underline-offset-4"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Open current mockup
-        </a>
+      {visual ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={visual}
+          alt={`${businessName} concept`}
+          className="w-full rounded-md border border-ink/10"
+        />
       ) : null}
 
       <label className="block space-y-2">

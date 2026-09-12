@@ -38,6 +38,7 @@ export default async function SiteforgeChangesPage({
         <ChangesClient
           token={token}
           businessName={bundle.lead.business_name || bundle.lead.full_name || "your business"}
+          conceptImageUrl={bundle.job.concept_image_url || null}
           previewUrl={bundle.job.preview_url}
           status={bundle.job.status}
         />

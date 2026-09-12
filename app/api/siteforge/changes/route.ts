@@ -43,9 +43,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const bundle = await siteforgeGetJob(payload.jobId);
-    if (!["mockup_ready", "changes_requested", "approved"].includes(bundle.job.status)) {
+    if (
+      !["concept_ready", "mockup_ready", "changes_requested", "approved"].includes(
+        bundle.job.status
+      )
+    ) {
       return NextResponse.json(
-        { error: `This mockup can’t accept changes (status: ${bundle.job.status})` },
+        { error: `This concept can’t accept changes (status: ${bundle.job.status})` },
         { status: 409 }
       );
     }

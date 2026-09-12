@@ -41,8 +41,9 @@ export default async function SiteforgeThanksPage({
       <main id="main" className="mx-auto max-w-xl px-6 py-16 space-y-5">
         <h1 className="font-display text-3xl text-ink">Deposit received</h1>
         <p className="text-ink/80 leading-relaxed">
-          Thanks — we recorded your deposit for <strong>{business}</strong>. Next we&apos;ll
-          finish build and launch steps and keep you posted by email.
+          Thanks — we recorded your deposit for <strong>{business}</strong>. We&apos;re
+          building your real site from the approved concept next and will email when the draft
+          is live.
         </p>
         {previewUrl ? (
           <p>
@@ -52,7 +53,7 @@ export default async function SiteforgeThanksPage({
               target="_blank"
               rel="noreferrer"
             >
-              Reopen your mockup
+              Reopen your concept
             </a>
           </p>
         ) : null}

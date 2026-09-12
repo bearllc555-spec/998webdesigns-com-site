@@ -46,6 +46,8 @@ export type SiteforgeJobBundle = {
     status: string;
     slug: string;
     preview_url: string | null;
+    concept_image_url?: string | null;
+    vertical?: string | null;
     stripe_checkout_session_id?: string | null;
     client_feedback?: string | null;
   };
@@ -55,6 +57,7 @@ export type SiteforgeJobBundle = {
     full_name: string | null;
     business_name: string | null;
     phone: string | null;
+    gbp_url?: string | null;
   };
 };
 

@@ -41,9 +41,13 @@ export async function POST(req: NextRequest) {
   }
 
   const { job, lead } = bundle;
-  if (!["mockup_ready", "changes_requested", "approved"].includes(job.status)) {
+  if (
+    !["concept_ready", "mockup_ready", "changes_requested", "approved"].includes(
+      job.status
+    )
+  ) {
     return NextResponse.json(
-      { error: `This mockup can’t be approved (status: ${job.status})` },
+      { error: `This concept can’t be approved (status: ${job.status})` },
       { status: 409 }
     );
   }
@@ -67,7 +71,7 @@ export async function POST(req: NextRequest) {
         email: lead.email,
         fullName: lead.full_name || lead.business_name || "Client",
         businessName: lead.business_name || lead.full_name || "Business",
-        previewUrl: job.preview_url,
+        previewUrl: job.concept_image_url || job.preview_url,
         token,
       })
     );
