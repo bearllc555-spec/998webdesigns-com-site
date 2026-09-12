@@ -3,7 +3,7 @@
  * Excluded from sitemap + robots: /thanks (post-checkout, noindex), /api/* (non-page).
  * Bump SITEMAP_LAST_MODIFIED when these pages change materially.
  */
-export const SITEMAP_LAST_MODIFIED = "2026-06-30";
+export const SITEMAP_LAST_MODIFIED = "2026-09-12";
 
 export const INDEXABLE_ROUTES = [
   { path: "", changeFrequency: "weekly" as const, priority: 1 },
@@ -13,6 +13,7 @@ export const INDEXABLE_ROUTES = [
   { path: "/start", changeFrequency: "monthly" as const, priority: 0.9 },
   { path: "/scorecard", changeFrequency: "monthly" as const, priority: 0.85 },
   { path: "/book", changeFrequency: "monthly" as const, priority: 0.85 },
+  { path: "/intake", changeFrequency: "monthly" as const, priority: 0.85 },
   { path: "/hosting/manage", changeFrequency: "monthly" as const, priority: 0.4 },
   { path: "/legal/terms", changeFrequency: "monthly" as const, priority: 0.3 },
   { path: "/legal/privacy", changeFrequency: "monthly" as const, priority: 0.3 },
