@@ -1,45 +1,55 @@
 "use client";
 
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useId, useRef } from "react";
 
 /** SiteForge free-mockup Fillout form (email marketing → Hermes). */
 export const SITEFORGE_INTAKE_FILLOUT_ID = "vcrTjtTLRtus";
 
+const EMBED_SCRIPT_SRC = "https://server.fillout.com/embed/v1/";
+
 type Props = {
   filloutId?: string;
-  /** Initial iframe height; Fillout pages scroll inside. */
-  height?: number;
 };
 
 /**
- * Fillout standard iframe embed.
- * Uses iframe (not the Fillout JS loader) so CSP only needs frame-src.
- * Parent URL query params are forwarded for UTM / campaign tracking.
+ * Official Fillout standard embed (script creates an allowlisted iframe).
+ * Direct forms.fillout.com/t/… URLs send frame-ancestors none and will not load in an iframe.
  */
 export function SiteForgeFilloutEmbed({
   filloutId = SITEFORGE_INTAKE_FILLOUT_ID,
-  height = 820,
 }: Props) {
-  const searchParams = useSearchParams();
+  const reactId = useId().replace(/:/g, "");
+  const mountId = `fillout-mount-${reactId}`;
+  const hostRef = useRef<HTMLDivElement>(null);
 
-  const src = useMemo(() => {
-    const url = new URL(`https://forms.fillout.com/t/${filloutId}`);
-    searchParams.forEach((value, key) => {
-      if (!url.searchParams.has(key)) url.searchParams.set(key, value);
-    });
-    return url.toString();
-  }, [filloutId, searchParams]);
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
 
-  return (
-    <iframe
-      title="Free website mockup intake"
-      src={src}
-      className="w-full border-0 bg-bg"
-      style={{ minHeight: height, height }}
-      loading="eager"
-      referrerPolicy="no-referrer-when-downgrade"
-      allow="clipboard-write"
-    />
-  );
+    host.innerHTML = "";
+    const mount = document.createElement("div");
+    mount.id = mountId;
+    mount.style.width = "100%";
+    mount.style.minHeight = "640px";
+    mount.setAttribute("data-fillout-id", filloutId);
+    mount.setAttribute("data-fillout-embed-type", "standard");
+    mount.setAttribute("data-fillout-inherit-parameters", "true");
+    mount.setAttribute("data-fillout-dynamic-resize", "true");
+    host.appendChild(mount);
+
+    // Always inject a fresh script so Fillout re-scans after client mount.
+    const prev = document.querySelectorAll(`script[src="${EMBED_SCRIPT_SRC}"]`);
+    prev.forEach((el) => el.remove());
+
+    const script = document.createElement("script");
+    script.src = EMBED_SCRIPT_SRC;
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      host.innerHTML = "";
+    };
+  }, [filloutId, mountId]);
+
+  return <div ref={hostRef} className="w-full min-h-[640px]" />;
 }
