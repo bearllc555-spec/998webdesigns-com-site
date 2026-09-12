@@ -1,53 +1,45 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 
 /** SiteForge free-mockup Fillout form (email marketing → Hermes). */
 export const SITEFORGE_INTAKE_FILLOUT_ID = "vcrTjtTLRtus";
 
-const EMBED_SCRIPT_SRC = "https://server.fillout.com/embed/v1/";
-const EMBED_SCRIPT_ID = "fillout-embed-v1";
-
 type Props = {
   filloutId?: string;
+  /** Initial iframe height; Fillout pages scroll inside. */
+  height?: number;
 };
 
 /**
- * Standard Fillout embed with dynamic resize + parent URL params (UTM, etc.).
+ * Fillout standard iframe embed.
+ * Uses iframe (not the Fillout JS loader) so CSP only needs frame-src.
+ * Parent URL query params are forwarded for UTM / campaign tracking.
  */
 export function SiteForgeFilloutEmbed({
   filloutId = SITEFORGE_INTAKE_FILLOUT_ID,
+  height = 820,
 }: Props) {
-  const hostRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
+  const src = useMemo(() => {
+    const url = new URL(`https://forms.fillout.com/t/${filloutId}`);
+    searchParams.forEach((value, key) => {
+      if (!url.searchParams.has(key)) url.searchParams.set(key, value);
+    });
+    return url.toString();
+  }, [filloutId, searchParams]);
 
-    host.innerHTML = "";
-    const mount = document.createElement("div");
-    mount.style.width = "100%";
-    mount.style.minHeight = "640px";
-    mount.setAttribute("data-fillout-id", filloutId);
-    mount.setAttribute("data-fillout-embed-type", "standard");
-    mount.setAttribute("data-fillout-inherit-parameters", "");
-    mount.setAttribute("data-fillout-dynamic-resize", "");
-    host.appendChild(mount);
-
-    const existing = document.getElementById(EMBED_SCRIPT_ID) as HTMLScriptElement | null;
-    if (existing) {
-      existing.remove();
-    }
-    const script = document.createElement("script");
-    script.id = EMBED_SCRIPT_ID;
-    script.src = EMBED_SCRIPT_SRC;
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      host.innerHTML = "";
-    };
-  }, [filloutId]);
-
-  return <div ref={hostRef} className="w-full" />;
+  return (
+    <iframe
+      title="Free website mockup intake"
+      src={src}
+      className="w-full border-0 bg-bg"
+      style={{ minHeight: height, height }}
+      loading="eager"
+      referrerPolicy="no-referrer-when-downgrade"
+      allow="clipboard-write"
+    />
+  );
 }
